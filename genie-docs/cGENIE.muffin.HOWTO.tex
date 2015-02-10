@@ -1,0 +1,1309 @@
+% cGENIE HOW-TO document
+
+% Andy Ridgwell, March 2011
+%
+% ---------------------------------------------------------------------------------------------------------------------------------
+% 11/03/24: added 'Determine the CH4 flux required to achieve a particular atmospheric pCH4 value'
+% 11/04/06: added 'Prescribe a spatial map of benthic tracer release'
+% 11/08/02: added data-saving info
+% ---------------------------------------------------------------------------------------------------------------------------------
+
+\documentclass[10pt,twoside]{article}
+\usepackage[paper=a4paper,portrait=true,hmargin=1.5cm,tmargin=2.0cm,bmargin=2.0cm,voffset=0pt,ignorehead,footnotesep=1cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{paralist}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{wasysym}
+
+\linespread{1.1}
+\setlength{\pltopsep}{2.5pt}
+\setlength{\plparsep}{2.5pt}
+\setlength{\partopsep}{2.5pt}
+\setlength{\parskip}{5.0pt plus 1pt minus 1pt}
+
+\title{HOW-TO for cGENIE: 'muffin' pre-release version}
+\author{Andy Ridgwell}
+\date{\today}
+
+\begin{document}
+
+%=================================================================================================================================
+%=== BEGIN DOCUMENT ==============================================================================================================
+%=================================================================================================================================
+
+\maketitle
+
+%=================================================================================================================================
+%=== CONTENTS ====================================================================================================================
+%=================================================================================================================================
+
+\tableofcontents
+
+%=================================================================================================================================
+%=== CHAPTERS ====================================================================================================================
+%=================================================================================================================================
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- Introduction ----------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{Introduction}\label{Introduction}
+
+This document provides HOW-TO's for cGENIE 'muffin' users.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Getting started ----------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Getting started}\label{how-to-0}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Do some thing dumb}\label{Do some thing dumb}
+
+Easy! Just close your eyes and change some parameter values at random. Better still, start using the model without reading the manual first ...
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Install \texttt{cGENIE}}\label{Install cGENIE}
+
+See: \texttt{cGENIE} \textit{Quick-start Guide}. (Also refer to the \texttt{READ-ME} file for e.g., details of changes in configuring and running \texttt{cGENIE} compared to \texttt{GENIE}.)
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Find configurations for \texttt{cGENIE}}\label{Find configurations for cGENIE}
+
+A series of (example) \texttt{cGENIE} configurations are provided, many of which are detailed in full in the \texttt{cGENIE} \textit{Tutorial} document.
+Example configurations comprise \textit{base-config} and \textit{user-config} files, plus any \textit{forcings} needed.
+\begin{compactitem}
+        \item
+  \texttt{cGENIE} \textit{base-configs} are stored in:
+        \\ \texttt{~/cgenie/genie-main/configs}
+        \\and all start with '\texttt{cgenie\_}', for example: \\ \texttt{cgenie\_eb\_go\_gs\_ac\_bg\_hadcm3l\_eocene\_36x36x16\_2i\_080928\_BASE.config}
+        \item
+        \texttt{cGENIE} user configs are stored in:
+        \\ \texttt{~/cgenie/genie-userconfigs}
+        \item
+        \texttt{cGENIE} forcings are stored in:
+        \\ \texttt{~/cgenie/genie-forcings}
+\end{compactitem}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: General ------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: General}\label{how-to-1}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Model output -------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Model output}\label{how-to-2}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Set the frequency of time-series and time-slice output}\label{how-to-2a}
+
+See: \textit{c}GENIE \textit{user-manual} (section 5).
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Diagnose orbital (insolation) changes}\label{how-to-2b}
+
+Two new \texttt{misc} category time-series files have been provided:
+\vspace{-10pt}\begin{verbatim}biogem_series_misc_ocn_insol.res\end{verbatim}\vspace{-10pt}
+and
+\vspace{-10pt}\begin{verbatim}biogem_series_misc_ocn_swflux.res\end{verbatim}\vspace{-10pt}
+with the the SW (shortwave) flux (\texttt{swflux}) being equivalent to the incident strength of solar radiation at the surface (\texttt{insol}) but accounting for the prescribed planetary albedo. Both variables are calculated and saved on a global mean ocean grid basis (2nd data column) and have units of W m-2.
+\\In addition, to help diagnose orbital variability, \texttt{biogem\_series\_misc\_ocn\_insol.res} includes two further insolation variables (3rd and 4th columns). These reflect the strength of insolation at a single point in the annual cycle and at discrete latitudes (i.e. \texttt{j} grid indices). (The insolation at 2 different latitudes are saved so that both .e.g. N and S hemisphere insolation signals can be simultaneously recorded.)
+\\Three new namelist parameters are provided to configure this:
+\begin{compactenum}
+        \item \texttt{bg\_par\_t\_sig\_count} -- which sets the BIOGEM 'time-step' in the annual cycle at which the insolation value will be saved. e.g. for 96 time-steps in the ocean physics, and a 2:1 GOLDSTEIN:BIOGEM gearing (the default for the 16 level configuration), there are 48 BIOGEM time-steps. (It is left to the user to work out which part of the annual cycle \textit{c}GENIE starts at (i.e. time-step \#1) -- I haven't a clue ...)
+        \item \texttt{bg\_par\_sig\_j\_N} -- sets the 'j' value for a northern hemisphere (but could be southern) snap-shot.
+        \item \texttt{bg\_par\_sig\_j\_S} -- sets the 'j' value for a southern hemisphere snap-shot.
+\end{compactenum}
+By default \texttt{bg\_par\_sig\_j\_N} is assigned a value of \texttt{2} and \texttt{bg\_par\_sig\_j\_S} a value of \texttt{1} (on account of the maximum grid size not being \textit{a priori} known).
+The default setting of \texttt{bg\_par\_t\_sig\_count} is \texttt{1} -- i.e. the first (BIOGEM) time-step in the annual cycle.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Climate ------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Climate}\label{how-to-3}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Set/un-set seasonal insolation forcing}\label{how-to-3a}
+
+Seasonal insolation forcing of the EMBM, GOLDSTEIN ocean, and sea-ice model, are set by the following parameters\footnote{These are typically set in the \textit{base-config} if needed (i.e. different from default).}:
+\vspace{-10pt}\begin{verbatim}
+ea_dosc=.true.
+go_dosc=.true.
+gs_dosc=.true.
+\end{verbatim}\vspace{-5pt}
+and are \texttt{.true.} by default.
+To set an annual average insolation forcing with no seasonality, simply set these to \texttt{.false.}.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Adjust solar forcing in a time-dependent manner}\label{Adjust solar forcing in a time-dependent manner}
+
+The value of the solar constant in cGENIE is set by the \textit{namelist parameter}:
+\\ \texttt{ma\_genie\_solar\_constant} and by default is set to 1368 W m\(^{-2}\), i.e.:
+\vspace{-10pt}\begin{verbatim}ma_genie_solar_constant=1368.0\end{verbatim}\vspace{-5pt}
+Specifying a different value for \texttt{ma\_genie\_solar\_constant} in the user config file allows the solar forcing of the EMBM to be altered. For example, to induce a 'snowball Earth' like state under a solar constant applicable to the late Neoproterozoic (some 6\% less than modern) you would set:
+\vspace{-10pt}\begin{verbatim}ma_genie_solar_constant=1330.56\end{verbatim}\vspace{-5pt}
+Modification of \texttt{ma\_genie\_solar\_constant} can be turned into a time-dependent forcing of solar forcing, but only by frequent re-starting using a sequence of short model integrations.
+
+Alternatively, a crude (temporary) hack is provided to allow a semi-continual adjustment of solar forcing. Whether you wish to vary the solar constant in a time-dependent manner is determined by the \textit{parameter}:\\
+\texttt{bg\_ctrl\_force\_solconst}.
+\\By default this is set to \texttt{.false.}. By adding to the user config file:
+\vspace{-10pt}\begin{verbatim}bg_ctrl_force_solconst=.true.\end{verbatim}\vspace{-5pt}
+a time-varying change in the value of the solar constant will be imposed. For this, BIOGEM will expect the presence of a file called \texttt{biogem\_force\_solconst\_sig.dat} in the forcing directory\footnote{REMEMBER: The location of which is specified by the namelist parameter bg\_par\_fordir\_name.}. This must contain two columns of information: the first is a time marker (year) and the second is a paired value for the solar constant. In the current crude incarnation of this feature, the time markers (1st column) \textbf{must} correspond exactly to the time markers in the time-series specification file\footnote{REMEMBER: The filename of which is specified by the namelist parameter bg\_par\_infile\_sig\_name.}. GENIE will exit with an appropriate error message if this is not the case.
+
+When using the time-varying solar constant hack, seasonal solar insolation is re-calculated each year with a call to 
+\texttt{radfor(genie\_solar\_constant)}\footnote{\texttt{cgenie.muffin/genie-embm/src/fortran/radfor.F}}
+ at the start of the time-stepping loop\footnote{\texttt{cgenie.muffin/genie-main/genie.F}}. At each time-marker, BIOGEM sets the value of \texttt{genie\_solar\_constant} equal to the corresponding value specified in
+\texttt{biogem\_force\_solconst\_sig.dat}. Thus, regardless of how closely-spaced the time-marker years are, (seasonal) solar insolation is only adjusted every year. For a longer time-marker interval than yearly, no interpolation is performed on the series of solar constant values, and in this way time-dependant solar forcing currently differs from the calculation of other forcings.
+
+A simple example file might look something like:
+\vspace{-10pt}\begin{verbatim}
+-START-OF-DATA-
+ 0.5   1367.0
+ 1.5   1366.0
+ 2.5   1365.0
+ 3.5   1364.0
+ 4.5   1363.0
+ 5.5   1362.0
+ 6.5   1361.0
+ 7.5   1360.0
+ 8.5   1359.0
+ 9.5   1358.0
+10.5   1357.0
+-END-OF-DATA-
+\end{verbatim}\vspace{-5pt}
+which will decrease the value of the solar constant by 1 W m\(^{-2}\) each year. Note that because the solar forcing is only updated each year (with the call to \texttt{radfor.F}), the first year will be characterized by climate with a solar constant of 1368 W m\(^{-2}\) , the default. Although BIOGEM sets a new value of \texttt{genie\_solar\_constant} (1367 W m\(^{-2}\) ) mid way through the first year, it is only at the start of the second year that solar insolation is recalculated according to the reduction in solar constant.
+
+Hacking the solar constant in a time-varying manner is, of course, a (albeit crude) way of addressing SRM geoengineering impacts.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Ocean biology and biogeochemical cycling ---------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Ocean biology and biogeochemical cycling}\label{how-to-4}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Configure an abiotic ocean}\label{Have an abiotic ocean}
+
+Biological productivity in the ocean can be completely turned off to create an abiotic ocean (why you would want to do this is another matter ... perhaps analyzing the solubility pump or a 'deep-time' and prior to significant marine life study ... (?)). The biological option is set by the \textit{parameter} \texttt{bg\_par\_bio\_prodopt} which by default takes a value of \texttt{"1N1T\_PO4MM"} which selects the scheme described in \textit{Ridgwell et al.} [2007a]. To have no biological production in the ocean, add the following line to the end of the \textit{user-config} file (or edit the existing line in the section '\texttt{--- BIOLOGICAL NEW PRODUCTION ---}'):
+\vspace{-11pt}\begin{verbatim}
+bg_par_bio_prodopt="NONE"
+\end{verbatim}\vspace{-5.5pt}
+With this set, you do not have to specify any biological production or remineralization namelist parameter values in the \textit{user-config} file.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Specify the CaCO3:POC export ratio}\label{CaCO3:POCrainratio}
+
+In the default\footnote{The default biological scheme is given by: \texttt{bg\_par\_bio\_prodopt='1N1T\_PO4MM'}.} 'biological' scheme in GENIE the CaCO3:POC export ratio from the surface ocean in BIOGEM is parameterized as a power law function of the degree of ambient over-saturation w.r.t. calcite [\textit{Ridgwell et al.}, 2007a,b]. The calculated CaCO\begin{math}_3\end{math}:POC ratio will vary therefore both spatially, particularly w.r.t. latitude (and temperature), as well as in time, if the surface ocean saturation state changes. The latter can arise from climatic (temperature) or circulation changes, or through a change in the DIC and/or ALK inventory of the ocean (such as resulting from emissions of fossil fuel CO2) or the re-partitioning of these species vertically within the ocean (e.g., as a result of any change in the strength of the biological pump).
+
+There may be situations in which it is advisable to hold the CaCO\begin{math}_3\end{math}:POC export ratio invariant. For instance, considering the current very considerable uncertainties in the impacts of ocean acidification on marine calcifiers [\textit{Ridgwell et al.}, 2007a] the safest assumption is arguably to exclude any acidification impact on calcification and carbonate export. Specifying a spatially uniform value of the CaCO\begin{math}_3\end{math}:POC ratio ratio (e.g. 0.25 or 0.3) also allows comparison with the results of early carbon cycle model studies. For deeper-time geological studies where little about marine carbonate production may be known \textit{a priori}, a spatially uniform value represents the simplest possible assumption (e.g., \textit{Panchuk et al.} [2008]).
+
+BIOGEM can be told to use a prescribed (spatially and temporally invariant) 2D field of CaCO\begin{math}_3\end{math}:POC export rain ratios (instead of calculating these internally as a function of ocean chemistry) by setting the 'Replace internal CaCO3:POC export rain ratio?' namelist flag to \texttt{.true.}:
+\vspace{-5.5pt}\begin{verbatim}
+bg_ctrl_force_CaCO3toPOCrainratio=.true.
+\end{verbatim}\vspace{-5.5pt}
+You must also then provide a 2D data field that specifies the value of the rain ratio at each and every surface ocean grid point. The filename of this field is set by default to:
+\vspace{-5.5pt}\begin{verbatim}
+bg_par_CaCO3toPOCrainratio_file="CaCO3toPOCrainratio.dat"
+\end{verbatim}\vspace{-5.5pt}
+and the file must be located in the 'BIOGEM data input directory'\footnote{\texttt{\$RUNTIME\_ROOT} being equal to \texttt{\~{}/genie}.}, which by default is:
+\\\texttt{bg\_par\_indir\_name="} \texttt{\$RUNTIME\_ROOT/genie-biogem/data/input"}
+
+This 2-D field must be in the form of an ASCII file with space (or tab) separated values arranged in rows and columns of latitude and longitude. The format of the file must follow the GOLDSTEIN ocean grid with the first line being the most Northerly row, and the last line the most Southerly row of grid points. Data along a row is from West to East. The latitude of the first column of values must be consistent with the defined starting latitude of the model grid, which is specified by the namelist parameter \texttt{gm\_par\_grid\_lon\_offset}\footnote{-260E by default}. Examples are given in the code repository\footnote{e.g., \texttt{\~{}/genie/genie-biogem/data/input/CaCO3toPOCrainratio\_worbe2\_preindustrial.dat}}.
+
+If you are using a uniform value, it is an easy enough job to create a \begin{math}36\times36\end{math} array of the value you so desire\footnote{It doesn't matter if you specify a value over land because only values associated with wet cells will be acted on.}.
+
+If you want to hold a previously-calculated (spatially variable) CaCO\begin{math}_3\end{math}:POC field constant, then the easiest way to achieve this is to copy the information contained in the \textit{time-slice} results field:\\
+\texttt{misc\_sur\_rCaCO3toPOC} in the results netCDF file \texttt{fields\_biogem\_2d.nc}\footnote{You must have the 'miscellaneous properties' time-slice save flag set to:\\
+\texttt{bg\_ctrl\_data\_save\_slice\_misc=.true.} (the default) for this field to be saved.}. Because this is a 3D data field (\begin{math}36\times36\times8\end{math}), carefully highlight just the surface ocean (2D) distribution (e.g., from the Panoply viewer) or extract from the netCDF file by some other means, and then copy and paste into:\\
+\texttt{CaCO3toPOCrainratio.dat} (or whatever you have specified the filename as). When copying Panoply data, 'NaN's should be replaced by values of zero. Take care that the final (steady-state) time-slice is being copied and not the first (un-spunup) one ...
+
+\textbf{TIP}: In order to quantify the importance of calcification feedbacks with CO2 and climate, two model integrations are required: one with the CaCO\begin{math}_3\end{math}:POC ratio held constant and the other with it allowed to vary, thereby allowing the effect of a changing CaCO\begin{math}_3\end{math}:POC ratio on the system to to elucidated.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Implementing an alternative fixed remineralization profile for POC (e.g. Martin curve)}\label{fixedremin}
+
+There are several options for utilizing a fixed remineralization profile for POC, which by default is a double exponential (See: \textit{Ridgwell et al.} [2007a]).
+The fixed remineralziation profile scheme is set by the string parameter: \texttt{bg\_par\_bio\_remin\_fun}. By default, it has a value of '\texttt{efolding}'. Currently available options are:
+
+\begin{compactitem}
+        \item
+  \texttt{Martin1987}, which applies a globally-uniform power, set by:
+  \\ \texttt{bg\_par\_bio\_remin\_martin\_b}
+  \\(which by default has a value of -0.858)
+        \item
+  \texttt{Henson2012}, which calculates the value of b according to sea surface temperature (SST):
+  \\b = (0.024 * SST) - 1.06
+\end{compactitem}
+
+To user either (on their own), all organic matter should be assigned to a single phase, with the 2nd (recalcitrant) fraction set to zero:
+\vspace{-10pt}\begin{verbatim}
+bg_par_bio_remin_POC_frac2=0.0
+\end{verbatim}\vspace{-10pt}
+
+Note that these parameterizations can be combined with ballasting \ref{ballasting} and will act on the 'free' POC phase (i.e. the one not controlled by the ballasting parameterization).
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Implement particulate organic carbon 'ballasting'}\label{ballasting}
+
+The default particulate organic carbon (POC) ocean interior remineralization scheme is based on fixed, prescribed profiles of relative POC flux to depth (e.g. see: \textit{Ridgwell} [2001]; \textit{Ridgwell et al.} [2007a]). A 'ballasting' control on POC transport to depth can instead be implemented by:
+\vspace{-10pt}\begin{verbatim}
+bg_ctrl_bio_remin_POC_ballast=.true.
+bg_ctrl_bio_remin_POC_fixed=.false.
+\end{verbatim}\vspace{-10pt}
+
+The POC 'carrying coefficients' for CaCO3, opal, and detrital (lithogenic) material are set by the parameters:
+\vspace{-10pt}\begin{verbatim}
+bg_par_bio_remin_ballast_kc
+bg_par_bio_remin_ballast_ko
+bg_par_bio_remin_ballast_kl
+\end{verbatim}\vspace{-10pt}
+(for CaCO3, opal, and lithogenics, respectively). Note that the ballast coefficient units are: g POC m-2 yr-1 (g ballast m-2 yr-1)-1 (i.e. \textbf{g g-1}), which are internally converted to: mol POC m-2 yr-1 (mol ballast m-2 yr-1)-1 (i.e. \textbf{mol mol-1}).
+
+A fixed (in time), but spatially heterogeneous field can also be prescribed instead of global uniform values (akin to setting a pattern of the CaCO3:POC export rain ratio (\ref{CaCO3:POCrainratio}). The parameters setting whether to substitute a globally-uniform value with a specified pattern are:
+\vspace{-10pt}\begin{verbatim}
+bg_ctrl_force_CaCO3ballastcoeff=.true.
+bg_ctrl_force_opalballastcoeff=.true.
+bg_ctrl_force_detballastcoeff=.true.
+\end{verbatim}\vspace{-10pt}
+and which by default are \texttt{.false.}.
+The patterns of carrying coefficient are determined by files read in from \texttt{cgenie\slash genie-biogem\slash data\slash input}. The filenames are specified by:
+\vspace{-10pt}\begin{verbatim}
+bg_par_CaCO3ballastcoeff_file
+bg_par_opalballastcoeff_file
+bg_par_detballastcoeff_file
+\end{verbatim}\vspace{-10pt}
+(again, akin to the methodology for setting the CaCO3:POC export rain ratio (\ref{CaCO3:POCrainratio})).
+
+Note that ballasting is combined with an e-folding (or other) fixed profile remineralization schemes\footnote{Although in a sense, the remineralization of POC is not 'fixed' in that it does nto have a predetermined profile but instead is set by the changing flux of CaCO3, opal and lithogenic fluxes with depth, \texttt{bg\_ctrl\_bio\_remin\_POC\_fixed} should still be set to \texttt{.true.} (the default).}. Ballasting is calculated with respect to the 2nd (recalcitrant) fraction of POC only. The remaining POC export is be degraded by an alternative algorithm, which by default, is an e-folding decay (see \ref{fixedremin} for more and alternatives). The fraction of initial export assigned to ballasting vs. 'free' POC is calculated according to the available exported ballast flux.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Prescribe biological export production}\label{Prescribe biological export production}
+
+Two possibilities:
+
+\begin{compactenum}
+
+        \item \textbf{Via a full prescription of all particulate fluxes in surface ocean}
+                \\Create a full set of particulate (sediment tracer) flux forcings fields for the surface ocean, one for each biologically-related sediment tracer selected in the model, including isotopes (and trace metals). Everything except for the surface layer can be left as a zero (0.0) in the two 3D spatial fields required for each tracer.
+        \\You must also create a set of dissolved (ocean) tracer flux forcings fields for the surface ocean, one for each dissolved tracer associated with the particulates and selected in the model (including isotopes etc). The dissolved tracer flux fields must be create so as to exactly cancel out the particulate fields to conserve mass. For most tracers this is trivial, i.e., the fields for P in particulate organic matter (sed\_POP) need be associated with fields for dissolved PO4 (ocn\_PO4) which will simply be equal in magnitude but opposite in sign to POP. Complications start to arise for CaCO3 and there is also the question of alkalinity changes associated with organic matter creation/destruction (via changes in NO3), so this method, whilst the most flexible, is not without its complications and degree of tediousness (i.e. would not recommend).
+        
+        \item \textbf{By just prescribing just the POC flux}
+                \\An alternative has been provided enabling a full biological productivity in the surface ocean, but controlled by prescribing just the particulate organic carbon export flux. This 'biological' scheme is selected with:
+\vspace{-5.5pt}\begin{verbatim}bg_par_bio_prodopt="bio_POCflux"\end{verbatim}\vspace{-5.5pt}
+What happens in practice is that the POC flux is used to calculate the equivalent PO4 change in the surface ocean, and then this is passed to the biological scheme and export production calculated 'as usual'. (The POC flux forcing is set to zero once the associated PO4 (uptake) flux has been calculated.)
+                \\A particulate (sediment tracer) flux forcing for POC in the surface ocean still has to be defined and selected, but no other \textit{forcings} (including the associated removed dissolved tracers) are required. An example forcing configuration is given in \texttt{worjh2.FPOC\_Caoetal2009} (and selected by:
+\vspace{-5pt}\begin{verbatim}bg_par_forcing_name="worjh2.FPOC_Caoetal2009"\end{verbatim}\vspace{-5pt})
+An example \textit{user-config}: \texttt{EXAMPLE.worjh2.Caoetal2009\_FPOC} illustrating this is provided.
+
+\noindent \textbf{NOTE}: Take care with dissolved organic matter (DOM) production, as the specified POC flux is automatically increased to take into account DOM production. i.e. is 50\% of export is specified to be partitioned into dissolved rather than particulate organic matter export, whatever is specified in the POC export forcing would be internally doubled, before being partitioned into POM and DOM.
+\noindent \textbf{NOTE}: Also take care with the units of the flux \textit{forcing} to the surface layer in the ocean, which are in mol yr-1. The main particulate flux output is in units of mol m-2 yr-1, but since \textit{c}GENIE is invariably run on a equal area grid it is not difficult to convert export production densities to mol yr-1 (you either need to divide the area of the Earth's surface by the number of grid points, or save the ocean grid information -- see netCDF save options in the User Manual). Alternatively, as of revision \textit{r}8825, \textit{c}GENIE saves the primary particulate flux fields also in units of mol yr-1 (assuming you have the biological or full netCDF save options selected -- see netCDF save options in the User Manual).
+\\Be aware that if there is insufficient PO4 to support the require POC flux, the entire POC flux will still be created, meaning that you may end up with regions of negative nutrient concentration.
+
+\end{compactenum}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Include a R-DOM cycle in the ocean}\label{Include a R-DOM cycle in the ocean}
+
+
+\subsubsection{R-DOM degradation}\label{R-DOM degradation}
+
+The parameter: \texttt{bg\_ctrl\_bio\_remin\_RDOM\_photolysis} determines whether RDOM degradation is restricted to the surface layer and occurs only by/associated with photolysis. It can be \texttt{.true.} or \texttt{.false.} and by default is set to:
+\vspace{-10pt}\begin{verbatim}bg_ctrl_bio_remin_RDOM_photolysis=.false.\end{verbatim}\vspace{-10pt}
+When set \texttt{.true.}, RDOM degradation is set to zero everywhere in the ocean except the surface layer. Here, the lifetime (parameter: \texttt{bg\_par\_bio\_remin\_RDOMlifetime}) is modified in *inverse* proportion to the solar insolation integrated over the surface layer. (There is a field in the 2D netCDF of solar insolation at the ocean surface, and the average over the surface layer is approx ~1/4 of this.). i.e., in lower latitude and higher insolation regions, the lifetime is shorter than specified by \texttt{bg\_par\_bio\_remin\_RDOMlifetime} (and by approx a factor of 1/4 of the solar insolation in W m-2).
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Include a Cd cycle in the ocean}\label{Include a Cd cycle in the ocean}
+
+
+In order to run cGENIE with ocean cadmium cycle, the following \textit{base config}: \\ \texttt{cgenie\_eb\_go\_gs\_ac\_bg\_itfclsd\_16l\_JH\_BASEFeCd} is provided (under SVN).
+
+A typical experiment command line, using the \textit{user config} file: \texttt{EXAMPLE\_worjh2\_PO4Fe\_Cd\_SPIN} (also provided under SVN), would look like:
+\vspace{-5.5pt}\begin{verbatim}
+./runCCgenie.sh cgenie_eb_go_gs_ac_bg_itfclsd_16l_JH_FeCdBASE /
+  EXAMPLE_worjh2_FeCd_SPIN 11
+\end{verbatim}\vspace{-5.5pt}
+
+To submit this job to the cluster (from \$HOME):
+\vspace{-5.5pt}\begin{verbatim}
+qsub -q kitten.q -j y -o cgenie_log -S
+  /bin/bash subcgenie.sh cgenie_eb_go_gs_ac_bg_itfclsd_16l_JH_BASEFeCd /
+  EXAMPLE_worjh2_PO4Fe_Cd_SPIN 10001
+\end{verbatim}\vspace{-5.5pt}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Determine the CH4 flux required to achieve a particular atmospheric pCH4 value}
+
+Unlike the concentration of CO\(_{2}\) in the atmosphere, which if restored to a chosen value during a \textit{spin-up} experiment, will remain at that value in a \textit{continuation} experiment (if no other perturbation of the carbon cycle or CO2 emissions have been prescribed), CH\(_{4}\) in the atmosphere decays with a lifetime of ca. 8 years (with a small fraction dissolving in ocean surface waters and being oxidized in the ocean). Hence, atmospheric CH\(_{4}\) \textit{restored} to a particular value in a spin-up, requires that restoring to be maintained in any \textit{continuation} experiment or CH\(_{4}\) will quickly decay to zero. However, doing this (\textit{restoring} CH\(_{4}\) concentrations), prevents the effect of CH\(_{4}\) emissions on being assessed (as the atmospheric composition is being help constant).\\
+An alternative would be carry out the \textit{spin-up} experiment with no \textit{restoring} of atmospheric CH\(_{4}\) (or \textit{restoring} to zero), and then run the \textit{continuation} experiment with no CH\(_{4}\) \textit{restoring}. This would enable e.g. CH\(_{4}\) emissions experiments to be carried out and the change in atmospheric CH\(_{4}\) in response to be simulated. The problem here is that the lifetime of  CH\(_{4}\) in the atmosphere scales with the CH\(_{4}\) concentration. So in starting with no CH\(_{4}\) in the atmosphere, the CH\(_{4}\) lifetime is relatively short, and the response to CH\(_{4}\) emissions will be underestimated.\\
+What is in effect 'missing' are the (natural) sources of CH4 to the atmosphere such as wetlands, which at steady state, provide a CH\(_{4}\) flux that balances the oxidation rate of CH\(_{4}\) in the atmosphere (and ocean). cGENIE has a \textit{parameter} for this: \texttt{ac\_par\_atm\_wetlands\_FCH4} (mol yr\(^{-1}\)) (with the isotopic composition of this source set by: \texttt{ac\_par\_atm\_wetlands\_FCH4\_d13C}). All that then remains is to determine the flux of CH\(_{4}\) that balances the rate of oxidative loss for the desired atmospheric CH\(_{4}\) concentration. To do this:
+\begin{compactenum}
+        \item Carry out a \textit{spin-up} with atmospheric CH\(_{4}\) \textit{restored} to the desired concentration.\footnote{For an example: see experiment \texttt{EXAMPLE\_p0055c\_PO4\_CH4\_SPIN} described in \textit{cGENIE.Examples}.}
+        \item Determine the total loss rate of CH\(_{4}\) (including both atmospheric oxidation and invasion (and subsequent oxidation) into the ocean) -- this is recorded in the \textit{time-series} results file:\\ \texttt{biogem\_series\_focnatm\_pCH4.res}\footnote{Second column (the value in units of mol yr-1)}.
+        \item Set the \textit{parameter} \texttt{ac\_par\_atm\_wetlands\_FCH4} equal to this value.\end{compactenum} 
+An example of a spin-up in which a prescribed ('wetland') flux of CH\(_{4}\) to the atmosphere is set, is described in:\\ \textit{cGENIE.Examples} -- \textit{spin-up} example \texttt{EXAMPLE\_p0055c\_PO4\_CH4\_SPIN2}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Determine the atmospheric radiocarbon flux required to achieve a steady state 14C system}
+
+First, you need to spin the system with the atmosphere restored to the e.g. pre-industrial \(\Delta^{14}\)C value desired. There are two ways then to diagnose the equivalent \(^{14}\)C flux:
+
+\begin{compactenum}
+
+\item Sum the total mol inventory of \(\Delta^{14}\)C in the ocean (as DIC) and atmosphere (CO\(_{2}\)), both of which can be found in the relevant time-series output. The radiocarbon decay rate multiplied by the (steady state) inventory then gives the total decay, which of course is equal to the cosmogenic input flux needed to maintain steady state.
+
+\item Rather simpler, enabled by some recent output code changes, is simply to read off the reported atmospheric flux forcing that is being applied to restore the atmosphere \(\Delta^{14}\)C value. The relevant time-series output file is:
+\\\texttt{biogem\_series\_diag\_misc\_specified\_forcing\_pCO2\_14C.res}
+
+\end{compactenum}
+
+Once the balancing \(^{14}\)C flux value has been obtained,  the namelist parameter controlling the rate of cosmogenic \(^{14}\)C production (by default, zero): \texttt{ac\_par\_atm\_F14C}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: System forcings -----------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Forcings of the system}\label{how-to-5}
+
+Note: All the \textit{forcings} described here assume the 'new' (simplified) methodology for prescribing \texttt{forcings}. This methodology is enabled by changing the default parameter setting of \texttt{bg\_ctrl\_force\_oldformat} to \texttt{.false.}. This is set automatically as part of the \texttt{runmuffin.sh} shell script.
+
+Taking the example of the ocean (dissolved tracers): flux and restoring \textit{forcings} are defined in the \textit{forcings} specification file: \texttt{configure\_forcings\_ocn.dat}. As detailed in the notes to this file, there is a flag (\texttt{COLUMN \#6}) which sets the spatial attributes of the \textit{forcing} as follows: 
+\vspace{-10pt}\begin{verbatim}
+3 == 3D
+2 == 2D
+0 == point
+-1 == SURFACE
+-2 == BENTHIC
+\end{verbatim}\vspace{-10pt}
+the default (33) being that the forcing is applied uniformly to the entire (3D) ocean volume.
+
+Options \texttt{3}, \texttt{2}, and \texttt{0}, as: uniform 3D\footnote{Note that here: '3D' does not mean a spatially explicit 3D pattern and hence the original ('old') way of specifying \textit{forcings}, but instead: that the forcing is applied uniformly in 3D space (i.e., is in effect a volume \textit{forcing}).} (volume), uniform 2D (surface), and point forcing, respectively, require no additional (spatial) information. Hence, with options \texttt{3}, \texttt{2}, or \texttt{0} set, only an additional file specifying the time-dependent information for each forcing need be provided, in files of the form:
+\vspace{-10pt}\begin{verbatim}
+biogem_force_flux_ocn_xxx_sig.dat
+\end{verbatim}\vspace{-10pt}
+for flux forcings, and 
+\vspace{-10pt}\begin{verbatim}
+biogem_force_restore_ocn_xxx_sig.dat
+\end{verbatim}\vspace{-10pt}
+where: \texttt{xxx} represents the mnemonic of the tracer (e.g., \texttt{DIC} is dissolved inorganic carbon. \texttt{CH4} is methane, etc.).
+
+Options \texttt{-1} (\texttt{SURFACE}) and \texttt{-2} (\texttt{BENTHIC}) require a 2D field to be provided in addition to the time-dependent information for each forcing. The grids for both are the same -- i.e., all 'wet' grid points (non dry land) in the model. The filename for these 2D files is of the form:
+\vspace{-10pt}\begin{verbatim}
+biogem_force_flux_ocn_xxx_SUR.dat
+\end{verbatim}\vspace{-10pt}
+for flux forcings, and 
+\vspace{-10pt}\begin{verbatim}
+biogem_force_restore_ocn_xxx_SUR.dat
+\end{verbatim}\vspace{-10pt}
+for restoring \textit{forcings}.
+
+Examples of point and 2D (benthic) ocean tracer \textit{forcing} are given below.
+        
+For details of the 'old', fully 3D spatially-explicit forcing methodology, refer to the \textit{c}GENIE \textit{user-manual}.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Applying a geoengineering 'liming' flux to the ocean surface}
+
+There are two different methodologies provided for: (1) applying a surface flux of alkalinity (and Ca, and DIC) with a uniform or spatial pattern, regardless of atmospheric pCO2 and emissions, and (2) applying a surface flux calculated internally to meet some objective -- here, the value of atmospheric pCO2 at any point in time.
+
+\begin{compactenum}
+
+\item The \textit{forcing}:
+\vspace{-5pt}\begin{verbatim}
+pyyyyz_RpCO2_Rp13CO2_FRALK_FDIC_F13DIC_FCa
+\end{verbatim}\vspace{-5pt}
+provides a facility for applying alkalinity (\texttt{ALK}) (as well as Ca, and DIC, if selected) to the ocean surface concurrently with a prescribed time-history of restoring of atmospheric pCO2 (and associated d13C), while
+\vspace{-5pt}\begin{verbatim}
+pyyyyz_FpCO2_Fp13CO2_FRALK_FDIC_F13DIC_FCa
+\end{verbatim}\vspace{-5pt}
+is similar, except with a prescribed time-history of flux (emissions) of CO2 (and associated isotopic composition) to the atmosphere.
+By default in each, only an ALK flux to the ocean surface is selected. The other three ocean tracers listed in \texttt{configure\_forcings\_ocn.dat} are set to '\texttt{f}' for flux forcing. As provided in these examples, atmospheric pCO2 is held at 278 ppm for the restoring, and emissions of 1 PgC yr-1 (8.3333e+013 mol yr-1) for the flux forcing version.
+\\ By default, \textit{forcings} are set such that the ALK (and Ca, and DIC if selected) is applied uniformly over the ocean surface (the '\texttt{2}' in \texttt{COLUMN \#06}). Point sources can be specified by changing this to a '\texttt{0}', or an explicit spatial pattern with a '\texttt{-2}' (which must then be provided in a separate file).
+
+\item The \textit{forcing}:
+\vspace{-5pt}\begin{verbatim}
+pyyyyz_FRpCO2_Fp13CO2_FRALK_FDIC_F13DIC_FCa
+\end{verbatim}\vspace{-5pt}
+differs firstly in specifying both a CO2 emissions flux and restoring value for atmospheric pCO2. For alkalinity (ALK), both a flux and restoring of the ocean are selected.
+\\ Basically, what happens here is when a flux + restoring of ocean ALK is selected together with flux + restoring of pCO2, ALK additions to the ocean is made in order to try and maintain the prescribed history of atmospheric pCO2, regardless of the CO2 emissions also specified. If at any one time-step atmospheric pCO2 is higher than the target value, ALK is added to the ocean with the flux specified in the ALK flux forcing. If atmospheric pCO2 is lower than the target value, no ALK is added or taken away, unless the parameter:
+\vspace{-5pt}\begin{verbatim}
+bg_ctrl_force_invert_noneg=.true.
+\end{verbatim}\vspace{-5pt}
+is set, which enables a negative ALK flux to be applied\footnote{This is likely pretty unphysical for most applications, hence the default is \texttt{.false.}.}.
+\\ Note that the restoring value of ALK has no meaning and the value set in:
+\vspace{-5pt}\begin{verbatim}
+biogem_force_restore_ocn_ALK_sig.dat
+\end{verbatim}\vspace{-5pt}
+is not important.
+Both atmospheric CO2 flux forcing and restoring forcing time-series are specified 'as normal', and may constitute an SRES CO2 emissions scenario and RCP based pCO2 time-history, respectively, for example. For d13C, only the d13C of emissions is specified\footnote{A restoring must *not* also be set.}.
+If an atmospheric CO2 emissions is not required, simply set the value in the time-series file to zero.
+Note that no scaling of atmospheric CO2 \textit{forcings} (e.g. \texttt{bg\_par\_atm\_force\_scale\_val\_3}) must be used because it will scale both restoring and emissions ...
+\\ If the model cannot quite attain the pCO2 target specified, you probably do not have a sufficiently large ALK flux specified. Conversely, if the pCO2 target is significant over-shot (technically: under-shot) then you might have prescribed too large a flux.
+
+\end{compactenum}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Prescribe an injection of radiocarbon-dead DIC}\label{Prescribe a an injection of radiocarbon-dead DIC}
+
+First ... a \textit{base-config} with 14C tracers is needed, e.g.,:
+\vspace{-10pt}\begin{verbatim}
+cgenie_eb_go_gs_ac_bg_itfclsd_16l_JH_ANTH
+\end{verbatim}\vspace{-10pt}
+\vspace{-10pt}\begin{verbatim}
+cgenie_eb_go_gs_ac_bg_itfclsd_16l_JH_ANTHFe
+\end{verbatim}\vspace{-10pt}
+(with Fe co-limitation of marine biological productivity).
+
+Then, in the \textit{user-config}, an appropriate \textit{forcing} needs to be specified, e.g.:
+\vspace{-10pt}\begin{verbatim}
+pyyyyx_FDIC_F13DIC_F14DIC
+\end{verbatim}\vspace{-10pt}
+and under the heading \texttt{--- FORCINGS ---}, might look something like:
+ 
+\begin{compactitem}
+
+        \item
+        \vspace{-5pt}\begin{verbatim}
+        bg_ctrl_force_oldformat=.false.
+        bg_par_forcing_name="worjh2_FDIC_F13DIC_F14DIC"
+        \end{verbatim}\vspace{-5pt}
+        which prescribes a forcing of DIC plus its (13C and 14C) isotopes to the ocean (somewhere or everywhere).
+        \item
+        \vspace{-5pt}\begin{verbatim}
+        bg_par_ocn_force_scale_val_03=0.0833e15
+        \end{verbatim}\vspace{-5pt}
+        sets the flux (mol yr-1), which is equivalent to 1 PgC yr-1.
+        \item To scale the isotopic composition:
+        \vspace{-5pt}\begin{verbatim}
+        bg_par_ocn_force_scale_val_04=-60.0
+        bg_par_ocn_force_scale_val_05=-999.0
+        \end{verbatim}\vspace{-5pt}
+        for example gives -60 per mil for 13C like methane and 14C that is pretty isotopically dead\footnote{Note this is on the scale of d14C not D14C}.
+        \item By default in the \textit{forcing}, the duration of the emission 1 year, and can be re-scaled (e.g., to 1000 years duration) by: 
+        \vspace{-5pt}\begin{verbatim}
+        bg_par_ocn_force_scale_time_03=1000.0
+        bg_par_ocn_force_scale_time_04=1000.0
+        bg_par_ocn_force_scale_time_05=1000.0
+        \end{verbatim}\vspace{-5pt}
+        \item Finally -- the emission location is specified by, e.g.:
+        \vspace{-5pt}\begin{verbatim}
+        bg_par_force_point_i=18
+        bg_par_force_point_j=26
+        bg_par_force_point_k=7
+        \end{verbatim}\vspace{-5pt}
+        Alternatively, the DIC release can be made over the entire ocean floor or simply sections (or depth intervals) of 
+the ocean floor instead of a point source.
+
+\end{compactitem}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Prescribe a spatial map of benthic tracer release}\label{Prescribe a spatial map of benthic tracer release}
+
+Flux \textit{forcings} to the ocean with a variety of different spatial attributes can be specified in the \textit{forcings} specification file: \texttt{configure\_forcings\_ocn.dat}. As detailed in the notes to this file, there is a flag (\texttt{COLUMN \#6}) which sets the spatial attributes of the \textit{forcing}: 
+\vspace{-10pt}\begin{verbatim}
+3 == 3D
+2 == 2D
+0 == point
+-1 == SURFACE
+-2 == BENTHIC
+\end{verbatim}\vspace{-10pt}
+with the default requiring a (3D) spatially explicit field to be provided.
+Options \texttt{-1} (\texttt{SURFACE}) and \texttt{-2} (\texttt{BENTHIC}) require a 2D field to be provided. The grids for both are the same -- i.e., all 'wet' grid points (non dry land) in the model.
+Templates for either can be created as follows:
+\begin{compactenum}
+\item Open up the \textit{BIOGEM} results file: \texttt{fields\_biogem\_2d.nc} (any experiment).
+\item Display the variable: \texttt{grid\_mask}.
+\item Select the \texttt{Array 1} tab (to display the actual gridded values rather than the color-coded map); highlight the grid of values and then copy-and-paste to a text editor.
+\item You should have a grid of values, with a '\texttt{1.0}' representing ocean, and '\texttt{NaN}' land. The \texttt{NaN}s can then be search-and-replaced to '\texttt{0.0}' and you have a grid valid for either the entire surface ocean or entire benthic surface.
+\end{compactenum}
+From here: \texttt{1}s can be replaced by \texttt{0}s to remove unwanted locations.\footnote{This can be quite time-consuming and tedious and there is no particular short-cut :(}
+In the forcing configuration file, if the \texttt{COLUMN \#5} flag ('\texttt{scale flux forcing of tracer?}') is set to 't', then the flux applied at each selected location is scaled such that the total applied flux is equal to that given in the \textit{forcing} time-signal file.\footnote{The values in the forcing map need not be all 1.0 of course.}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Sediments and weathering ---------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Sediments and weathering}\label{how-to-6}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Spin-up the full marine carbon cycle including deep-sea sediments}\label{Spin-up the full marine carbon cycle including sediments}
+
+By a 2-step process\footnote{This is a revised methodology compared to that described in the GENIE-1 HOW-TO.}:
+
+\begin{compactenum}
+
+        \item \textbf{First-guess '\textit{closed system}' \textit{spin-up}}
+        \\As of \textbf{r4211} this it is possible to carry out the initial spin-up, \textbf{with} a solute input to the ocean via rivers, but also with the system configured 'closed', i.e.,:
+\vspace{-5pt}\begin{verbatim}bg_ctrl_force_sed_closedsystem=.true.\end{verbatim}\vspace{-5pt}
+The weathering flux is subtracted from ocean cells overlying the sediments to balance the global budget and ensure a closed system. This subtraction involves partitioning the total global weathering flux between each ocean floor cell with a subtraction in proportion to the estimated CaCO3 preservation and burial rate. To utilize this methodology now requires that the ROKGEM module is used, i.e., a \textit{base config} such as:
+\vspace{-5pt}\begin{verbatim}cgenie_eb_go_gs_ac_bg_sg_rg_itfclsd_16l_JH_BASE\end{verbatim}\vspace{-5pt}
+A first guess for the weathering flux must now be prescribed. This could be derived from a previous closed system model experiment with no weathering flux specified (diagnosing weathering from total global CaCO3 burial as described earlier), or from the literature, e.g., \textit{Ridgwell} [2007] cites 20 Tmol HCO3- yr-1, an equivalent CaCO3 weathering rate of 10 Tmol yr-1:
+\vspace{-5pt}\begin{verbatim}rg_par_weather_CaCO3=10.00E+12\end{verbatim}\vspace{-5pt}
+
+The following \textit{user config} file 
+\vspace{-5pt}\begin{verbatim}EXAMPLE_worjh2_PO4_S36x36_SPIN\end{verbatim}\vspace{-5pt}
+can be used for the closed system spin-up.
+
+\noindent To launch an experiment, type (all in one line; notes space separators between line items in this document format):
+\vspace{-5pt}\begin{verbatim}
+./runCCSgenie.sh cgenie_eb_go_gs_ac_bg_sg_rg_itfclsd_16l_JH_BASE /
+  EXAMPLE_worjh2_PO4_S36x36_SPIN 20001
+\end{verbatim}\vspace{-5pt}
+
+\noindent To submit to the cluster type:
+\vspace{-5pt}\begin{verbatim}qsub -q kitten.q -j y -o cgenie_log -S /bin/bash subcgenie.sh
+cgenie_eb_go_gs_ac_bg_sg_rg_itfclsd_16l_JH_BASE /
+  EXAMPLE_worjh2_PO4_S36x36_SPIN 20001
+\end{verbatim}\vspace{-5pt}
+
+\noindent 20000 years (20001 if using the default \textit{time-series} saving points in order to record the last (annual averaged) year of the experiment) is probably about the minimum practical \textit{spin-up} time. Primarily -- you are looking for convergence in the mean wt\% CaCO3 value (averaged sediment composition), which is recorded in the \textit{BIOGEM} \textit{time-series} file:
+\vspace{-5pt}\begin{verbatim}EXAMPLE_worjh2_PO4_S36x36_SPIN\end{verbatim}\vspace{-5pt}
+
+        \item \textbf{Open system spin-up}
+        \\The last stage is an open system spin-up as described previously. The prescribed weathering flux (\texttt{rg\_par\_weather\_CaCO3}) is revised and set equal to the diagnosed global CaCO3 burial rate ('\texttt{Total CaCO3 pres (sediment grid)}') as reported in the SEDGEM module results file:
+\\\texttt{seddiag\_misc\_DATA\_GLOBAL.res}.
+In addition, an \textit{open system} must now be specified in the \textit{user config}:
+\vspace{-5pt}\begin{verbatim}bg_ctrl_force_sed_closedsystem=.false.\end{verbatim}\vspace{-5pt}
+
+\noindent 50000 years (50001 if using the default \textit{time-series} saving points in order to record the last (annual averaged) year of the experiment) is probably about the minimum practical \textit{spin-up} time. Again -- you are looking for convergence in the mean wt\% CaCO3 value.
+
+\end{compactenum}
+
+There is still some departure of ocean Ca and ALK inventories during the revised multi-stage spin-up compared to observed (and the initialized values), but this is substantially reduced compared to the original 2-part spin-up methodology as well as to a single spin-up methodology.
+
+\noindent \textbf{TIP}: Having completed the full marine carbon cycle spin-up, it is recommended that the CaCO3:rain ratio is set invariant -- see earlier HOWTO. If the default CaCO3 parameterization setting is retained, CO2-calcification feedback as described in \textit{Ridgwell et al.} [2007b] is enabled.
+
+\noindent \textbf{NOTE}: There is no climate feedback by default. To run experiments with feedback between CO2 and climate, add:\vspace{-11pt}\begin{verbatim}ea_36=y\end{verbatim}\vspace{-11pt}
+at the end of the \textit{user config}.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Run the sediments at higher resolution (as compared to the ocean grid)}\label{Run the sediments at higher resolution}
+
+By default (as set in the \textit{base config} file in \texttt{\~{}/genie/genie-main/configs}) the SEDGEM sediment grid is configured at a resolution of 36x36 (and on an equal area grid), by:
+\vspace{-5.5pt}\begin{verbatim}
+SEDGEMNLONSOPTS='$(DEFINE)SEDGEMNLONS=36'
+SEDGEMNLATSOPTS='$(DEFINE)SEDGEMNLATS=36'
+\end{verbatim}\vspace{-5.5pt}
+Several data input files are required by SEDGEM consistent with the specified grid:
+
+\begin{compactitem}
+        
+        \item A mask, which specifies the sediment grid locations (if any!) at which 'sediment cores' (see: \textit{Ridgwell} [2007]) are to be generated at:
+        \vspace{-5.5pt}\begin{verbatim}sg_par_sedcore_save_mask_name="sedgem_save_mask.36x36"\end{verbatim}\vspace{-5.5pt}
+        The example provided on SVN contains some illustrative locations set (by a '\texttt{1}') for cores to be generated in.
+        
+        \item The required sediment grid topography (bathymetry):
+        \vspace{-5.5pt}\begin{verbatim}sg_par_sed_topo_D="sedgem_topo_D.36x36"\end{verbatim}\vspace{-5.5pt}
+        This particular grid is derived from observed bathymetry and excludes sediment locations shallower than the surface ocean layer (of the 8-level model) as described in Ridgwell and Hargreaves [2007].
+        
+\end{compactitem}
+
+The directory location of the required files is set by input directory namelist setting, which by default is:
+\\\texttt{sg\_par\_indir\_name="} \texttt{\$RUNTIME\_ROOT/genie-sedgem/data/input"}
+
+As described in Ridgwell and Hargreaves [2007], SEDGEM can be sub-gridded to a resolution of 72x72 (equal area). The following namelist additions are necessary to the \textit{user config} file:
+\vspace{-5.5pt}\begin{verbatim}
+SEDGEMNLONSOPTS='$(DEFINE)SEDGEMNLONS=72'
+SEDGEMNLATSOPTS='$(DEFINE)SEDGEMNLATS=72'
+sg_par_sed_topo_D="sedgem_topo_D.72x72"
+sg_par_sedcore_save_mask_name="sedgem_save_mask.72x72"
+\end{verbatim}\vspace{-5.5pt}
+
+\textbf{NOTE}: Carbonate chemistry stability problems (= model crash) may occur in the 16-level configuration in conjunction with 72x72 resolution sub-gridded sediments. Who knows why?! :(
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Include shallow water depositional systems}\label{configure_reefs}
+
+By default, the entire seafloor grid is considered as '\textit{deepsea}' and sedimentary diagenesis options are provided accordingly. In practice, because the simple diagenesis options available, such as for CaCO\(_{3}\) (e.g. \textit{Archer} [1991]; \textit{Ridgwell} [2001]; \textit{Ridgwell et al.} [2003]) tend not to be applicable to shallower water and particularly high organic carbon delivery (especially in the case of CaCO\(_{3}\) diagenesis) environments, the deep-sea grid is restricted. This can be prescribed 'hard', by defining the sediment grid only at deeper depths and classifying shallowed ocean grid points as invalid (a value of \texttt{0.0}) in the SEDGEM depth definition file\footnote{Set by parameter \texttt{sg\_par\_sed\_topo\_D\_name} that must point to a file in \texttt{cgenie.muffin/genie-sedgem/data/input}.} (e.g. \texttt{worbe2.depth.36x36x0}8).
+ Or, and more flexibly, the entire ocean grid can be defined as potentially valid (e.g. \texttt{worbe2.depth.36x36x08.ALL}) and SEDGEM directed to treat any grid points lying shallower than a specific depth as shallow water sediments. This depth cut-off is set via the parameter \texttt{sg\_par\_sed\_Dmax\_neritic} (in units of m below the ocean surface). A typical value is \texttt{176.0}\footnote{Note that the simple (esp. CaCO\(_{3}\) diagenesis schemes) arguably only applicable below depths of ca. 1000 m, although even this is complicated by varying patterns of productivity across the ocean.}, which for an 8-level configuration will exclude the shallowest ocean depth level from the deep-sea grid, and for a 16-level ocean will exclude the two shallowest ocean depth levels.
+
+Sediments that are not classed as \textit{deepsea}, are automatically classed as '\textit{mud}', i.e. potentially detrital and organic carbon rich. Such sediment locations  currently have no option for carbonate burial associated with them. Instead, a limited range of extremely simple and crude assumptions regarding organic carbon preservation (and P regeneration) are provided.
+
+Locations at which  carbonate can be produced and preserved
+are classified
+as '\textit{reef}' locations. Note that the assumption here is that carbonate is precipiced benthically and buried, rather than produced pelagically and  settle to the seafloor.
+A mask needs to be provided\footnote{The parameter name to set the reef mask is \texttt{sg\_par\_sed\_reef\_mask\_name}.} in order to define the cells which are \textit{reef} rather than \textit{mud}. The mask consists of the sediment grid, with values being either \texttt{1.0} (\textit{reef}) or \texttt{0.0} (other).  Grid points that are shallower than the depth cut-off and not associated with a value of \texttt{1.0} in the corresponding reef mask file, are classified as \textit{mud}.
+
+If can be a little tedious (not really \textit{that} tedious) to create a \textit{reef} mask than exactly matches
+all the shallow grid points, so a parameter is provided to force all non \textit{deepsea} grid points to be \textit{reef}. This is achieve by setting:
+\vspace{-5pt}\begin{verbatim}
+sg_ctrl_sed_neritic_reef_force=.TRUE.
+\end{verbatim}\vspace{-5pt}
+This parameter can also be used to force a pattern of \textit{reef} cells as defined by the \textit{reef} mask, even if they lie deeper than the depth cut-off value (\texttt{sg\_par\_sed\_Dmax\_neritic}).
+
+Additional information and tips on setting up shallow water sediment grids can be found in some of the EXAMPLES.
+
+\noindent \textbf{Relevant EXAMPLES}:\\\texttt{EXAMPLE.p0251b.PO4.SPIN0}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Set a specific ocean chemistry or saturation state}\label{set_saturation}
+
+\noindent In the absence of a significant pelagic plankton derived deep-sea carbonate sink, the global burial sink of CaCO$_{3}$ is likely to have been dominated by shallow water depositional environments. cGENIE can represent something of these systems and the fundamental dynamical difference between deep-sea pelagic and shallow water CaCO$_{3}$ sinks (the former is predominantly controlled by preservation and input of C$_{org}$, whilst the latter is primarily a function of primary production by benthic calcifiers) by specifying particular shallow water grid cells as 'reefal' (see: \ref{configure_reefs}). Also in contrast to the deep-sea pelagic CaCO$_{3}$ sink, which is mechanistically simulated (both export production and particularly early diagenesis and CaCO$_{3}$ dissolution within the sediments), the shallow water CaCO$_{3}$ sink in cGENIE is heavily parameterized and is treated as little more than a function relating deposition of CaCO$_{3}$ (in units of mol cm$^{-2}$ yr$^{-1}$) at each and every designated reefal grid point. A parameter is provided:
+\vspace{-5pt}\begin{verbatim}
+sg_par_sed_reef_CaCO3precip_sf
+\end{verbatim}\vspace{-5pt}
+that scales the CaCO$_{3}$ burial flux so as to achieve some desired global value, such as to balance the global weathering rate. Unfortunately, the value of this parameter is not \textit{a priori} known. Its value (and hence sink strength) also depends on the ambient saturation state. Hence, from the outset, the carbonate saturation properties of the ocean surface must be assumed and set. For the modern ocean, this arises naturally from a system initialized with observed concentrations of ALK, DIC, [Ca2+], etc. and  (preindustrial) atmospheric \textit{p}CO\(_{2}\), and in conjunction with an adequate simulation of the large-scale productivity of the ocean and recycling in the interior ocean.
+\\ For deeper in the geological past and particularly in the absence of an effective deep-sea pelagic CaCO$_{3}$ buffer, ALK and DIC in particular a priori not known, although either sensitivity experiment assumptions of the CO\(_{2}\) concentration required to generate a specific climate and/or proxy data, can give some ideas of \textit{p}CO\(_{2}\). It is beyond the scope of this HOW-TO to discuss what geological constraints can be applied in constraining surface ocean saturation (and hence, in conjunction with a given weathering flux, to identify the value of the scaling parameter) but having identified a number (as calcite or aragonite), there are three possible ways of setting an appropriate ocean chemistry:
+
+\begin{compactenum}
+
+        \item To achieve a specific mean ocean surface saturation state: mean ocean ALK and DIC values can be set consistent with assumptions regrading \textit{p}CO\(_{2}\) and [Ca\(^{2+}\)]. The parameters specifying the initial mean ocean ALK and DIC concentrations (\(\mu\)mol kg\(^{-1}\)) are:
+\vspace{-5pt}\begin{verbatim}
+bg_ocn_init_12=2.3630E-03
+bg_ocn_init_3=2.244E-03
+\end{verbatim}\vspace{-5pt}
+for their respective modern mean ocean values.
+\\ In order to estimate appropriate past concentrations for a given \textit{p}CO\(_{2}\)  and [Ca\(^{2+}\)], trial and error can be employed, aided by use of a carbonate calculator program such as CO2SYS, although bearing in mind that the saturation conditions calculated in CO2SYS will be w.r.t. the surface, while the 2 model initialization parameters are setting the mean ocean composition -- ocean circulation and particularly biological productivity in the open ocean will create an offset between mean surface and bulk ocean properties.
+Once a reasonable ocean saturation state has been employed, the reefal CaCO$_{3}$ depositional parameter can be played with to (re)balance weathering and global burial, although if the initial guess is too far off, this will need to be briefly iterative (as localized CaCO$_{3}$ removal and burial will affect the local saturation state and hence in turn burial).
+\\ \textbf{Conclusion}: do-able, but tedious.
+        
+        \item An alternative methodology, somewhat akin to how the system with a responsive deep-sea pelagic CaCO$_{3}$ buffer is configured, is to set the system 'open', and allow the balance between weathering and shallow water CaCO$_{3}$ burial to set ocean chemistry (whilst restoring \textit{p}CO\(_{2}\) to a required value). This is potentially even more tedious, because the value of the scaling parameter is not known. In fact, it is the scaling parameter that will set the mean ocean surface saturation in order to balance weathering and shallow water CaCO$_{3}$ burial.
+        \\ An acceleration technique can be used (see: \ref{GEMlite}) but the process is still iterative (and tedious).
+        \\ A further provision is hence made in the SEDGEM module that will flux force the ocean with Ca (and also DIC if requested) at each and every reefal cell if the local saturation state falls below a specified target value. In this:
+\vspace{-15pt}\begin{verbatim}
+sg_ctrl_sed_neritic_reef_force=.TRUE.
+\end{verbatim}\vspace{-5pt}
+will turn 'on' the provision of a forcing of ocean chemistry towards a local saturation target, 
+\vspace{-5pt}\begin{verbatim}
+sg_par_sed_ohmegamin
+\end{verbatim}\vspace{-5pt}
+sets the saturation shreshold, and
+\vspace{-5pt}\begin{verbatim}
+par_sed_ohmegamin_flux
+\end{verbatim}\vspace{-5pt}
+specifies the flux in units of mol Ca\(^{2+}\) cm\(^{-2}\) per time-step at each and every reefal grid point.
+\\ Setting:
+\vspace{-5pt}\begin{verbatim}
+ctrl_sed_forcedohmega_ca=.false.
+\end{verbatim}\vspace{-5pt}
+will enable the corresponding fluxes of ALK and DIC to be applied.
+\\ This methodology can be accelerated as per Section \ref{GEMlite} but with the downside that what is being set in practice is the minimum saturation at any reefal grid point -- i.e. one should obtain a reefal grid point, typically at relatively high latitudes, with ambient chemistry close to the specified saturation, with all other grid points characterized by higher saturation. There is no simple way of deriving the global mean surface saturation in advance.
+\\ Having forced ocean chemistry (e.g. just by altering the Ca\(^{2+}\) and ALK input to the ocean) and restored to a specified atmospheric \textit{p}CO\(_{2}\) value, the value of the reefal CaCO$_{3}$ burial scaling parameter can be adjusted in order to balance weathering and global burial. A little iteration may probably be required to get a good balance as the ompeting flux input and CaCO$_{3}$ removal are very localized (at reefal cells). 
+\\ \textbf{Conclusion}: do-able, but does not give a simple-to-predict mean global saturation.
+
+        \item With a desired global mean surface saturation value in mind, cGENIE can be configured to determine the appropriate ocean ALK and DIC value directly.
+        \\ In brief -- a mean global saturation target value is set by the parameter:
+\vspace{-5pt}\begin{verbatim}
+bg_par_force_invert_ohmega
+\end{verbatim}\vspace{-5pt}
+ALK, and if requested: DIC (and isotopes) and Ca, is fluxed evenly throughout the ocean if the current ocean surface saturation value falls beneath the target, and not fluxed at all otherwise\footnote{A negative flux of ALK can be enabled, which would act to reduce saturation, by setting the following: \texttt{bg\_ctrl\_force\_invert\_noneg=.false.}}.
+\\ An aragonite saturation value can be forced towards rather than calcite by setting: 
+\vspace{-5pt}\begin{verbatim}
+bg_ctrl_force_ohmega_calcite=.false.
+\end{verbatim}\vspace{-5pt}
+The setup for this is a little involved and involves specifying a particular forcing that cGENIE identifies as requiring a saturation target to be matched and requires some additional configuration.
+\\ An example \textit{user-config} to spin-up the ocean to a specified saturation value is provided:
+\\ \texttt{EXAMPLE.p0251b.PO4.SPIN0} and described in the \texttt{cgenie.muffin.EXAMPLES} document. A typical configuration would like like the following:
+\vspace{-5pt}\small\begin{verbatim}
+bg_par_forcing_name="pyyyyz_RpCO2_Rp13CO2_FRALK_FDIC_F13DIC_FCa"
+bg_par_atm_force_scale_val_3=2800.0E-06
+bg_par_atm_force_scale_val_4=-6.5
+bg_par_ocn_force_scale_val_3=100.0E12
+bg_par_ocn_force_scale_val_4=0.0
+bg_par_ocn_force_scale_val_12=200.0E12
+bg_par_ocn_force_scale_val_35=0.0
+bg_par_force_invert_ohmega=10.0
+\end{verbatim}\normalsize\vspace{-5pt}
+of which the first line sets the forcing (provided), the second line specifies the atmospheric pCO2 value to be restored to (and the 3rd its isotopic composition). Because the ocean is either fluxed or not, depending on surface saturation compared to the target, how aggressively the ocean is fluxed is set by lines \#4 (for DIC) and \#6 for ALK. The values shown here\footnote{These values represent the *total* flux that distribution throughout the ocean relative to grid cell volume.} are approximately x10 global weathering for reference. The last line is the required mean ocean surface saturation state. (Lines \#5 and \#7 set the isotopic composition of injected DIC, and any associated Ca flux, respectively.)
+\\ In terms of methodology:
+\begin{compactenum}
+        \item This saturation restoring would be carried out in a closed system for typically 10 or 20 kyr, depending on whether an initial \textit{spin-up} was being used and how far off any guess as to initial ALK and DIC is.
+        \\ Depending on the reported global CaCO$_{3}$ burial rate\footnote{SEDGEM file seddiag\_misc\_DATA\_GLOBAL.res}, the reefal CaCO$_{3}$ burial scaling parameter is adjusted. This is also a good time if climate-dependent feedback is to be used, to adjust e.g. the baseline mean global temperature.
+        \item The saturation restoring \textit{forcing} is replaced by a simple atmospheric pCO2 \textit{forcing} (or none at all), and a short, perhaps just 1 kyr experiment is carried out with an open system. Fine-tuning of the CaCO$_{3}$ burial scaling parameter is carried out (plus any fine-tuning required to set an exact initial weathering flux).
+        \item A long, open-system \textit{spin-up}, likely accelerated (Section \ref{GEMlite}) 3rd spin-up phase is conducted with no forcing.
+\end{compactenum}
+Example \textit{user-configs} of this sequence are provided (\texttt{EXAMPLE.p0251b.PO4.SPIN*}).
+Note that the 3rd phase of spin-up could be carried out with a prescribed pCO2 *plus* associated isotopic composition if not already done so (e.g. as part of the phase \#1 of the spin-up).
+\\ \textbf{Conclusion}: work-able.
+
+\textbf{Relevant EXAMPLES}:
+\\ \texttt{EXAMPLE.p0251b.PO4.SPIN0}, \texttt{EXAMPLE.p0251b.PO4.SPIN1}, \texttt{EXAMPLE.p0251b.PO4.SPIN3}
+        
+\end{compactenum}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Specify a particular carbonate mineralogy}\label{aragonite}
+
+\noindent \textbf{Relevant EXAMPLES}: 
+
+\noindent \textbf{Also see}: \ref{set_saturation}
+
+\noindent Firstly -- pelagic carbonate production and deep-sea sedimentary diagenesis is inherently assumed to be (all) calcite. Currently there is no alternative option, nor mixed phase (including high-Mg calcite) assemblage option.
+
+Shallow water (neritic) carbonates, however, can be specified as either calcite (the default) or aragonite, the difference being simply in which saturation state is used to calculate precipitation and burial rate. Reefal carbonate precipitation assumed in the form of aragonite is simply set by:
+\vspace{-5pt}\begin{verbatim}
+sg_par_sed_reef_calcite=.false.
+\end{verbatim}\vspace{-5pt}
+
+\noindent Obviously, the same scaling value as per for calcite cannot be used (aragonite will require a higher scaling to achieve the same global CaCO${_3}$ depositional flux).
+
+In terms of a spin-up to a specified saturation state (see: \ref{set_saturation}) -- an aragonite, rather than calcite (the default) saturation value can be forced towards rather than calcite by setting: 
+\vspace{-5pt}\begin{verbatim}
+bg_ctrl_force_ohmega_calcite=.false.
+\end{verbatim}\vspace{-5pt}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Set up a (silicate) weathering feedback}\label{weatheringfeedback}
+
+\noindent \textbf{Relevant EXAMPLES}: \texttt{EXAMPLE.worbe2.Colbournetal2013.EMISSIONS}
+
+\noindent \textbf{Also see}: \ref{GEMlite}
+
+\noindent To create a temperature (only) dependency for the weathering of carbonate and silicate rocks, the following two parameter values need to be set (for carbonate and silicate weathering, respectively):
+\vspace{-10pt}\begin{verbatim}
+rg_opt_weather_T_Ca=.true.
+rg_opt_weather_T_Si=.true.
+\end{verbatim}\vspace{-10pt}
+
+A reference temperature governs the dependency of weathering on climate change and modifies the solute fluxes from weathering scaled (non-lineary) to the deviation of mean global land surface temperature from the reference temperature. The mean global land surface temperature is given in the \textbf{BIOGEM} \textit{time-series} file \texttt{biogem\_series\_misc\_SLT.res} and is set equal to the reference temperature parameter:
+\\\texttt{rg\_par\_ref\_T0}.
+
+The baseline (unmodified) solutes fluxes from terrestrial weathering are set by the parameters:
+\vspace{-10pt}\begin{verbatim}
+rg_par_weather_CaCO3
+rg_par_weather_CaSiO3
+\end{verbatim}\vspace{-10pt}
+for carbonate and silicate weathering, respectively. At steady-state (no climate perturbation), these must sum up to the total weathering flux which is given by the total global CaCO$_{3}$ burial flux found in the file \texttt{seddiag\_misc\_DATA\_GLOBAL.res} (in the \texttt{genie-sedgem} results sub-directory).
+To balance the silicate weathering, volcanic CO$_{2}$ out-gassing is then assigned a value equal to silicate weathering flux by setting the parameter \texttt{rg\_par\_outgas\_CO2}.
+
+There are different ways in which the total weathering flux (equal to total CaCO$_{3}$ burial at steady state) can be split between carbonate and silicate weathering and hence a value for volcanic CO$_{2}$ out-gassing assigned:
+
+\begin{compactenum}
+        
+\item All solutes could simply be assumed to be derived from carbonate weathering (which is the default assumption in open system experiments without a weathering feedback), e.g.::
+\vspace{-5pt}\begin{verbatim}
+rg_par_weather_CaCO3=10.0E+12
+rg_par_weather_CaSiO3=0.0
+\end{verbatim}\vspace{-5pt}
+for a hypothetical example with 10 Tmol yr$^{-1}$ total global CaCO$_{3}$ burial. No volcanic CO$_{2}$ out-gassing should then be prescribed.
+\item Secondly, silicate and carbonate weathering could be assumed to be split evenly, e.g.:
+\vspace{-5pt}\begin{verbatim}
+rg_par_weather_CaCO3=5.0E+12
+rg_par_weather_CaSiO3=5.0E+12
+\end{verbatim}\vspace{-5pt}
+Volcanic CO$_{2}$ out-gassing needs to be set equal to the baseline silicate weathering flux:
+\vspace{-5pt}\begin{verbatim}
+rg_par_outgas_CO2=5.0E+12
+\end{verbatim}\vspace{-5pt}
+\item Thirdly, volcanic CO$_{2}$ out-gassing could be assumed, which then constrains the silicate flux, with the carbonate flux being whatever is required to make the total Ca$^{2+}$ weathering flux equal to global CaCO$_{3}$ burial.
+
+\end{compactenum}
+
+A difficulty arises because setting the reference temperature \texttt{rg\_par\_ref\_T0} equal to the mean global land surface temperature only gives rise to weathering fluxes exactly equal to the reference parameter values (\texttt{rg\_par\_weather\_CaCO3} and \texttt{rg\_par\_weather\_CaSiO3}) for a non-seasonally forced climate. Because weathering is non-linear in climate (here just temperature), a seasonally forced configuration of the model with give rise to slightly modified weathering fluxes. The result is a slight drift in atmospheric \textit{p}CO${_2}$) and climate, even after a fairly long (100s of kyr), or alternatively, a slightly different steady state \textit{p}CO${_2}$) value (for a ca. 1 Myr \textit{spin-up}).
+
+The reason is that long-term climate and hence \textit{p}CO${_2}$) is controlled by the silicate weathering component of total weathering, not total weathering. Under a seasonally forced rather than annual average climate, the non-linearity in the weathering response to temperature deviations means that silicate weathering will generally slightly exceed volcanic CO$_{2}$ out-gassing. Atmospheric \textit{p}CO${_2}$) and with it  global temperatures will hence be gradually drawn-down until net (carbonate) carbon removal exactly matches the rate of new (volcanic) carbon input
+
+The imbalance between silicate weathering and volcanic CO$_{2}$ out-gassing is given in the BIOGEM output:
+\\\texttt{biogem\_series\_misc\_exweather\_Ca.res}
+\\which records the absolute excess of weathering compared to out-gassing, in mol Ca$^{2+}$ yr$^{-1}$ as well as a percentage. In an \textit{open system} (not a closed one!), this excess needs to be adjusted 'close' (how close? sub 1 percent or 0.1 Tmol Ca$^{2+}$ yr$^{-1}$, certainly) to zero. This adjustment is done by running a short (a few or 10s of years) experiment, reading off the excess weathering value, and doing one of the following:
+
+\begin{compactenum}
+\item Adjust the reference temperature parameter \texttt{rg\_par\_ref\_T0} -- to a lower value if there is an excess of silicate weathering over out-gassing, or
+\item Adjust the reference silicate weathering parameter \texttt{rg\_par\_weather\_CaSiO3}, or
+\item Adjust the volcanic CO$_{2}$ out-gassing flux parameter \texttt{rg\_par\_outgas\_CO2}.
+\end{compactenum}
+An exact adjustment can be made for the second and third possibilities, with the easiest being to reduce the out-gassing flux value by the amount of excess weathering. For the first option, a couple of iterations will typically be required in order to determine the new reference temperature value that gives rise to a silicate weathering balance. The second option is the recommended one, with the third being the least recommended.
+Regardless of which of the 3 options, the total weathering flux, given in the BIOGEM time-series file \texttt{biogem\_series\_diag\_weather\_Ca.res}, will now be slightly different from the required burial flux. This either requires that the value of the reference carbonate weathering parameter (\texttt{rg\_par\_weather\_CaCO3}) is now slightly adjusted, or that a slightly different global carbonate burial flux is allowed.
+
+If the carbon isotopic signature of volcanic CO$_{2}$ out-gassing is assigned a value of e.g. -6.0\permil. The $\delta$$^{13}$C of weathered CaCO$_{3}$ is then simply set in order that inputs equal the mean $\delta$$^{13}$C of carbonate burial, which as given in the \textbf{BIOGEM} \textit{time-series} file:
+\\\texttt{biogem\_series\_sed\_CaCO3\_13C.res}
+For example, assuming equal fluxes of 5 Tmol yr$^{-1}$ for both weathering components and for volcanic CO$_{2}$ out-gassing (at -6.0\permil) and assuming a mean carbonate burial $\delta$$^{13}$C of 3\permil, requires:
+\vspace{-10pt}\begin{verbatim}
+rg_par_outgas_CO2_d13C=-6.0
+rg_par_weather_CaCO3_d13C=12.0
+\end{verbatim}\vspace{-10pt}
+Of course, in reality organic carbon burial is important and including it would enable a much more realistic value of weathered carbonate $\delta$$^{13}$C to be set ...
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Accelerate the weathering-sedimentation mass balance ('GEMlite')}\label{GEMlite}
+
+\noindent \textbf{Relevant EXAMPLES}: \texttt{EXAMPLE.p0251b.PO4.SPIN2}
+
+\noindent \textbf{Also see}: \texttt{\textit{c}GENIE} user-manual 'FAQ' (further comments on \texttt{GEMlite} applicability).
+
+\noindent A (pseudo) module is provided: '\texttt{GEMlite}' which provides a means of much more rapidly solving the weathering-sedimentation mass balance -- i.e. the long-term (>10 kyr) carbon cycle processes and feedbacks. The motivation behind \texttt{GEMlite} is the stark disparity between the time-scales of ocean circulation and biological pump (ca. 0.1-1000 years) and those of sedimentation and weathering (~2-20 kyr) and particularly the silicate weathering feedback (>100 kyr). This makes running \texttt{cGENIE} to an open system steady state (with or without the silicate weathering feedback) challenging. Is there any way of 'accelerating' the calculation of the 'long tail' [Archer et al., 2009] of the CO2 curve (e.g. in response to fossil fuel CO2 emissions)?
+
+The philosophy is as follows: the long-term weathering-sedimentation processes are effectively just an imbalance between the supply of solutes via weathering and preservation and burial of esp. carbonates in deep-sea (and shallow) marine sediments. For a small imbalance between weathering and sedimentation, atmospheric pCO2 and climate (and hence the solute flux when including weathering feedbacks) will only change very slightly. For long intervals characterized by only a small imbalance in weathering-sedimentation the key assumption is made:
+Ocean circulation and the biological pump, and hence the *gradients* of dissolved species in the ocean can be considered *invariant*.
+Hence, for the purpose of solving weathering-sedimentation over an intervals of time:
+The ocean can be treated as a *single box*.
+It further assumes that:
+The ocean is initially in equilibrium with the atmosphere (w.r.t. CO2).
+(This latter assumption does place important limitations on under what circumstances \texttt{GEMlite} can be employed to accelerate experiments.)
+
+This is what \texttt{GEMlite} does -- it solves for weathering-sedimentation and applies the mass difference *uniformly* throughout the ocean (as if it were a single box), hence preserving the tracer gradients in the ocean. It also (optionally) calculates and re-partitioning of carbon between ocean and atmosphere. Because ocean circulation and the biological pump etc. do not have to be re-calculated, the accelerated quasi box-model phase can be calculated very considerably faster than the 'full' model.
+Obviously, if atmospheric pCO2 and hence climate are changing at an appreciable rate then the assumption of invariance in ocean tracer gradients breaks down and it is not 'safe' to apply the accelerated calculation. Similarly, appreciable changes in nutrient inventories will affect the biological pump and hence also change tracer gradients.
+
+The key to employing \texttt{GEMlite}, in addition to knowing when it is appropriate/not appropriate to employ it, is to decide what balance of accelerated (\texttt{GEMlite}) time-stepping vs. normal (full system update of ocean circulation, biological pump, etc.) time-stepping to employ. This division is implemented by creating a sequence of accelerated vs. non-accelerated time-stepping. This can be done in one of two ways:
+
+\begin{compactenum}
+        
+        \item Fixed sequence.
+        \\By default, \texttt{GEMlite} will employed a fixed, pre-determined sequence of accelerated vs. non-accelerated time-stepping. The parameters to specify this sequencing are:
+        \\\texttt{ma\_gem\_notyr} -- which sets the number of years (the assumed time-step of \texttt{GEMlite}) for 'normal' time-stepping.
+        \\\texttt{ma\_gem\_yr} -- which sets the number of years for accelerated time-stepping.
+\\For instance: if \texttt{ma\_gem\_notyr=50} and \texttt{ma\_gem\_yr=50}, you would have a sequence with 50 years of full updating, followed by 50 years of accelerated.
+\\For instance: if \texttt{ma\_gem\_notyr=10} and \texttt{ma\_gem\_yr=90}, you would have a sequence with 10 years of full updating, followed by 90 years of accelerated.
+\\etc.
+\\Note that the GEMlite cycle phase of 'normal' time-stepping is *always* done first.
+\\Also note that choosing e.g. \texttt{ma\_gem\_notyr=10} and \texttt{ma\_gem\_yr=100}, while appearing a desirably simple ratio, would result in the change-over point in cycle phase (to accelerated) occurring at the end of year 10, 120, 230, 240, etc. -- something that might affect/influence your choice of data saving pattern (i.e., the sequence of time-points for time-series and time-slice data saving).
+\\By default, the parameter values are: \texttt{ma\_gem\_notyr=999999} and \texttt{ma\_gem\_yr=1} meaning that in practice you will never get to the end of the 'normal' time-stepping phase. Note that these parameters are \textbf{integers} (setting real numbers, e.g. \texttt{1.0E6} will not work ...).
+
+        \item Adaptive sequencing.
+        \\Here, \texttt{GEMlite} attempts to be clever and optimizes the ratio between the duration of each phase of the cycle.
+        \\The motivation for this is that often in model experiments, environmental parameters will  tend to change faster at the beginning of an experiment compared to towards the end. Fossil fuel CO2 release and its long tail of declining pCo2 is a good example of this. Obviously this complicates the choice of a (fixed) ratio of cycle phases -- 100:100 (or more likely: 1000:1000) might not lead to too much degradation of the simulation, but you would only gain a speed advantage of x2 for the experiment as a whole, which if ~100-1000 kyr in total duration, is still going to be l o n g. On the other hand: 10:90 would give you a factor almost x10 increase in overall speed, but would seriously degrade the simulation during the initial, rapidly changing environment following CO2 release.
+        \\Adaptive sequencing adjust the time-stepping via 2 criteria:
+\begin{compactitem}
+        \item In the normal time-stepping phase, if the rate of change of pCO2 is *more than* a specified threshold over any one year, then the total duration of this phase is extended by one year.
+        \item In the accelerated time-stepping phase, if the total change in pCO2 since the last normal phase is *less than* a specified threshold, then the total duration of this phase is extended by one year.
+\end{compactitem}
+The result is that the phase durations are always a minimum of the values set by \texttt{ma\_gem\_notyr} and \texttt{ma\_gem\_yr}. If it is 'unsafe' to switch to accelerated mode, because pCO2 is changing rapidly, then the model stays in normal mode. If it is safe to stay in the accelerated mode, because pCO2 has not changed much in total during the phase, then the model stays in the accelerated phase.
+        \\The parameter names are default values for the two thresholds are:
+\begin{compactitem}
+        \item \texttt{ma\_gem\_adapt\_dpCO2dt=0.1} (ppm yr-1)
+        \item \texttt{ma\_gem\_adapt\_DpCO2=1.0} (ppm)
+\end{compactitem}
+but these will not necessarily be the ideal of any particular experiment (and some trial-and-error ma be called for).
+\\Adaptive time-stepping is enabled by setting:
+\\\texttt{ma\_gem\_adapt\_auto=.true.}
+\\(by default it is \texttt{.false.}).
+\\The switching between normal (non accelerated) and accelerated phases is saved in a time-series file:
+\vspace{-5pt}\begin{verbatim}biogem_series_misc_gemlite.res\end{verbatim}\vspace{-5pt}
+
+As a further refinement, the accelerated phase can be set to be relatively short to begin with, but gradually increasing in length. The parameters controlling this are:
+\\\texttt{ma\_gem\_yr} -- the initial accelerated phase duration
+\\\texttt{ma\_gem\_yr\_max} -- the maximum accelerated phase duration
+\\\texttt{ma\_gem\_adapt\_dgemyr} -- the (minimum) fractional increase in duration each cycle (or 1.0 yr, whichever is greater)
+\\ A reasonable set of parameters:
+\vspace{-5pt}\begin{verbatim}
+ma_gem_notyr=10
+ma_gem_yr=10
+ma_gem_yr_max=990
+ma_gem_adapt_dgemyr=0.05
+ma_gem_adapt_dpCO2dt=0.10
+ma_gem_adapt_DpCO2=0.01
+ma_gem_adapt_auto=.true.
+ma_gem_adapt_auto_unlimitedGEM=.false.
+\end{verbatim}\vspace{-5pt}
+        
+\end{compactenum}
+
+Finally ... you will need a \textit{base-config} that has \texttt{GEMlite} enabled.
+This actually requires nothing more than the addition of a couple of lines (to a \textit{base-config} file): 
+\vspace{-10pt}\begin{verbatim}
+ma_flag_gemlite=.TRUE.
+\end{verbatim}\vspace{-10pt}
+which can go e.g. near the start of the file under \texttt{\# GENIE COMPONENT SELECTION}.
+Plus:
+\vspace{-10pt}\begin{verbatim}
+ma_kgemlite=xx
+\end{verbatim}\vspace{-10pt}
+which can go e.g. under \texttt{\# TIME CONTROL AND TIME-STEPPING}.
+\\Here, \texttt{xx} will depend on the time-step assumed in the base-config. This is likely to be either \texttt{96}: the standard for most \textit{base-configs}, or \texttt{48}: for low resolution and faster model configurations, which typically have \texttt{.t48} in their filename.
+By convention, I name \textit{base-configs} including \texttt{GEMlite} with \texttt{\_gl},
+\\e.g. \texttt{cgenie\_eb\_go\_gs\_ac\_bg\_sg\_rg\_gl.p0000c.BASESLi.t48.config}
+\\but you can name it \texttt{BobTheLeglessPony} for all I care.
+
+The \textbf{most important} thing is to ensure you are not seriously degrading model fidelity (of carbon cycle simulation) by your adoption and configuration of \texttt{GEMlite}.
+\\\textbf{Test} different assumptions of how the time-stepping phases are scheduled and compare (of possible) against a full experiment in which \texttt{GEMlite} is not used.
+
+It is important to recognize that when the model switches into the GEM phase, it assumes all ocean tracer gradients are fixed, and updates only ocean composition as a whole according to weathering vs sedimentation imbalance (and also tries to re-equilibrium ocean and atm). As part of this, the flux to the sediments is taken from the average of the last year of the preceding normal phase, and fixed. This also means that the d13C of the CaCO3 deposited to the sediments is fixed ... even if the ocean d13C is being updated and changing ... So, basically you lose the feedback that leads to d13C converging as sinks balance (weathering and volcanic) inputs\footnote{Adjusting the fluxes themselves during the GEM intervals would break the underlying assumption inherent in the acceleration approximation.}.
+\\The solution is to not run in the GEM phase for such long intervals -- instead giving the normal phase a chance to make a brief update of ocean gradients and also d13C of export flux. BUT, if pCO2 hardly changes, \textit{c}GENIE runs the risk of staying in the GEM phase for ever (ish)!
+\\ A further option:
+\vspace{-5pt}\begin{verbatim}
+gem_adapt_auto_unlimitedGEM
+\end{verbatim}\vspace{-5pt}
+sets whether GEM is allowed an unlimited phase duration or not. By default it is \texttt{.false.}. This means that the maximum GEM duration is limited to the normal \texttt{gem\_yr} parameter. Also, if excessive (pCO2) drift occurs, the model will immediately switch to the normal phase.
+
+By default then:
+\begin{compactitem}
+        \item \texttt{gem\_notyr} specifies a MINIMUM duration for a normal phase..
+        \item \texttt{gem\_yr} specifies a MAXIMUM duration for a GEM phase.
+\end{compactitem}
+Values of \texttt{gem\_yr} much less than 100 are not advisable as you will not reestablish a new equilibrium gradient of tracers in the ocean in that time.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Visualization ----------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Visualization}\label{how-to-7}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Model development -------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Model development}\label{how-to-8}
+
+Best not to. But ...
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Add 'name-list' (run time) parameters}
+
+In order to create a new '\textit{namelist}' parameter, i.e. a parameter whose value can be set in a \textit{user-config} file, you need to edit a total of 4 files:
+\begin{compactenum}
+         
+        \item \texttt{*\_lib.f90}
+        \\Add an entry in the relevant module library file, which for BIOGEM would be:
+        \\\texttt{biogem\_lib.f90}\footnote{\texttt{cgenie.muffin/genie-biogem/src/fortran}}.
+
+        The parameter must be defined (with an appropriate type) and added to the NAMELIST section at the top of the tile. Simply follow the format of the existing entries and add to the most appropriate section of parameter categories.
+        Note that the parameter name appears *twice* -- one in defining its type, and once in adding the the parameter NAMELIST.
+        
+        \item \texttt{*\_data.f90}
+        For completeness, there is an entry in the subroutine that reports the selected parameter options upon model start-up (if this reporting is selected in the first place ...), which for BIOGEM, is subroutine:
+        \\\texttt{sub\_load\_goin\_biogem}
+        \\that lives in:
+        \\\texttt{biogem\_data.f90}.\\Again -- simply follow the format of existing entries for creating a new one.        Again: add in an appropriate section of parameter categories to prevent future coders going mad loking for something.
+        
+        \item Add a new definition (including brief description and default value) in the xml definition file:
+        \\\texttt{definition.xml}
+        \\that can be found in the directory:
+        \\\texttt{cgenie.muffin/genie-main/src/xml-config/xml}
+        You will have to scroll down to find the section for the appropriate module, and then within that, the section for that catagory of parameter.
+        Simply follow the format of the existing entries.
+        
+        \item \textbf{$<$FILE$>$.f90 (or $<$FILE$>$.f77)}
+        \\Finally, edit into the appropriate FORTRAN source file the code that incorporates the parameter that you wish to use.
+        D'uh!
+               
+\end{compactenum}
+
+\noindent Having ensured the model compiles and seems to do what you wish it do to -- run a standard test to confirm that nothing obvious has been unintentionally affected by the change. To do this, simply type \texttt{make testbiogem} and confirm that the test passes ...
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsection{Define a new tracer}\label{Define a new trace}
+
+You probably should not be doing this ... but ... just in case ...
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsubsection{Basic definition procedure}
+
+\begin{enumerate}
+\item 
+The starting point to adding a new tracer in \textit{c}GENIE is to add the its definition to the relevant tracer definition file.
+\\There are three tracer definition files that live in \texttt{cgenie.muffin/genie-main/data/input}:
+\begin{itemize}
+\item \texttt{tracer\_define.atm}
+\item \texttt{tracer\_define.ocn}
+\item \texttt{tracer\_define.sed}
+\end{itemize}
+that house a list of atmospheric (gaseous), oceanic (dissolved), and sediment (solid) tracer definitions.
+Each file has a similar format, with a series of columns\footnote{The meaning of the columns is also summarized at the end of the file.} holding information on:
+\begin{description}
+\item[\#01] The short (mnemonic) name for the tracer. This is used in creating the output filenames and netCDF variable names. In theory, this could be anything you like, but to a limit of 16 characters.
+\item[\#02] The identifier (index) of the tracer. This must be a unique number -- one number for each tracer.
+\item[\#03] The 'dependency' of the tracer. For instance, an isotope depends on the bulk (and lower mass) tracer. A scavenged element depends on bulk organic matter. For a bulk tracer\footnote{The elemental components of organic matter (P, N, etc) count as bulk tracers for the purpose of dependency.}, its dependency is itself. \\The dependency is used in the code to automatically determine any tracer that it depends on and in the case of isotopes, to calculate the \(\delta\) value.
+\item[\#04] Is the tracer variable 'type', used internally to determine what to 'do' with a specific tracer:
+    \\'\texttt{1}' \(\rightarrow\) assigned to primary biogenic phases; POM (represented by POC), CaCO3, opal (all contributing to bulk composition)
+    \\'\texttt{2}' \(\rightarrow\) assigned to abiotic material (contributing to bulk composition); det, ash
+    \\'\texttt{3}' \(\rightarrow\) assigned to elemental components associated with POC; P, N, Cd, Fe
+    \\'\texttt{4}' \(\rightarrow\) assigned to elemental components associated with CaCO3; Cd
+    \\'\texttt{5}' \(\rightarrow\) assigned to elemental components associated with opal; Ge
+    \\'\texttt{5}' \(\rightarrow\) assigned to elemental components associated with det; Li
+    \\'\texttt{7}' \(\rightarrow\) assigned to particle-reactive scavenged elements; 231Pa, 230Th, Fe
+    \\'\texttt{8}' \(\rightarrow\) assigned to carbonate 'age'
+    \\'\texttt{9}' \(\rightarrow\) assigned to the fractional partitioning of biogenic material (for remineralization purposes)
+   \\'\texttt{10}' \(\rightarrow\) assigned to misc / 'inert'
+\\'\texttt{\(>\)10}' \(\rightarrow\) assigned to isotopic properties: \texttt{11==13C, 12==14C, 13==18O, 14==15N, 15==34S, 16==30Si, 17==114Cd, 18==7Li, 19==144Nd, 20==44Ca, 21==98Mo, 22==56Fe}.
+\item[\#05] Tracer long name. Cannot be more than 128 characters in length.
+\item[\#06] Units.
+\item[\#07] Minimum valid value for the tracer. Values lower than this are classed as \texttt{NaN} in the netCDF output.
+\item[\#08] Maximum valid value. Values higher than this are classed as \texttt{NaN} in the netCDF output.
+\end{description}
+Hence, the first thing to do is to add an entry for the required tracer(s) to the relevant file(s), using the above information and keeping a consistent format and convention with the existing tracers.
+ 
+If you have an elemental or isotopic tracer that is taken up by a growing phytoplankton cell and incorporated structurally into POM, you will also need to define equivalent dissolved (and recalcitrant) dissolved organic matter tracers (DOM and RDOM). If the tracer is associated with organic matter (or other particles), then you require a scavenged particulate tracer but no corresponding dissolved tracer. For something like iron, which is both incorporated into the cell, and scavenged, you need both types of particulate tracer plus a set of dissolved organic matter tracers ...
+\item 
+A set of tracer-related definitions also exists in:
+\vspace{-10pt}\begin{verbatim}
+cgenie.muffin/genie-main/src/fortran/cmngem/gem_cmn.f90
+\end{verbatim}\vspace{-10pt}
+Requiring some editing-attention here is\footnote{Watch out that the line numbers may have changed somewhat ...}:
+\begin{description}
+\item[ca. L24-26] Three parameters define the main tracer array sizes. (Unfortunately this information has to be duplicated elsewhere due to the peculiarities of the GENIE code structure -- see below.) Their values must be equal to the total number of tracers defined in the tracer definition files.
+\item[ca. L72-261] So as to simplify referencing the tracers in the code, each tracer is assigned a simple mnemonic. This mnemonic may or may not be the same as the short name defined in the tracer definition files. With a little bit of code, the tracer definition short name could have been turned into an index value, but to date this has not been implemented. However, while slightly tedious to set up, created fixed and compile-time rather than run-time mnemonic assignments is going to be somewhat faster as well as making the code slightly more compact.
+\item[ca. L630-642] Definition of the isotope standards. Only if creating a new isotope system does this need to be edited.
+\end{description}
+So effectively, just the total number of tracers, and the addition of the tracer mnemonic name, has to be edited in this file.
+\item
+An extremely unfortunate fact of GENIE code structure life is that the total tracer numbers are defined a second time in:
+\vspace{-10pt}\begin{verbatim}
+cgenie.muffin/genie-main/genie_control.f90
+\end{verbatim}\vspace{-10pt}
+at ca. L144-146, and need to be edited consistent with the values in \texttt{gem\_cmn.f90} (see above). Why ... ? Please don't ask.
+\item
+Equally, or arguably even more annoying and opaquely justified, is the need to edit a number of entries in:
+\vspace{-10pt}\begin{verbatim}
+cgenie.muffin/genie-main/src/xml-config/xml/definition.xml
+\end{verbatim}\vspace{-10pt}
+A number of sets of runtime parameters exist with one entry per tracer. Given that all runtime parameters must be defined in the xml definition file, means that every time a new tracer is created, a number of xml entries must be created\footnote{Note that there are no sediment (solid) tracer arrays for either initial composition or forcings.} :( The approximate line occurrence of this outrage against all good programming practice, are as follows:
+\begin{description}
+\item[ca. L397-1159] The tracer arrays holding information about which tracers are selected.
+\item[ca. L2538-3271] Tracer arrays for the initial value of ocean (dissolved) tracers, as well as a tracer value modification array.
+\item[ca. L4343-5234] Tracer arrays for atmospheric (gaseous) and ocean (dissolved) tracers governing tracer forcings (value and tie-scale).
+\item[ca. L5292-5370] Tracer array for the initial value of atmospheric (gaseous) tracers.
+\end{description}
+To edit in new entries -- simply follow the format of the last entry.
+\\In addition -- at the start of each array definition (xml tag starting \texttt{<ParamArray}), the array size is defined (\texttt{extent=}). This also needs to be edited to reflect the inclusion of additional tracers.
+\item Even more annoying, if possible, is the need to then edit the array entries in the Python xml parameter translation script:
+\vspace{-10pt}\begin{verbatim}
+cgenie.muffin/genie-main/config2xml.py
+\end{verbatim}\vspace{-10pt}
+It should be obvious where there additional entries corresponding to the new tracers need to be added. Just be careful of the formatting (the last entry in the list of tracers for each array not having a '\texttt{,}' terminating the line. Otherwise, simply follow the existing format.
+\end{enumerate}
+That is it for the basic tracer definition. The model should now compile without error (and still pass its \texttt{make testbiogem}). However, whilst 'knowing' about the possibility of the new tracers, at this point you have not actually selected any for an experiment and no initial conditions will be read in, nor relevant output created.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsubsection{Testing}
+
+Having checked the model compiles and passes the basic BIOGEM test, the next step is to check that the new tracer(s) is initialized correctly (\texttt{atm} and \texttt{ocn} tracers) and that appropriate output is generated.
+
+\begin{enumerate}
+\item 
+Create a new \textit{base-config} by taking an appropriate/comparable existing \textit{base-config}\footnote{\texttt{/cgenie.muffin/genie-main/configs}} and modifying it.
+\\The first modification is to increase the number of ocean tracers, defined on the line headed by:
+\vspace{-10pt}\begin{verbatim}
+# Set number of tracers
+\end{verbatim}\vspace{-10pt}
+incrementing the total by the number of additional tracers to be included in the new \textit{base-config} as compared to the original one.
+\\The second modification is to select the additional tracers -- simply add appropriate entries to the list of selected tracers (the tracers are selected by setting the parameter value to \texttt{.true.} as by default the are \texttt{.false.}).
+\\The final modification, in the case of atmospheric (gaseous) and  ocean (dissolved) tracers is to set an initial value. If you do not do this, by default, concentrations are initialized to zero.
+\item
+Now go create a \textit{user-config} file. Copy an \texttt{EXAMPLE} config file -- one corresponding to the unmodified \textit{base-config}, if possible. You should rename it, and although no modifications are required to the parameter settings in order for the model to run, to ensure all possible output is produced, set:
+\vspace{-10pt}\begin{verbatim}
+bg_par_data_save_level=99
+\end{verbatim}\vspace{-10pt}
+\item
+Run a brief experiment and check that the tracer appears in the output -- both time-series and netCDF. For ocean tracers, the concentration field should progressively look like salinity as concentration changes at the surface will be influenced by P-E. (Remember that at this point, no other transformations or changes of tracer have been defined -- just that there is a tracer and it is initialized to a certain value.)
+\end{enumerate}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsubsection{Adding (and testing) a basic tracer biogeochemical cycle}
+
+Now for the trickier part, assuming you do not just want a simple passive tracer (there are plenty of 'color' tracers defined already!) and assuming you have got the tracer already successfully configured and running as a simple passive tracer (i.e. previous steps).
+\\The example will be for an ocean tracer that is incorporated into particulate organic matter (POM) (and hence creating an associated sedimentary tracer) during biological productivity.
+Other and much more fun and entertaining complexities will apply if e.g. the ocean tracer exchanges with the atmosphere and hence is associated with an atmospheric tracer.
+\begin{enumerate}
+\item 
+The relationships between different sorts of tracers, e.g. dissolved and gaseous, and dissolved and solid, are defined in subroutine \texttt{sub\_def\_tracerrelationships}\footnote{\texttt{cgenie.muffin/genie-main/src/fortran/cmngem/gem\_util.f90}}
+
+If there is an equivalent dissolved organic matter tracer corresponding to the particulate organic matter one, the relationship between POM and DOM (and also RDOM) also needs to be defined.
+
+Typically, the relationship between a particulate and dissolved inorganic, or particulate and dissolved organic will be 1.0, but depending on the species concerned, it may be 2.0 (or its reciprocal) and/or negative. These values can be modified later if necessary, and this occurs depending on the redox state of the ocean in \texttt{sub\_data\_update\_tracerrelationships}\footnote{\texttt{cgenie.muffin/genie-biogem/src/fortran/biogem\_data.f90}}.
+
+\item 
+For a dissolved inorganic species being taken up biologically, a 'Redfield' like ratio is defined and used to relate the cellular quotient of the tracer versus carbon\footnote{A carbon currency is used in the model rather than phosphate, despite the classic Redfield ratio being defined relative to a phosphate quotient of 1.0}. An array (\texttt{bio\_part\_red}) stores the relationship of every particulate tracer to every other particulate tracer. It is hence mostly zeros, except for the ratios of the particulate tracers to carbon in both organic matter and CaCO\(_{3}\) (and for that matter, opal)) and of the isotope ratios of specifies to their bulk equivalent. The array is (re)populated each time-step in \texttt{sub\_calc\_bio\_uptake}\footnote{\texttt{cgenie.muffin/genie-biogem/src/fortran/biogem\_box.f90}},  typically by directly applying a  globally applicable ratio that is read in at run-time (and hence requiring a new \textit{namelist} parameter to be defined), by some function of ambient environmental conditions that  is often a modification of the run-time parameter.    
+
+\end{enumerate}
+
+If steps \#1 and \#2 have been completed correctly, there should now be a biological cycle of the new tracer, with it being taken up at the ocean surface and incorporated into POM with a specific ratio compared to carbon (set by the new \textit{namelist} parameter) and resulting in depletion of the inorganic dissolved tracer at the ocean surface. Conversely, there should be elevated concentrations of the inorganic tracer at depth, mirroring the pattern of e.g. [PO\(_{4}\)].
+Creation and subsequent remineralization of a corresponding tracer incorporated into DOM (and RDOM if selected) should occur automatically. However, the recommended first step in testing the newly defined biogeochemical cycle
+is to disable all DOM formation, by setting:
+\vspace{-5pt}\begin{verbatim}
+bg_par_bio_red_DOMfrac=0.0
+\end{verbatim}\vspace{-5pt}
+Also recommended is to enable 'auditing' of all the tracer inventories to ensure that tracers are not being spuriously created or destroyed by:
+\vspace{-5pt}\begin{verbatim}
+bg_ctrl_audit=.true.
+\end{verbatim}\vspace{-5pt}
+Scavenged tracers are  automatically  remineralized along with the corresponding parent particulate tracer by default\footnote{They can instead be set to remain in the scavenging medium by setting a non zero value of \texttt{par\_scav\_fremin}, which sets the fraction of the scavenged tracer that is remineralized along with the degraded parent particulate tracer.}.
+However, there is no scavenging or creation of scavenged tracers by default. A call would need to be added to \texttt{sub\_box\_remin\_part}\footnote{cgenie.muffin/genie-biogem/src/fortran/biogem\_box.f90} (ca. L2961), e.g. following the examples of Fe scavenging and H2S reaction with organic matter (treated as a form of 'scavenging' for simplicity of code structure), plus a corresponding subroutine added in which is the scavenged particulate tracer concentration is calculated and the removal of the corresponding dissolved tracers set. 
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- HOW-TOs: Miscellaneous --------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{HOW-TOs: Miscellaneous}\label{how-to-9}
+
+\subsection{Set up carbon dioxide removal (CDR) geoengineering experiments}
+
+There are various ways implement different carbon dioxide removal strategies in cGENIE. For instance -- additions of dissolved iron and phosphate can be implemented as simple flux forcings to the ocean surface, as described in the Tutorial exercises. Similarly, ocean 'liming'
+ can be implemented as a flux \textit{forcing} of alkalinity to the surface (with or without associated Ca2+ and with or without additional CO2 emissions to the atmosphere due to the creation of lime).
+There is also the facility for automatically calculating the liming required for a specific policy target (atmospheric CO2 history or desired mean ocean surface pH or saturation state). This is described in a subsequent HOWTO.
+This section describes a framework created for applying additional geoengineering modifications and particularly ones that cannot be implemented as a simple flux \textit{forcing}.
+
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\subsubsection{Geoengineering with ... 'pipes'}
+
+Pipes are parameterized following \textit{Yool et al.} [2009] (Yool, A., J. G. Shepherd, H. L. Bryden, and A. Oschlies (2009), Low efficiency of nutrient translocation for enhancing
+oceanic uptake of carbon dioxide, J. Geophys. Res., 114, C08009, doi:10.1029/2008JC004792.) This is selected by setting:
+\vspace{-10pt}\begin{verbatim}
+bg_opt_misc_geoeng='pipes'
+\end{verbatim}\vspace{-10pt}
+(Currently, there is no other option and anything passed other than a value of '\texttt{pipes}' results in the default: no geoengineering.)
+A series of option then control the working of the pipes:
+
+\begin{compactitem}
+
+        \item A mask file is provided to designate the grid points of the ocean with pipes in them, via:
+        \vspace{-5pt}\begin{verbatim}
+  bg_par_misc_2D_file
+        \end{verbatim}\vspace{-5pt}
+        with a default of '\texttt{misc.dat}'. The default file location is:
+        \\\texttt{cgenie.muffin/genie-biogem/data/input}.
+        \\This file is treated in a similar way to the normal 2D \textit{forcing} files. The values at each grid point can be scaled via the parameter: \texttt{bg\_par\_misc\_2D\_scale}.
+        The units are m3 per year. e.g. setting \texttt{bg\_par\_misc\_2D\_scale=1E13}, assuming values of \texttt{1.0} or \texttt{0.0} in \texttt{misc.dat} will create an annual vertical advective flux at each grid point equivalent to ~30\% of the volume of the surface cell (3.2E13).
+        \item The ocean depth level associated with the base of the pipes is set via:
+        \vspace{-5pt}\begin{verbatim}
+  bg_par_misc_kmin_pipe=12
+        \end{verbatim}\vspace{-5pt}
+        \item Three parameters are then provided to control what is advected, with a number of combinations of tracers possible (useful for diagnosing the relative importance of e.g. nutrients vs. respired CO2 vs. temperature and salinity (and hence ocean circulation changes)):
+        
+          \begin{compactitem}
+        \item 
+        \vspace{-5pt}\begin{verbatim}
+# pump T and S?
+bg_ctrl_force_GOLDSTEInTS=.false.
+        \end{verbatim}
+ (the default) prevents T and S being advected.
+        \item 
+        \vspace{-5pt}\begin{verbatim}
+# ONLY pump T and S?
+bg_ctrl_force_GOLDSTEInTSonly=.true.
+        \end{verbatim}
+        results in *only* T and S being advected. This requires that \texttt{bg\_ctrl\_force\_GOLDSTEInTS=.false.}. Its default is \texttt{.false.}.
+        \item 
+        \vspace{-5pt}\begin{verbatim}
+# pump no DIC?
+bg_ctrl_misc_geoeng_noDIC=.false.
+prevent DIC from being advected.
+        \end{verbatim}
+
+\end{compactitem}
+
+The following combinations are then valid (shown commented out (\#) are the settings that are the same as the default settings and hence do not need to be re-defined, although it would not hurt to):
+
+          \begin{compactenum}
+        \item 
+        \begin{verbatim}
+bg_ctrl_force_GOLDSTEInTS=.true.
+#bg_ctrl_force_GOLDSTEInTSonly=.false.
+#bg_ctrl_misc_geoeng_noDIC=.false.
+        \end{verbatim}
+        results in everything being advected.
+        \item 
+        \begin{verbatim}
+#bg_ctrl_force_GOLDSTEInTS=.false.
+#bg_ctrl_force_GOLDSTEInTSonly=.false.
+#bg_ctrl_misc_geoeng_noDIC=.false.
+        \end{verbatim}
+        results in everything (nutrients, DIC, ALK, isotopes, etc.) except T and S being advected.
+        \item 
+        \begin{verbatim}
+#bg_ctrl_force_GOLDSTEInTS=.false.
+#bg_ctrl_force_GOLDSTEInTSonly=.false.
+bg_ctrl_misc_geoeng_noDIC=.true.
+        \end{verbatim}
+        results in everything except T and S *and* DIC being advected (i.e. just nutrients, alkalinity, isotopes etc.).
+        \item 
+        \begin{verbatim}
+bg_ctrl_force_GOLDSTEInTS=.true.
+bg_ctrl_force_GOLDSTEInTSonly=.true.
+#bg_ctrl_misc_geoeng_noDIC=.false.
+        \end{verbatim}
+        results in only T and S being advected.
+        
+\end{compactenum}
+
+Combination \#1 is arguably the only 'realistic' setting -- the others being for diagnosing how the model works and the primary controls on the effectiveness or otherwise of pipes, only. The difference between \#2 and \#1 indicate the importance of changes in ocean circulation driven by T and S, which can also be assessed in isolation via option \#4. The difference between option \#3 and \#2 indicates the importance of the respired CO2 'leak' in the effectiveness of ocean pipes. (Note that there is no option for removing DIC only and e.g. advecting T and S and nutrients etc etc.)
+
+\end{compactitem}
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- Contact Information ---------------------------------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+\newpage
+\section{Contact Information}
+
+\begin{compactitem}
+        \item Andy Ridgwell: \texttt{bandy@seao2.org}
+\end{compactitem}
+
+%=================================================================================================================================
+%=== END DOCUMENT ================================================================================================================
+%=================================================================================================================================
+
+\end{document}
+

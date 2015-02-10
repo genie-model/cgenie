@@ -1,0 +1,85 @@
+% cGENIE QuickStartGuide document
+
+% Andy Ridgwell, August 2014
+%
+% ---------------------------------------------------------------------------------------------------------------------------------
+% ---------------------------------------------------------------------------------------------------------------------------------
+
+\documentclass[10pt,twoside]{article}
+\usepackage[paper=a4paper,portrait=true,margin=1.5cm,ignorehead,footnotesep=1cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{paralist}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{wasysym}
+
+\linespread{1.1}
+\setlength{\pltopsep}{2.5pt}
+\setlength{\plparsep}{2.5pt}
+\setlength{\partopsep}{2.5pt}
+\setlength{\parskip}{2.5pt}
+
+%\addtolength{\oddsidemargin}{1.0cm}
+%\addtolength{\bottommargin}{1.0cm}
+
+\title{Quick-start Guide for cGENIE: 'muffin' pre-release version}
+\author{Andy Ridgwell}
+\date{\today}
+\usepackage[normalem]{ulem}
+
+\begin{document}
+
+%=================================================================================================================================
+%=== BEGIN DOCUMENT ==============================================================================================================
+%=================================================================================================================================
+
+\maketitle
+
+%---------------------------------------------------------------------------------------------------------------------------------
+%--- Quick-start guide for cGENIE ---------------------------------------------------------------------------------
+%---------------------------------------------------------------------------------------------------------------------------------
+
+Before you do anything, you'll need a subversion client of some sort (Google it). Otherwise you don't get to get the code in the first place! You'll also need to have installed or linked to an appropriate FORTRAN compiler and netCDF library (built with the same FORTRAN compiler). The GNU FORTRAN compiler (gfort) \textbf{version 4.4.4} or later is recommended. The netCDF version needs to be \textbf{4.0} (more recent versions require a little work-around, not documented here ...).\footnote{If running using an account on one of the Bristol clusters -- this is all configured for you.}
+\\ You are then set to go get and run the model, which you'll do as follows:
+
+\begin{compactenum}
+\item   To get a (read-only) copy of the current 'muffin' branch of \textit{c}GENIE source code:
+\\ From your home directory (or elsewhere, but several path variables will have to be edited -- see below), type:
+\vspace{-5pt}\begin{verbatim}
+svn co https://svn.ggy.bris.ac.uk/subversion/genie/branches/cgenie.muffin
+--username=genie-user cgenie.muffin
+\end{verbatim}\vspace{-5pt}
+for the 'head' (current development version).
+NOTE: All this must be typed continuously on ONE LINE, with a S P A C E before `\texttt{--username}', and before `\texttt{cgenie}'.
+Unless you have logged onto the \texttt{svn} server before from your computing account, you be asked for a password -- it is \texttt{g3n1e-user}.
+
+\item   You need to set a couple of environment variables -- the compiler name, netCDF library name, and netCDF path\footnote{If running using an account on one of the Bristol clusters -- the relevant netCDF path for each cluster appears (commented out) at the bottom of the file -- ensure that the appropriate value of the \texttt{NETCDF\_DIR} environment variable is not commented out (and the others are).}. These are specified in the file \texttt{user.mak} (\texttt{genie-main} directory). If the \textit{c}genie code tree (\texttt{cgenie.muffin}) and output directory (\texttt{cgenie\_output}) are installed anywhere other than in your account HOME directory, paths specifying this will have to be edited in: \texttt{user.mak} and \texttt{user.sh} (\texttt{genie-main} directory). If using the \texttt{runmuffin*.sh} experiment configuration/launching scripts, you'll also have to set the home directory  and change every occurrence of \texttt{cgenie.muffin} to the model directory name you are using (if different).
+
+Installing the model code under the default directory name (\texttt{cgenie.muffin}) in your \texttt{\$HOME} directory is hence by far the simplest and avoids incurring additional/unnecessary pain (configuration complexity) ...
+
+\item   To test the code installation -- change directory to \texttt{cgenie.muffin/genie-main} and type:
+\vspace{-5pt}\begin{verbatim}
+make testbiogem
+\end{verbatim}\vspace{-5pt}
+This compiles a carbon cycle enabled configuration of \textit{c}GENIE and runs a short test, comparing the results against those of a pre-run experiment (also downloaded alongside the model source code). It serves to check that you have the software environment correctly configured. If you are unsuccessful here ... double-check the software and directory environment settings in \texttt{user.mak} (or \texttt{user.sh}) and for a netCDF error, check the value of the \texttt{NETCDF\_DIR} environment variable. (Refer to the User Manual for addition fault-finding tips.) If environment variables are changed: before re-trying the test, you will need to type:
+\vspace{-5pt}\begin{verbatim}
+make cleanall
+\end{verbatim}\vspace{-5pt}
+
+\end{compactenum}
+
+\noindent That is is for the basic installation. To run the model it is a simple matter of calling the  '\texttt{runmuffin.sh}'  shell script from \texttt{genie-main} and supplying a couple of parameter values, e.g.:
+\vspace{-5pt}\small\begin{verbatim}./runmuffin.sh cgenie.eb_go_gs_ac_bg.worjh2.ANTH / EXAMPLE.worjh2.Caoetal2009.SPIN 10000\end{verbatim}\normalsize\vspace{-5pt}
+Refer to the \textit{c}GENIE \texttt{User\_manual} for more information regarding installing, running, and analyzing model output, and \textit{c}GENIE \texttt{Examples} for more information on this specific example.\footnote{latex source for all the documents can be found in the \texttt{genie-docs} directory, with recent PDF versions at www.seao2.info/mycgenie.html.} \uline{Read the \textit{c}GENIE \texttt{READ-ME}}.
+\\Also highly recommended ... is in order to have a working appreciation of the structure of the model and output, plus the format of the model output and how to visualize it -- to read through:
+\small\vspace{-5pt}\begin{verbatim}
+http://www.seao2.info/cgenie/labs/EC4.2013/GEOGM1110andM1404.2013-14.cGENIE_LAB.0000.pdf
+\end{verbatim}\vspace{-5pt}\normalsize
+(which serves as a basic introduction to the model and how to use it).
+
+%=================================================================================================================================
+%=== END DOCUMENT ================================================================================================================
+%=================================================================================================================================
+
+\end{document}
