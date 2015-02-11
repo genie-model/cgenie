@@ -1,11 +1,14 @@
 # $Id: Makefile 8991 2014-09-07 13:26:13Z andy-ridgwell $
 
 ifneq ($(MACHINE),WIN32)
-	CXXFLAGS += -I$(NETCDF_DIR)/include
-	LDFLAGSNC  += -L$(NETCDF_DIR)/lib -lnetcdf_c++ -lnetcdf -lm
+  CXXFLAGS += -I$(NETCDF_DIR)/include
+  ifeq ($(CXX),g++)
+    LDFLAGSNC += -Wl,-rpath=$(NETCDF_DIR)/lib
+  endif
+  LDFLAGSNC += -L$(NETCDF_DIR)/lib -lnetcdf_c++ -lnetcdf -lm
 else
-	CXXFLAGS += /I$(NETCDF_DIR)\\include /EHsc /DWIN32 /TP
-	LDFLAGSNC  += /link /LIBPATH:$(NETCDF_DIR)\\lib netcdf_c++.lib netcdf.lib
+  CXXFLAGS += /I$(NETCDF_DIR)\\include /EHsc /DWIN32 /TP
+  LDFLAGSNC += /link /LIBPATH:$(NETCDF_DIR)\\lib netcdf_c++.lib netcdf.lib
 endif
 
 SRCS=compare.cpp
@@ -14,7 +17,7 @@ SRCS=compare.cpp
 EXES=nccompare.exe
 
 ifeq ($(MACHINE),WIN32)
-	SRCS += getopt.cpp
+  SRCS += getopt.cpp
 endif
 
 OBJS=$(patsubst %.cpp, %.$(OBJ_EXT), $(SRCS))
@@ -33,4 +36,4 @@ $(EXES): $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJS) $(EXES) 
+	rm -rf $(OBJS) $(EXES)
