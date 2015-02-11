@@ -36,7 +36,6 @@ subroutine biogem(       &
   integer::loc_i,loc_j,loc_tot_i                                 !
   integer::loc_n_k_tot                                           !
   real::loc_k_tot_icefree,loc_k_icefree                          !
-!!$  integer::loc_m,loc_tot_m                                       ! tracer array conversion indices
   real::loc_dts,loc_dtyr,loc_t,loc_yr                            ! local time and time step BLAH actual year
   real::loc_rdts,loc_rdtyr                                       ! time reciprocals
   logical::loc_debug_ij                                          !
@@ -71,7 +70,6 @@ subroutine biogem(       &
   real::loc_force_actual_d44Ca
   real,dimension(1:n_l_ocn)::loc_vocn                            !
   real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                !
-!!!integer::nthreads,thread_id
 
   loc_debug_ij = .FALSE.
 
@@ -417,17 +415,6 @@ subroutine biogem(       &
                  bio_remin(io,i,j,loc_k1) = bio_remin(io,i,j,loc_k1) + &
                       & phys_ocn(ipo_rM,i,j,loc_k1)*locij_fsedocn(io,i,j)
               end do
-
-              ! *** ALT (OLD) CODE ************************************************************************************************
-
-              ! *** WATER COLUMN REMINERALIZATION - DISSOLVED ORGANIC MATTER ***
-              !call sub_calc_bio_remin_allDOM_tmp(i,j,loc_k1,loc_dtyr)
-
-              ! *** WATER COLUMN REMINERALIZATION - PARTICULATE MATTER ***
-              !call sub_calc_bio_remin(i,j,loc_k1,loc_dtyr)
-
-              ! *******************************************************************************************************************
-
            end if
         end do
      end do
@@ -757,14 +744,6 @@ subroutine biogem(       &
 
               IF (ctrl_debug_lvl1 .AND. loc_debug_ij) print*, &
                    & '*** INVERSIONS ***'
-!!$              ! record 'normal' (pCO2 flux or pCO2 restoring) cumulative emsisions first
-!!$              ! NOTE: these value are over-written later if specific inversions are selected
-!!$              IF (force_restore_atm_select(ia_pCO2) .OR. force_flux_atm_select(ia_pCO2)) THEN
-!!$                 diag_misc_2D(idiag_misc_2D_FpCO2,i,j) = locij_fatm(ia_pCO2,i,j)
-!!$              end IF
-!!$              IF (force_restore_atm_select(ia_pCO2_13C) .OR. force_flux_atm_select(ia_pCO2_13C)) THEN
-!!$                 diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
-!!$              end IF
               IF (force_restore_ocn_select(io_ALK) .AND. force_flux_ocn_select(io_ALK)) THEN
                  ! (1) INVERSIONS: ocean ALK adjustment
                  IF (force_restore_atm_select(ia_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
@@ -1318,22 +1297,6 @@ subroutine biogem(       &
            end do
         end DO
      end do
-!!$     DO i=1,n_i
-!!$        DO j=1,n_j
-!!$           DO k=goldstein_k1(i,j),n_k
-!!$              !
-!!$              DO l=1,n_l_ocn
-!!$                 io = conv_iselected_io(l)
-!!$                 docn(io,i,j,k) = loc_dtyr*phys_ocn(ipo_rM,i,j,k)*locijk_focn(io,i,j,k)
-!!$              end DO
-!!$              ! adjust particulate tracer concentrations
-!!$              DO l=1,n_l_sed
-!!$                 is = conv_iselected_is(l)
-!!$                 dbio_part(is,i,j,k) = loc_dtyr*phys_ocn(ipo_rM,i,j,k)*locijk_fpart(is,i,j,k)
-!!$              end do
-!!$           end do
-!!$        end do
-!!$     end DO
 
   END IF if_go
 

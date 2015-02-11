@@ -6,8 +6,8 @@
 
 
 MODULE biogem_lib
-  
-  
+
+
   use genie_control
   USE gem_util
   use gem_carbchem
@@ -35,16 +35,16 @@ MODULE biogem_lib
   LOGICAL::ctrl_misc_t_BP                                               ! years before present?
   NAMELIST /ini_biogem_nml/ctrl_misc_t_BP
   ! ------------------- MISC CONTROL --------------------------------------------------------------------------------------------- !
-  logical::ctrl_misc_Snorm                                              ! 
-  logical::ctrl_misc_noSnorm                                            ! 
-  logical::ctrl_misc_nobioupdate                                        ! 
+  logical::ctrl_misc_Snorm                                              !
+  logical::ctrl_misc_noSnorm                                            !
+  logical::ctrl_misc_nobioupdate                                        !
   NAMELIST /ini_biogem_nml/ctrl_misc_Snorm,ctrl_misc_noSnorm,ctrl_misc_nobioupdate
   REAL::par_misc_brinerejection_frac                                    ! sea-ice brine rejection fraction
   integer::par_misc_brinerejection_jmax                                 ! max j for sea-ice brine rejection
   logical::ctrl_misc_brinerejection_bgc                                 ! include biogeochem in Sea-ice brine rejection?
   NAMELIST /ini_biogem_nml/par_misc_brinerejection_frac,par_misc_brinerejection_jmax,ctrl_misc_brinerejection_bgc
   CHARACTER(len=63)::opt_misc_geoeng                                    ! geoengineering scheme ID string (default: 'NONE')
-  NAMELIST /ini_biogem_nml/opt_misc_geoeng  
+  NAMELIST /ini_biogem_nml/opt_misc_geoeng
   CHARACTER(len=127)::par_misc_2D_file                                  ! filename of generic 2D field
   REAL::par_misc_2D_scale                                               ! scalar of generic 2D field
   NAMELIST /ini_biogem_nml/par_misc_2D_file,par_misc_2D_scale
@@ -52,7 +52,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_misc_kmin_pipe
   logical::ctrl_misc_geoeng_noDIC                                       ! exclude DIC
   NAMELIST /ini_biogem_nml/ctrl_misc_geoeng_noDIC
-  logical::ctrl_ocn_rst_reset_T                                         ! Overwrite restart temperatures?  
+  logical::ctrl_ocn_rst_reset_T                                         ! Overwrite restart temperatures?
   NAMELIST /ini_biogem_nml/ctrl_ocn_rst_reset_T
   ! ------------------- BOUNDARY CONDITIONS -------------------------------------------------------------------------------------- !
   logical::ctrl_force_sed_closedsystem                                  ! Set dissolution flux = rain flux to close system?
@@ -80,7 +80,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/ctrl_force_scav_fpart_opal,ctrl_force_scav_fpart_det
   REAL::par_gastransfer_a                                               ! Value of Wanninkhof [1992] gas transfer coeff (a)
   NAMELIST /ini_biogem_nml/par_gastransfer_a
-  CHARACTER(len=127)::par_seaice_file                                   ! 
+  CHARACTER(len=127)::par_seaice_file                                   !
   CHARACTER(len=127)::par_windspeed_file                                !
   NAMELIST /ini_biogem_nml/par_seaice_file,par_windspeed_file
   CHARACTER(len=127)::par_CaCO3toPOCrainratio_file                      !
@@ -98,13 +98,13 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_scav_fpart_POC_file,par_scav_fpart_CaCO3_file,par_scav_fpart_opal_file,par_scav_fpart_det_file
   logical::ctrl_force_solconst                                          ! Replace solar constant?
   NAMELIST /ini_biogem_nml/ctrl_force_solconst
-  logical::ctrl_force_oldformat                                         ! Use old tracer forcing file format? 
+  logical::ctrl_force_oldformat                                         ! Use old tracer forcing file format?
   NAMELIST /ini_biogem_nml/ctrl_force_oldformat
   CHARACTER(len=127)::par_forcing_name                                  !
   NAMELIST /ini_biogem_nml/par_forcing_name
   ! ------------------- BIOLOGICAL NEW PRODUCTION -------------------------------------------------------------------------------- !
   CHARACTER(len=63)::par_bio_prodopt                             ! biological scheme ID string (e.g., 1N1T_PO4MM, 1N1T_PO4MM_Cd)
-  NAMELIST /ini_biogem_nml/par_bio_prodopt  
+  NAMELIST /ini_biogem_nml/par_bio_prodopt
   real::par_bio_k0_PO4                                           ! base [PO4] uptake rate (mol kg-1 yr-1)
   real::par_bio_k0_NO3                                           ! base [NO3] uptake rate (mol kg-1 yr-1)
   NAMELIST /ini_biogem_nml/par_bio_k0_PO4,par_bio_k0_NO3
@@ -136,7 +136,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_bio_zc,par_bio_I_eL,par_bio_kT0,par_bio_kT_eT
   ! ------------------- ORGANIC MATTER EXPORT RATIOS ----------------------------------------------------------------------------- !
   real::par_bio_red_POP_PON                                             ! N/P organic matter Redfield ratio
-  real::par_bio_red_POP_POC                                             ! C/P organic matter Redfield ratio 
+  real::par_bio_red_POP_POC                                             ! C/P organic matter Redfield ratio
   real::par_bio_red_POP_PO2                                             ! O2/P organic matter pseudo-Redfield ratio
   real::par_bio_red_PON_ALK                                             ! ALK/N alkalinty correction factor
   NAMELIST /ini_biogem_nml/par_bio_red_POP_PON,par_bio_red_POP_POC,par_bio_red_POP_PO2,par_bio_red_PON_ALK
@@ -144,15 +144,15 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_bio_red_DOMfrac
   real::par_bio_red_RDOMfrac                                            ! production fraction of R-dissolved organic matter
   NAMELIST /ini_biogem_nml/par_bio_red_RDOMfrac
-  real::par_bio_red_rP_POM_DOM                                          ! P:C fractionation during POM->DOM production 
-  real::par_bio_red_rN_POM_DOM                                          ! N:C fractionation during POM->DOM production 
+  real::par_bio_red_rP_POM_DOM                                          ! P:C fractionation during POM->DOM production
+  real::par_bio_red_rN_POM_DOM                                          ! N:C fractionation during POM->DOM production
   NAMELIST /ini_biogem_nml/par_bio_red_rP_POM_DOM,par_bio_red_rN_POM_DOM
-  real::par_bio_red_rP_POM_RDOM                                         ! P:C fractionation during POM->RDOM production 
-  real::par_bio_red_rN_POM_RDOM                                         ! N:C fractionation during POM->RDOM production 
+  real::par_bio_red_rP_POM_RDOM                                         ! P:C fractionation during POM->RDOM production
+  real::par_bio_red_rN_POM_RDOM                                         ! N:C fractionation during POM->RDOM production
   NAMELIST /ini_biogem_nml/par_bio_red_rP_POM_RDOM,par_bio_red_rN_POM_RDOM
   ! ------------------- INORGANIC MATTER EXPORT RATIOS --------------------------------------------------------------------------- !
   CHARACTER(len=63)::opt_bio_CaCO3toPOCrainratio                        ! CaCO3:POC rain ratio option ID (e.g. 'fixed')
-  NAMELIST /ini_biogem_nml/opt_bio_CaCO3toPOCrainratio  
+  NAMELIST /ini_biogem_nml/opt_bio_CaCO3toPOCrainratio
   real::par_bio_red_POC_CaCO3_pP                                        ! exponent for modifier of CaCO3:POC export ratio
   real::par_bio_red_POC_CaCO3                                           ! base CaCO3:POC export ratio
   NAMELIST /ini_biogem_nml/par_bio_red_POC_CaCO3,par_bio_red_POC_CaCO3_pP
@@ -160,7 +160,7 @@ MODULE biogem_lib
   real::par_bio_red_POC_CaCO3_CO2aqREF                                  ! Heinze [2004] CO2aq reference concentration (umol kg-1)
   real::par_bio_red_POC_CaCO3_CO3REF                                    ! Barker et al. [2003] CO3 reference conc (umol kg-1)
   NAMELIST /ini_biogem_nml/par_bio_red_POC_CaCO3_Kmax,par_bio_red_POC_CaCO3_CO2aqREF,par_bio_red_POC_CaCO3_CO3REF
-  real::par_bio_red_POC_opal                                            ! 
+  real::par_bio_red_POC_opal                                            !
   NAMELIST /ini_biogem_nml/par_bio_red_POC_opal
   ! ------------------- REMINERALIZATION ----------------------------------------------------------------------------------------- !
   real::par_bio_remin_RDOMfrac                                          ! fraction of POM remin concverted to RDOM
@@ -201,13 +201,13 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_bio_remin_opal_eL1,par_bio_remin_opal_eL2
   real::par_bio_remin_martin_b                                   ! Power law power for POC
   real::par_bio_remin_z0                                         ! Power law z0 for POC
-  NAMELIST /ini_biogem_nml/par_bio_remin_martin_b,par_bio_remin_z0 
+  NAMELIST /ini_biogem_nml/par_bio_remin_martin_b,par_bio_remin_z0
   real::par_bio_remin_POC_K1,par_bio_remin_POC_K2
   real::par_bio_remin_POC_Ea1,par_bio_remin_POC_Ea2
   NAMELIST /ini_biogem_nml/par_bio_remin_POC_K1,par_bio_remin_POC_K2
   NAMELIST /ini_biogem_nml/par_bio_remin_POC_Ea1,par_bio_remin_POC_Ea2
-  real::par_bio_remin_sinkingrate                                ! prescribed particle sinking rate (m d-1) 
-  real::par_bio_remin_sinkingrate_scav                           ! sinking rate (for calculating scavenging) (m d-1) 
+  real::par_bio_remin_sinkingrate                                ! prescribed particle sinking rate (m d-1)
+  real::par_bio_remin_sinkingrate_scav                           ! sinking rate (for calculating scavenging) (m d-1)
   NAMELIST /ini_biogem_nml/par_bio_remin_sinkingrate,par_bio_remin_sinkingrate_scav
   real::par_bio_remin_ballast_kc                                 ! organic matter carrying capacity of CaCO3
   real::par_bio_remin_ballast_ko                                 ! organic matter carrying capacity of opal
@@ -272,7 +272,7 @@ MODULE biogem_lib
   real::par_d7Li_LiCO3_epsilon                                   ! 7/6Li fractionation between Li and LiCO3
   namelist /ini_biogem_nml/par_d7Li_LiCO3_epsilon
   CHARACTER(len=63)::opt_bio_foram_p_13C_delta                   ! planktic foram tracer 13C fractionation scheme
-  NAMELIST /ini_biogem_nml/opt_bio_foram_p_13C_delta 
+  NAMELIST /ini_biogem_nml/opt_bio_foram_p_13C_delta
   real::par_d44Ca_CaCO3_epsilon                                  ! 44/40Ca fractionation between Ca and CaCO3
   namelist /ini_biogem_nml/par_d44Ca_CaCO3_epsilon
   ! ------------------- IRON CYCLING --------------------------------------------------------------------------------------------- !
@@ -285,7 +285,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_bio_red_POFe_POC
   LOGICAL::ctrl_bio_Fe_fixedKscav                                ! Fixed scavening rate (if not: Parekh scheme)?
   NAMELIST /ini_biogem_nml/ctrl_bio_Fe_fixedKscav
-  real::par_scav_Fe_Ks                                           ! Fixed Fe scavenging rate (d-1) 
+  real::par_scav_Fe_Ks                                           ! Fixed Fe scavenging rate (d-1)
   NAMELIST /ini_biogem_nml/par_scav_Fe_Ks
   real::par_scav_Fe_sf_POC                                       ! Parekh Fe scavenging rate scale factor - POC
   real::par_scav_Fe_sf_CaCO3                                     ! Parekh Fe scavenging rate scale factor - CaCO3
@@ -303,7 +303,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_bio_FetoC_pP,par_bio_FetoC_K,par_bio_FetoC_C
   ! ------------------- SILICIC ACID CYCLING ------------------------------------------------------------------------------------- !
   ! ------------------- NITROGEN CYCLING ----------------------------------------------------------------------------------------- !
-  real::par_bio_mu1                                              ! mu-1 maximum rate of export production (yr-1) 
+  real::par_bio_mu1                                              ! mu-1 maximum rate of export production (yr-1)
   real::par_bio_mu2                                              ! mu-2 maximum rate of export production from N2-fixation (yr-1)
   real::par_bio_N2fixthresh                                      ! threshold NO3+NH4 to encourage N2 fixation (mol kg-1)
   NAMELIST /ini_biogem_nml/par_bio_mu1,par_bio_mu2,par_bio_N2fixthresh
@@ -358,26 +358,26 @@ MODULE biogem_lib
   real::par_bio_CaCO3precip_abioticohm_min                       ! Minimum ohmega threshold for precip
   NAMELIST /ini_biogem_nml/par_bio_CaCO3precip_calcite,par_bio_CaCO3precip_abioticohm_min
   ! ------------------- I/O DIRECTORY DEFINITIONS -------------------------------------------------------------------------------- !
-  CHARACTER(len=255)::par_indir_name                             ! 
-  CHARACTER(len=255)::par_outdir_name                            ! 
-  CHARACTER(len=255)::par_rstdir_name                            ! 
-  CHARACTER(len=255)::par_fordir_name                            ! 
+  CHARACTER(len=255)::par_indir_name                             !
+  CHARACTER(len=255)::par_outdir_name                            !
+  CHARACTER(len=255)::par_rstdir_name                            !
+  CHARACTER(len=255)::par_fordir_name                            !
   NAMELIST /ini_biogem_nml/par_indir_name,par_outdir_name,par_rstdir_name,par_fordir_name
-  CHARACTER(len=127)::par_infile_name,par_outfile_name           ! 
+  CHARACTER(len=127)::par_infile_name,par_outfile_name           !
   NAMELIST /ini_biogem_nml/par_infile_name,par_outfile_name
   ! ------------------- DATA SAVING: TIME-SLICES --------------------------------------------------------------------------------- !
   LOGICAL::ctrl_data_save_slice_ocnatm                           ! time-slice data save: Atmospheric (interface) composition (2D)?
-  LOGICAL::ctrl_data_save_slice_ocn                              ! time-slice data save: Ocean composition (3D)?         
-  LOGICAL::ctrl_data_save_slice_ocnsed                           ! time-slice data save: Sediment (interface) composition (2D)? 
+  LOGICAL::ctrl_data_save_slice_ocn                              ! time-slice data save: Ocean composition (3D)?
+  LOGICAL::ctrl_data_save_slice_ocnsed                           ! time-slice data save: Sediment (interface) composition (2D)?
   LOGICAL::ctrl_data_save_slice_fairsea                          ! time-slice data save: Air-sea gas exchange (2D)?
   LOGICAL::ctrl_data_save_slice_focnatm                          ! time-slice data save: Ocean-atmosphere flux (2D)?
   LOGICAL::ctrl_data_save_slice_focnsed                          ! time-slice data save: Ocean-sediment flux (2D)?
-  LOGICAL::ctrl_data_save_slice_fsedocn                          ! time-slice data save: Sediment-ocean flux (2D)? 
-  LOGICAL::ctrl_data_save_slice_bio                              ! time-slice data save: Biological fluxes (3D)? 
+  LOGICAL::ctrl_data_save_slice_fsedocn                          ! time-slice data save: Sediment-ocean flux (2D)?
+  LOGICAL::ctrl_data_save_slice_bio                              ! time-slice data save: Biological fluxes (3D)?
   LOGICAL::ctrl_data_save_slice_carb                             ! time-slice data save: Aqueous carbonate system properties (3D)?
   LOGICAL::ctrl_data_save_slice_carbconst                        ! time-slice data save: Aqueous carbonate system constants (3D)?
   LOGICAL::ctrl_data_save_slice_phys_atm                         ! time-slice data save: Atmospheric physical properties (2D)?
-  LOGICAL::ctrl_data_save_slice_phys_ocn                         ! time-slice data save: Ocean physical properties (3D)? 
+  LOGICAL::ctrl_data_save_slice_phys_ocn                         ! time-slice data save: Ocean physical properties (3D)?
   LOGICAL::ctrl_data_save_slice_misc                             ! time-slice data save: Miscellaneous properties (-)?
   LOGICAL::ctrl_data_save_slice_diag                             ! time-slice data save: biogeochemical diagnostics?
   LOGICAL::ctrl_data_save_slice_sur                              ! time-slice data save: surface properties
@@ -388,19 +388,19 @@ MODULE biogem_lib
        & ctrl_data_save_slice_bio,ctrl_data_save_slice_carb,ctrl_data_save_slice_carbconst, &
        & ctrl_data_save_slice_phys_atm,ctrl_data_save_slice_phys_ocn,ctrl_data_save_slice_misc,ctrl_data_save_slice_diag, &
        & ctrl_data_save_slice_sur
-  real::par_data_save_slice_dt                                   ! Integration interval (yr) 
+  real::par_data_save_slice_dt                                   ! Integration interval (yr)
   NAMELIST /ini_biogem_nml/par_data_save_slice_dt
-  CHARACTER(len=127)::par_infile_slice_name                      ! 
+  CHARACTER(len=127)::par_infile_slice_name                      !
   NAMELIST /ini_biogem_nml/par_infile_slice_name
-  integer::par_data_save_slice_n                                 ! number of timesteps in sub-inteval (e.g., monthly) saving 
+  integer::par_data_save_slice_n                                 ! number of timesteps in sub-inteval (e.g., monthly) saving
   NAMELIST /ini_biogem_nml/par_data_save_slice_n
   LOGICAL::ctrl_data_save_slice_autoend                          ! auto save at run end?
   NAMELIST /ini_biogem_nml/ctrl_data_save_slice_autoend
   ! ------------------- DATA SAVING: TIME-SERIES --------------------------------------------------------------------------------- !
   LOGICAL::ctrl_data_save_sig_ocnatm                             ! time-series data save: Atmospheric (interface) composition?
-  LOGICAL::ctrl_data_save_sig_ocn                                ! time-series data save: Oceanic composition?  
-  LOGICAL::ctrl_data_save_sig_fexport                            ! time-series data save: Export flux?      
-  LOGICAL::ctrl_data_save_sig_fairsea                            ! time-series data save: Air-sea gas exchange?      
+  LOGICAL::ctrl_data_save_sig_ocn                                ! time-series data save: Oceanic composition?
+  LOGICAL::ctrl_data_save_sig_fexport                            ! time-series data save: Export flux?
+  LOGICAL::ctrl_data_save_sig_fairsea                            ! time-series data save: Air-sea gas exchange?
   LOGICAL::ctrl_data_save_sig_ocnsed                             ! time-series data save: Sediment (interface) composition?
   LOGICAL::ctrl_data_save_sig_focnatm                            ! time-series data save: Ocean->atmosphere flux?
   LOGICAL::ctrl_data_save_sig_focnsed                            ! time-series data save: Ocean->sediment flux?
@@ -414,9 +414,9 @@ MODULE biogem_lib
        & ctrl_data_save_sig_fairsea, &
        & ctrl_data_save_sig_focnatm,ctrl_data_save_sig_focnsed,ctrl_data_save_sig_fsedocn, &
        & ctrl_data_save_sig_ocn_sur,ctrl_data_save_sig_carb_sur,ctrl_data_save_sig_misc,ctrl_data_save_sig_diag
-  real::par_data_save_sig_dt                                     ! Integration interval (yr)  
+  real::par_data_save_sig_dt                                     ! Integration interval (yr)
   NAMELIST /ini_biogem_nml/par_data_save_sig_dt
-  CHARACTER(len=127)::par_infile_sig_name                        ! 
+  CHARACTER(len=127)::par_infile_sig_name                        !
   NAMELIST /ini_biogem_nml/par_infile_sig_name
   LOGICAL::ctrl_data_save_sig_autoend                            ! auto save at run end?
   NAMELIST /ini_biogem_nml/ctrl_data_save_sig_autoend
@@ -444,7 +444,7 @@ MODULE biogem_lib
   NAMELIST /ini_biogem_nml/par_sig_j_N,par_sig_j_S
   LOGICAL::ctrl_ncrst                                            ! restart as netCDF format?
   NAMELIST /ini_biogem_nml/ctrl_ncrst
-  CHARACTER(len=127)::par_ncrst_name                             ! 
+  CHARACTER(len=127)::par_ncrst_name                             !
   NAMELIST /ini_biogem_nml/par_ncrst_name
   LOGICAL::ctrl_data_save_2d                                     ! save 2D netCDF data?
   LOGICAL::ctrl_data_save_3d                                     ! save 3D netCDF data?
@@ -468,9 +468,9 @@ MODULE biogem_lib
   REAL,DIMENSION(n_ocn)::par_ocn_force_scale_time                ! scale tracer forcing time points
   REAL,DIMENSION(n_ocn)::par_ocn_force_scale_val                 ! scale tracer forcing value
   NAMELIST /ini_biogem_nml/par_ocn_force_scale_time,par_ocn_force_scale_val
-  integer::par_force_point_i                                     ! 'i' coordinate of point forcing 
-  integer::par_force_point_j                                     ! 'j' coordinate of point forcing 
-  integer::par_force_point_k                                     ! 'k' coordinate of point forcing 
+  integer::par_force_point_i                                     ! 'i' coordinate of point forcing
+  integer::par_force_point_j                                     ! 'j' coordinate of point forcing
+  integer::par_force_point_k                                     ! 'k' coordinate of point forcing
   NAMELIST /ini_biogem_nml/par_force_point_i,par_force_point_j,par_force_point_k
   REAL::par_force_invert_ohmega                                ! surface ocean saturation state target
   NAMELIST /ini_biogem_nml/par_force_invert_ohmega
@@ -500,10 +500,10 @@ MODULE biogem_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i = ilon1_ocn                           ! 
-  INTEGER,PARAMETER::n_j = ilat1_ocn                           ! 
+  INTEGER,PARAMETER::n_i = ilon1_ocn                           !
+  INTEGER,PARAMETER::n_j = ilat1_ocn                           !
   INTEGER,PARAMETER::n_k = inl1_ocn                            !
-  ! misc arrays dimensions 
+  ! misc arrays dimensions
   INTEGER,PARAMETER::n_phys_ocn                           = 21 ! number of ocean box physical descriptors
   INTEGER,PARAMETER::n_phys_ocnatm                        = 25 ! number of ocean-atmosphere interface physical descriptors
   INTEGER,PARAMETER::n_data_max     = 32767                    ! (maximum) number of (time series) data points (2^15 - 1)
@@ -514,9 +514,9 @@ MODULE biogem_lib
   INTEGER,PARAMETER::n_opt_force                          = 08 ! forcings
   INTEGER,PARAMETER::n_opt_data                           = 30 ! data (I/O)
   INTEGER,PARAMETER::n_opt_select                         = 05 ! (tracer) selections
-  INTEGER,PARAMETER::n_diag_bio                           = 09 ! 
+  INTEGER,PARAMETER::n_diag_bio                           = 09 !
   INTEGER,PARAMETER::n_diag_geochem                       = 07 !
-  INTEGER,PARAMETER::n_diag_misc_2D                       = 07 ! 
+  INTEGER,PARAMETER::n_diag_misc_2D                       = 07 !
 
 
   ! ****************************************************************************************************************************** !
@@ -576,30 +576,30 @@ MODULE biogem_lib
   integer,parameter::iopt_misc_O2_equil                   = 07   ! force O2 equilibrium of ocean with atmosphere
   integer,parameter::iopt_misc_debugij                    = 10   ! debug - explicit reporting of (i,j) location in main loop
   integer,parameter::iopt_misc_debugwarn                  = 11   ! debug - report all warningsst?
-  ! options - force 
+  ! options - force
   INTEGER,PARAMETER::iopt_force_GOLDSTEIn_CO2             = 01   ! use BioGeM CO2 to force to C-GOLDSTEIn energy balance calc?
   INTEGER,PARAMETER::iopt_force_freshwater                = 06   ! modify surface tracer concentrations by fresh water dilution?
   ! options - save
   INTEGER,PARAMETER::iopt_data_save_timeslice_fnint       = 23   ! construct time slice filename with integer year only?
   INTEGER,PARAMETER::iopt_data_save_config                = 24   ! save copies of biogem config files?
   ! tracer selection combination options
-  INTEGER,PARAMETER::iopt_select_carbchem                 = 01   ! 
-  INTEGER,PARAMETER::iopt_select_ocnatm_CO2               = 02   ! 
-  INTEGER,PARAMETER::iopt_select_ocnatm_O2                = 03   ! 
-  INTEGER,PARAMETER::iopt_select_ocnatm_N2                = 04   ! 
+  INTEGER,PARAMETER::iopt_select_carbchem                 = 01   !
+  INTEGER,PARAMETER::iopt_select_ocnatm_CO2               = 02   !
+  INTEGER,PARAMETER::iopt_select_ocnatm_O2                = 03   !
+  INTEGER,PARAMETER::iopt_select_ocnatm_N2                = 04   !
   INTEGER,PARAMETER::iopt_select_ocnatm_HC                = 05   !
   ! diagnostics - biology
-  INTEGER,PARAMETER::idiag_bio_dPO4                      = 01    ! 
-  INTEGER,PARAMETER::idiag_bio_dPO4_1                    = 02    ! 
-  INTEGER,PARAMETER::idiag_bio_dPO4_2                    = 03    ! 
-  INTEGER,PARAMETER::idiag_bio_N2fixation                = 04    ! 
-  INTEGER,PARAMETER::idiag_bio_NH4assim                  = 05    ! 
-  INTEGER,PARAMETER::idiag_bio_kT                        = 06    ! 
-  INTEGER,PARAMETER::idiag_bio_kI                        = 07    ! 
-  INTEGER,PARAMETER::idiag_bio_kN                        = 08    ! 
-  INTEGER,PARAMETER::idiag_bio_DOMfrac                   = 09    ! 
-  ! diagnostics - geochemistry 
-  INTEGER,PARAMETER::idiag_geochem_ammox_dNO3            = 01    ! 
+  INTEGER,PARAMETER::idiag_bio_dPO4                      = 01    !
+  INTEGER,PARAMETER::idiag_bio_dPO4_1                    = 02    !
+  INTEGER,PARAMETER::idiag_bio_dPO4_2                    = 03    !
+  INTEGER,PARAMETER::idiag_bio_N2fixation                = 04    !
+  INTEGER,PARAMETER::idiag_bio_NH4assim                  = 05    !
+  INTEGER,PARAMETER::idiag_bio_kT                        = 06    !
+  INTEGER,PARAMETER::idiag_bio_kI                        = 07    !
+  INTEGER,PARAMETER::idiag_bio_kN                        = 08    !
+  INTEGER,PARAMETER::idiag_bio_DOMfrac                   = 09    !
+  ! diagnostics - geochemistry
+  INTEGER,PARAMETER::idiag_geochem_ammox_dNO3            = 01    !
   INTEGER,PARAMETER::idiag_geochem_ammox_dNH4            = 02    !
   INTEGER,PARAMETER::idiag_geochem_Nredct_dN2            = 03
   INTEGER,PARAMETER::idiag_geochem_Nredct_dNH4           = 04
@@ -616,7 +616,7 @@ MODULE biogem_lib
   INTEGER,PARAMETER::idiag_misc_2D_FCa_44Ca              = 07
 
   ! *** array index names ***
-  ! ocean 'physics'    
+  ! ocean 'physics'
   CHARACTER(len=16),DIMENSION(n_phys_ocn),PARAMETER::string_phys_ocn = (/ &
        & 'lat             ', &
        & 'lon             ', &
@@ -721,16 +721,16 @@ MODULE biogem_lib
   integer::par_misc_debug_i                                      ! 'i' index value for spatially-explicit debugging
   integer::par_misc_debug_j                                      ! 'j' index value for spatially-explicit debugging
   ! strings
-  CHARACTER(len=6) ::string_runid                                ! 
-  CHARACTER(len=31)::string_restartid                            ! 
-  CHARACTER(len=7) ::string_ncrunid                              ! 
-  CHARACTER(len=254) ::string_nctsi                              ! 
-  CHARACTER(len=254) ::string_nctsint                            ! 
-  CHARACTER(len=254) ::string_nctsglob                           ! 
-  CHARACTER(len=254) ::string_ncout2d                            ! 
-  CHARACTER(len=254) ::string_ncout3d                            ! 
-  CHARACTER(len=254) ::string_ncout3dsig                         ! 
-  CHARACTER(len=254) ::string_ncrst                              ! 
+  CHARACTER(len=6) ::string_runid                                !
+  CHARACTER(len=31)::string_restartid                            !
+  CHARACTER(len=7) ::string_ncrunid                              !
+  CHARACTER(len=254) ::string_nctsi                              !
+  CHARACTER(len=254) ::string_nctsint                            !
+  CHARACTER(len=254) ::string_nctsglob                           !
+  CHARACTER(len=254) ::string_ncout2d                            !
+  CHARACTER(len=254) ::string_ncout3d                            !
+  CHARACTER(len=254) ::string_ncout3dsig                         !
+  CHARACTER(len=254) ::string_ncrst                              !
   integer::ncout2d_ntrec                                         ! count for netcdf datasets
   integer::ncout3d_ntrec                                         ! count for netcdf datasets
   integer::ncout3dsig_ntrec                                      ! count for netcdf datasets
@@ -741,13 +741,13 @@ MODULE biogem_lib
   integer::ncrst_iou                                           ! io for netcdf restart
 
   ! *** Miscellanenous run-time control options ***
-  LOGICAL,DIMENSION(n_opt_misc)::opt_misc                        ! 
+  LOGICAL,DIMENSION(n_opt_misc)::opt_misc                        !
 
   ! *** time control ***
   REAL::par_misc_t_end                                           !
-  real::par_misc_t_err                                           ! 
-  LOGICAL::par_misc_t_go = .FALSE.                               ! 
-  LOGICAL::par_misc_t_echo_header = .TRUE.                       ! 
+  real::par_misc_t_err                                           !
+  LOGICAL::par_misc_t_go = .FALSE.                               !
+  LOGICAL::par_misc_t_echo_header = .TRUE.                       !
 
 
 
@@ -762,12 +762,12 @@ MODULE biogem_lib
      real,allocatable,DIMENSION(:,:)::mk
   end type fieldocn
   !
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::vocn                  ! 
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::vocn                  !
   type(fieldocn),DIMENSION(:),ALLOCATABLE::vdocn                 ! tracer anomoly
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::vbio_remin            ! 
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::vphys_ocn             ! 
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::vbio_part             ! 
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::vdbio_part            ! 
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::vbio_remin            !
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::vphys_ocn             !
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::vbio_part             !
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::vdbio_part            !
   !
   ! atmosphere tracer array
   !
@@ -779,91 +779,85 @@ MODULE biogem_lib
      real,allocatable,DIMENSION(:)::m
   end type fieldatm
   !
-  type(fieldatm),DIMENSION(:),ALLOCATABLE::vphys_ocnatm          ! 
-
-!!$! *** TMP ***
-!!$  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::docn                        ! ***********
-!!$  REAL,DIMENSION(n_sed,n_i,n_j,n_k)::dbio_part                   ! ***********
-!!$! ***********
+  type(fieldatm),DIMENSION(:),ALLOCATABLE::vphys_ocnatm          !
 
 
 
-  ! *** GOLDSTEIN interface with BioGeM ***   
+  ! *** GOLDSTEIN interface with BioGeM ***
   real,dimension(n_ocn)::tstoocn_offset                          ! tracer units offset (GOLDSTEIN <-> BIOGEM conversion)
   ! ocean
   ! NOTE: ocean tracers (dissolved and particulate) are stored as concentrations (mol kg-1)
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::ocn                         ! ocean tracer array 
+  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::ocn                         ! ocean tracer array
   ! atmosphere
-  logical,DIMENSION(n_atm)::ocnatm_airsea_eqm                    ! 
-  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_pv                ! 
-  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_solconst          ! 
+  logical,DIMENSION(n_atm)::ocnatm_airsea_eqm                    !
+  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_pv                !
+  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_solconst          !
   ! 'biology'
   REAL,DIMENSION(n_sed,n_i,n_j,n_k)::bio_part                    ! ocean tracer particle field (NOTE: <n_sed> tracers)
   REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::bio_remin                   ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
   REAL,DIMENSION(n_sed,n_i,n_j,n_k)::bio_settle                  ! ocean tracer particle settling field (NOTE: <n_sed> tracers)
   REAL,DIMENSION(n_sed,n_sed,n_i,n_j)::bio_part_red              ! 'Redfield' ratios
-  ! 'physics' 
-  REAL,DIMENSION(n_phys_ocn,n_i,n_j,n_k)::phys_ocn               ! 
-  REAL,DIMENSION(n_phys_ocnatm,n_i,n_j)::phys_ocnatm             ! 
+  ! 'physics'
+  REAL,DIMENSION(n_phys_ocn,n_i,n_j,n_k)::phys_ocn               !
+  REAL,DIMENSION(n_phys_ocnatm,n_i,n_j)::phys_ocnatm             !
   ! aqueous carbonate system
-  REAL,DIMENSION(n_carb,n_i,n_j,n_k)::carb                       ! 
-  REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::carbconst             ! 
-  REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::carbalk                 ! 
+  REAL,DIMENSION(n_carb,n_i,n_j,n_k)::carb                       !
+  REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::carbconst             !
+  REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::carbalk                 !
   REAL,DIMENSION(n_carbisor,n_i,n_j,n_k)::carbisor               ! carbonate (carbon) isotopic properties array
-  REAL,DIMENSION(3,n_i,n_j,n_k)::carb_TSn                        ! 
+  REAL,DIMENSION(3,n_i,n_j,n_k)::carb_TSn                        !
   ! diagnostics
   REAL,DIMENSION(n_diag_bio,n_i,n_j)::diag_bio                   ! biology diagnostics
   REAL,DIMENSION(n_diag_geochem,n_i,n_j,n_k)::diag_geochem       ! geochemistry diagnostics
-!!!  REAL,DIMENSION(n_ocn,n_i,n_j)::diag_weather                    ! weathering diagnostics
   REAL,DIMENSION(n_atm,n_i,n_j)::diag_airsea                     ! air-sea gas exchange diagnostics
   REAL,DIMENSION(n_atm,n_i,n_j)::diag_forcing                    ! atmospheric forcing diagnostics
-  REAL,DIMENSION(n_diag_misc_2D,n_i,n_j)::diag_misc_2D           ! 
-  REAL,DIMENSION(0:n_i,0:n_j)::diag_misc_psi                     ! 
+  REAL,DIMENSION(n_diag_misc_2D,n_i,n_j)::diag_misc_2D           !
+  REAL,DIMENSION(0:n_i,0:n_j)::diag_misc_psi                     !
 
   ! *** integrated (time-averaged) time-series storage scalars and vectors ***
-  ! 
-  REAL::int_misc_gemlite_sig                                     ! 
-  REAL::int_ocn_tot_M_sig                                        ! 
-  REAL::int_ocn_tot_M_sur_sig                                    ! 
-  REAL::int_ocn_tot_V_sig                                        ! 
-  REAL,DIMENSION(n_ocn)::int_ocn_sig                             ! 
-  REAL,DIMENSION(n_atm)::int_ocnatm_sig                          ! 
-  REAL,DIMENSION(n_sed)::int_fexport_sig                         ! 
-  REAL,DIMENSION(n_atm)::int_focnatm_sig                         ! 
-  REAL,DIMENSION(n_sed)::int_focnsed_sig                         ! 
-  REAL,DIMENSION(n_ocn)::int_fsedocn_sig                         ! 
-  REAL,DIMENSION(n_ocn)::int_ocn_sur_sig                         ! 
-  REAL,DIMENSION(n_ocn)::int_ocn_ben_sig                         ! 
-  REAL,DIMENSION(n_carb)::int_carb_sur_sig                       ! 
-  REAL,DIMENSION(n_carb)::int_carb_ben_sig                       ! 
-  REAL::int_misc_seaice_sig                                      ! 
-  real::int_misc_seaice_sig_th,int_misc_seaice_sig_vol           ! 
-  real::int_misc_opsi_min_sig,int_misc_opsi_max_sig              ! 
-  real::int_misc_opsia_min_sig,int_misc_opsia_max_sig            ! 
-  real::int_misc_SLT_sig                                         ! 
-  real::int_misc_det_Fe_tot_sig,int_misc_det_Fe_dis_sig          ! 
-  REAL,DIMENSION(n_sed)::int_ocnsed_sig                          ! 
+  !
+  REAL::int_misc_gemlite_sig                                     !
+  REAL::int_ocn_tot_M_sig                                        !
+  REAL::int_ocn_tot_M_sur_sig                                    !
+  REAL::int_ocn_tot_V_sig                                        !
+  REAL,DIMENSION(n_ocn)::int_ocn_sig                             !
+  REAL,DIMENSION(n_atm)::int_ocnatm_sig                          !
+  REAL,DIMENSION(n_sed)::int_fexport_sig                         !
+  REAL,DIMENSION(n_atm)::int_focnatm_sig                         !
+  REAL,DIMENSION(n_sed)::int_focnsed_sig                         !
+  REAL,DIMENSION(n_ocn)::int_fsedocn_sig                         !
+  REAL,DIMENSION(n_ocn)::int_ocn_sur_sig                         !
+  REAL,DIMENSION(n_ocn)::int_ocn_ben_sig                         !
+  REAL,DIMENSION(n_carb)::int_carb_sur_sig                       !
+  REAL,DIMENSION(n_carb)::int_carb_ben_sig                       !
+  REAL::int_misc_seaice_sig                                      !
+  real::int_misc_seaice_sig_th,int_misc_seaice_sig_vol           !
+  real::int_misc_opsi_min_sig,int_misc_opsi_max_sig              !
+  real::int_misc_opsia_min_sig,int_misc_opsia_max_sig            !
+  real::int_misc_SLT_sig                                         !
+  real::int_misc_det_Fe_tot_sig,int_misc_det_Fe_dis_sig          !
+  REAL,DIMENSION(n_sed)::int_ocnsed_sig                          !
   REAL,DIMENSION(n_diag_bio)::int_diag_bio_sig                   ! biology diagnostics
   REAL,DIMENSION(n_diag_geochem)::int_diag_geochem_sig           ! geochemistry diagnostics
   REAL,DIMENSION(n_ocn)::int_diag_weather_sig                    ! weathering diagnostics
   REAL,DIMENSION(n_atm)::int_diag_airsea_sig                     ! air-sea gas exchange diagnostics
   REAL,DIMENSION(n_atm)::int_diag_forcing_sig                    ! forcing diagnostics
-  REAL,DIMENSION(n_diag_misc_2D)::int_diag_misc_2D_sig           ! 
+  REAL,DIMENSION(n_diag_misc_2D)::int_diag_misc_2D_sig           !
   ! misc
-  real::int_misc_ocn_solfor_sig                                  ! 
-  real::int_misc_ocn_fxsw_sig                                    ! 
+  real::int_misc_ocn_solfor_sig                                  !
+  real::int_misc_ocn_fxsw_sig                                    !
   ! 'snap-shot' time-series arrays
-  real::snap_misc_ocn_solfor_N_sig                               ! 
-  real::snap_misc_ocn_solfor_S_sig                               ! 
+  real::snap_misc_ocn_solfor_N_sig                               !
+  real::snap_misc_ocn_solfor_S_sig                               !
   ! high resolution 3D!
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::int_misc_3D_sig           ! 
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::int_misc_3D_sig           !
   ! ### ADD ADDITIONAL TIME-SERIES ARRAY DEFINITIONS HERE ######################################################################## !
-  ! 
+  !
   ! ############################################################################################################################## !
 
   ! *** integrated (time-averaged) time-slice arrays ***
   ! integrated time slice storage arrays - ocean
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::int_ocn_timeslice           ! 
+  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::int_ocn_timeslice           !
   REAL,DIMENSION(n_sed,n_i,n_j,n_k)::int_bio_part_timeslice      !
   REAL,DIMENSION(n_sed,n_i,n_j,n_k)::int_bio_settle_timeslice    !
   REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::int_bio_remin_timeslice     !
@@ -873,25 +867,25 @@ MODULE biogem_lib
   REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::int_carbconst_timeslice   !
   REAL,DIMENSION(n_carbisor,n_i,n_j,n_k)::int_carbisor_timeslice !
   !  integrated time slice storage arrays - ocean-atmosphere interface
-  REAL,DIMENSION(n_atm,n_i,n_j)::int_sfcatm1_timeslice           ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::int_focnatm_timeslice           ! 
+  REAL,DIMENSION(n_atm,n_i,n_j)::int_sfcatm1_timeslice           !
+  REAL,DIMENSION(n_atm,n_i,n_j)::int_focnatm_timeslice           !
   !  integrated time slice storage arrays - ocean-sediment interface
-  REAL,DIMENSION(n_sed,n_i,n_j)::int_sfcsed1_timeslice           ! 
-  REAL,DIMENSION(n_sed,n_i,n_j)::int_focnsed_timeslice           ! 
-  REAL,DIMENSION(n_ocn,n_i,n_j)::int_fsedocn_timeslice           ! 
+  REAL,DIMENSION(n_sed,n_i,n_j)::int_sfcsed1_timeslice           !
+  REAL,DIMENSION(n_sed,n_i,n_j)::int_focnsed_timeslice           !
+  REAL,DIMENSION(n_ocn,n_i,n_j)::int_fsedocn_timeslice           !
   !  integrated time slice storage arrays - GOLDSTEIn
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsi_timeslice                ! 
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsia_timeslice               ! 
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsip_timeslice               ! 
-  REAL,DIMENSION(0:n_j,0:n_k)::int_zpsi_timeslice                ! 
-  REAL,DIMENSION(3,n_i,n_j,n_k)::int_u_timeslice                 ! 
-  REAL,DIMENSION(0:n_i,0:n_j)::int_psi_timeslice                 ! 
+  REAL,DIMENSION(0:n_j,0:n_k)::int_opsi_timeslice                !
+  REAL,DIMENSION(0:n_j,0:n_k)::int_opsia_timeslice               !
+  REAL,DIMENSION(0:n_j,0:n_k)::int_opsip_timeslice               !
+  REAL,DIMENSION(0:n_j,0:n_k)::int_zpsi_timeslice                !
+  REAL,DIMENSION(3,n_i,n_j,n_k)::int_u_timeslice                 !
+  REAL,DIMENSION(0:n_i,0:n_j)::int_psi_timeslice                 !
   REAL,DIMENSION(n_diag_bio,n_i,n_j)::int_diag_bio_timeslice             ! biology diagnostics
   REAL,DIMENSION(n_diag_geochem,n_i,n_j,n_k)::int_diag_geochem_timeslice ! geochemistry diagnostics
   REAL,DIMENSION(n_ocn,n_i,n_j)::int_diag_weather_timeslice      ! weathering diagnostics
   REAL,DIMENSION(n_atm,n_i,n_j)::int_diag_airsea_timeslice       ! air-sea gas exchange diagnostics
   ! ### ADD ADDITIONAL TIME-SLICE ARRAY DEFINITIONS HERE ######################################################################### !
-  ! 
+  !
   ! ############################################################################################################################## !
 
   ! *** misc ***
@@ -912,80 +906,72 @@ MODULE biogem_lib
 
   ! *** forcing ***
   ! forcing - restoring
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn          ! 
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn_I        ! 
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn_II       ! 
-  REAL,DIMENSION(n_ocn,2,n_data_max)::force_restore_ocn_sig       ! 
-  REAL,DIMENSION(n_ocn)::force_restore_ocn_sig_x                  ! 
-  REAL,DIMENSION(n_ocn)::force_restore_ocn_tconst                 ! 
-  INTEGER,DIMENSION(n_ocn,2)::force_restore_ocn_sig_i             ! 
-  LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_select              ! 
-  LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_sur                 ! 
-  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_restore_ocn_k1          ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm                ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_I              ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_II             ! 
-  REAL,DIMENSION(n_atm,2,n_data_max)::force_restore_atm_sig       ! 
-  REAL,DIMENSION(n_atm)::force_restore_atm_sig_x                  ! 
-  REAL,DIMENSION(n_atm)::force_restore_atm_tconst                 ! 
-  INTEGER,DIMENSION(n_atm,2)::force_restore_atm_sig_i             ! 
-  LOGICAL,DIMENSION(n_atm)::force_restore_atm_select              ! 
-!!$  REAL,DIMENSION(n_sed,n_i,n_j)::force_restore_sed
-!!$  REAL,DIMENSION(n_sed,n_i,n_j)::force_restore_sed_I
-!!$  REAL,DIMENSION(n_sed,n_i,n_j)::force_restore_sed_II
-!!$  REAL,DIMENSION(n_sed,2,n_data_max)::force_restore_sed_sig
-!!$  REAL,DIMENSION(n_sed)::force_restore_sed_sig_x
-!!$  REAL,DIMENSION(n_sed)::force_restore_sed_tconst
-!!$  INTEGER,DIMENSION(n_sed,2)::force_restore_sed_sig_i
-!!$  LOGICAL,DIMENSION(n_sed)::force_restore_sed_select
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn          !
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn_I        !
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_restore_locn_II       !
+  REAL,DIMENSION(n_ocn,2,n_data_max)::force_restore_ocn_sig       !
+  REAL,DIMENSION(n_ocn)::force_restore_ocn_sig_x                  !
+  REAL,DIMENSION(n_ocn)::force_restore_ocn_tconst                 !
+  INTEGER,DIMENSION(n_ocn,2)::force_restore_ocn_sig_i             !
+  LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_select              !
+  LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_sur                 !
+  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_restore_ocn_k1          !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm                !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_I              !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_II             !
+  REAL,DIMENSION(n_atm,2,n_data_max)::force_restore_atm_sig       !
+  REAL,DIMENSION(n_atm)::force_restore_atm_sig_x                  !
+  REAL,DIMENSION(n_atm)::force_restore_atm_tconst                 !
+  INTEGER,DIMENSION(n_atm,2)::force_restore_atm_sig_i             !
+  LOGICAL,DIMENSION(n_atm)::force_restore_atm_select              !
   ! forcing - flux
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn          ! 
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn_I        ! 
-  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn_II       ! 
-  REAL,DIMENSION(n_ocn,2,n_data_max)::force_flux_ocn_sig         ! 
-  REAL,DIMENSION(n_ocn)::force_flux_ocn_sig_x                    ! 
-  INTEGER,DIMENSION(n_ocn,2)::force_flux_ocn_sig_i               ! 
-  LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_select                ! 
-  LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_scale                 ! 
-  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_flux_ocn_k1            ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm                  ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_I                ! 
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_II               ! 
-  REAL,DIMENSION(n_atm,2,n_data_max)::force_flux_atm_sig         ! 
-  REAL,DIMENSION(n_atm)::force_flux_atm_sig_x                    ! 
-  INTEGER,DIMENSION(n_atm,2)::force_flux_atm_sig_i               ! 
-  LOGICAL,DIMENSION(n_atm)::force_flux_atm_select                ! 
-  LOGICAL,DIMENSION(n_atm)::force_flux_atm_scale                 ! 
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed                  ! 
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_I                ! 
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_II               ! 
-  REAL,DIMENSION(n_sed,2,n_data_max)::force_flux_sed_sig         ! 
-  REAL,DIMENSION(n_sed)::force_flux_sed_sig_x                    ! 
-  INTEGER,DIMENSION(n_sed,2)::force_flux_sed_sig_i               ! 
-  LOGICAL,DIMENSION(n_sed)::force_flux_sed_select                ! 
-  LOGICAL,DIMENSION(n_sed)::force_flux_sed_scale                 ! 
-  ! forcing - misc 
-  REAL,DIMENSION(2,n_data_max)::force_solconst_sig               ! 
-  real,DIMENSION(n_ocn)::force_restore_docn_nuts                 !   
-  integer,DIMENSION(n_atm)::force_atm_uniform                    !   
-  integer,DIMENSION(n_ocn)::force_ocn_uniform                    !  
-  integer,DIMENSION(n_sed)::force_sed_uniform                    !      
-  integer,DIMENSION(n_atm)::force_atm_point_i                    !   
-  integer,DIMENSION(n_ocn)::force_ocn_point_i                    !  
-  integer,DIMENSION(n_sed)::force_sed_point_i                    !      
-  integer,DIMENSION(n_atm)::force_atm_point_j                    !   
-  integer,DIMENSION(n_ocn)::force_ocn_point_j                    !  
-  integer,DIMENSION(n_sed)::force_sed_point_j                    !   
-  integer,DIMENSION(n_ocn)::force_ocn_point_k                    !            
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn          !
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn_I        !
+  real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn_II       !
+  REAL,DIMENSION(n_ocn,2,n_data_max)::force_flux_ocn_sig         !
+  REAL,DIMENSION(n_ocn)::force_flux_ocn_sig_x                    !
+  INTEGER,DIMENSION(n_ocn,2)::force_flux_ocn_sig_i               !
+  LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_select                !
+  LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_scale                 !
+  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_flux_ocn_k1            !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm                  !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_I                !
+  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_II               !
+  REAL,DIMENSION(n_atm,2,n_data_max)::force_flux_atm_sig         !
+  REAL,DIMENSION(n_atm)::force_flux_atm_sig_x                    !
+  INTEGER,DIMENSION(n_atm,2)::force_flux_atm_sig_i               !
+  LOGICAL,DIMENSION(n_atm)::force_flux_atm_select                !
+  LOGICAL,DIMENSION(n_atm)::force_flux_atm_scale                 !
+  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed                  !
+  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_I                !
+  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_II               !
+  REAL,DIMENSION(n_sed,2,n_data_max)::force_flux_sed_sig         !
+  REAL,DIMENSION(n_sed)::force_flux_sed_sig_x                    !
+  INTEGER,DIMENSION(n_sed,2)::force_flux_sed_sig_i               !
+  LOGICAL,DIMENSION(n_sed)::force_flux_sed_select                !
+  LOGICAL,DIMENSION(n_sed)::force_flux_sed_scale                 !
+  ! forcing - misc
+  REAL,DIMENSION(2,n_data_max)::force_solconst_sig               !
+  real,DIMENSION(n_ocn)::force_restore_docn_nuts                 !
+  integer,DIMENSION(n_atm)::force_atm_uniform                    !
+  integer,DIMENSION(n_ocn)::force_ocn_uniform                    !
+  integer,DIMENSION(n_sed)::force_sed_uniform                    !
+  integer,DIMENSION(n_atm)::force_atm_point_i                    !
+  integer,DIMENSION(n_ocn)::force_ocn_point_i                    !
+  integer,DIMENSION(n_sed)::force_sed_point_i                    !
+  integer,DIMENSION(n_atm)::force_atm_point_j                    !
+  integer,DIMENSION(n_ocn)::force_ocn_point_j                    !
+  integer,DIMENSION(n_sed)::force_sed_point_j                    !
+  integer,DIMENSION(n_ocn)::force_ocn_point_k                    !
   ! ### ADD ADDITIONAL FORCINGS ARRAY DEFINITIONS HERE ########################################################################### !
-  ! 
+  !
   ! ############################################################################################################################## !
   ! misc
-  REAL,DIMENSION(n_i,n_j)::par_phys_seaice                       ! 
-  REAL,DIMENSION(n_i,n_j)::par_phys_windspeed                    ! 
-  REAL,DIMENSION(n_i,n_j)::par_bio_CaCO3toPOCrainratio           ! 
-  REAL,DIMENSION(n_i,n_j)::par_bio_Cd_alpha                      ! 
-  REAL,DIMENSION(n_i,n_j)::par_bio_POCdtoPOCrainratio            ! 
+  REAL,DIMENSION(n_i,n_j)::par_phys_seaice                       !
+  REAL,DIMENSION(n_i,n_j)::par_phys_windspeed                    !
+  REAL,DIMENSION(n_i,n_j)::par_bio_CaCO3toPOCrainratio           !
+  REAL,DIMENSION(n_i,n_j)::par_bio_Cd_alpha                      !
+  REAL,DIMENSION(n_i,n_j)::par_bio_POCdtoPOCrainratio            !
   REAL,DIMENSION(n_i,n_j)::par_bio_remin_kc                      !
   REAL,DIMENSION(n_i,n_j)::par_bio_remin_ko                      !
   REAL,DIMENSION(n_i,n_j)::par_bio_remin_kl                      !
@@ -994,7 +980,7 @@ MODULE biogem_lib
   REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_opal               !
   REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_det                !
   REAL,DIMENSION(n_i,n_j)::par_bio_remin_b                       !
-  REAL,DIMENSION(n_i,n_j)::par_misc_2D                           ! 
+  REAL,DIMENSION(n_i,n_j)::par_misc_2D                           !
 
 
   ! ****************************************************************************************************************************** !
@@ -1003,35 +989,35 @@ MODULE biogem_lib
 
   ! *** copies of GOLDSTEIn variables ***
   ! dimensional scale values for the ocean
-  REAL::goldstein_usc                                            ! 
-  REAL::goldstein_dsc                                            ! 
-  REAL::goldstein_fsc                                            ! 
-  REAL::goldstein_rh0sc                                          ! 
-  REAL::goldstein_rhosc                                          ! 
-  REAL::goldstein_cpsc                                           ! 
+  REAL::goldstein_usc                                            !
+  REAL::goldstein_dsc                                            !
+  REAL::goldstein_fsc                                            !
+  REAL::goldstein_rh0sc                                          !
+  REAL::goldstein_rhosc                                          !
+  REAL::goldstein_cpsc                                           !
   ! miscellaneous constants
   REAL::goldstein_saln0                                          ! EMBM reference salinity
   REAL::goldstein_rhoair                                         ! air density
   REAL::goldstein_cd                                             ! drag coefficient for wind stress calc
   REAL::goldstein_ds                                             ! grid spacing; sin(lat)
   REAL::goldstein_dphi                                           ! grid spacing; long
-  real::goldstein_scf                                            ! 
-  real::phys_solar_constant = 0.0                                ! 
+  real::goldstein_scf                                            !
+  real::phys_solar_constant = 0.0                                !
   ! depth and location of oceans
-  INTEGER,DIMENSION(n_i,n_j)::goldstein_k1                       ! 
-  INTEGER::goldstein_jsf                                         ! 
-  INTEGER,DIMENSION(n_j)::goldstein_ips                          ! 
-  INTEGER,DIMENSION(n_j)::goldstein_ipf                          ! 
-  INTEGER,DIMENSION(n_j)::goldstein_ias                          ! 
-  INTEGER,DIMENSION(n_j)::goldstein_iaf                          ! 
+  INTEGER,DIMENSION(n_i,n_j)::goldstein_k1                       !
+  INTEGER::goldstein_jsf                                         !
+  INTEGER,DIMENSION(n_j)::goldstein_ips                          !
+  INTEGER,DIMENSION(n_j)::goldstein_ipf                          !
+  INTEGER,DIMENSION(n_j)::goldstein_ias                          !
+  INTEGER,DIMENSION(n_j)::goldstein_iaf                          !
   ! miscellaneous
-  REAL,DIMENSION(n_k)::goldstein_dz                              ! 
-  REAL,DIMENSION(n_k)::goldstein_dza                             ! 
-  REAL,DIMENSION(0:n_j)::goldstein_c                             ! 
-  REAL,DIMENSION(0:n_j)::goldstein_cv                            ! 
-  REAL,DIMENSION(0:n_j)::goldstein_s                             ! 
+  REAL,DIMENSION(n_k)::goldstein_dz                              !
+  REAL,DIMENSION(n_k)::goldstein_dza                             !
+  REAL,DIMENSION(0:n_j)::goldstein_c                             !
+  REAL,DIMENSION(0:n_j)::goldstein_cv                            !
+  REAL,DIMENSION(0:n_j)::goldstein_s                             !
   REAL,DIMENSION(0:n_j)::goldstein_sv                            !
- 
+
   ! *** I/O ***
   ! string formation associated variables
   INTEGER::n_char_years                                          !
@@ -1043,20 +1029,20 @@ MODULE biogem_lib
   integer::int_t_sig_count                                       !
   integer::int_t_timeslice_count                                 !
   ! time series arrays - data save
-  INTEGER::par_data_save_sig_i                                   ! 
-  INTEGER::par_data_save_timeslice_i                             ! 
+  INTEGER::par_data_save_sig_i                                   !
+  INTEGER::par_data_save_timeslice_i                             !
   !
   logical::ctrl_data_save_inversion
 
   ! *** MISC ***
-  real::par_bio_c0_I                                             ! 
-  real::par_bio_c0_Cd                                            ! 
+  real::par_bio_c0_I                                             !
+  real::par_bio_c0_Cd                                            !
   real::par_det_Fe_frac                                          ! mass abundance of Fe in dust
-  real::par_K_FeL                                                ! 
-  real::par_scav_Fe_exp                                          ! see: Parekh et al. [2005] 
+  real::par_K_FeL                                                !
+  real::par_scav_Fe_exp                                          ! see: Parekh et al. [2005]
   real::par_scav_Fe_k0                                           ! Parekh et al. [2006] initial scavenging rate
-  real::par_part_red_FeTmin                                      ! 
-  real::par_part_red_FetoCmax                                    ! 
+  real::par_part_red_FeTmin                                      !
+  real::par_part_red_FetoCmax                                    !
   real::par_bio_red_O2_H2SO4                                     ! pseudo 'Redfield ratio' to convert O2 deficit to sulphate O2
   real::par_bio_red_O2_NO3                                       ! pseudo 'Redfield ratio' to convert O2 deficit to nitrate O2
   real::par_bio_remin_opal_K                                     ! opal particulate base dissolution rate (yr-1)
@@ -1071,10 +1057,10 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_init_vocn()
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vocn   ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vocn   !
     ! local variables
     integer::i,j,n
     integer::loc_n,loc_k1
@@ -1102,10 +1088,10 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_init_vsed()
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vsed   ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vsed   !
     ! local variables
     integer::i,j,n
     integer::loc_n,loc_k1
@@ -1133,12 +1119,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_init_vocn_n(dum_n)
     ! dummy valiables
-    integer,INTENT(in)::dum_n                                   ! 
+    integer,INTENT(in)::dum_n                                   !
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vocn_n   ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_init_vocn_n   !
     ! local variables
     integer::i,j,n
     integer::loc_n,loc_k1
@@ -1166,12 +1152,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_ocnTOvocn(dum_ocn)
     ! dummy valiables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        !
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_ocnTOvocn ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_ocnTOvocn !
     ! local variables
     integer::i,j,k,n
     integer::l,io
@@ -1181,7 +1167,7 @@ CONTAINS
     do n=1,n_vocn
        allocate(fun_lib_conv_ocnTOvocn(n)%mk(1:n_l_ocn,1:n_k))
     end do
-    ! 
+    !
     loc_n = 0
     DO i=1,n_i
        DO j=1,n_j
@@ -1207,12 +1193,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_sedTOvsed(dum_sed)
     ! dummy valiables
-    REAL,DIMENSION(n_sed,n_i,n_j,n_k),INTENT(in)::dum_sed           ! 
+    REAL,DIMENSION(n_sed,n_i,n_j,n_k),INTENT(in)::dum_sed           !
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_sedTOvsed ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_sedTOvsed !
     ! local variables
     integer::i,j,k,n
     integer::l,is
@@ -1222,7 +1208,7 @@ CONTAINS
     do n=1,n_vocn
        allocate(fun_lib_conv_sedTOvsed(n)%mk(1:n_l_sed,1:n_k))
     end do
-    ! 
+    !
     loc_n = 0
     DO i=1,n_i
        DO j=1,n_j
@@ -1247,38 +1233,13 @@ CONTAINS
   ! ****************************************************************************************************************************** !
 
 
-!!$  ! ****************************************************************************************************************************** !
-!!$  ! 
-!!$  function fun_lib_conv_vnocnTOijocn(dum_vnocn)
-!!$    ! dummy valiables
-!!$    type(fieldocn)::dum_vnocn                                    ! 
-!!$    ! result variable
-!!$    REAL,DIMENSION(n_ocn,n_k)::fun_lib_conv_vnocnTOijocn         ! 
-!!$    ! local variables
-!!$    integer::k
-!!$    integer::l,io
-!!$    integer::loc_k1
-!!$    ! initialize, because not all grid points or 'k' depths are valid
-!!$    fun_lib_conv_vnocnTOijocn(:,:) = 0.0
-!!$    !
-!!$    loc_k1 = dum_vnocn%k1
-!!$    DO k=n_k,loc_k1,-1
-!!$       DO l=1,n_l_ocn
-!!$          io = conv_iselected_io(l)
-!!$          fun_lib_conv_vnocnTOijocn(io,k) = dum_vnocn%mk(l,k)
-!!$       end DO
-!!$    end DO
-!!$  END function fun_lib_conv_vnocnTOijocn
-!!$  ! ****************************************************************************************************************************** !
-
-
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_vocnTOocn(dum_vocn)
     ! dummy valiables
-    type(fieldocn),DIMENSION(:)::dum_vocn                        ! 
+    type(fieldocn),DIMENSION(:)::dum_vocn                        !
     ! result variable
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOocn    ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOocn    !
     ! local variables
     integer::loc_i,loc_j,k,n
     integer::l,io
@@ -1302,12 +1263,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_vsedTOsed(dum_vsed)
     ! dummy valiables
-    type(fieldocn),DIMENSION(:)::dum_vsed                        ! 
+    type(fieldocn),DIMENSION(:)::dum_vsed                        !
     ! result variable
-    REAL,DIMENSION(n_sed,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed    ! 
+    REAL,DIMENSION(n_sed,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed    !
     ! local variables
     integer::loc_i,loc_j,k,n
     integer::l,is
@@ -1331,12 +1292,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_tsTOvocn(dum_ts)
     ! dummy valiables
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(in)::dum_ts    ! 
+    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(in)::dum_ts    !
     ! result variable
-    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_tsTOvocn ! 
+    type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_tsTOvocn !
     ! local variables
     integer::i,j,k,n
     integer::loc_n,loc_k1
@@ -1345,7 +1306,7 @@ CONTAINS
     do n=1,n_vocn
        allocate(fun_lib_conv_tsTOvocn(n)%mk(1:n_l_ocn,1:n_k))
     end do
-    ! 
+    !
     loc_n = 0
     DO i=1,n_i
        DO j=1,n_j
@@ -1368,12 +1329,12 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   function fun_lib_conv_vocnTOts(dum_vocn)
     ! dummy valiables
-    type(fieldocn),DIMENSION(:),INTENT(in)::dum_vocn             ! 
+    type(fieldocn),DIMENSION(:),INTENT(in)::dum_vocn             !
     ! result variable
-    REAL,DIMENSION(n_l_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOts   ! 
+    REAL,DIMENSION(n_l_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOts   !
     ! local variables
     integer::loc_i,loc_j,k,n
     integer::l
@@ -1430,7 +1391,7 @@ CONTAINS
     ! re-scale data
     loc_data(1,:) = dum_data_scale(1)*loc_data(1,:)
     loc_data(2,:) = dum_data_scale(2)*loc_data(2,:)
-    ! 
+    !
     IF (loc_n_elements > n_data_max) THEN
        CALL sub_report_error( &
             & 'biogem_lib','load_data_t2','loc_n_elements > n_data_max', &
@@ -1496,7 +1457,7 @@ CONTAINS
     CLOSE(in)
     ! re-scale data
     loc_data(:) = dum_data_scale*loc_data(:)
-    ! 
+    !
     IF (loc_n_elements > n_data_max) THEN
        CALL sub_report_error( &
             & 'biogem_lib','load_data_t1','loc_n_elements > n_data_max', &
@@ -1540,7 +1501,7 @@ CONTAINS
     loc_t = MAX(par_misc_t_start,par_misc_t_end) + par_misc_t_err
     DO n=99,1,-1
        loc_digit = INT(loc_t*10.0**(-(n-1)) + par_misc_t_err)
-       IF (loc_digit > 0) THEN 
+       IF (loc_digit > 0) THEN
           n_char_years = n
           EXIT
        END IF
@@ -1690,14 +1651,14 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   subroutine sub_wasteCPUcycles1(dum_ocn,dum_string,dum_n)
     ! dummy valiables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        !
     CHARACTER(len=*),INTENT(in)::dum_string                      !
     INTEGER,INTENT(in)::dum_n                                    !
     ! local variables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_ocn                   ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_ocn                   !
     integer::n
     ! init
     loc_ocn(:,:,:,:) = 0.0
@@ -1712,14 +1673,14 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! 
+  !
   subroutine sub_wasteCPUcycles2(dum_ocn,dum_string,dum_n)
     ! dummy valiables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        !
     CHARACTER(len=*),INTENT(in)::dum_string                      !
     INTEGER,INTENT(in)::dum_n                                    !
     ! local variables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_ocn                   ! 
+    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_ocn                   !
     integer::n
     ! init
     loc_ocn(:,:,:,:) = 0.0

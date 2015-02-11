@@ -203,7 +203,7 @@ CONTAINS
        print*,'Denitrification [O2] threshold (mol kg-1)           : ',par_bio_remin_denitrO2thresh
        print*,'Catch rapidly-oxidizing species going < 0.0?        : ',ctrl_bio_remin_reminfix
        print*,'NH4 -> NO3 odixation option                         : ',trim(opt_bio_remin_oxidize_NH4toNO3)
-       print*,'H2S -> SO4 oxidation option                         : ',trim(opt_bio_remin_oxidize_H2StoSO4) 
+       print*,'H2S -> SO4 oxidation option                         : ',trim(opt_bio_remin_oxidize_H2StoSO4)
        print*,'H2S -> POCS scavenging option                       : ',trim(opt_bio_remin_scavenge_H2StoPOMS)
        print*,'Remin rate -- oxic (yr-1)                           : ',par_bio_remin_k_O2
        print*,'Remin rate -- denitrification (yr-1)                : ',par_bio_remin_k_NO3
@@ -446,8 +446,8 @@ CONTAINS
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_ocn,loc_n_l_sed                           ! number of selected tracers in the re-start file
     integer,DIMENSION(n_ocn)::loc_conv_iselected_io            ! number of selected ocean tracers in restart
-    integer,DIMENSION(n_sed)::loc_conv_iselected_is            ! 
-    real,dimension(n_i,n_j,n_k)::loc_ocn,loc_part              ! 
+    integer,DIMENSION(n_sed)::loc_conv_iselected_is            !
+    real,dimension(n_i,n_j,n_k)::loc_ocn,loc_part              !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
     integer,ALLOCATABLE,dimension(:,:)::loc_varlen
@@ -547,7 +547,7 @@ CONTAINS
           if (ctrl_ocn_dinit) then
              ocn(io,:,:,:) = ocn(io,:,:,:) + ocn_dinit(io)*phys_ocn(ipo_mask_ocn,:,:,:)
           else
-             ocn(io,:,:,:) = (1.0 + ocn_dinit(io))*ocn(io,:,:,:)             
+             ocn(io,:,:,:) = (1.0 + ocn_dinit(io))*ocn(io,:,:,:)
           end if
        end do
        if (ctrl_ocn_rst_reset_T) then
@@ -724,7 +724,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    real,dimension(1:n_ocn,1:n_sed)::loc_conv_sed_ocn          ! 
+    real,dimension(1:n_ocn,1:n_sed)::loc_conv_sed_ocn          !
     ! -------------------------------------------------------- !
     ! INITIALIZE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -818,7 +818,7 @@ CONTAINS
           conv_sed_ocn_N(io_NO3,is_POC) = 2.0*conv_sed_ocn(io_O2,is_POC)
           conv_sed_ocn_N(io_NO2,is_POC) = -2.0*conv_sed_ocn(io_O2,is_POC)
           conv_sed_ocn_N(io_ALK,is_POC) = 0.0
-          conv_sed_ocn_N(io_O2,is_POC)  = 0.0 
+          conv_sed_ocn_N(io_O2,is_POC)  = 0.0
        else
           conv_sed_ocn_N(io_NO3,is_POP) = -(8.0/5.0)
           conv_sed_ocn_N(io_N2,is_POP)  = -0.5*conv_sed_ocn_N(io_NO3,is_POP)
@@ -827,7 +827,7 @@ CONTAINS
           conv_sed_ocn_N(io_NO3,is_POC) = (4.0/5.0)*conv_sed_ocn(io_O2,is_POC)
           conv_sed_ocn_N(io_N2,is_POC)  = -0.5*conv_sed_ocn_N(io_NO3,is_POC)
           conv_sed_ocn_N(io_ALK,is_POC) = -conv_sed_ocn_N(io_NO3,is_POC)
-          conv_sed_ocn_N(io_O2,is_POC)  = 0.0 
+          conv_sed_ocn_N(io_O2,is_POC)  = 0.0
        endif
     else
        conv_sed_ocn_N(:,:) = 0.0
@@ -863,7 +863,7 @@ CONTAINS
     if (ocn_select(io_CH4)) then
        conv_sed_ocn_meth(:,:) = conv_sed_ocn(:,:)
        ! ### INSERT CODE ##################################### !
-       ! 
+       !
        ! ##################################################### !
     else
        conv_sed_ocn_meth(:,:) = 0.0
@@ -1017,14 +1017,6 @@ CONTAINS
     force_restore_atm_sig_i(:,:)  = 0
     force_restore_atm_tconst      = 0.0
     force_restore_atm_select(:)   = .FALSE.
-    !force_restore_sed(:,:,:)      = 0.0
-    !force_restore_sed_I(:,:,:)    = 0.0
-    !force_restore_sed_II(:,:,:)   = 0.0
-    !force_restore_sed_sig(:,:,:)  = 0.0
-    !force_restore_sed_sig_x(:)    = 0.0
-    !force_restore_sed_sig_i(:,:)  = 0
-    !force_restore_sed_tconst      = 0.0
-    !force_restore_sed_select(:)   = .FALSE.
     force_flux_locn(:,:,:,:)       = 0.0
     force_flux_locn_I(:,:,:,:)     = 0.0
     force_flux_locn_II(:,:,:,:)    = 0.0
@@ -1049,7 +1041,7 @@ CONTAINS
     force_flux_sed_sig_i(:,:)     = 0
     force_flux_sed_select(:)      = .FALSE.
     force_flux_sed_scale(:)       = .FALSE.
-    ! misc 
+    ! misc
     force_solconst_sig(:,:)       = 0.0
     force_restore_docn_nuts(:)    = 0.0
     force_atm_uniform(:)          = 2
@@ -1063,7 +1055,7 @@ CONTAINS
     force_sed_point_j(:)          = 01
     force_ocn_point_k(:)          = 01
     ! ### ADD ADDITIONAL FORCINGS ARRAY INITIALIZATIONS HERE ##################################################################### !
-    ! 
+    !
     ! ############################################################################################################################ !
   END SUBROUTINE sub_init_force
   ! ****************************************************************************************************************************** !
@@ -1085,7 +1077,6 @@ CONTAINS
   SUBROUTINE sub_init_diag()
     diag_bio(:,:,:)       = 0.0
     diag_geochem(:,:,:,:) = 0.0
-!!!   diag_weather(:,:,:)   = 0.0
     diag_airsea(:,:,:)    = 0.0
   END SUBROUTINE sub_init_diag
   ! ****************************************************************************************************************************** !
@@ -1439,7 +1430,7 @@ CONTAINS
        READ(unit=in,fmt='(1X)',iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
     END DO
-    ! 
+    !
     DO n = 1,loc_n_elements
        if (ctrl_force_oldformat) then
           READ(unit=in,FMT=*,iostat=ios)   &
@@ -1447,7 +1438,7 @@ CONTAINS
                & loc_force_restore_select, & ! COLUMN #01: include restoring forcing of tracer?
                & loc_force_restore_sur,    & ! COLUMN #02: restrict restoring forcing to surface?
                & loc_force_restore_tconst, & ! COLUMN #03: time constant of restoring forcing (years)
-               & loc_force_flux_select,    & ! COLUMN #04: include flux forcing of tracer? 
+               & loc_force_flux_select,    & ! COLUMN #04: include flux forcing of tracer?
                & loc_force_flux_scale        ! COLUMN #05: scale flux forcing of tracer?
           call check_iostat(ios,__LINE__,__FILE__)
           loc_force_uniform = -99
@@ -1460,7 +1451,7 @@ CONTAINS
                & loc_force_restore_select, & ! COLUMN #01: include restoring forcing of tracer?
                & loc_force_restore_sur,    & ! COLUMN #02: restrict restoring forcing to surface?
                & loc_force_restore_tconst, & ! COLUMN #03: time constant of restoring forcing (years)
-               & loc_force_flux_select,    & ! COLUMN #04: include flux forcing of tracer? 
+               & loc_force_flux_select,    & ! COLUMN #04: include flux forcing of tracer?
                & loc_force_flux_scale,     & ! COLUMN #05: scale flux forcing of tracer?
                & loc_force_uniform,        & ! COLUMN #06: make forcing uniform over this dimension
                & loc_force_point_i,        & ! COLUMN #07: i grid location of point forcing
@@ -2383,7 +2374,7 @@ CONTAINS
                      & ocn(io_F,i,j,k),    &
                      & ocn(io_H2S,i,j,k),  &
                      & ocn(io_NH4,i,j,k),  &
-                     & carbconst(:,i,j,k), & 
+                     & carbconst(:,i,j,k), &
                      & carb(:,i,j,k),      &
                      & carbalk(:,i,j,k)    &
                      & )
@@ -2398,8 +2389,8 @@ CONTAINS
                      & ocn(io_F,i,j,k),    &
                      & ocn(io_H2S,i,j,k),  &
                      & ocn(io_NH4,i,j,k),  &
-                     & carbconst(:,i,j,k), & 
-                     & carb(:,i,j,k)    & 
+                     & carbconst(:,i,j,k), &
+                     & carb(:,i,j,k)    &
                      & )
                 ! calculate carbonate system isotopic properties
                 if (ocn_select(io_DIC_13C)) then
@@ -2790,69 +2781,6 @@ CONTAINS
   ! ****************************************************************************************************************************** !
 
 
-!!$  ! INITIALIZE RESTORING FORCING - SEDIMENTS
-!!$  SUBROUTINE sub_init_force_restore_sed(dum_is)
-!!$    ! dummy arguments
-!!$    INTEGER,INTENT(in)::dum_is
-!!$    ! local varisbles
-!!$    CHARACTER(len=255)::loc_filename
-!!$    INTEGER::loc_n_elements
-!!$    ! initislize forcing signal indices
-!!$    force_restore_sed_sig_i(dum_is,:) = n_data_max
-!!$    force_restore_sed_sig(dum_is,:,:) = 0.0
-!!$    ! load forcing data array #I
-!!$    loc_filename = TRIM(par_indir_name)//'biogem_force_restore_sed_'//TRIM(string_sed(dum_is))//'_I'//TRIM(string_data_ext)
-!!$    CALL sub_load_data_ij(loc_filename,n_i,n_j,force_restore_sed_I(dum_is,:,:))
-!!$    ! load forcing data array #II
-!!$    loc_filename = TRIM(par_indir_name)//'biogem_force_restore_sed_'//TRIM(string_sed(dum_is))//'_II'//TRIM(string_data_ext)
-!!$    CALL sub_load_data_ij(loc_filename,n_i,n_j,force_restore_sed_II(dum_is,:,:))
-!!$    ! load forcing time series data
-!!$    loc_filename = TRIM(par_indir_name)//'biogem_force_restore_sed_'//TRIM(string_sed(dum_is))//'_sig'//TRIM(string_data_ext)
-!!$    CALL sub_load_data_t2(loc_filename,force_restore_sed_sig(dum_is,:,:),loc_n_elements)
-!!$    ! set default forcing index values
-!!$    ! NOTE: catch missing time series data
-!!$    if (loc_n_elements == 0) THEN
-!!$       CALL sub_report_error( &
-!!$            & 'biogem_data','init_force_restore_sed','PLEASE PUT SOME DATA IN TIME SERIES FILE: '//TRIM(loc_filename), &
-!!$            & 'STOPPING', &
-!!$            & (/const_real_null/),.TRUE. &
-!!$            & )
-!!$    else
-!!$       force_restore_sed_sig_i(dum_is,:) = loc_n_elements
-!!$    end if
-!!$    ! warn if forcing information appears to be 'incomplete'
-!!$    ! NOTE: this will catch both possible mismatches of forcing signal and model integration specification
-!!$    !       i.e., for _not_ the BP option;
-!!$    !             a signal time start year that is after the model start year
-!!$    !             or a signal time year that is before the model end year
-!!$    !             (or visa versa for a BP time scale)
-!!$    if (maxval(force_restore_sed_sig(dum_is,1,1:loc_n_elements)) < par_misc_t_runtime) then
-!!$       CALL sub_report_error( &
-!!$            & 'biogem_data','sub_init_force_restore_sed', &
-!!$            & 'The time interval of forcing data does not fully span the requested model integration, either; '// &
-!!$            & '(1) alter the model start time year (the goin file) '// &
-!!$            & '(2) alter the forcing signal start time year (FILE: '//TRIM(loc_filename)//') '// &
-!!$            & '(3) leave everything well alone '// &
-!!$            & '(it is legitamite to start a model forcing part way through a run by defining a partial time signal)', &
-!!$            & 'CONTINUING', &
-!!$            & (/const_real_null/),.false. &
-!!$            & )
-!!$    end if
-!!$    if (minval(force_restore_sed_sig(dum_is,1,1:loc_n_elements)) > 0.0) then
-!!$       CALL sub_report_error( &
-!!$            & 'biogem_data','sub_init_force_restore_sed', &
-!!$            & 'The time interval of forcing data does not fully span the requested model integration, either; '// &
-!!$            & '(1) alter the model start time year and/or run length (the goin file) '// &
-!!$            & '(2) alter the forcing signal stop time year (FILE: '//TRIM(loc_filename)//') '// &
-!!$            & '(3) leave everything well alone '// &
-!!$            & '(it is legitamite to stop a model forcing part way through a run by defining a partial time signal)', &
-!!$            & 'CONTINUING', &
-!!$            & (/const_real_null/),.false. &
-!!$            & )
-!!$    end if
-!!$  END SUBROUTINE sub_init_force_restore_sed
-
-
   ! ****************************************************************************************************************************** !
   ! INITIALIZE FLUX FORCING - OCEAN
   SUBROUTINE sub_init_force_flux_ocn()
@@ -3219,7 +3147,7 @@ CONTAINS
     ENDDO
     CLOSE(out,iostat=ios)
     call check_iostat(ios,__LINE__,__FILE__)
-    ! 
+    !
     loc_grid_dz(1:n_k) = goldstein_dz(:)
     loc_filename = TRIM(par_outdir_name)//TRIM(par_outfile_name)//'_grid_opsi_depth'//TRIM(string_data_ext)
     call check_unit(out,__LINE__,__FILE__)
@@ -3231,7 +3159,7 @@ CONTAINS
     ENDDO
     CLOSE(out,iostat=ios)
     call check_iostat(ios,__LINE__,__FILE__)
-    ! 
+    !
     loc_filename= &
          & fun_data_timeslice_filename( &
          & par_outdir_name,trim(par_outfile_name)//'_slice','misc_goldstein_opsi',string_results_ext)
@@ -3281,7 +3209,7 @@ CONTAINS
     ! save data
     ! NOTE: scale to give velocity components in units of (m s-1);
     !       for the horizontal velocity components, the scale factor is usc (= 0.05) [Edwards and Shepherd, 2002]
-    !       for the vertical velocity component, the overall scale factor is usc*dsc/rsc 
+    !       for the vertical velocity component, the overall scale factor is usc*dsc/rsc
     !       (= 0.05*4000.0/6.36e6) [Edwards and Shepherd, 2002]
     loc_filename= fun_data_timeslice_filename( &
          & par_outdir_name,trim(par_outfile_name)//'_slice','misc_goldstein_u_1',string_results_ext)
@@ -3366,7 +3294,6 @@ CONTAINS
     call check_iostat(ios,__LINE__,__FILE__)
     read(unit=in,fmt=*,iostat=ios) par_bio_remin_POC_eL1     ! e-folding depth of POC fraction #1
     call check_iostat(ios,__LINE__,__FILE__)
-!!$    read(unit=in,fmt=*) par_bio_remin_POC_eL2     ! e-folding depth of POC fraction #2
     ! inorganic particulate carbon cycling
     read(unit=in,fmt=*,iostat=ios) par_bio_red_POC_CaCO3     ! CaCO3:POC export 'rain ratio' scalar
     call check_iostat(ios,__LINE__,__FILE__)
@@ -3376,10 +3303,7 @@ CONTAINS
     call check_iostat(ios,__LINE__,__FILE__)
     read(unit=in,fmt=*,iostat=ios) par_bio_remin_CaCO3_eL1   ! e-folding depth of CaCO3 fraction #1
     call check_iostat(ios,__LINE__,__FILE__)
-!!$    read(unit=in,fmt=*) par_bio_remin_CaCO3_eL2   ! e-folding depth of CaCO3 fraction #2
     ! inorganic carbon cycling
-!!$    read(unit=in,fmt=*) par_bio_red_DOMfrac       ! DOM fraction of export production
-!!$    read(unit=in,fmt=*) par_bio_remin_DOMlifetime ! lifetime of DOM
     close(unit=in)
     ! DISPLAY
     print*,' '
@@ -3388,14 +3312,10 @@ CONTAINS
     print*,'par_bio_c0_PO4            : ',par_bio_c0_PO4
     print*,'par_bio_remin_POC_frac2   : ',par_bio_remin_POC_frac2
     print*,'par_bio_remin_POC_eL1     : ',par_bio_remin_POC_eL1
-!!$    print*,'par_bio_remin_POC_eL2     : ',par_bio_remin_POC_eL2
     print*,'par_bio_red_POC_CaCO3     : ',par_bio_red_POC_CaCO3
     print*,'par_bio_red_POC_CaCO3_pP  : ',par_bio_red_POC_CaCO3_pP
     print*,'par_bio_remin_CaCO3_frac2 : ',par_bio_remin_CaCO3_frac2
     print*,'par_bio_remin_CaCO3_eL1   : ',par_bio_remin_CaCO3_eL1
-!!$    print*,'par_bio_remin_CaCO3_eL2   : ',par_bio_remin_CaCO3_eL2
-!!$    print*,'par_bio_red_DOMfrac       : ',par_bio_red_DOMfrac
-!!$    print*,'par_bio_remin_DOMlifetime : ',par_bio_remin_DOMlifetime
     print*,' '
   end SUBROUTINE sub_init_bio_calibration
   ! ****************************************************************************************************************************** !

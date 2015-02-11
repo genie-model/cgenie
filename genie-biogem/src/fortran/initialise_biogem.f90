@@ -27,14 +27,14 @@ SUBROUTINE initialise_biogem(                       &
   ! DUMMY ARGUMENTS
   ! ---------------------------------------------------------- !
   REAL,INTENT(in)::dum_saln0,dum_rhoair,dum_cd,dum_ds,dum_dphi   !
-  real,INTENT(in)::dum_usc,dum_dsc,dum_fsc,dum_rh0sc             ! 
+  real,INTENT(in)::dum_usc,dum_dsc,dum_fsc,dum_rh0sc             !
   real,INTENT(in)::dum_rhosc,dum_cpsc,dum_solconst,dum_scf       !
   INTEGER,INTENT(in),DIMENSION(n_j)::dum_ips,dum_ipf             !
-  INTEGER,INTENT(in),DIMENSION(n_j)::dum_ias,dum_iaf             ! 
+  INTEGER,INTENT(in),DIMENSION(n_j)::dum_ias,dum_iaf             !
   INTEGER,INTENT(in)::dum_jsf                                    !
   integer,DIMENSION(n_i,n_j),INTENT(in)::dum_k1                  !
-  REAL,DIMENSION(n_k),INTENT(in)::dum_dz,dum_dza                 ! 
-  REAL,DIMENSION(0:n_j),INTENT(in)::dum_c,dum_cv,dum_s,dum_sv    ! 
+  REAL,DIMENSION(n_k),INTENT(in)::dum_dz,dum_dza                 !
+  REAL,DIMENSION(0:n_j),INTENT(in)::dum_c,dum_cv,dum_s,dum_sv    !
   REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts   ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
   REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts1  ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
   real,intent(inout),dimension(n_atm,n_i,n_j)::dum_sfcatm1       ! atmosphere-surface tracer composition; occ grid
@@ -46,7 +46,7 @@ SUBROUTINE initialise_biogem(                       &
   ! ---------------------------------------------------------- !
   ! DEFINE LOCAL VARIABLES
   ! ---------------------------------------------------------- !
-  integer::loc_iou 
+  integer::loc_iou
   integer::i,j,n
   ! ---------------------------------------------------------- !
   ! START
@@ -233,7 +233,7 @@ SUBROUTINE initialise_biogem(                       &
   CALL sub_data_init_phys_ocn()
   CALL sub_data_init_phys_ocnatm()
 !<<< ALT VECTOR FORM
-  ! ---------------------------------------------------------- ! 
+  ! ---------------------------------------------------------- !
 
   ! load default values for ocean, atmosphere, and sediment tracers and and initialize tracer arrays and options
   IF (ctrl_debug_lvl2) print*, 'load default values for ocean, atmosphere, and sediment tracers'
@@ -285,7 +285,6 @@ SUBROUTINE initialise_biogem(                       &
   CALL sub_init_force_flux_atm()
   CALL sub_init_force_restore_ocn()
   CALL sub_init_force_flux_ocn()
-  !CALL sub_init_force_restore_sed()
   CALL sub_init_force_flux_sed()
   if (ctrl_force_solconst) call sub_init_force_solconst()
 
@@ -301,7 +300,7 @@ SUBROUTINE initialise_biogem(                       &
   ! initialise 2d and 3d netcdf files
   IF (ctrl_continuing.AND.opt_append_data) THEN
      OPEN(unit=in,status='old',file=TRIM(par_rstdir_name)//'netcdf_record_numbers',form='formatted',action='read')
-     READ(unit=in,fmt='(i6)') ncout2d_ntrec,ncout3d_ntrec                           
+     READ(unit=in,fmt='(i6)') ncout2d_ntrec,ncout3d_ntrec
      close(unit=in)
   ELSE
      call sub_init_netcdf(trim(string_ncout2d),loc_iou,2)
