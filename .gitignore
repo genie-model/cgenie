@@ -47,3 +47,6 @@ Temporary Items
 *.mod
 *.dep
 /genie-main/current_config.dat
+/genie-main/genie.exe
+/genie-main/src/c/nccompare.exe
+/genie-main/testbiogem.out
