@@ -64,7 +64,6 @@
         <model name="goldstein" type="ocean" flagname="flag_goldsteinocean" state="off"/>
         <model name="slabocean" type="ocean" flagname="flag_slabocean" state="off"/>
         <model name="fixedocean" type="ocean" flagname="flag_fixedocean" state="off"/>
-        <model name="ocnlite" type="ocean" flagname="flag_ocnlite" state="off"/>
         <!-- SEA-ICE MODELS-->
         <model name="slabseaice" type="seaice" flagname="flag_slabseaice" state="off"/>
         <model name="goldsteinseaice" type="seaice" flagname="flag_goldsteinseaice" state="off"/>
@@ -233,10 +232,6 @@
                     </param>
                     <param name="conv_kocn_krokgem">
                         <value datatype="integer">5</value>
-                        <description></description>
-                    </param>
-                    <param name="conv_kocn_kocnlite">
-                        <value datatype="integer">1</value>
                         <description></description>
                     </param>
                     <param name="kgemlite">
@@ -6338,17 +6333,6 @@
 			<value datatype="real">0.01E-6</value>
 	                  <description>Threshold for convergence of CO2 repartitioning (atm)</description>
                     </param>
-                </namelist>
-            </file>
-        </model>
-
-        <model name="ocnlite">
-            <!---->
-            <!-- OCNlite! -->
-            <!---->
-            <!-- namelist outdir="$OUTDIR" -->
-            <file name="data_OCNLITE">
-                <namelist name="INI_OCNLITE_NML">
                 </namelist>
             </file>
         </model>

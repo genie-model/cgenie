@@ -980,14 +980,4 @@ contains
          )
   end subroutine cpl_comp_gltgem_dsum_wrapper
 
-! ******************************************************************************************************************************** !
-
-
-  !!
-  subroutine ocnlite_wrapper
-    implicit none
-    call ocnlite(            &
-         )
-  end subroutine ocnlite_wrapper
-
 END MODULE genie_loop_wrappers

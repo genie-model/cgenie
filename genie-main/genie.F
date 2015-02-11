@@ -60,11 +60,6 @@ c     *** GEM model - START
          call initialise_gem_wrapper
       endif
 c     ==================================================================
-c     *** OCNlite model - START
-      if (flag_ocnlite) then
-         call initialise_ocnlite_wrapper
-      endif
-c     ==================================================================
 c     *** BIOGEM model - START
       if (flag_biogem) then
          call initialise_biogem_wrapper
@@ -298,17 +293,6 @@ c     *** GOLDSTEIN ocean model
                   if (debug_loop.gt.2) PRINT*,'>>> GOLDSTEIN @ ',
      &                 koverall,kocn_loop
                   call goldstein_wrapper
-                  if (debug_loop.gt.2) PRINT*,'<<<'
-               endif
-            endif
-c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c     *** OCNlite ocean transport model
-            if (flag_ocnlite) then
-               if (mod(koverall,conv_kocn_kocnlite*kocn_loop).eq.0)
-     &              then
-                  if (debug_loop.gt.2) PRINT*,'>>> OCNLITE @ ',
-     &                 koverall,conv_kocn_kocnlite*kocn_loop
-                  call ocnlite_wrapper
                   if (debug_loop.gt.2) PRINT*,'<<<'
                endif
             endif
@@ -786,11 +770,6 @@ c     ==================================================================
 c     *** GEM model - END
       if (flag_atchem.or.flag_biogem.or.flag_sedgem.or.flag_rokgem) then
 ccc
-      endif
-c     ==================================================================
-c     *** OCNlite model - END
-      if (flag_ocnlite) then
-         call end_ocnlite_wrapper
       endif
 c     ==================================================================
 c     *** BIOGEM model - END

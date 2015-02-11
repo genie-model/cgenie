@@ -374,7 +374,7 @@ CONTAINS
           CLOSE(unit=out,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        end IF
-       ! 
+       !
        IF (ctrl_data_save_sig_carb_sur) THEN
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','misc_surpH',string_results_ext)
@@ -528,7 +528,7 @@ CONTAINS
                & par_outdir_name,trim(par_outfile_name)//'_series_diag_misc','inversion_forcing_' &
                & //trim(string_diag_misc_2D(idm2D)),string_results_ext)
           select case (idm2D)
-          case (idiag_misc_2D_FpCO2_13C,idiag_misc_2D_FDIC_13C,idiag_misc_2D_FCa_44Ca) 
+          case (idiag_misc_2D_FpCO2_13C,idiag_misc_2D_FDIC_13C,idiag_misc_2D_FCa_44Ca)
              loc_string = '% time (yr) / integrated flux (mol) / isotopic composition (o/oo)'//&
                   & ' NOTE: is the integrated forcing flux.'
           case default
@@ -577,7 +577,7 @@ CONTAINS
     END IF
     ! preformed tracers
     IF (ctrl_data_save_sig_diag .AND. ctrl_bio_preformed) THEN
-       if (ocn_select(io_col0) .AND. (.not. flag_ocnlite)) then
+       if (ocn_select(io_col0)) then
           do io=io_col0,io_col9
              if (ocn_select(io)) then
                 select case (io)
@@ -606,7 +606,7 @@ CONTAINS
                       loc_string = '% time (yr) / global total preformed O2 (mol) / global mean (mol kg-1)'
                    end if
                 CASE (io_col3)
-                   if (ocn_select(io_PO4)) then 
+                   if (ocn_select(io_PO4)) then
                       loc_save = .true.
                       loc_filename=fun_data_timeseries_filename( &
                            & loc_t,par_outdir_name,trim(par_outfile_name)//'_series_diag','preformed_PO4',string_results_ext &
@@ -761,7 +761,7 @@ CONTAINS
                      & loc_sig_ben
                 call check_iostat(ios,__LINE__,__FILE__)
                 CLOSE(unit=out,iostat=ios)
-                call check_iostat(ios,__LINE__,__FILE__)                
+                call check_iostat(ios,__LINE__,__FILE__)
              else
                 call check_unit(out,__LINE__,__FILE__)
                 OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -1558,7 +1558,7 @@ CONTAINS
        end DO
     END IF
     ! forcing flux
-    ! NOTE: the oringal calculation was of the the flux imposed from the ocean (but not subtracted from the ocean) but less any 
+    ! NOTE: the oringal calculation was of the the flux imposed from the ocean (but not subtracted from the ocean) but less any
     !       transfer from the ocean to the atm via air-sea gas exchange, i.e.
     !       loc_sig = int_focnatm_sig(ia)/int_t_sig - int_diag_airsea_sig(ia)/int_t_sig
     !       loc_tot  = int_focnatm_sig(atm_dep(ia))/int_t_sig - int_diag_airsea_sig(atm_dep(ia))/int_t_sig
@@ -1604,7 +1604,7 @@ CONTAINS
     end IF
     ! preformed tracers
     IF (ctrl_data_save_sig_diag .AND. ctrl_bio_preformed) THEN
-       if (ocn_select(io_col0) .AND. (.not. flag_ocnlite)) then
+       if (ocn_select(io_col0)) then
           do io=io_col0,io_col9
              if (ocn_select(io)) then
                 loc_save = .false.
@@ -1631,7 +1631,7 @@ CONTAINS
                            & )
                    end if
                 CASE (io_col3)
-                   if (ocn_select(io_PO4)) then 
+                   if (ocn_select(io_PO4)) then
                       loc_save = .true.
                       loc_filename=fun_data_timeseries_filename( &
                            & loc_t,par_outdir_name,trim(par_outfile_name)//'_series_diag','preformed_PO4',string_results_ext &
@@ -1860,7 +1860,7 @@ CONTAINS
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_ocn                 !
     REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::loc_carbconst     !
     REAL,DIMENSION(n_carb,n_i,n_j,n_k)::loc_carb               !
-    REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::loc_carbalk         ! 
+    REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::loc_carbalk         !
 
     ! *** initialize local variables ***
     loc_phys_ocn(:,:,:,:)  = 0.0
@@ -1936,9 +1936,9 @@ CONTAINS
                      & loc_ocn(io_F,i,j,k),    &
                      & loc_ocn(io_H2S,i,j,k),  &
                      & loc_ocn(io_NH4,i,j,k),  &
-                     & loc_carbconst(:,i,j,k), & 
-                     & loc_carb(:,i,j,k),      & 
-                     & loc_carbalk(:,i,j,k)    & 
+                     & loc_carbconst(:,i,j,k), &
+                     & loc_carb(:,i,j,k),      &
+                     & loc_carbalk(:,i,j,k)    &
                      & )
              end do
           end DO
@@ -2336,7 +2336,7 @@ CONTAINS
                   & conv_mol_umol*SUM(phys_ocn(ipo_M,:,:,:)*ocn(io_DIC,:,:,:))/loc_ocn_tot_M, &
                   & conv_mol_umol*SUM(phys_ocn(ipo_M,:,:,:)*ocn(io_ALK,:,:,:))/loc_ocn_tot_M
           endif
-          ! ###################################################################################################################### !          
+          ! ###################################################################################################################### !
        end select
     else
        select case (fname_topo)

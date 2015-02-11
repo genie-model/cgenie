@@ -24,7 +24,6 @@ c
      :      conv_kocn_kbiogem,
      :      conv_kocn_ksedgem,
      :      conv_kocn_krokgem,
-     :      conv_kocn_kocnlite,
      :      kgemlite,
      :      flag_ebatmos,flag_igcmatmos,
      :      flag_fixedocean,flag_slabocean,flag_goldsteinocean,
@@ -39,7 +38,6 @@ c
      :      flag_rokgem,
      :      flag_ichem,
      :      flag_wind,
-     :      flag_ocnlite,
      :      flag_gemlite,
      :      write_flag_atm,write_flag_ocn,write_flag_sic,
      :      outputdir_name,dt_write,
@@ -71,7 +69,6 @@ c
       conv_kocn_ksedgem=-1
       conv_kocn_kbiogem=-1
       conv_kocn_krokgem=-1
-      conv_kocn_kocnlite=-1
       kgemlite=1
 c
       flag_igcmatmos=.FALSE.
@@ -82,7 +79,6 @@ c
       flag_fixedocean=.FALSE.
       flag_slabocean=.FALSE.
       flag_goldsteinocean=.TRUE.
-      flag_ocnlite=.FALSE.
 c
       flag_fixedseaice=.FALSE.
       flag_slabseaice=.FALSE.

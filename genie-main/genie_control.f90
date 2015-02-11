@@ -134,7 +134,6 @@ MODULE genie_control
       integer(kind=8) :: conv_kocn_ksedgem  !< sedgem loop modifier (relative to ocean loop)
       integer(kind=8) :: conv_kocn_kbiogem  !< biogem loop modifier (relative to ocean loop)
       integer(kind=8) :: conv_kocn_krokgem  !< rokgem loop modifier (relative to ocean loop)
-      integer(kind=8) :: conv_kocn_kocnlite  !< goldlite loop modifier (relative to ocean loop)
       integer :: kgemlite
 
       ! total defined tracer numbers
@@ -169,7 +168,6 @@ MODULE genie_control
       logical :: flag_biogem
       logical :: flag_sedgem
       logical :: flag_rokgem
-      logical :: flag_ocnlite
       logical :: flag_gemlite
       logical :: flag_checkfluxes_sic
       logical :: flag_checkfluxes_ocn

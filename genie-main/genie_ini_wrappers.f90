@@ -89,12 +89,6 @@ contains
   end subroutine initialise_gem_wrapper
 
   !!
-  subroutine initialise_ocnlite_wrapper
-    implicit none
-    call initialise_ocnlite()
-  end subroutine initialise_ocnlite_wrapper
-
-  !!
   subroutine initialise_biogem_wrapper
     implicit none
     call initialise_biogem(                                                                        &

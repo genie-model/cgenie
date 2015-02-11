@@ -48,8 +48,7 @@ MODULE_NAMES = goldstein \
                biogem \
                sedgem \
                rokgem \
-               gemlite \
-               ocnlite
+               gemlite
 
 UTIL_NAMES = nc1 \
              util1
