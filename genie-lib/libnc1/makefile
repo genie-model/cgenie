@@ -18,10 +18,10 @@ OBJECTS= close_file_nc.$(OBJ_EXT) find_dim_nc.$(OBJ_EXT) \
 OTHER_FILES=netcdf.inc makefile ../../genie-main/makefile.arc
 
 $(LIBNAME).$(LIB_EXT): $(OBJECTS) $(OTHER_FILES)
-	$(LIB_CMD)$(LIBNAME).$(LIB_EXT) $(OBJECTS)
+	$(LIB_CMD) $(LIBNAME).$(LIB_EXT) $(OBJECTS)
 
 .PHONY: clean tags
-clean : 
+clean :
 	\rm -f *.$(OBJ_EXT) *.$(LIB_EXT) *__genmod.f90 *__genmod.mod
 
 tags:

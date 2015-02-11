@@ -9,7 +9,7 @@ SRCDIR = ../src/fortran
 all: $(LIBNAME).$(LIB_EXT)
 
 $(LIBNAME).$(LIB_EXT): $(SRCDIR)/*.$(OBJ_EXT)
-	$(LIB_CMD)$@ $^
+	$(LIB_CMD) $@ $^
 ifeq ($(MACHINE),OSX)
 	$(RANLIB_CMD) $@
 endif	

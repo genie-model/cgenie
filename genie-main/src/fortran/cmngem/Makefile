@@ -8,7 +8,7 @@ LIBNAME=libcmngem
 LOCFLAGS= $(FLAGR8)
 
 $(LIBNAME).$(LIB_EXT): $(OBJS)
-	$(LIB_CMD)$(LIBNAME).$(LIB_EXT) $(OBJS)
+	$(LIB_CMD) $(LIBNAME).$(LIB_EXT) $(OBJS)
 
 $(OBJS): %.$(OBJ_EXT) : %.f90
 	$(F77) $(COMPILEONLY) $(LOCFLAGS) $(FFLAGS) $< $(OBJ_FLAG)$@
