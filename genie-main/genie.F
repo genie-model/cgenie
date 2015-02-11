@@ -62,7 +62,6 @@ c     ==================================================================
 c     *** BIOGEM model - START
       if (flag_biogem) then
          call initialise_biogem_wrapper
-ccc         call biogem_climate_wrapper
       endif
 c     ==================================================================
 c     *** ATCHEM model - START
@@ -82,7 +81,6 @@ c     ==================================================================
 c     *** ROKGEM model - START
       if (flag_rokgem) then
          call initialise_rokgem_wrapper
-c     call cpl_flux_rokocn_wrapper
       endif
 c     ==================================================================
 c     *** GEMlite model - START
@@ -138,13 +136,6 @@ c     test for for GEM count exceeding a complete 1st (normal) cycle
                if(istep_gem.eq.(gem_notyr+1)) then
 c     ### SWITCH TO GEM CYCLE ##########################################
                   if (debug_loop.gt.0) PRINT*,'### START GEM CYCLE ###'
-cc     adjust GEM cycle count
-c                  gem_notyr = gem_notyr - gem_dyr
-c                  if (gem_notyr.lt.gem_notyr_min)
-c     &                 gem_notyr = gem_notyr_min
-c                  if (debug_loop.gt.1)
-c     &                 PRINT*,'*** gem_yr, D(gem_yr)  :',
-c     &                 gem_yr,gem_dyr
                   if (debug_loop.gt.3) PRINT*,'* gemlite_cycleinit'
                   call gemlite_cycleinit_wrapper
 c     copy current state of tracer arrays to GEMlite
@@ -204,7 +195,6 @@ c     update <sfcatm1> ocean interface array
 c     reset cumulative (annual average) weathering array
 c     (<dum_sfxsumrok1_gem>)
 c     + atm fluxes (outgassing, weathering CO2 consumption)
-ccc   call gemlite_cycleclean_wrapper
                   call reinit_flux_rokocn_gem_wrapper
                   call reinit_flux_rokatm_gem_wrapper
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

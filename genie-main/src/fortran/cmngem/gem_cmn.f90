@@ -47,12 +47,12 @@ MODULE gem_cmn
   NAMELIST /ini_gem_nml/par_carbchem_pH_tolerance,par_carbchem_pH_iterationmax
   logical::ctrl_carbchem_fail                                           ! Exit upon pH solution failure?
   NAMELIST /ini_gem_nml/ctrl_carbchem_fail
-  integer::ctrl_debug_init,ctrl_debug_loop,ctrl_debug_end               ! 
+  integer::ctrl_debug_init,ctrl_debug_loop,ctrl_debug_end               !
   NAMELIST /ini_gem_nml/ctrl_debug_init,ctrl_debug_loop,ctrl_debug_end
   ! ------------------- I/O: DIRECTORY DEFINITIONS ------------------------------------------------------------------------------- !
-  CHARACTER(len=127)::par_gem_indir_name                                ! 
+  CHARACTER(len=127)::par_gem_indir_name                                !
   NAMELIST /ini_gem_nml/par_gem_indir_name
-  CHARACTER(len=04)::string_results_ext                                 ! 
+  CHARACTER(len=04)::string_results_ext                                 !
   NAMELIST /ini_gem_nml/string_results_ext
   ! ############################################################################################################################## !
 
@@ -62,82 +62,82 @@ MODULE gem_cmn
   ! ****************************************************************************************************************************** !
 
   ! *** array dimensions ***
-  ! main biogeochem ocean array dimensions 
+  ! main biogeochem ocean array dimensions
   INTEGER,PARAMETER::n_carb                               = 10          ! number of ocean box chemistry descriptors
   INTEGER,PARAMETER::n_carbconst                          = 17          ! number of ocean box chemistry constants descriptors
   INTEGER,PARAMETER::n_carbalk                            = 13          ! number of alkalinty chemistry descriptors
   INTEGER,PARAMETER::n_carbisor                           = 08          ! number of carbonate isotopic ratio descriptors
   ! *** array index values ***
   ! ocean tracer IDs
-  INTEGER,PARAMETER::io_T                                 = 01    ! 
-  INTEGER,PARAMETER::io_S                                 = 02    ! 
-  INTEGER,PARAMETER::io_DIC                               = 03    ! 
-  INTEGER,PARAMETER::io_DIC_13C                           = 04    ! 
-  INTEGER,PARAMETER::io_DIC_14C                           = 05    ! 
-  INTEGER,PARAMETER::io_NO3                               = 06    ! 
-  INTEGER,PARAMETER::io_NO3_15N                           = 07    ! 
-  INTEGER,PARAMETER::io_PO4                               = 08    ! 
-  INTEGER,PARAMETER::io_O2                                = 10    ! 
-  INTEGER,PARAMETER::io_O2_18O                            = 11    ! 
-  INTEGER,PARAMETER::io_ALK                               = 12    ! 
-  INTEGER,PARAMETER::io_SiO2                              = 13    ! 
-  INTEGER,PARAMETER::io_SiO2_30Si                         = 14    ! 
-  INTEGER,PARAMETER::io_DOM_C                             = 15    ! 
-  INTEGER,PARAMETER::io_DOM_C_13C                         = 16    ! 
-  INTEGER,PARAMETER::io_DOM_C_14C                         = 17    ! 
-  INTEGER,PARAMETER::io_DOM_N                             = 18    ! 
-  INTEGER,PARAMETER::io_DOM_N_15N                         = 19    ! 
-  INTEGER,PARAMETER::io_DOM_P                             = 20    ! 
-  INTEGER,PARAMETER::io_DOM_Cd                            = 21    ! 
-  INTEGER,PARAMETER::io_DOM_Cd_114Cd                      = 52    ! 
-  INTEGER,PARAMETER::io_DOM_Fe                            = 22    ! 
-  INTEGER,PARAMETER::io_DOM_Fe_56Fe                       = 81    ! 
-  INTEGER,PARAMETER::io_DOM_I                             = 94    ! 
-  INTEGER,PARAMETER::io_RDOM_C                            = 67          ! 
-  INTEGER,PARAMETER::io_RDOM_C_13C                        = 68          ! 
-  INTEGER,PARAMETER::io_RDOM_C_14C                        = 69          ! 
-  INTEGER,PARAMETER::io_RDOM_N                            = 70          ! 
-  INTEGER,PARAMETER::io_RDOM_N_15N                        = 71          ! 
-  INTEGER,PARAMETER::io_RDOM_P                            = 72          ! 
-  INTEGER,PARAMETER::io_RDOM_Cd                           = 73          ! 
-  INTEGER,PARAMETER::io_RDOM_Cd_114Cd                     = 74          ! 
-  INTEGER,PARAMETER::io_RDOM_Fe                           = 75          ! 
-  INTEGER,PARAMETER::io_RDOM_Fe_56Fe                      = 82          ! 
-  INTEGER,PARAMETER::io_RDOM_I                            = 95          ! 
-  INTEGER,PARAMETER::io_CH4                               = 25    ! 
-  INTEGER,PARAMETER::io_CH4_13C                           = 26    ! 
-  INTEGER,PARAMETER::io_CH4_14C                           = 27    ! 
-  INTEGER,PARAMETER::io_NH4                               = 28    ! 
-  INTEGER,PARAMETER::io_NH4_15N                           = 29    ! 
-  INTEGER,PARAMETER::io_N2                                = 30    ! 
+  INTEGER,PARAMETER::io_T                                 = 01    !
+  INTEGER,PARAMETER::io_S                                 = 02    !
+  INTEGER,PARAMETER::io_DIC                               = 03    !
+  INTEGER,PARAMETER::io_DIC_13C                           = 04    !
+  INTEGER,PARAMETER::io_DIC_14C                           = 05    !
+  INTEGER,PARAMETER::io_NO3                               = 06    !
+  INTEGER,PARAMETER::io_NO3_15N                           = 07    !
+  INTEGER,PARAMETER::io_PO4                               = 08    !
+  INTEGER,PARAMETER::io_O2                                = 10    !
+  INTEGER,PARAMETER::io_O2_18O                            = 11    !
+  INTEGER,PARAMETER::io_ALK                               = 12    !
+  INTEGER,PARAMETER::io_SiO2                              = 13    !
+  INTEGER,PARAMETER::io_SiO2_30Si                         = 14    !
+  INTEGER,PARAMETER::io_DOM_C                             = 15    !
+  INTEGER,PARAMETER::io_DOM_C_13C                         = 16    !
+  INTEGER,PARAMETER::io_DOM_C_14C                         = 17    !
+  INTEGER,PARAMETER::io_DOM_N                             = 18    !
+  INTEGER,PARAMETER::io_DOM_N_15N                         = 19    !
+  INTEGER,PARAMETER::io_DOM_P                             = 20    !
+  INTEGER,PARAMETER::io_DOM_Cd                            = 21    !
+  INTEGER,PARAMETER::io_DOM_Cd_114Cd                      = 52    !
+  INTEGER,PARAMETER::io_DOM_Fe                            = 22    !
+  INTEGER,PARAMETER::io_DOM_Fe_56Fe                       = 81    !
+  INTEGER,PARAMETER::io_DOM_I                             = 94    !
+  INTEGER,PARAMETER::io_RDOM_C                            = 67          !
+  INTEGER,PARAMETER::io_RDOM_C_13C                        = 68          !
+  INTEGER,PARAMETER::io_RDOM_C_14C                        = 69          !
+  INTEGER,PARAMETER::io_RDOM_N                            = 70          !
+  INTEGER,PARAMETER::io_RDOM_N_15N                        = 71          !
+  INTEGER,PARAMETER::io_RDOM_P                            = 72          !
+  INTEGER,PARAMETER::io_RDOM_Cd                           = 73          !
+  INTEGER,PARAMETER::io_RDOM_Cd_114Cd                     = 74          !
+  INTEGER,PARAMETER::io_RDOM_Fe                           = 75          !
+  INTEGER,PARAMETER::io_RDOM_Fe_56Fe                      = 82          !
+  INTEGER,PARAMETER::io_RDOM_I                            = 95          !
+  INTEGER,PARAMETER::io_CH4                               = 25    !
+  INTEGER,PARAMETER::io_CH4_13C                           = 26    !
+  INTEGER,PARAMETER::io_CH4_14C                           = 27    !
+  INTEGER,PARAMETER::io_NH4                               = 28    !
+  INTEGER,PARAMETER::io_NH4_15N                           = 29    !
+  INTEGER,PARAMETER::io_N2                                = 30    !
   INTEGER,PARAMETER::io_N2_15N                            = 31    !
-  INTEGER,PARAMETER::io_N2O                               = 32    ! 
+  INTEGER,PARAMETER::io_N2O                               = 32    !
   INTEGER,PARAMETER::io_N2O_15N                           = 33    !
-  INTEGER,PARAMETER::io_NO2                               = 34    ! 
+  INTEGER,PARAMETER::io_NO2                               = 34    !
   INTEGER,PARAMETER::io_NO2_15N                           = 35    !
   INTEGER,PARAMETER::io_Cd                                = 34    !
-  INTEGER,PARAMETER::io_Cd_114Cd                          = 51    ! 
-  INTEGER,PARAMETER::io_Ca                                = 35    ! 
+  INTEGER,PARAMETER::io_Cd_114Cd                          = 51    !
+  INTEGER,PARAMETER::io_Ca                                = 35    !
   INTEGER,PARAMETER::io_Ca_44Ca                           = 76    ! qsub -j y -o cgenie_output -V -S /bin/bash
-  INTEGER,PARAMETER::io_Mg                                = 50    ! 
-  INTEGER,PARAMETER::io_Li                                = 53    ! 
-  INTEGER,PARAMETER::io_Li_7Li                            = 54    ! 
-  INTEGER,PARAMETER::io_Nd                                = 55    ! 
-  INTEGER,PARAMETER::io_Nd_144Nd                          = 56    ! 
-  INTEGER,PARAMETER::io_B                                 = 36    ! 
-  INTEGER,PARAMETER::io_F                                 = 37    ! 
-  INTEGER,PARAMETER::io_SO4                               = 38    ! 
-  INTEGER,PARAMETER::io_SO4_34S                           = 39    ! 
-  INTEGER,PARAMETER::io_H2S                               = 40    !  
-  INTEGER,PARAMETER::io_H2S_34S                           = 41    ! 
-  INTEGER,PARAMETER::io_Mo                                = 77    !  
-  INTEGER,PARAMETER::io_Mo_98Mo                           = 78    ! 
-  INTEGER,PARAMETER::io_Ge                                = 42    !  
-  INTEGER,PARAMETER::io_231Pa                             = 43    !  
-  INTEGER,PARAMETER::io_230Th                             = 44    !  
-  INTEGER,PARAMETER::io_CFC11                             = 45    ! 
-  INTEGER,PARAMETER::io_CFC12                             = 46    ! 
-  INTEGER,PARAMETER::io_SF6                               = 47    !  
+  INTEGER,PARAMETER::io_Mg                                = 50    !
+  INTEGER,PARAMETER::io_Li                                = 53    !
+  INTEGER,PARAMETER::io_Li_7Li                            = 54    !
+  INTEGER,PARAMETER::io_Nd                                = 55    !
+  INTEGER,PARAMETER::io_Nd_144Nd                          = 56    !
+  INTEGER,PARAMETER::io_B                                 = 36    !
+  INTEGER,PARAMETER::io_F                                 = 37    !
+  INTEGER,PARAMETER::io_SO4                               = 38    !
+  INTEGER,PARAMETER::io_SO4_34S                           = 39    !
+  INTEGER,PARAMETER::io_H2S                               = 40    !
+  INTEGER,PARAMETER::io_H2S_34S                           = 41    !
+  INTEGER,PARAMETER::io_Mo                                = 77    !
+  INTEGER,PARAMETER::io_Mo_98Mo                           = 78    !
+  INTEGER,PARAMETER::io_Ge                                = 42    !
+  INTEGER,PARAMETER::io_231Pa                             = 43    !
+  INTEGER,PARAMETER::io_230Th                             = 44    !
+  INTEGER,PARAMETER::io_CFC11                             = 45    !
+  INTEGER,PARAMETER::io_CFC12                             = 46    !
+  INTEGER,PARAMETER::io_SF6                               = 47    !
   INTEGER,PARAMETER::io_colr                              = 48          ! RED numerical (color) tracer
   INTEGER,PARAMETER::io_colb                              = 49          ! BLUE numerical (color) tracer
   INTEGER,PARAMETER::io_col0                              = 57          ! numerical (color) tracer #0
@@ -150,20 +150,20 @@ MODULE gem_cmn
   INTEGER,PARAMETER::io_col7                              = 64          ! numerical (color) tracer #7
   INTEGER,PARAMETER::io_col8                              = 65          ! numerical (color) tracer #8
   INTEGER,PARAMETER::io_col9                              = 66          ! numerical (color) tracer #9
-  INTEGER,PARAMETER::io_Fe                                = 09    ! 
-  INTEGER,PARAMETER::io_Fe2                               = 83    ! 
-  INTEGER,PARAMETER::io_L                                 = 24    ! 
-  INTEGER,PARAMETER::io_L2                                = 84    ! 
-  INTEGER,PARAMETER::io_FeL                               = 23    ! 
-  INTEGER,PARAMETER::io_FeL2                              = 85  ! 
-  INTEGER,PARAMETER::io_Fe_56Fe                           = 86  ! 
-  INTEGER,PARAMETER::io_Fe2_56Fe                          = 87  ! 
-  INTEGER,PARAMETER::io_FeL_56Fe                          = 88  ! 
-  INTEGER,PARAMETER::io_FeL2_56Fe                         = 89  ! 
-  INTEGER,PARAMETER::io_CFe                               = 90  ! 
-  INTEGER,PARAMETER::io_CFe_56Fe                          = 91  ! 
-  INTEGER,PARAMETER::io_I                                 = 92  ! 
-  INTEGER,PARAMETER::io_IO3                               = 93  ! 
+  INTEGER,PARAMETER::io_Fe                                = 09    !
+  INTEGER,PARAMETER::io_Fe2                               = 83    !
+  INTEGER,PARAMETER::io_L                                 = 24    !
+  INTEGER,PARAMETER::io_L2                                = 84    !
+  INTEGER,PARAMETER::io_FeL                               = 23    !
+  INTEGER,PARAMETER::io_FeL2                              = 85  !
+  INTEGER,PARAMETER::io_Fe_56Fe                           = 86  !
+  INTEGER,PARAMETER::io_Fe2_56Fe                          = 87  !
+  INTEGER,PARAMETER::io_FeL_56Fe                          = 88  !
+  INTEGER,PARAMETER::io_FeL2_56Fe                         = 89  !
+  INTEGER,PARAMETER::io_CFe                               = 90  !
+  INTEGER,PARAMETER::io_CFe_56Fe                          = 91  !
+  INTEGER,PARAMETER::io_I                                 = 92  !
+  INTEGER,PARAMETER::io_IO3                               = 93  !
   ! atmospheric tracer indices
   INTEGER,PARAMETER::ia_T                                 = 01    ! temperature
   INTEGER,PARAMETER::ia_q                                 = 02    ! specific humidity
@@ -185,85 +185,85 @@ MODULE gem_cmn
   INTEGER,PARAMETER::ia_pCFC11                            = 18    ! halo-carbon
   INTEGER,PARAMETER::ia_pCFC12                            = 19    ! halo-carbon
   ! sediment tracer indicesqsub -j y -o cgenie_output -V -S /bin/bash
-  INTEGER,PARAMETER::is_NULL1                             = 01    ! 
-  INTEGER,PARAMETER::is_NULL2                             = 02    ! 
-  INTEGER,PARAMETER::is_POC                               = 03    ! 
-  INTEGER,PARAMETER::is_POC_13C                           = 04    ! 
-  INTEGER,PARAMETER::is_POC_14C                           = 05    ! 
-  INTEGER,PARAMETER::is_PON                               = 06    ! 
-  INTEGER,PARAMETER::is_PON_15N                           = 07    ! 
-  INTEGER,PARAMETER::is_POP                               = 08    ! 
-  INTEGER,PARAMETER::is_POCd                              = 09    ! 
-  INTEGER,PARAMETER::is_POCd_114Cd                        = 43    ! 
-  INTEGER,PARAMETER::is_POFe                              = 10    ! 
-  INTEGER,PARAMETER::is_POI                               = 79    ! 
-  INTEGER,PARAMETER::is_POM_231Pa                         = 11    ! 
-  INTEGER,PARAMETER::is_POM_230Th                         = 12    ! 
-  INTEGER,PARAMETER::is_POM_Fe                            = 13    !  
-  INTEGER,PARAMETER::is_POM_Fe_56Fe                       = 75    ! 
-  INTEGER,PARAMETER::is_POM_Nd                            = 47    ! 
-  INTEGER,PARAMETER::is_POM_Nd_144Nd                      = 48    ! 
-  INTEGER,PARAMETER::is_POM_MoS2                          = 58    ! 
-  INTEGER,PARAMETER::is_POM_MoS2_98Mo                     = 59    ! 
-  INTEGER,PARAMETER::is_POM_MoS2_34S                      = 60    !  
-  INTEGER,PARAMETER::is_POM_S                             = 73    ! 
-  INTEGER,PARAMETER::is_POM_S_34S                         = 74    !  
-  INTEGER,PARAMETER::is_CaCO3                             = 14    ! 
-  INTEGER,PARAMETER::is_CaCO3_13C                         = 15    ! 
-  INTEGER,PARAMETER::is_CaCO3_14C                         = 16    ! 
+  INTEGER,PARAMETER::is_NULL1                             = 01    !
+  INTEGER,PARAMETER::is_NULL2                             = 02    !
+  INTEGER,PARAMETER::is_POC                               = 03    !
+  INTEGER,PARAMETER::is_POC_13C                           = 04    !
+  INTEGER,PARAMETER::is_POC_14C                           = 05    !
+  INTEGER,PARAMETER::is_PON                               = 06    !
+  INTEGER,PARAMETER::is_PON_15N                           = 07    !
+  INTEGER,PARAMETER::is_POP                               = 08    !
+  INTEGER,PARAMETER::is_POCd                              = 09    !
+  INTEGER,PARAMETER::is_POCd_114Cd                        = 43    !
+  INTEGER,PARAMETER::is_POFe                              = 10    !
+  INTEGER,PARAMETER::is_POI                               = 79    !
+  INTEGER,PARAMETER::is_POM_231Pa                         = 11    !
+  INTEGER,PARAMETER::is_POM_230Th                         = 12    !
+  INTEGER,PARAMETER::is_POM_Fe                            = 13    !
+  INTEGER,PARAMETER::is_POM_Fe_56Fe                       = 75    !
+  INTEGER,PARAMETER::is_POM_Nd                            = 47    !
+  INTEGER,PARAMETER::is_POM_Nd_144Nd                      = 48    !
+  INTEGER,PARAMETER::is_POM_MoS2                          = 58    !
+  INTEGER,PARAMETER::is_POM_MoS2_98Mo                     = 59    !
+  INTEGER,PARAMETER::is_POM_MoS2_34S                      = 60    !
+  INTEGER,PARAMETER::is_POM_S                             = 73    !
+  INTEGER,PARAMETER::is_POM_S_34S                         = 74    !
+  INTEGER,PARAMETER::is_CaCO3                             = 14    !
+  INTEGER,PARAMETER::is_CaCO3_13C                         = 15    !
+  INTEGER,PARAMETER::is_CaCO3_14C                         = 16    !
   INTEGER,PARAMETER::is_CaCO3_18O                         = 17    !
   INTEGER,PARAMETER::is_CaCO3_44Ca                        = 57    !
-  INTEGER,PARAMETER::is_CdCO3                             = 18    ! 
+  INTEGER,PARAMETER::is_CdCO3                             = 18    !
   INTEGER,PARAMETER::is_CdCO3_114Cd                       = 44    !
-  INTEGER,PARAMETER::is_LiCO3                             = 45    ! 
+  INTEGER,PARAMETER::is_LiCO3                             = 45    !
   INTEGER,PARAMETER::is_LiCO3_7Li                         = 46    !
-  INTEGER,PARAMETER::is_CaCO3_231Pa                       = 19    ! 
-  INTEGER,PARAMETER::is_CaCO3_230Th                       = 20    !  
-  INTEGER,PARAMETER::is_CaCO3_Fe                          = 21    !  
-  INTEGER,PARAMETER::is_CaCO3_Fe_56Fe                     = 76  !  
-  INTEGER,PARAMETER::is_CaCO3_Nd                          = 49    ! 
-  INTEGER,PARAMETER::is_CaCO3_Nd_144Nd                    = 50    !  
-  INTEGER,PARAMETER::is_CaCO3_MoS2                        = 61    ! 
-  INTEGER,PARAMETER::is_CaCO3_MoS2_98Mo                   = 62    ! 
-  INTEGER,PARAMETER::is_CaCO3_MoS2_34S                    = 63    !  
-  INTEGER,PARAMETER::is_det                               = 22    ! 
-  INTEGER,PARAMETER::is_detLi                             = 55    ! 
-  INTEGER,PARAMETER::is_detLi_7Li                         = 56    !  
-  INTEGER,PARAMETER::is_det_231Pa                         = 23    ! 
-  INTEGER,PARAMETER::is_det_230Th                         = 24    ! 
-  INTEGER,PARAMETER::is_det_Fe                            = 25    ! 
-  INTEGER,PARAMETER::is_det_Fe_56Fe                       = 77    ! 
-  INTEGER,PARAMETER::is_det_Nd                            = 51    ! 
-  INTEGER,PARAMETER::is_det_Nd_144Nd                      = 52    !  
-  INTEGER,PARAMETER::is_det_MoS2                          = 64    ! 
-  INTEGER,PARAMETER::is_det_MoS2_98Mo                     = 65    ! 
-  INTEGER,PARAMETER::is_det_MoS2_34S                      = 66    !   
-  INTEGER,PARAMETER::is_opal                              = 26    ! 
-  INTEGER,PARAMETER::is_opal_30Si                         = 27    ! 
-  INTEGER,PARAMETER::is_opalGe                            = 28    ! 
-  INTEGER,PARAMETER::is_opal_231Pa                        = 29    ! 
-  INTEGER,PARAMETER::is_opal_230Th                        = 30    ! 
-  INTEGER,PARAMETER::is_opal_Fe                           = 31    ! 
-  INTEGER,PARAMETER::is_opal_Fe_56Fe                      = 78    ! 
-  INTEGER,PARAMETER::is_opal_Nd                           = 53    ! 
-  INTEGER,PARAMETER::is_opal_Nd_144Nd                     = 54    ! 
-  INTEGER,PARAMETER::is_opal_MoS2                         = 67    ! 
-  INTEGER,PARAMETER::is_opal_MoS2_98Mo                    = 68    ! 
-  INTEGER,PARAMETER::is_opal_MoS2_34S                     = 69    ! 
-  INTEGER,PARAMETER::is_ash                               = 32    ! 
-  INTEGER,PARAMETER::is_POC_frac2                         = 33    ! 
-  INTEGER,PARAMETER::is_CaCO3_frac2                       = 34    ! 
-  INTEGER,PARAMETER::is_opal_frac2                        = 35    ! 
-  INTEGER,PARAMETER::is_CaCO3_age                         = 36    ! 
-  INTEGER,PARAMETER::is_det_age                           = 70    ! 
-  INTEGER,PARAMETER::is_CaCO3_red                         = 71    ! 
-  INTEGER,PARAMETER::is_CaCO3_blue                        = 72    ! 
-  INTEGER,PARAMETER::is_foram_p_13C                       = 37    ! 
-  INTEGER,PARAMETER::is_foram_p_14C                       = 38    ! 
-  INTEGER,PARAMETER::is_foram_p_18O                       = 39    ! 
-  INTEGER,PARAMETER::is_foram_b_13C                       = 40    ! 
-  INTEGER,PARAMETER::is_foram_b_14C                       = 41    ! 
-  INTEGER,PARAMETER::is_foram_b_18O                       = 42    ! 
+  INTEGER,PARAMETER::is_CaCO3_231Pa                       = 19    !
+  INTEGER,PARAMETER::is_CaCO3_230Th                       = 20    !
+  INTEGER,PARAMETER::is_CaCO3_Fe                          = 21    !
+  INTEGER,PARAMETER::is_CaCO3_Fe_56Fe                     = 76  !
+  INTEGER,PARAMETER::is_CaCO3_Nd                          = 49    !
+  INTEGER,PARAMETER::is_CaCO3_Nd_144Nd                    = 50    !
+  INTEGER,PARAMETER::is_CaCO3_MoS2                        = 61    !
+  INTEGER,PARAMETER::is_CaCO3_MoS2_98Mo                   = 62    !
+  INTEGER,PARAMETER::is_CaCO3_MoS2_34S                    = 63    !
+  INTEGER,PARAMETER::is_det                               = 22    !
+  INTEGER,PARAMETER::is_detLi                             = 55    !
+  INTEGER,PARAMETER::is_detLi_7Li                         = 56    !
+  INTEGER,PARAMETER::is_det_231Pa                         = 23    !
+  INTEGER,PARAMETER::is_det_230Th                         = 24    !
+  INTEGER,PARAMETER::is_det_Fe                            = 25    !
+  INTEGER,PARAMETER::is_det_Fe_56Fe                       = 77    !
+  INTEGER,PARAMETER::is_det_Nd                            = 51    !
+  INTEGER,PARAMETER::is_det_Nd_144Nd                      = 52    !
+  INTEGER,PARAMETER::is_det_MoS2                          = 64    !
+  INTEGER,PARAMETER::is_det_MoS2_98Mo                     = 65    !
+  INTEGER,PARAMETER::is_det_MoS2_34S                      = 66    !
+  INTEGER,PARAMETER::is_opal                              = 26    !
+  INTEGER,PARAMETER::is_opal_30Si                         = 27    !
+  INTEGER,PARAMETER::is_opalGe                            = 28    !
+  INTEGER,PARAMETER::is_opal_231Pa                        = 29    !
+  INTEGER,PARAMETER::is_opal_230Th                        = 30    !
+  INTEGER,PARAMETER::is_opal_Fe                           = 31    !
+  INTEGER,PARAMETER::is_opal_Fe_56Fe                      = 78    !
+  INTEGER,PARAMETER::is_opal_Nd                           = 53    !
+  INTEGER,PARAMETER::is_opal_Nd_144Nd                     = 54    !
+  INTEGER,PARAMETER::is_opal_MoS2                         = 67    !
+  INTEGER,PARAMETER::is_opal_MoS2_98Mo                    = 68    !
+  INTEGER,PARAMETER::is_opal_MoS2_34S                     = 69    !
+  INTEGER,PARAMETER::is_ash                               = 32    !
+  INTEGER,PARAMETER::is_POC_frac2                         = 33    !
+  INTEGER,PARAMETER::is_CaCO3_frac2                       = 34    !
+  INTEGER,PARAMETER::is_opal_frac2                        = 35    !
+  INTEGER,PARAMETER::is_CaCO3_age                         = 36    !
+  INTEGER,PARAMETER::is_det_age                           = 70    !
+  INTEGER,PARAMETER::is_CaCO3_red                         = 71    !
+  INTEGER,PARAMETER::is_CaCO3_blue                        = 72    !
+  INTEGER,PARAMETER::is_foram_p_13C                       = 37    !
+  INTEGER,PARAMETER::is_foram_p_14C                       = 38    !
+  INTEGER,PARAMETER::is_foram_p_18O                       = 39    !
+  INTEGER,PARAMETER::is_foram_b_13C                       = 40    !
+  INTEGER,PARAMETER::is_foram_b_14C                       = 41    !
+  INTEGER,PARAMETER::is_foram_b_18O                       = 42    !
   ! (carbonate) chemistry descriptors array indices
   INTEGER,PARAMETER::ic_H                                 = 01    ! H+ concentration
   INTEGER,PARAMETER::ic_fug_CO2                           = 02    ! CO2 fugacity
@@ -276,23 +276,23 @@ MODULE gem_cmn
   INTEGER,PARAMETER::ic_dCO3_arg                          = 09    ! degree of over-saturation [CO32-] w.r.t. aragonite
   INTEGER,PARAMETER::ic_RF0                               = 10    ! Revelle factor
   ! (carbonate) chemistry descriptors array indices
-  INTEGER,PARAMETER::icc_k                                = 01    ! 
-  INTEGER,PARAMETER::icc_k1                               = 02    ! 
-  INTEGER,PARAMETER::icc_k2                               = 03    ! 
-  INTEGER,PARAMETER::icc_kB                               = 04    ! 
-  INTEGER,PARAMETER::icc_kW                               = 05    ! 
-  INTEGER,PARAMETER::icc_kSi                              = 06    ! 
-  INTEGER,PARAMETER::icc_kHF                              = 07    ! 
-  INTEGER,PARAMETER::icc_kHSO4                            = 08    ! 
-  INTEGER,PARAMETER::icc_kP1                              = 09    ! 
-  INTEGER,PARAMETER::icc_kP2                              = 10    ! 
-  INTEGER,PARAMETER::icc_kP3                              = 11    ! 
-  INTEGER,PARAMETER::icc_kcal                             = 12    ! 
-  INTEGER,PARAMETER::icc_karg                             = 13    ! 
-  INTEGER,PARAMETER::icc_QCO2                             = 14    ! 
-  INTEGER,PARAMETER::icc_QO2                              = 15    ! 
-  INTEGER,PARAMETER::icc_kH2S                             = 16    ! 
-  INTEGER,PARAMETER::icc_kNH4                             = 17    ! 
+  INTEGER,PARAMETER::icc_k                                = 01    !
+  INTEGER,PARAMETER::icc_k1                               = 02    !
+  INTEGER,PARAMETER::icc_k2                               = 03    !
+  INTEGER,PARAMETER::icc_kB                               = 04    !
+  INTEGER,PARAMETER::icc_kW                               = 05    !
+  INTEGER,PARAMETER::icc_kSi                              = 06    !
+  INTEGER,PARAMETER::icc_kHF                              = 07    !
+  INTEGER,PARAMETER::icc_kHSO4                            = 08    !
+  INTEGER,PARAMETER::icc_kP1                              = 09    !
+  INTEGER,PARAMETER::icc_kP2                              = 10    !
+  INTEGER,PARAMETER::icc_kP3                              = 11    !
+  INTEGER,PARAMETER::icc_kcal                             = 12    !
+  INTEGER,PARAMETER::icc_karg                             = 13    !
+  INTEGER,PARAMETER::icc_QCO2                             = 14    !
+  INTEGER,PARAMETER::icc_QO2                              = 15    !
+  INTEGER,PARAMETER::icc_kH2S                             = 16    !
+  INTEGER,PARAMETER::icc_kNH4                             = 17    !
   ! (carbonate) alkalinty chemistry descriptor indices
   INTEGER,PARAMETER::ica_HCO3                             = 01    !
   INTEGER,PARAMETER::ica_CO3                              = 02    !
@@ -318,17 +318,16 @@ MODULE gem_cmn
   INTEGER,PARAMETER::ici_HCO3_r14C                        = 08    !
   ! *** tracer descriptors ***
   ! sediment tracer types
-  INTEGER,PARAMETER::par_sed_type_bio                     = 01    ! 
-  INTEGER,PARAMETER::par_sed_type_abio                    = 02    ! 
-  INTEGER,PARAMETER::par_sed_type_POM                     = 03    ! 
-  INTEGER,PARAMETER::par_sed_type_CaCO3                   = 04    ! 
-  INTEGER,PARAMETER::par_sed_type_opal                    = 05    !  
-  INTEGER,PARAMETER::par_sed_type_det                     = 06    ! 
-  INTEGER,PARAMETER::par_sed_type_scavenged               = 07    ! 
-  INTEGER,PARAMETER::par_sed_type_age                     = 08    ! 
-  INTEGER,PARAMETER::par_sed_type_frac                    = 09    ! 
-  INTEGER,PARAMETER::par_sed_type_misc                    = 10    ! 
-!!!  INTEGER,PARAMETER::par_sed_type_indepsinking            = 21    !
+  INTEGER,PARAMETER::par_sed_type_bio                     = 01    !
+  INTEGER,PARAMETER::par_sed_type_abio                    = 02    !
+  INTEGER,PARAMETER::par_sed_type_POM                     = 03    !
+  INTEGER,PARAMETER::par_sed_type_CaCO3                   = 04    !
+  INTEGER,PARAMETER::par_sed_type_opal                    = 05    !
+  INTEGER,PARAMETER::par_sed_type_det                     = 06    !
+  INTEGER,PARAMETER::par_sed_type_scavenged               = 07    !
+  INTEGER,PARAMETER::par_sed_type_age                     = 08    !
+  INTEGER,PARAMETER::par_sed_type_frac                    = 09    !
+  INTEGER,PARAMETER::par_sed_type_misc                    = 10    !
 
   ! *** tracer arrays ***
   ! tracer description - 'type'
@@ -397,9 +396,9 @@ MODULE gem_cmn
   real,DIMENSION(:,:),ALLOCATABLE::conv_lP_lD
   real,DIMENSION(:,:),ALLOCATABLE::conv_lRD_lP
   real,DIMENSION(:,:),ALLOCATABLE::conv_lP_lRD
-  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_N                           ! 
-  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_S                           ! 
-  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_meth                        ! 
+  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_N                           !
+  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_S                           !
+  real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_meth                        !
   ! tracer conversion - indices for non-zero transformation ratio values
   ! NOTE: the zero index place in the array is used in algorithms identifying null relationships (or something)
   integer,DIMENSION(0:n_sed,0:n_ocn)::conv_ocn_sed_i
@@ -414,14 +413,14 @@ MODULE gem_cmn
   integer,DIMENSION(0:n_ocn,0:n_sed)::conv_sed_ocn_i_S                  ! tracer conversion array for S-reduction redox conditions
   integer,DIMENSION(0:n_ocn,0:n_sed)::conv_sed_ocn_i_meth               ! tracer conversion array for methanogenesis
   ! tracer conversion -- transformation ratios -- compaxt index format
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i                ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_lD_lP_i                ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_lP_lD_i                ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_lRD_lP_i                ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_lP_lRD_i                ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_N              ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_S              ! 
-  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_meth           ! 
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i                !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_lD_lP_i                !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_lP_lD_i                !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_lRD_lP_i                !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_lP_lRD_i                !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_N              !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_S              !
+  integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i_meth           !
   ! carbonate chemistry
   CHARACTER(len=16),DIMENSION(n_carb),PARAMETER::string_carb = (/ &
        & 'H               ', &
@@ -468,7 +467,7 @@ MODULE gem_cmn
        & 'ALK_HSO4        ', &
        & 'ALK_HF          ', &
        & 'ALK_H3PO4       ' /)
-  ! carbon isotopes 
+  ! carbon isotopes
   CHARACTER(len=16),DIMENSION(n_carbisor),PARAMETER::string_carbisor = (/ &
        & 'DIC_r13C        ', &
        & 'CO2_r13C        ', &
@@ -489,8 +488,6 @@ MODULE gem_cmn
   logical::error_stop     = .FALSE.
   logical::error_carbchem = .FALSE.
   ! file extensions
-  ! GHC 10/06/09 string_results_ext now defined in namelist to aid processing with non-matlab programs.
-  !CHARACTER(len=04),PARAMETER::string_results_ext         = '.res'
   CHARACTER(len=04),PARAMETER::string_data_ext            = '.dat'
 
   ! *** conversion factors ***
@@ -548,9 +545,9 @@ MODULE gem_cmn
   REAL,PARAMETER::conv_Pa_atm                             = 1.0 / conv_atm_Pa
   ! other
   REAL,PARAMETER::conv_cm3_kg                             = conv_m3_kg / conv_m3_cm3
-  REAL,PARAMETER::conv_kg_cm3                             = 1.0 / conv_cm3_kg   
+  REAL,PARAMETER::conv_kg_cm3                             = 1.0 / conv_cm3_kg
   REAL,PARAMETER::conv_l_kg                               = conv_m3_kg / conv_m3_l
-  REAL,PARAMETER::conv_kg_l                               = 1.0 / conv_l_kg 
+  REAL,PARAMETER::conv_kg_l                               = 1.0 / conv_l_kg
   ! density of calcite
   ! NOTE: relative molecular mass of calcite is 100.0, density of pure calcite is approximately 2.7
   REAL,PARAMETER::conv_cal_cm3_g                          = 2.70
@@ -578,7 +575,7 @@ MODULE gem_cmn
   ! density of organic matter
   ! NOTE: assume average density of particulate organic material as 1.0 (g cm-3)
   REAL,PARAMETER::conv_POC_cm3_g                          = 1.00
-  REAL,PARAMETER::conv_POC_g_cm3                          = 1.0 / conv_POC_cm3_g    
+  REAL,PARAMETER::conv_POC_g_cm3                          = 1.0 / conv_POC_cm3_g
   REAL,PARAMETER::conv_POC_cm3_mol                        = conv_POC_cm3_g / 12.0
   REAL,PARAMETER::conv_POC_mol_cm3                        = 1.0 / conv_POC_cm3_mol
   REAL,PARAMETER::conv_POC_g_mol                          = conv_POC_g_cm3*conv_POC_cm3_mol
@@ -586,7 +583,7 @@ MODULE gem_cmn
   ! moles of carbon per kg
   REAL,PARAMETER::conv_C_kg_mol                           = 83.33
   REAL,PARAMETER::conv_C_mol_kg                           = 1.0 / conv_C_kg_mol
-  REAL,PARAMETER::conv_CaCO3_mol_kgC                      = conv_g_kg * 12.0 
+  REAL,PARAMETER::conv_CaCO3_mol_kgC                      = conv_g_kg * 12.0
   ! moles of Fe per kg
   REAL,PARAMETER::conv_Fe_kg_mol                          = 17.86
   REAL,PARAMETER::conv_Fe_g_mol                           = conv_g_kg * conv_Fe_kg_mol
@@ -705,32 +702,31 @@ MODULE gem_cmn
   REAL,PARAMETER::const_oxidation_coeff_H2S               = 1.25
   ! modern mean ocean [Mg2+] (mol kg-1)
   ! NOTE: w.r.t. S = 35 PSU [Zeebe and Wolf-Gladrow, 2001; DOE, 1994]
-  REAL,PARAMETER::const_conc_Mg                           = 0.05282    
+  REAL,PARAMETER::const_conc_Mg                           = 0.05282
   ! modern mean ocean [Mg2+]/[Ca2+]
   ! NOTE: value is 5.14 in Tyrrell and Zeebe [2004]
   REAL,PARAMETER::const_conc_MgtoCa                       = 5.155
   ! representative ice density (kg/m**3) [from: initialise_seaice.f]
   REAL,PARAMETER::const_rho_seaice                        = 913.0
   ! Schmidt Number coefficients
-  real,dimension(4,n_atm)::par_Sc_coef                                  ! 
+  real,dimension(4,n_atm)::par_Sc_coef                                  !
   !  Bunsen Solubility Coefficient coefficients
-  real,dimension(6,n_atm)::par_bunsen_coef                              ! 
+  real,dimension(6,n_atm)::par_bunsen_coef                              !
 
   ! *** miscellaneous - dummy values ***
-  REAL,PARAMETER::const_real_null       = -0.999999E+19                 ! 
-  REAL,PARAMETER::const_real_nullhigh   = +0.999999E+19                 ! 
-  REAL,PARAMETER::const_real_nullsmall  = +0.999999E-19                 ! 
-  REAL,PARAMETER::const_real_zero       = +0.000000E+00                 ! 
-  REAL,PARAMETER::const_real_one        = +1.000000E+00                 ! 
+  REAL,PARAMETER::const_real_null       = -0.999999E+19                 !
+  REAL,PARAMETER::const_real_nullhigh   = +0.999999E+19                 !
+  REAL,PARAMETER::const_real_nullsmall  = +0.999999E-19                 !
+  REAL,PARAMETER::const_real_zero       = +0.000000E+00                 !
+  REAL,PARAMETER::const_real_one        = +1.000000E+00                 !
   REAL,PARAMETER::const_nulliso         = -999.999                      ! isotope null
-  integer,PARAMETER::const_integer_zero = 0                             ! 
-  integer,PARAMETER::const_integer_one  = 1                             ! 
+  integer,PARAMETER::const_integer_zero = 0                             !
+  integer,PARAMETER::const_integer_one  = 1                             !
 
 
   ! ****************************************************************************************************************************** !
   ! *** END ********************************************************************************************************************** !
   ! ****************************************************************************************************************************** !
 
-  
-END MODULE gem_cmn
 
+END MODULE gem_cmn

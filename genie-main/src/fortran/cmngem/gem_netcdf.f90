@@ -29,8 +29,8 @@ CONTAINS
     !       dum_ncid  = iou unit
     !
     !     based on code by: M. Eby
-    !=======================================================================  
-    ! dummy arguments 
+    !=======================================================================
+    ! dummy arguments
     character(len=*),intent(in)::dum_fname
     real,intent(in)::dum_relyr
     integer,intent(in)::dum_i
@@ -70,7 +70,6 @@ CONTAINS
        i = nf90_get_var (dum_ncid, loc_iv, loc_time, start = (/ loc_ln /))
        call sub_checkerror (i,'opennext nf90_get_var loc_time')
        dum_ntrec = loc_ln + 1
-       !   if (abs(loc_time - dum_relyr) .lt. 1.e-6) dum_ntrec = loc_ln
     else
        dum_ntrec = 1
     end if
@@ -232,7 +231,7 @@ CONTAINS
 
     character(len=*), intent(in) :: dum_name
     integer,      intent(in) :: dum_ln, dum_ncid
-    integer,      intent(out) :: dum_id 
+    integer,      intent(out) :: dum_id
     integer :: i
 
     i = nf90_inq_dimid (dum_ncid, dum_name, dum_id)
@@ -294,7 +293,6 @@ CONTAINS
        i = nf90_put_att (dum_ncid, loc_iv, 'missing_value', nf90_fill_double)
        call sub_checkerror (i,'defvar fill_value double '//trim(dum_name))
     elseif (dum_type .eq. 'F') then
-       !     print*,'defvar ',dum_ncid, dum_name, dum_id, dum_nd
        i = nf90_def_var (dum_ncid, dum_name, nf90_float, dum_id(1:dum_nd), loc_iv)
        call sub_checkerror (i,'defvar real '//dum_name)
 
@@ -591,13 +589,9 @@ CONTAINS
     integer::i,loc_iv
     real::loc_rs
     real,dimension(dum_ln)::loc_dout
-!!$  real(kind=8),dimension(dum_ln)::loc_dout
     ! BLAH
     loc_rs = 0.0
     if (dum_s .ne. 0.) loc_rs = 1.0/dum_s
-!!$  do i=1,dum_ln
-!!$     loc_dout(i) = (dum_din(i) - dum_o)*loc_rs
-!!$  enddo
     loc_dout = (dum_din - dum_o)*loc_rs
     i = nf90_inq_varid (dum_ncid, dum_name, loc_iv)
     call sub_checkerror (i,'putvar1d nf_inq_varid '//dum_name)
@@ -682,8 +676,6 @@ CONTAINS
 
     integer :: i, loc_iv
 
-    !   print*,'putvar2di ', dum_name, dum_la, dum_lb, dum_din(1,1)
-
     i = nf90_inq_varid (dum_ncid, dum_name, loc_iv)
     call sub_checkerror (i,'putvar2dI nf_inq_varid '//dum_name)
 
@@ -703,7 +695,7 @@ CONTAINS
     !       dum_lb   = length of data
     !       dum_is   = starting point for write
     !       dum_din  = data to be written (default real)
-    !       dum_mask = topography mask for printing 
+    !       dum_mask = topography mask for printing
 
 
     !     based on code by: M. Eby
@@ -738,7 +730,7 @@ CONTAINS
     !       dum_name   = name of variable to be written
     !       dum_ncid   = iou unit
     !       dum_la/b/c = length of data
-    !       dum_is   = starting point for write 
+    !       dum_is   = starting point for write
     !       dum_din  = data to be written (default real)
     !       dum_mask = masks out the ocean or land
     !       dum_s    = data scalar
@@ -782,7 +774,7 @@ CONTAINS
     !       dum_name   = name of variable to be written
     !       dum_ncid   = iou unit
     !       dum_la/b/c = length of data
-    !       dum_is   = starting point for write 
+    !       dum_is   = starting point for write
     !       dum_din  = data to be written (default real)
     !       dum_mask = masks out the ocean or land
     !       dum_s    = data scalar
@@ -844,7 +836,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     if (dum_dino .eq. 1 ) then
        loc_it(1) = loc_id_time
-    else      
+    else
        loc_it(1) = loc_id_lon
        loc_it(2) = loc_id_lat
        loc_it(3) = loc_id_time
@@ -968,7 +960,7 @@ CONTAINS
     !       dum_name   = name of variable to be written
     !       dum_ncid   = iou unit
     !       dum_la/b/c = length of data
-    !       dum_is   = starting point for write 
+    !       dum_is   = starting point for write
     !       dum_din  = data to be written (default real)
     !       dum_mask = masks out the ocean or land
     !       dum_s    = data scalar
@@ -990,10 +982,7 @@ CONTAINS
     loc_mask = 1
     loc_is = dum_is ! NOTE: this is a fudge to avoid compiler warnings because dum_is is otherwise never used!
     ! BLAH
-    where(loc_din .ge. 1.e15)
-       loc_mask = 0
-!!$      loc_din = nf90_fill_double
-    endwhere
+    where (loc_din .ge. 1.e15) loc_mask = 0
     i = nf90_inq_varid (dum_ncid, dum_name, loc_iv)
     call sub_checkerror (i,'putvar5d nf_inq_varid '//dum_name)
     i = nf90_put_var (dum_ncid, loc_iv, loc_din, start = (/ 1, 1, 1, 1, 1/), &
@@ -1033,7 +1022,7 @@ CONTAINS
 
   subroutine sub_inqdims (dum_fname, dum_ncid, dum_ndims, dum_nvars)
     !=======================================================================
-    !     open file for reading 
+    !     open file for reading
 
     !     input:
     !       dum_fname = file name to be opened
@@ -1064,7 +1053,7 @@ CONTAINS
 
   subroutine sub_inqvars (dum_ncid,dum_ndims,dum_nvars,dum_dimlen,dum_varname,dum_vdims,dum_varlen)
     !=======================================================================
-    !     open file for reading 
+    !     open file for reading
 
     !     input:
     !       dum_ncid  = iou unit
@@ -1102,7 +1091,7 @@ CONTAINS
 
   subroutine sub_getvar1d (dum_ncid, dum_varname, dum_varlen, dum_dout)
     !=======================================================================
-    !     open file for reading 
+    !     open file for reading
 
     !     input:
     !       dum_ncid  = iou unit
@@ -1119,8 +1108,6 @@ CONTAINS
     real*8, dimension(dum_varlen), intent(out)  :: dum_dout
     integer :: i,loc_iv
 
-
-    !        allocate(loc_var1d(dum_dimlen(dum_varlen(1))))
 
     i = nf90_inq_varid (dum_ncid, dum_varname, loc_iv)
     if (i .ne. nf90_noerr) then
@@ -1151,7 +1138,7 @@ CONTAINS
 
   subroutine sub_getvar2d (dum_ncid, dum_varname, dum_varlen1, dum_varlen2, dum_dout)
     !=======================================================================
-    !     open file for reading 
+    !     open file for reading
 
     !     input:
     !       dum_ncid  = iou unit
