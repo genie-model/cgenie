@@ -54,7 +54,7 @@ MODULE_NAMES = goldstein \
                ocnlite
 
 UTIL_NAMES = nc1 \
-             util1 
+             util1
 
 # Construct variables/lists used for linking and dependencies
 # construct vars for the 'external' modules
@@ -94,7 +94,8 @@ else
 endif
 
 # version of the model recorded in the code at build time
-REV:=$(shell svn info | grep 'Last Changed Rev:' | cut -d' ' -f 4,4 | sed 's/^/REV=/')
+#REV:=$(shell svn info | grep 'Last Changed Rev:' | cut -d' ' -f 4,4 | sed 's/^/REV=/')
+REV:=tmp-untagged
 
 # this is very odd--I don't understand why this is necessary.
 all: $(EXECUTABLES)
@@ -220,11 +221,11 @@ $(CONTROL_OBJS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 # ================== TESTING RULES ===================
 include testing.mak
 
-# ==== RULES TO ATUO' CREATE DEPENDENCY FILES ==== 
+# ==== RULES TO ATUO' CREATE DEPENDENCY FILES ====
 # Rules to create '.dep' files from sources
 # We want make to halt if $(PYTHON) is not found
 # A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation. 
+# provides the trigger to halt the compilation.
 MAKE_DEPS = @ $(SHELL) -ec 'which $(PYTHON) > /dev/null; \
 		$(PYTHON) finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
 
@@ -241,4 +242,3 @@ MAKE_DEPS = @ $(SHELL) -ec 'which $(PYTHON) > /dev/null; \
 ifneq ($(MAKECMDGOALS),clean)
 -include $(OBJECTS_ALL:.$(OBJ_EXT)=.dep)
 endif
-
