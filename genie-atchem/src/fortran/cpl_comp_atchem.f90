@@ -28,7 +28,6 @@ SUBROUTINE cpl_comp_atmgem(     &
   ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
   DO l=1,n_l_atm
      ia = conv_iselected_ia(l)
-     !!!dum_genie_atm(l,:,:) = atm(ia,:,:)
   end do
   dum_genie_atm1(:,:,:) = dum_genie_atm1(:,:,:) + dum_dts*atm(:,:,:)/conv_yr_s
   ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
@@ -59,7 +58,6 @@ SUBROUTINE cpl_comp_gematm(     &
   ! NTOE: <dum_genie_atm1> is passed as an ANOMALY
   DO l=1,n_l_atm
      ia = conv_iselected_ia(l)
-     !!!atm(ia,:,:) = dum_genie_datm1(l,:,:)
   end do
   atm(:,:,:) = atm(:,:,:) + dum_genie_datm1(:,:,:)
   ! reset anomaly array
@@ -146,4 +144,3 @@ SUBROUTINE cpl_comp_atmlnd(     &
   ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
 end SUBROUTINE cpl_comp_atmlnd
 ! ******************************************************************************************************************************** !
-
