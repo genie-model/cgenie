@@ -1,10 +1,10 @@
 * ======================================================================
 * initialise_goldstein.F
 * ======================================================================
-* 
+*
 * AY (28/11/03) : restarting conversion of c-GOLDSTEIN into
 *                 GOLDSTEIN + EMBM + sea-ice for genie.f
-* 
+*
 *                 this code takes pieces from mains.F, gseto.F
 *
 * AY (23/06/04) : code now includes parameter declarations for the
@@ -17,7 +17,7 @@
 *                ldeg=true/false switches degree/sin lat grid
 *                igrid=0,1,2... switches between grids
 *
-* RM (3/5/05) : edited to set up arrays for freshwater hosing 
+* RM (3/5/05) : edited to set up arrays for freshwater hosing
 * RM (10/8/05) : edited to set up arrays for FW flux anomalies from CMIP models
 
       subroutine initialise_goldstein(
@@ -31,7 +31,7 @@
      :     tstar_ocn,sstar_ocn,ustar_ocn,vstar_ocn,
      :     albedo_ocn,
      :     ias_out,iaf_out,ips_out,ipf_out,jsf_out,
-     :     lrestart_genie, 
+     :     lrestart_genie,
      :     go_saln0,go_rhoair,go_cd,go_ds,go_dphi,go_ips,go_ipf,
      :     go_usc,go_dsc,go_fsc,go_rh0sc,
      :     go_rhosc,go_cpsc,go_scf,
@@ -50,9 +50,6 @@ c ======================================================================
 c Declarations
 c ======================================================================
 
-c AY (01/12/03) : these declarations necessary for coupling grids
-c      integer ilon1_ocn, ilat1_ocn, inl1_ocn
-c AY (17/03/04) : commented variables excised to ocean.cmn for later use
       real olon1(maxi),olat1(maxj),
      :     olon2(maxi),olat2(maxj),
      :     olon3(maxi),olat3(maxj)
@@ -62,11 +59,7 @@ c AY (17/03/04) : commented variables excised to ocean.cmn for later use
       real depth(maxk),depth1(maxk+1)
       real tstar_ocn(maxi,maxj),sstar_ocn(maxi,maxj),
      :     ustar_ocn(maxi,maxj),vstar_ocn(maxi,maxj),
-c     :     tavg_ocn(maxi,maxj),albedo_ocn(maxi,maxj)
      :     albedo_ocn(maxi,maxj)
-
-c      real ocean_tracers(maxl,maxi,maxj,maxk)
-c      real ref_saln
 
       integer ilandmask1(maxi,maxj),ilandmask2(maxi,maxj),
      :        ilandmask3(maxi,maxj)
@@ -76,20 +69,14 @@ c      real ref_saln
       integer jsf_out
       integer bmask(maxi,maxj)
 
-c AY (02/12/03)
 c Local variables (some from gseto.F)
       integer i,j,k,l,kmxdrg,jeb,isol,isl,kk
 
-c AY (11/12/03) : variables copied from IGCM code
       integer lnsig1
-c      integer ioff1, ioff2
 
       real phix, th0, th1, z1, tv, tv1, tv2, tv3, tv4, tv5,
-crma     1     zro(maxk), zw(0:maxk), temp0, temp1, adrag,
      1     temp0, temp1, adrag,
      2     drgf, s0, s1
-cAR
-crma      real ta0
 
       real h(3,0:maxi+1,0:maxj+1)
 
@@ -105,10 +92,6 @@ crma extras for hosing (rma, 3/5/06)
 crma extra for freshwater flux anomalies
       real fw_anom_in(maxi,maxj)
 
-c SG > Remove hard coding of year length.
-c     parameter(syr = 365*86400)
-c SG <
-
       character ans, lin*13
       character fwanomin
 
@@ -116,10 +99,6 @@ crma grid type (rma, 2/6/05)
       integer igrid
 
       logical getj(maxi,maxj)
-crma      logical ldeg
-c choose between grids (ldeg=.true. gives const dlat; ldeg=.false. gives const dsinlat)
-c      parameter(ldeg=.true. )
-c      parameter(ldeg=.false. )
 
       common /lars/getj
 
@@ -127,8 +106,6 @@ c      parameter(ldeg=.false. )
       character(len=3) cmip_model
       integer          lenworld
       integer          lencmip_model
-c AY (02/02/05) : now read in from GOIN information
-c     parameter(world='worbe2')
 
 c+DJL 31/8/2004
 c     For netcdf restarts....
@@ -136,20 +113,6 @@ c     For netcdf restarts....
 c-DJL 31/8/2004
 
       logical lrestart_genie
-
-cccc-DJL 21/9/05 (for reading IGCM grid), inserted by RMA
-ccc
-ccc      integer nx_igcm
-ccc      parameter(nx_igcm=64)
-ccc      integer ny_igcm
-ccc      parameter(ny_igcm=32)
-ccc
-ccc      real igcm_lons(nx_igcm)
-ccc      real igcm_lats(ny_igcm)
-ccc      real igcm_lons_edge(nx_igcm+1)
-ccc      real igcm_lats_edge(ny_igcm+1)
-ccc
-ccc      real dx_igcm
 
 c KICO ssmax parameters
       real ssmaxmid, ssmaxdiff, ssmaxtanhefold, ssmaxtanh0dep, zssmax
@@ -181,7 +144,7 @@ c Dummy variables to be passed to/from BIOGEM via genie.F
       real :: go_sv(0:maxj)
       real :: go_ts(1:maxl,1:maxi,1:maxj,1:maxk)
       real :: go_ts1(1:maxl,1:maxi,1:maxj,1:maxk)
-      
+
 c SG > Dummy variables to be passed to/from ENTS via genie.F
       real :: go_rsc
       real :: go_syr
@@ -241,32 +204,9 @@ c ======================================================================
 
       if (debug_init) print*
 
-cccc-DJL 21/9/05 (for reading IGCM grid), inserted by RMA 
-ccc      dx_igcm=360.0/real(nx_igcm)
-ccc      do i=1,nx_igcm
-ccc         igcm_lons(i)=real((i-1.0)*dx_igcm)
-ccc         igcm_lons_edge(i)=real((i-1.5)*dx_igcm)
-ccc      end do
-ccc      igcm_lons_edge(nx_igcm+1)=real((nx_igcm-0.5)*dx_igcm)
-ccc      call gwtcnr(igcm_lats,ny_igcm/2)
-ccc      call gwtbox(igcm_lats_edge,ny_igcm/2)
-ccc
-ccc      if (debug_init) print*,'These are the igcm latitude edges:'
-ccc      if (debug_init) print*,igcm_lats_edge
-ccc      if (debug_init) print*,'These are the igcm longitude edges:'
-ccc      if (debug_init) print*,igcm_lons_edge
-ccc
-ccc      if (debug_init) print*,'These are the igcm latitude increments:'
-ccc      do j=1,ny_igcm
-ccc      if (debug_init) print*, igcm_lats_edge(j+1)-igcm_lats_edge(j)
-ccc      enddo
-ccc
-crma      stop
-
-
 c AY (01/12/03) : previously in mains.F ...
 c ----------------------------------------------------------------------
-      
+
 c read DATA (i.e. namelist) file
       call check_unit(56,__LINE__,__FILE__)
       open(unit=56,file='data_GOLD',status='old',iostat=ios)
@@ -317,10 +257,6 @@ c        This 'if' checks for a terminal slash symbol
       end if
       if (debug_init) print*,'Restart dir. name ',rstdir_name(1:lenrst)
 
-crma (15/09/05) : read in grid type
-crma (0 = const dsinlat; 1 = const dlat; 2 = IGCM)
-crma      if(igrid.eq.0) ldeg=.false.
-crma      if(igrid.eq.1) ldeg=.true.
 c AY (02/02/05) : read in topography filename
       lenworld = lnsig1(world)
       if (debug_init) print*,'Topography name ',world(1:lenworld)
@@ -338,8 +274,6 @@ c     New or continuing run
       if (debug_init) print*,'new or continuing run ?'
       if (debug_init) print*,ans
 
-c AY (05/05/04) : number of days per GOLDSTEIN year (usually 365.25)
-c     yearlen = 365.25
       if (debug_init) print*,'number of days per GOLDSTEIN year'
       if (debug_init) print*,yearlen
 
@@ -382,10 +316,10 @@ c EMBM scaling for freshwater forcing of ocean
 c parameters for setting up grid
 c th is latitude, coords are sin(th), longitude phi, and z
 
-      th0 = - pi/2    
-      th1 = pi/2 
-      s0 = sin(th0)    
-      s1 = sin(th1)     
+      th0 = - pi/2
+      th1 = pi/2
+      s0 = sin(th0)
+      s1 = sin(th1)
       phix = 2*pi
       deg_to_rad = pi/180.
 
@@ -397,11 +331,7 @@ c grid dimensions must be no greater than array dimensions in var.cmn
       lmax = maxl
 
       dphi = phix/imax
-crma      ds = (s1-s0)/jmax
-crma      dphi2 = dphi*2
-crma      ds2 = ds*2
       rdphi = 1.0/dphi
-crma      rds = 1.0/ds
 
 c set up horizontal grid: sin and cos factors at rho and v points (c grid)
 c fix for global domain although only cv and cv2 are referred to at or beyond
@@ -409,7 +339,6 @@ c limits 24/6/2 if no flow out of N + S boundaries.
 
       sv(0) = s0
       cv(0) = cos(th0)
-crma      if(ldeg)then
       if(igrid.eq.1)then
 crma set up const dlat grid
          dth = (th1 - th0)/jmax
@@ -428,18 +357,6 @@ crma set up const dsinlat grid
             cv(j) = sqrt(1 - sv(j)*sv(j))
             s(j) = sv(j) - 0.5*dscon
          enddo
-ccc      elseif(igrid.eq.2)then
-ccccrma set up IGCM grid (21/9/05)
-ccccrma note igcm orders latitude north-to-south!
-ccc         do j=1,jmax
-ccc            thv = deg_to_rad*igcm_lats_edge(jmax+1-j)
-ccc            dth = deg_to_rad*(igcm_lats_edge(jmax+2-j)
-ccc     1                      - igcm_lats_edge(jmax+1-j))
-ccc            theta = thv + 0.5*dth
-ccc            sv(j) = sin(thv)
-ccc            s(j) = sin(theta)
-ccc            cv(j) = cos(thv)
-cc         enddo
       endif
       if (debug_init) print*,'GOLDSTEIN latitudes: velocity; tracers'
       if (debug_init) print*,'j, 180/pi*asin(sv(j)), 180/pi*asin(s(j))'
@@ -457,13 +374,7 @@ cc         enddo
             if(j.gt.1)rds2(j) = 2.0/(dsv(j)+dsv(j-1))
          endif
         if (debug_init) print*,j,180/pi*asin(sv(j)),180/pi*asin(s(j))
-c     &,180/pi*asin(ds(j)),sv(j),s(j),ds(j)
       enddo
-crma specify "undefined" values (bug spotted by Dan, 6/10/05)
-crma      dsv(0) = 0.
-crma      rdsv(0) = 0.
-crma      rds2(1) = 0.
-crma      rds2(jmax) = 0.
 
 c AY (29/11/04) : area of grid cell (assumes sine(lat) grid)
       do j=1,jmax
@@ -472,28 +383,16 @@ c AY (29/11/04) : area of grid cell (assumes sine(lat) grid)
      & 'j = ',j,'GOLDSTEIN grid cell area is',asurf(j),'m2'
       enddo
 
-c set time to zero (may be overwritten if continuing run)
-
-c timet0 = 0
-c timet = t0
-
 c v2 seasonality
-c AY (01/12/03)
-c     Number of GOLDSTEIN time steps per year
-c     read(5,*)nyear,ndta
       if (debug_init) print*,'timesteps per year'
-c AY (28/04/04) : on Andrew Price's recommendation, altered the
-c                 descriptor in the line below from (i) to (i10)
-      if(nyear.gt.maxnyr)stop 'goldstein : nyear > maxnyr' 
+      if(nyear.gt.maxnyr)stop 'goldstein : nyear > maxnyr'
       if (debug_init) print*,nyear
 
       tv = 86400.0*yearlen/(nyear*tsc)
 
-c     dtatm = tv/ndta
-
 c variable timestep option not recommended
       do k=1,kmax
-         dt(k) = tv  
+         dt(k) = tv
 c initialize
          dzu(1,k) = 0
          dzu(2,k) = 0
@@ -547,14 +446,14 @@ c This number should be inifinite. Large number used instead
          enddo
       enddo
 
-c write dimensional vertical grid 
+c write dimensional vertical grid
       if (debug_init) print*,
      & 'layer #, layer top, layer mid, layer thick'
       if (debug_init) write(6,'(i4,3e12.4)')
      & (k,dsc*zw(k),dsc*zro(k),dsc*dz(k)
      1        ,k=kmax,1,-1)
-         
-      dzz = dz(kmax)*dza(kmax-1)/2  
+
+      dzz = dz(kmax)*dza(kmax-1)/2
 
 c AY (05/05/04) : when max/min overturning are calculated for the OPSIT
 c                 file, they are usually full water column and include
@@ -586,27 +485,6 @@ c dza(kmax) never referenced, set to 0 for Andy's biogeo-code
 
       dza(kmax) = 0.
 
-c set up sin and cos factors at rho and v points (c grid)
-c fix for global domain although only cv and cv2 are referred to at or beyond
-c limits 24/6/2 if no flow out of N + S boundaries.
-
-crma      do j=0,jmax
-crma         sv(j) = s0 + j*ds
-crma         if(abs(1.0 - abs(sv(j))).lt.1e-12)then
-crma            cv(j) = 0.
-crma            rcv(j) = 1e12
-crma         else
-crma            cv(j) = sqrt(1 - sv(j)*sv(j))
-crma            rcv(j) = 1.0/cv(j)
-crma         endif
-crma         cv2(j) = cv(j)*cv(j)*rds
-crma         s(j) = sv(j) - 0.5*ds
-crma         if(s(j).lt.-1.0)s(j) = -2.0 - s(j)
-crma         c(j) = sqrt(1 - s(j)*s(j))
-crma         rc(j) = 1.0/c(j)
-crma         rc2(j) = rc(j)*rc(j)*rdphi
-crma      enddo   
-
 c set up coeffs for state equation following WS 1993
 
 crma error: rhosc value in coeffs assumed dsc=4 km, corrected offline for IPCC runs with GENIE-1, 23/8/5 nre
@@ -627,7 +505,7 @@ c change surface densities which are fine anyway.
       if(ieos.eq.1)then
         ec(5) =  (2.5e-5*dsc) /rhosc
       else
-        ec(5) = 0.0 
+        ec(5) = 0.0
       endif
 
 C SG > Passing coefficients of eqn of state to ents
@@ -636,7 +514,7 @@ C SG > Passing coefficients of eqn of state to ents
       enddo
 C SG >
 
-c read parameters 
+c read parameters
 
       if (debug_init) print*,'temp0, temp1, rel, scf'
       if (debug_init) print*,temp0,temp1,rel,scf
@@ -650,17 +528,17 @@ crma initialise arrays for freshwater hosing (rma, 3/5/06)
 c FW flux conversion parameters (brought forward to where needed, rma 10/8/08)
       m2mm = 1000.
       mm2m = 1.0/(m2mm)
- 
-c read the initial/constant value of hosing flux (Sv) 
+
+c read the initial/constant value of hosing flux (Sv)
       if (debug_init) print*,'initial hosing =',hosing
- 
+
 c read the rate at which hosing flux is increased/decreased (Sv/kyr)
 c (for "classic" hysteresis experiments)
       if (debug_init) print*,'hosing_trend =',hosing_trend
- 
+
 c read the time period of hosing (yr)
       if (debug_init) print*,'nyears_hosing =',nyears_hosing
- 
+
 c convert hosing_trend from Sv/ky to Sv/s
       hosing_trend = hosing_trend/(1e3*syr)
 
@@ -669,41 +547,8 @@ c convert hosing_period from yr to ocean timesteps
 
 crma end of hosing extras
 
-c define forcing
-
-c AY (01/12/03) : this code will need to migrate to EMBM
-c read wind data
-c taux,tauy at u-points
-c     open(96,file='taux_u.interp')
-c     open(97,file='tauy_u.interp')
-c taux,tauy at v-points
-c     open(98,file='taux_v.interp')
-c     open(99,file='tauy_v.interp')
-c     do j=1,jmax
-c        do i=1,imax
-c rotate grid to check b.c.s
-c        do idum=1,imax
-c           i=1+mod(idum+18-1,36)
-c           read(96,*)dztau(1,i,j)
-c           read(97,*)dztau(2,i,j)
-c           read(98,*)dztav(1,i,j)
-c           read(99,*)dztav(2,i,j)
-c multiply by scaling factor scf (to drive correct gyre strengths)
-c           dztau(1,i,j) = scf*dztau(1,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztau(2,i,j) = scf*dztau(2,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztav(1,i,j) = scf*dztav(1,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztav(2,i,j) = scf*dztav(2,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           tau(1,i,j) = dztau(1,i,j)*dzz
-c           tau(2,i,j) = dztav(2,i,j)*dzz
-c        enddo
-c     enddo
-c     close(96)
-c     close(97)
-c     close(98)
-c     close(99)
-
-c parameters for (restricted) time-dependent forcing 
-c set sda1 < 1e05 for steady forcing 
+c parameters for (restricted) time-dependent forcing
+c set sda1 < 1e05 for steady forcing
 
       sda1 = 0.000
       sdomg = 2*pi/10.0
@@ -715,8 +560,6 @@ c k1(1,j) - k1(imax+1,j) = 0
       ntot = 0
       intot = 0
 
-c AY (01/12/03) : line modified to point to input directory
-c     open(13,file=world//'.k1')
       if (debug_init) print*,'ocean bathymetry being read in'
       call check_unit(13,__LINE__,__FILE__)
       open(13,file=indir_name(1:lenin)//world//'.k1',iostat=ios)
@@ -727,8 +570,6 @@ c k1(1,j) - k1(imax+1,j) = 0, as enforced below;
       do j=jmax+1,0,-1
          read(13,*,iostat=ios)(k1(i,j),i=0,imax+1)
          call check_iostat(ios,__LINE__,__FILE__)
-c rotate grid to check b.c.s
-c        read(13,*)xxx,(k1(i,j),i=19,36),(k1(i,j),i=1,18),xxx
          k1(0,j) = k1(imax,j)
          k1(imax+1,j) = k1(1,j)
          do i=0,imax+1
@@ -822,7 +663,6 @@ c     stop 'testing new code'
          ips(jmax) = nint(imax*10.0/36.0)
          jsf = 1
 crma for 64x32l grid (15/9/05):
-crma      if(ldeg) then
          if(igrid.ne.0) then
             ias(jmax) = 61
             ips(jmax) = 36
@@ -851,7 +691,7 @@ c     ************
                ias(j) = 1 + mod(ias(j)-1+imax,imax)
                iaf(j) = 1 + mod(iaf(j)-1+imax,imax)
             enddo
-            if(igrid.eq.0) then 
+            if(igrid.eq.0) then
                if(ias(j).ge.iaf(j).and.j.le.jmax/2)jsf = j
                if(ips(j).ge.ipf(j).and.j.le.jmax/2)jsf = j
             endif
@@ -872,19 +712,18 @@ c     This bit to get the Southern tip of Greenland out of the Pacific
                if (j.gt.nint((jmax*34.0/36.0)).and.
      &              j.le.nint((jmax*35.0/36.0))) then
                   ips(j) = 1
-                  ipf(j) = 0 
+                  ipf(j) = 0
                endif
 c     ************
             enddo
 c     ****************************************************************
          endif
 
-crma      if(ldeg) then
          if(igrid.ne.0) then
             ips(jmax) = 1
-            ipf(jmax) = 0 
+            ipf(jmax) = 0
             ips(jmax-1) = 1
-            ipf(jmax-1) = 0 
+            ipf(jmax-1) = 0
             ias(jmax) = 1
             iaf(jmax) = imax
          endif
@@ -1052,14 +891,14 @@ c seabed depth h
             h(1,i,j) = min(h(3,i,j),h(3,i+1,j))
             if(max(k1(i,j),k1(i+1,j)).le.kmax)rh(1,i,j) = 1.0/h(1,i,j)
          enddo
-      enddo   
+      enddo
 
       do j=0,jmax
          do i=0,imax+1
             h(2,i,j) = min(h(3,i,j),h(3,i,j+1))
             if(max(k1(i,j),k1(i,j+1)).le.kmax)rh(2,i,j) = 1.0/h(2,i,j)
          enddo
-      enddo   
+      enddo
 
       do 120 j=1,jmax
          do 120 i=1,imax
@@ -1130,7 +969,7 @@ c v2 seasonal. Annual averages
       enddo
       endif
 
-c initial conditions   
+c initial conditions
 
       do i=0,imax+1
          do j=0,jmax+1
@@ -1157,13 +996,10 @@ c initial salinity
 
 c forcing fields and some more initialisation
 
-cAR - amplitude of idealised wind forcing profile 
-crma      ta0 = 0.5/(rh0sc*dsc*usc*fsc)
-
       do 20 i=1,imax
          do 30 j=1,jmax
 c th at u and v points
-            tv = asin(s(j)) 
+            tv = asin(s(j))
             tv1 = asin(sv(j))
 c convective frequency array
             cost(i,j) = 0
@@ -1178,14 +1014,6 @@ c              tau(2,i,j) is the v component at a v point
 c dztau(l,i,j) are the deriv's of the u,v components at u points
 c dztav(l,i,j) are the deriv's of the u,v components at v points
 cAR idealistic winds (yka)
-
-crma            tau(1,i,j) = - ta0*cos(2*pi*tv/th1)
-crma            dztau(1,i,j) = tau(1,i,j)/dzz
-crma            tau(2,i,j) = 0
-crma            dztau(2,i,j) = 0
-crma            dztav(1,i,j) = - ta0*cos(2*pi*tv1/th1)
-crma     1                     /dzz
-crma            dztav(2,i,j) = 0
 
    30    continue
    20 continue
@@ -1232,19 +1060,17 @@ c
             if( (max(k1(i,j),k1(i+1,j),k1(i,j+1),k1(i+1,j+1)).le.kmax)
      1          .and. (k1(i,j).ne.k1(i,j+1).or.k1(i,j).ne.k1(i+1,j)
      1                       .or.k1(i,j).ne.k1(i+1,j+1)))then
-               getj(i,j) = .true.   
+               getj(i,j) = .true.
             else
-               getj(i,j) = .false.  
+               getj(i,j) = .false.
             endif
   140 continue
 
 c read island geometry file or write out for manual editing
 c setting wet to zero and 1 on 1st landmass, 2 on 2nd landmass (1st island)
-c etc nb narrow channels may have no wet psi points and hence not show up on 
+c etc nb narrow channels may have no wet psi points and hence not show up on
 c psi grid
 
-c AY (01/12/03) : line modified to point to input directory
-c     open(23,file=world//'.psiles',status='old')
       if (debug_init) print*,'island geometry being read in'
       call check_unit(23,__LINE__,__FILE__)
       open(23,file=indir_name(1:lenin)//world//'.psiles'
@@ -1270,21 +1096,14 @@ c rotate grid to check b.c.s
       if (debug_init) print *,
      & 'Number of landmasses present in .psiles file:'
      1      ,isles+1,'(i.e.',isles,'islands)'
-c AR (14/09/25) : don't exit with zero islands
-ccc      if (isles.lt.1) then
-ccc         call die('Not enough islands present in .psiles file!',
-ccc     :        __LINE__,__FILE__)
-ccc      endif
       if (isles.gt.maxisles) then
          call die('Too many islands (increase GOLDSTEINMAXISLES)!',
      :        __LINE__,__FILE__)
       endif
-c 
-c read island path integral data, read isles+1 paths only if want last path 
+c
+c read island path integral data, read isles+1 paths only if want last path
 c for testing
 c
-c AY (01/12/03) : line modified to point to input directory
-c     open(24,file=world//'.paths')
 c AR (14/09/25) : added exception for zero islands
       if (isles.gt.0) then
       if (debug_init) print*,'island path integrals being read in'
@@ -1375,11 +1194,9 @@ c	          ocean and sea-ice only surflux routine.  They
 c	          shouldn't interfere with the existing code, so
 c	          GENIE c-GOLDSTEIN should still work as usual.
 
-    
-c     ALBOCN now read in from the goin file 
+
+c     ALBOCN now read in from the goin file
       if (debug_init) print*,'ocean albedo, albocn =',albocn
-c ocean albedo (set to my old Fasham, 1993, value)
-c     albocn = 0.05     
 
 c AY (02/02/05) : read in "gustiness" factor
       if (debug_init) print*,'gustiness factor, gust =',gust
@@ -1432,18 +1249,14 @@ c specific heat of sea water under ice at constant pressure (J/kg/K)
 c representative ice density (kg/m**3)
       rhoice = 913.
 c useful constant proportional to inverse timscale for surface freezing
-c     rsictscsf = ch_ice*u_tau_ice*rho0*cpo_ice
       rsictscsf = dsc*dz(kmax)*rho0*cpo_ice/(17.5*86400.0)
 c minimum average sea-ice thickness over a grid cell
       hmin = 0.01
       rhmin = 1.0/hmin
 c density ratios
-      rhooi = rho0/rhoice 
+      rhooi = rho0/rhoice
 c melting factor
       rrholf = 1.0/(rhoice*hlf)
-c FW flux conversion parameters
-crma      m2mm = 1000.
-crma      mm2m = 1.0/(m2mm)
 
       if (debug_init) print*
       if (debug_init) print*,
@@ -1549,36 +1362,8 @@ c AY (02/02/05) : read in observational data filenames
 c AY (01/12/03) : previously in mains.F ...
 c ----------------------------------------------------------------------
 
-c AY (01/12/03) : this is commented out for now
-c v2 seasonal. Calculate radiative forcing
-c     call radfor
-
       if (debug_init) print*,'file extension for output (a3) ?'
       if (debug_init) print*,lout
-
-c AY (12/12/03) : these files are now opened properly further down
-c AY (01/12/03)
-c     open(4,file=outdir_name(1:lenout)//lout//'.'//'t')
-c     write(4,'(11(a11,3x))')
-c    $              '%time      '
-c    $             ,' Pac_T_d   ',' Atl_T_d   '
-c    $             ,' Ind_T_d   ',' Sou_T_d   '
-c    $             ,' Pac_T_u   ',' Atl_T_u   '
-c    $             ,' Ind_T_u   ',' Sou_T_u   '
-c    $             ,' drho/dz   ',' speed     '
-c     close(4)
-
-c AY (01/12/03)
-c     open(14,file=outdir_name(1:lenout)//lout//'.'//'s')
-c     write(14,'(11(a11,3x))')
-c    $              '%time      '
-c    $             ,' Pac_S_d   ',' Atl_S_d   '
-c    $             ,' Ind_S_d   ',' Sou_S_d   '
-c    $             ,' Pac_S_u   ',' Atl_S_u   '
-c    $             ,' Ind_S_u   ',' Sou_S_u   '
-c    $             ,' drho/dz   ',' speed     '
-c     close(14)
-
 
 c+DJL 31/8/2004
       if (debug_init) print*,'NETCDF restart input ?'
@@ -1588,7 +1373,7 @@ c+DJL 31/8/2004
       else
         lnetin=.true.
       endif
-      
+
       if (debug_init) print*,'NETCDF restart output ?'
       if (debug_init) print*,netout
       if ((netout.eq.'n').or.(netout.eq.'N')) then
@@ -1606,11 +1391,11 @@ c+DJL 31/8/2004
       endif
 
       if (debug_init) print*,'filename for NETCDF restart input ?'
-      if (debug_init) print*,filenetin 
+      if (debug_init) print*,filenetin
 
       if (debug_init) print*,
      & 'directory name for NETCDF restart output ?'
-      if (debug_init) print*,dirnetout 
+      if (debug_init) print*,dirnetout
 c-DJL 31/8/2004
 
 
@@ -1620,12 +1405,10 @@ c        This is a new run, initial conditions already set up
 c+DJL 31/8/2004
 c        But set up initial default time and date....
 c        If we're not re-starting, then assume that
-c          we are at the beginning of a year....:    
+c          we are at the beginning of a year....:
          iyear_rest=2000
          imonth_rest=1
          ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c         day_rest=2.0
         day_rest=yearlen / real(nyear)
          if (debug_init) print*,'day_rest = ',day_rest
 c-DJL 31/8/2004
@@ -1652,8 +1435,6 @@ c          the restart file was written at the end of a year....:
          iyear_rest=2000
          imonth_rest=1
          ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c         day_rest=2.0
         day_rest=yearlen / real(nyear)
          if (debug_init) print*,'day_rest = ',day_rest
 c-DJL 14/9/2004
@@ -1701,7 +1482,7 @@ c for cimp.ne.1 need
          enddo
       enddo
 
-c oscillating forcing 
+c oscillating forcing
 
       flat = .true.
       do i=1,imax
@@ -1756,14 +1537,10 @@ c                   duplicating c-goldstein output with genie.exe
       iw  = 1
       iav = 1
 
-c v2 seasonal
-c     istep0 = nint(t0/dt(kmax))
 c SG > istep0 added for hdefoutput. Currently set to zero
 c so RESTARTS WITH ENTS WILL NOT WORK!!!
       go_istep0 = 0
 c SG <
-c test
-c     print*,'istep0 ',istep0
 
 c ======================================================================
 c Setting up grid structure (D. Lunt code)
@@ -1805,19 +1582,6 @@ c     *************************
             oboxedge3_lon(i)=real(360.0*(i-1.0)/real(imax)+phi0
      $           /deg_to_rad)
          end do
-ccc      else if (igrid.eq.2) then
-ccccdjl set up IGCM grid
-ccc         phi0=igcm_lons_edge(1)*deg_to_rad
-ccc         do i=1,imax
-ccc            olon1(i)=igcm_lons(i)
-ccc            olon2(i)=igcm_lons(i)
-ccc            olon3(i)=igcm_lons(i)
-ccc         enddo
-ccc         do i=1,imax+1
-ccc            oboxedge1_lon(i)=igcm_lons_edge(i)
-ccc            oboxedge2_lon(i)=igcm_lons_edge(i)
-ccc            oboxedge3_lon(i)=igcm_lons_edge(i)
-ccc         enddo
       endif
 c     *************************
 c
@@ -1878,7 +1642,7 @@ c     in the longitudinal direction.
 c
       do j=1,jmax
          do i=1,imax
-            if (k1(i,j).ge.90) then 
+            if (k1(i,j).ge.90) then
                ilandmask1(i,j)=1
                ilandmask2(i,j)=1
                ilandmask3(i,j)=1
@@ -1888,19 +1652,19 @@ c
                ilandmask3(i,j)=0
             endif
          enddo
-      end do  
+      end do
 c
       if (debug_init) print*,'* Depth : depth, depth1 *'
       do l=1,kmax
          depth(l)=real(abs(dsc*zro(kmax+1-l)))
 c AY (17/03/04) : extra ocean.cmn arguments for netCDF writing
          ncdepth(l) = depth(l)
-      end do      
+      end do
       do l=0,kmax
          depth1(l+1)=real(abs(dsc*zw(kmax-l)))
 c AY (17/03/04) : extra ocean.cmn arguments for netCDF writing
          ncdepth1(l+1) = depth1(l+1)
-      end do      
+      end do
 c
 c AY (09/03/04) : write this information out
       do l=0,kmax
@@ -1923,10 +1687,8 @@ c Average values of ocean T
       call check_unit(4,__LINE__,__FILE__)
       open(4,file=outdir_name(1:lenout)//lout//'.'//'t',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-c    +     status='old')
-      if (debug_init) write(4,*) 
+      if (debug_init) write(4,*)
      & '% GOLDSTEIN ocean model, ocean temperature'
-c     write(4,'(11(a11,3x))')
       if (debug_init) write(4,'(11a14)',iostat=ios)
      $              '% time       '
      $             ,' Pac_T_d   ',' Atl_T_d   '
@@ -1941,10 +1703,8 @@ c Average values of ocean S
       call check_unit(14,__LINE__,__FILE__)
       open(14,file=outdir_name(1:lenout)//lout//'.'//'s',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-c    +     status='old')
       if (debug_init) write(14,*)
      & '% GOLDSTEIN ocean model, ocean salinity'
-c     write(14,'(11(a11,3x))')
       if (debug_init) write(14,'(11a14)',iostat=ios)
      $              '% time       '
      $             ,' Pac_S_d   ',' Atl_S_d   '
@@ -1960,7 +1720,6 @@ c Values of ocean maximum/minimum circulation
       call check_unit(40,__LINE__,__FILE__)
       open(40,file=outdir_name(1:lenout)//lout//'.'//'opsit',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-c    +     status='new')
       if (debug_init) write(40,*)
      &  '% GOLDSTEIN ocean model, ocean overturning'
       if (debug_init) write(40,'(5a14,a10)',iostat=ios)
@@ -1978,7 +1737,6 @@ c Values of ocean basin FW and heat fluxes
       call check_unit(41,__LINE__,__FILE__)
       open(41,file=outdir_name(1:lenout)//lout//'.'//'flux',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-c    +     status='new')
       if (debug_init) write(41,'(3a28)',iostat=ios)
      &  '% GOLDSTEIN ocean model, FW ',
      +     'and heat fluxes, first data ',
@@ -1996,7 +1754,6 @@ c    +     status='new')
      +     'Sv','Sv','Sv','Sv','Sv',
      +     'PW','PW','PW','PW','PW'
       call check_iostat(ios,__LINE__,__FILE__)
-c    +     'W/m2','W/m2','W/m2','W/m2','W/m2'
       close(41,iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
 
@@ -2009,15 +1766,6 @@ c file for writing extra freshwater forcing
       close(44,iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
 
-      if (dosc) then
-c Seasonal averages
-c
-c AY (30/04/04) : don't need to call this here anymore
-c
-c     open(50,file=outdir_name(1:lenout)//lout//'.osc')
-c    +     status='new')
-c     close(50)
-      endif
 
 c Output arguments
 c ----------------------------------------------------------------------
@@ -2041,7 +1789,7 @@ c           Ocean albedo
             albedo_ocn(i,j) = real(albocn)
          enddo
       enddo
-      
+
 c Set values of dummy variables destined for BIOGEM
       go_saln0 = real(saln0)
       go_rhoair = real(rhoair)
@@ -2053,7 +1801,7 @@ c Set values of dummy variables destined for BIOGEM
          go_ias(j) = ias(j)
          go_iaf(j) = iaf(j)
          go_ds(j) = real(ds(j))
-      enddo     
+      enddo
       go_jsf = jsf
       go_usc = real(usc)
       go_dsc = real(dsc)
@@ -2066,17 +1814,17 @@ c Set values of dummy variables destined for BIOGEM
          do i=1,imax
             go_k1(i,j) = k1(i,j)
          enddo
-      enddo     
+      enddo
       do k=1,kmax
          go_dz(k)  = real(dz(k))
          go_dza(k) = real(dza(k))
-      enddo     
+      enddo
       do j=0,jmax
          go_c(j)  = real(c(j))
          go_cv(j) = real(cv(j))
          go_s(j)  = real(s(j))
          go_sv(j) = real(sv(j))
-      enddo     
+      enddo
       do k=1,kmax
          do j=1,jmax
             do i=1,imax
@@ -2086,7 +1834,7 @@ c Set values of dummy variables destined for BIOGEM
                enddo
             enddo
          enddo
-      enddo  
+      enddo
 
 c KICO Choose diapycnal mixing scheme. iediff=0 (needed for tests to pass),
 c is uniform diffusivity.

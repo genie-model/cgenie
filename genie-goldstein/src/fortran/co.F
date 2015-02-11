@@ -3,9 +3,9 @@ c co.f convection code simplified form for program goldstein
 c      suitable for arbitrary functions rho(T,S) variable depth
 c cost counts occurences of mixing at each point not including the point
 c at the top of each mixed region
-c if cost is 2-d it counts the average number of convecting points at 
+c if cost is 2-d it counts the average number of convecting points at
 c each horizontal point (divide by nsteps in mains.f)
-c 22/5/2 lmax.gt.2 allowed 
+c 22/5/2 lmax.gt.2 allowed
 c 10/6/2 ts array passed as argument
 c 16/5/5 coshuffle from Simon Mueller's Bern version added with edits nre
 c 1/8/06 old/new convection scheme option added (rma)
@@ -187,7 +187,7 @@ c icosd is now the maximum integer depth of convection at this timestep
 c number of passes limited (initially to kmax)
 c
 c Revision 1.1  2004/08/19 12:09:11  sam
-c updated physical model to version used in paper 'mueller et al., 
+c updated physical model to version used in paper 'mueller et al.,
 c ventilation time scales in an efficient 3-d ocean model'
 c
 c 2003-09-17 sam
@@ -195,13 +195,12 @@ c
       subroutine coshuffle(tv,mldpk)
 
 #include "ocean.cmn"
-      
+
       real tv(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
       real tv_temp
       integer mldpk(2,maxi,maxj)
 
       integer i, j, k, k0, l, ipass, maxpass
-c    +       , icosd(maxi,maxj)
 
       maxpass = kmax
 
@@ -257,7 +256,6 @@ c KICO 18/09/07
                      icosd(i,j) = max(icosd(i,j),kmax-k0)
                   endif
  5             continue
-c              if(icosd(i,j).gt.0)print*,'coshuff',i,j,icosd(i,j),ipass
             endif
  10   continue
 

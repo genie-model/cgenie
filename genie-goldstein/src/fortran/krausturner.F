@@ -29,7 +29,7 @@ c
       real mldt, mlda, mldb, mldtadd
       real pebuoy, ketau
 
-      integer mldkt, mldpk, k, l, n, partmix, tvkl 
+      integer mldkt, mldpk, k, l, n, partmix, tvkl
 
 c KICO delete following line (more efficient) once mldpk calc sorted
       mldpk=kmax
@@ -86,7 +86,7 @@ c T and S and rho
              rhou = rhomix
            endif
            tmix = rdzg(kmax,k)*(tmix*dzg(kmax,k+1)
-     1           + tv(1,1,1,k)*dz(k)) 
+     1           + tv(1,1,1,k)*dz(k))
            smix = rdzg(kmax,k)*(smix*dzg(kmax,k+1)
      1           + tv(2,1,1,k)*dz(k))
            call eos(ec,tv(1,1,1,k),tv(2,1,1,k),zw(k),ieos,
@@ -115,17 +115,11 @@ c a=(h_(n-1)/h_n)*(M/E_mix).
           enddo
           tv(l,1,1,k)=mlda*qmix(l)+(1-mlda)*tv(l,1,1,k)
         enddo
-c Actual mixed layer depth. The key equation is (26), but 
+c Actual mixed layer depth. The key equation is (26), but
 c again the eqn is wrong (see above ref). It should read
 c d = 2M / (g h_(n-1) (rho_n - rho_mix) )
         if(k.lt.kmax)then
           mldtadd=em/(zw(k)*(rhol-rhou))
-c          if(-mldtadd.gt.dzg(k,k))then
-c            mldtadd=-dzg(k,k)
-cc Shouldn't happen, delete this line when confident it doesn't
-c          print*,'Warning: inconsistent result in mixed layer
-c     1 scheme partmixed layer: see krausturner.f'
-c          endif
           mldt=zw(k)+mldtadd
         else
 c Shouldn't happen, delete this line when confident it doesn't
@@ -135,7 +129,7 @@ c Shouldn't happen, delete this line when confident it doesn't
         endif
       elseif((partmix.eq.1).AND.(k.lt.kmax))then
         mldkt=k+1
-        mldt=zw(k) 
-      endif 
-       
+        mldt=zw(k)
+      endif
+
       end

@@ -12,12 +12,12 @@ c AY (12/07/05) : removed surplus argument to function
 c
       subroutine outm_surf_ocn_sic(unit,
      :        otemp, osaln,
-     :        atemp, ashum, apres, 
+     :        atemp, ashum, apres,
      :        sich, sica, tice,
      :        windspdxu_atm, windspdyu_atm,
      :        net_sw, net_lw,
      :        albedo_ocn,albedo_sic,
-     :        stressxu_ocn, stressyu_ocn, usurf, 
+     :        stressxu_ocn, stressyu_ocn, usurf,
      :        fxlho, fxsho, fxswo, fxlwo, evap_net,
      :        fxlha, fxsha, evap_atm,
      :        dthsic, dtareasic)
@@ -31,7 +31,7 @@ c
      :     sich(imax,jmax), sica(imax,jmax), tice(imax,jmax),
      :     windspdxu_atm(imax,jmax), windspdyu_atm(imax,jmax),
      :     net_sw(imax,jmax), net_lw(imax,jmax),
-     :     albedo_ocn(imax,jmax), albedo_sic(imax,jmax), 
+     :     albedo_ocn(imax,jmax), albedo_sic(imax,jmax),
      :     stressxu_ocn(imax,jmax), stressyu_ocn(imax,jmax),
      :     fxlho(imax,jmax), fxsho(imax,jmax),
      :     fxswo(imax,jmax), fxlwo(imax,jmax), evap_net(imax,jmax),
@@ -144,21 +144,6 @@ c Sea-ice : albedo
          enddo
       enddo
 c
-c AY (23/09/04) : no longer calculated in surf_ocn_sic.F
-c Ocean and Sea-ice : average albedo
-c     do j=1,jmax
-c        do i=1,imax
-c           write(unit,* )albedo_net(i,j)
-c        enddo
-c     enddo
-c
-c Ocean and Sea-ice : average surface temperature
-c     do j=1,jmax
-c        do i=1,imax
-c           write(unit,* )temp_net(i,j)
-c        enddo
-c     enddo
-c
 c Ocean : x wind stress at u point
       do j=1,jmax
          do i=1,imax
@@ -250,5 +235,4 @@ c Sea-ice : change in sea-ice area
          enddo
       enddo
 
-c  10 format(10f10.4)
       end

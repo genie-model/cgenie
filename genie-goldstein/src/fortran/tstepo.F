@@ -25,8 +25,6 @@ c KICO Mixed layer scheme needs:
       real mldtstmp(2), mldrhotmp
       integer mldpk(2,maxi,maxj)
 
-ccc      integer::nthreads,thread_id
-ccc      real t1,t2,t3,t4
       real ts_t1(maxl,maxi,maxj,maxk),ts1_t1(maxl,maxi,maxj,maxk)
       real rho_t1(maxi,maxj,maxk)
       real ts_t2(maxl,maxi,maxj,maxk),ts1_t2(maxl,maxi,maxj,maxk)

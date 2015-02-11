@@ -7,7 +7,7 @@
 *
 * RM (16/5/05) : edited for variable sin(lat) resolution
 *                ldeg=true/false switches degree/sin lat grid
-* 
+*
 *                 this code takes pieces from mains.F
 
       subroutine goldstein(istep,
@@ -66,7 +66,7 @@ c nre 'time' to be added
      :     usval_ocn(imax,jmax),
      :     vsval_ocn(imax,jmax),
      :     albedo_ocn(imax,jmax)
-   
+
 c Dummy variables to be passed to/from BIOGEM via genie.F
       real go_ts(1:maxl,1:maxi,1:maxj,1:maxk)
       real go_ts1(1:maxl,1:maxi,1:maxj,1:maxk)
@@ -77,15 +77,10 @@ c Dummy variables to be passed to/from BIOGEM via genie.F
       real go_mldta(1:maxi,1:maxj)
       real go_rho(1:maxi,1:maxj,1:maxk)
 
-c AY (02/12/03)
 c Local variables
       integer i, j, k, l, isl, itv, iout, ios
-c      integer isol
 
       real avn, avs, sums(8*maxl)
-c      real tmp1, tmp2, tmp3
-c AY (23/01/04) : 'tv' variable needs to be global, not local
-c     real tv(maxl,maxi,maxj,maxk), rms
       real rms
 
 c KICO mld variables
@@ -99,7 +94,6 @@ c Stream function variables
 
 c Surface flux variables
       real fx0neto(imax,jmax),fwfxneto(imax,jmax)
-c      real pme(imax, jmax)
 
 #ifdef clock
 c AY (09/03/04) : "time" variables for Dan
@@ -135,30 +129,27 @@ c     FOR THE ENERGY CALCULATIONS.....
 
 c ======================================================================
 c DJL
-c This bit just calculates the inital diagnostic of the total ocean 
-c   thermal energy and water.  It is simply the temperature/density of 
-c   each ocean gridbox multiplied by its vertical depth. 
+c This bit just calculates the inital diagnostic of the total ocean
+c   thermal energy and water.  It is simply the temperature/density of
+c   each ocean gridbox multiplied by its vertical depth.
 c The water bit has units of kg
 c Note the -ve sign in the water part!!
 c The energy bit has units of J
 
 c      First of all, set up this constant ....
-       if (ifirst.eq.1) then 
-crma       vsc = ds*dphi*rsc*rsc
+       if (ifirst.eq.1) then
        vsc = dphi*rsc*rsc
        ini_energy=0.0
        ini_water=0.0
        do k=1,kmax
          do j=1,jmax
            do i=1,imax
-crma             ini_energy=ini_energy+ts(1,i,j,k)*dz(k)
-crma             ini_water=ini_water-ts(2,i,j,k)*dz(k)
              ini_energy=ini_energy+ts(1,i,j,k)*dz(k)*ds(j)
              ini_water=ini_water-ts(2,i,j,k)*dz(k)*ds(j)
            enddo
          enddo
        enddo
-c      The m2mm is because internally, goldstein uses m, 
+c      The m2mm is because internally, goldstein uses m,
 c        but genie uses mm.
        ini_energy=ini_energy*vsc*dsc*rh0sc*cpsc
        ini_water=m2mm*ini_water*vsc*dsc/saln0
@@ -176,16 +167,13 @@ c pass back in BIOGEM-reset running count of cost
          do i=1,imax
             cost(i,j) = go_cost(i,j)
          enddo
-      enddo 
+      enddo
 
 c AY (02/12/03)
 c Insert any changes to units, etc. of incoming fields here
 
 c e.g. non-dimensionalisation
 c e.g. scl_drg modification to wind fields
-
-c     if (flag_igcmatmos.or.istep.eq.1) then
-c     if (istep.eq.1) then
 
 c AY (19/12/03) : need to calculate wind stresses first
 c                 code below taken from gseto.F
@@ -242,8 +230,6 @@ c Only matters if physically interpreting mldketaucoeff
            enddo
         enddo
       endif
-
-c     endif
 
 c RMA (3/5/06)
 crma call new routine for extra freshwater forcing (hosing)
@@ -304,10 +290,10 @@ c                 tstepo/tstipo
             ts(2,i,j,kmax+1) = fwfxneto(i,j)*rpmesco
             ts1(1,i,j,kmax+1) = ts(1,i,j,kmax+1)
             ts1(2,i,j,kmax+1) = ts(2,i,j,kmax+1)
-            
+
          enddo
       enddo
-      
+
 c     From biogem.....
 c     input biogeochemical tracers arrays
 c     don't let anyone else change Temperature and Salinity !!
@@ -322,7 +308,7 @@ c     it will do it ever so nicely and gently ... ;)
                enddo
             enddo
          enddo
-      enddo 
+      enddo
 c     create b.c. [12/01/2014]
 c     NOTE: BIOGEM only passes in/out the core grid array
 c           (no boundaries) and does not update tracers at boundaries
@@ -377,7 +363,7 @@ c *** Freshwater flux ***
             fw(1) = fw(1) + pptn_ocn(i,j)
             fw(2) = fw(2) + evap_ocn(i,j)
             fw(3) = fw(3) + runoff_ocn(i,j)
-            fw(4) = fw(4) + fwsic_ocn(i,j) 
+            fw(4) = fw(4) + fwsic_ocn(i,j)
 c *** Wind stress ***
             ws(1) = ws(1) + stressxu_ocn(i,j)
             ws(2) = ws(2) + stressyu_ocn(i,j)
@@ -385,7 +371,7 @@ c *** Wind stress ***
             ws(4) = ws(4) + stressyv_ocn(i,j)
          enddo
       enddo
-c     
+c
       write(*,121) 'HT fluxes : ',
      +     'Sol',fx(1)/(imax*jmax),'Sen',fx(2)/(imax*jmax),
      +     'NLo',fx(3)/(imax*jmax),'Lat',fx(4)/(imax*jmax),
@@ -420,13 +406,13 @@ c	          being used)
          call jbar
          call ubarsolv(ub,psi)
 
-c find island path integral due to wind and jbar terms 
+c find island path integral due to wind and jbar terms
 
          do isl=1,isles
             call island(ub,erisl(isl,isles+1),isl,1)
          enddo
 
-c solve system of simultaneous equations. Zero division here might 
+c solve system of simultaneous equations. Zero division here might
 c suggest not enough islands in the .psiles file
 c rma changes (introducing call matmult) made 20/9/05
 c to artificially set flows around islands to zero set psibc() to zero
@@ -457,17 +443,15 @@ c
                enddo
             enddo
          enddo
-         
-c     endif
 
 c update velocities
 
       call velc
 
 c AY (12/07/05) : removed surplus input arguments to tstipo/tstepo
-#ifdef dimpo 
+#ifdef dimpo
       call tstipo
-#else 
+#else
       call tstepo
 #endif
 
@@ -475,13 +459,11 @@ c ======================================================================
 c Ocean diagnostics and output
 c ======================================================================
 
-c     t = istep*dt(kmax) + t0
-      
 c "Healthcheck" and model rate of change
 c ----------------------------------------------------------------------
       if(mod(istep,npstp).eq.0)then
-         if (debug_loop) print*,'step ',istep 
-         if (debug_loop) 
+         if (debug_loop) print*,'step ',istep
+         if (debug_loop)
      & print*,'psi on islands ',(psibc(isl),isl=1,isles)
          if (debug_loop) call diag
          if(mod(istep,npstp).eq.0)then
@@ -495,7 +477,6 @@ c ----------------------------------------------------------------------
                enddo
             enddo
          else if(mod(istep,npstp).eq.1.and.istep.gt.1)then
-c        open(7,file='../results/tmp.1')
             rms = 0.
             do j=1,jmax
                do i=1,imax
@@ -528,7 +509,7 @@ c AY (03/12/03)
 
 c+DJL 31/8/2004
         if (lascout) then
-         if (debug_loop) 
+         if (debug_loop)
      + print*,'Writing GOLDSTEIN restart file at time',istep,
      + '(koverall',koverall,')'
          call check_unit(12,__LINE__,__FILE__)
@@ -544,9 +525,7 @@ c-DJL 31/8/2004
 c Oscillating streamfunction
 c ----------------------------------------------------------------------
          if(.not.flat)then
-c AY (03/12/03)
-c           open(2,file='../results/'//lout//'.psi.'//ext)
-            if (debug_loop) 
+            if (debug_loop)
      & print*,'Writing GOLDSTEIN oscillating streamfunction ',
      +          'file at time',istep
             open(2,file=outdir_name(1:lenout)//lout//
@@ -557,7 +536,7 @@ c           open(2,file='../results/'//lout//'.psi.'//ext)
                   if (debug_loop) write(2,*,iostat=ios)psi(i,j)
                   call check_iostat(ios,__LINE__,__FILE__)
                enddo
-            enddo   
+            enddo
             close(2,iostat=ios)
             call check_iostat(ios,__LINE__,__FILE__)
          endif
@@ -567,8 +546,8 @@ c           open(2,file='../results/'//lout//'.psi.'//ext)
 
 c Time-series outputs (T, S, THC, FW flux)
 c ----------------------------------------------------------------------
-c AY (17/03/04) : format statements for time-series files of average 
-c                 T & S and overturning streamfunctions 
+c AY (17/03/04) : format statements for time-series files of average
+c                 T & S and overturning streamfunctions
  100  format(5e14.6,2i5)
  110  format(11e14.6)
  120  format(11e14.6)
@@ -579,7 +558,7 @@ c                 genie.F level)
          time = real(real(istep)/real(nyear))
 c AY (08/12/03) : files opened so that data can be appended to the end
 c                 of them (need f90 compilation for this)
-         if (debug_loop) 
+         if (debug_loop)
      & print*,'Writing GOLDSTEIN time-series files at time',istep
          call check_unit(4,__LINE__,__FILE__)
          open(4,file=outdir_name(1:lenout)//lout//'.'//'t',
@@ -592,16 +571,16 @@ c                 of them (need f90 compilation for this)
      1        status='old',position='append',iostat=ios)
          call check_iostat(ios,__LINE__,__FILE__)
          call diag2(sums,avn,avs)
-         if (debug_loop) 
+         if (debug_loop)
      1 write(4,110,iostat=ios)time,(sums(i),i=1,8),avn,avs
          call check_iostat(ios,__LINE__,__FILE__)
-         if (debug_loop) 
+         if (debug_loop)
      1 write(14,110,iostat=ios)time,(sums(i),i=9,16),avn,avs
          call check_iostat(ios,__LINE__,__FILE__)
          call diagopsi(ominp,omaxp,omina,omaxa,opsi,opsia,opsip,iposa)
 c AY (04/03/04) : OPSISC factor scales streamfunctions into Sv
 c AY (05/05/04) : location of Atlantic max overturning now recorded
-         if (debug_loop) 
+         if (debug_loop)
      1 write(40,100,iostat=ios)time,ominp*opsisc,omaxp*opsisc,
      2        omina*opsisc,omaxa*opsisc,iposa(1),iposa(2)
          call check_iostat(ios,__LINE__,__FILE__)
@@ -681,16 +660,16 @@ c Write out regional areas (m2) if this is the first timestep
          endif
 c
 c Write out freshwater and heat fluxes
-         if (debug_loop) write(41,120,iostat=ios) time, 
+         if (debug_loop) write(41,120,iostat=ios) time,
      :        fw_flx(1)/(1.e6*r_itstp), fw_flx(2)/(1.e6*r_itstp),
      :        fw_flx(3)/(1.e6*r_itstp), fw_flx(4)/(1.e6*r_itstp),
      :        fw_flx(5)/(1.e6*r_itstp),
-     :        fx_flx(1)/(1.e15*r_itstp), fx_flx(2)/(1.e15*r_itstp), 
-     :        fx_flx(3)/(1.e15*r_itstp), fx_flx(4)/(1.e15*r_itstp), 
+     :        fx_flx(1)/(1.e15*r_itstp), fx_flx(2)/(1.e15*r_itstp),
+     :        fx_flx(3)/(1.e15*r_itstp), fx_flx(4)/(1.e15*r_itstp),
      :        fx_flx(5)/(1.e15*r_itstp)
          call check_iostat(ios,__LINE__,__FILE__)
 c Average heat flux (W/m2)
-c    :        fx_flx(1)/t_area(1), fx_flx(2)/t_area(2), 
+c    :        fx_flx(1)/t_area(1), fx_flx(2)/t_area(2),
 c    :        fx_flx(3)/t_area(3), fx_flx(4)/t_area(4),
 c    :        fx_flx(5)/t_area(5)
          close(41,iostat=ios)
@@ -727,7 +706,7 @@ c ----------------------------------------------------------------------
 c AY (17/03/04) : netCDF writing code (from Paul and Dan)
       if (lnetout) then
       if(mod(istep,iwstp).eq.0) then
-         if (debug_loop) 
+         if (debug_loop)
      : print*,'Writing GOLDSTEIN netCDF file at time',istep
 c
 c        get streamfunction data
@@ -738,7 +717,7 @@ c        do netCDF stuff ...
 c
          call write_netcdf_ocn(imax, jmax, kmax, k1, ncdepth1,
      :        opsi, opsia, opsip,
-     :        ts, u, rho, 
+     :        ts, u, rho,
      :        fx0flux, fwflux,
      :        work,
      :        dsc, usc, rsc, saln0,
@@ -773,24 +752,6 @@ c           here for the IGCM3's long-wave calculations
                ssval_ocn(i,j) = real(ts(2,i,j,kmax))
 c AY (10/09/04) : still need albedo output however
             albedo_ocn(i,j) = real(albocn)
-c
-c AY (10/09/04) : all of the following code excised - calculating
-c                 average albedo and "average" temperature moved to
-c                 genie.F
-c
-c-----------------------------------------------------------------------
-c              set up average albedo
-c-----------------------------------------------------------------------
-c              albedo_ocn(i,j) = sica(i,j)*alb_sic(i,j) + 
-c    :              (1-sica(i,j))*alb_ocn(i,j)
-c
-c-----------------------------------------------------------------------
-c           set up weighted average temperature
-c-----------------------------------------------------------------------
-c              tmp1 = (ts1(1,i,j,kmax)+zeroc)**4
-c              tmp2 = (tice(i,j)+zeroc)**4
-c              tmp3 = ((1 - sica(i,j))*tmp1) + (sica(i,j) * tmp2)
-c              temp_net(i,j) = (tmp3**0.25) - zeroc
 
             else
                tsval_ocn(i,j) = 0.
@@ -801,7 +762,7 @@ c              temp_net(i,j) = (tmp3**0.25) - zeroc
       enddo
 
 c Set values of dummy variables destined for BIOGEM
-c NOTE: convert precision between GOLDSTEIn (real*8) and GENIE 
+c NOTE: convert precision between GOLDSTEIn (real*8) and GENIE
 c       (which can be real*4 or real* depending on the IGCM)
       do j=1,jmax
          do i=1,imax
@@ -824,46 +785,43 @@ c SG <
 ccSR
 
          enddo
-      enddo 
+      enddo
       do j=0,jmax
          do i=0,imax
             go_psi(i,j) = 1592.5*real(psi(i,j))
          enddo
-      enddo 
+      enddo
 
 c ======================================================================
 c DJL
-c This bit just calculates the diagnostic of the total ocean 
-c   thermal energy and water.  It is simply the temperature/density of 
-c   each ocean gridbox multiplied by its vertical depth. 
+c This bit just calculates the diagnostic of the total ocean
+c   thermal energy and water.  It is simply the temperature/density of
+c   each ocean gridbox multiplied by its vertical depth.
 c The water bit has units of kg, relative to an initial value.
 c Note the -ve sign in the water part!!
 c The energy bit has units of J, relative to an initial value.
 
        if (mod(istep,conserv_per).eq.0) then
-crma       vsc = ds*dphi*rsc*rsc
        vsc = dphi*rsc*rsc
        tot_energy=0.0
        tot_water=0.0
        do k=1,kmax
          do j=1,jmax
            do i=1,imax
-crma             tot_energy=tot_energy+ts(1,i,j,k)*dz(k)
-crma             tot_water=tot_water-ts(2,i,j,k)*dz(k)
              tot_energy=tot_energy+ts(1,i,j,k)*dz(k)*ds(j)
              tot_water=tot_water-ts(2,i,j,k)*dz(k)*ds(j)
            enddo
          enddo
        enddo
-c      The m2mm is because internally, goldstein uses m, 
+c      The m2mm is because internally, goldstein uses m,
 c        but genie uses mm.
        tot_energy=tot_energy*vsc*dsc*rh0sc*cpsc
        tot_water=m2mm*tot_water*vsc*dsc/saln0
        test_energy_ocean=real(tot_energy-ini_energy)
        test_water_ocean=real(tot_water-ini_water)
-       if (debug_loop) 
+       if (debug_loop)
      :    print*,'Goldstein energy diagnostic: ',test_energy_ocean
-       if (debug_loop) 
+       if (debug_loop)
      :    print*,'Goldstein water diagnostic: ',test_water_ocean
        endif
 c ======================================================================
@@ -882,7 +840,7 @@ c ======================================================================
 
       character*1 a,b,c
       integer i, i1, i2, i3, itemp
-      
+
       if(i.lt.10)then
         a=char(i+48)
         conv=a//'  '
@@ -903,5 +861,3 @@ c ======================================================================
         conv=a//b//c
       endif
       end
-
-

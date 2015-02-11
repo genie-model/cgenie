@@ -50,14 +50,4 @@ c
          rhs(i) = rhs(i)/amat(i,i)
       enddo
 
-c     print*,(rhs(i),i=1,nvar)
-c     print*
-c     print*,cmat(1,1)*rhs(1) + cmat(1,2)*rhs(2) + cmat(1,3)*rhs(3) 
-c    1       + cmat(1,4)*rhs(4) - orhs(1),
-c    1       cmat(2,1)*rhs(1) + cmat(2,2)*rhs(2) + cmat(2,3)*rhs(3) 
-c    2       + cmat(2,4)*rhs(4) - orhs(2),
-c    2       cmat(3,1)*rhs(1) + cmat(3,2)*rhs(2) + cmat(3,3)*rhs(3) 
-c    3       + cmat(3,4)*rhs(4) - orhs(3),
-c     print*,((amat(i,j),i=1,nvar),j=1,nvar)
-
       end

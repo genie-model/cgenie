@@ -21,12 +21,12 @@
      :     weight_ocn)
 
       use genie_util, ONLY: check_unit, check_iostat
-      
+
 #include "ocean.cmn"
       include 'netcdf_grid.cmn'
- 
+
 c AY (02/06/04)
-c This surflux module was written to allow coupling between GOLDSTEIN 
+c This surflux module was written to allow coupling between GOLDSTEIN
 c ocean and sea-ice modules, and the IGCM3.  It is a cut-down version
 c of the c-GOLDSTEIN surflux routine, and is additionally modified to
 c receive short- and long-wave radiation fields from the atmosphere.
@@ -80,10 +80,10 @@ c     change in sea-ice area
 
 c Notes :
 c Output albedo does not include the effects of zenith angle - incoming
-c short-wave is net, so has already been corrected for this factor.  The 
+c short-wave is net, so has already been corrected for this factor.  The
 c ocean has a constant albedo everywhere.
 c
-c In c-GOLDSTEIN surface wind speed is calculated from the wind 
+c In c-GOLDSTEIN surface wind speed is calculated from the wind
 c stress fields supplied by the EMBM.  The code below takes wind speed
 c from the lowest level of the atmosphere, calculates surface wind
 c stress from this, then uses the "normal" c-GOLDSTEIN calculations to
@@ -131,18 +131,13 @@ c Local variables
       real evapsic(imax, jmax), fx0sic(imax, jmax), fxsen(imax, jmax)
       real qsato(imax, jmax), evap(imax, jmax), fx0o(imax, jmax)
       real fxswocn
-c      real olw, siclw
       real ce,ch,cesic,chsic,tv,tv2,tv3,tol
-      real albsic, fxswsic , fxsensic 
-c      real fx0oa, fxlwsic, fx0sica
+      real albsic, fxswsic , fxsensic
       real qsatsic, ticold, cfxsensic, salt, dho, dhsic
-c      real alw, dhadj
       real tieqn, dtieq
 
       real atm_sensible
       real atm_sensiblei
-c      real atm_netsoli, atm_netlong, atm_latent, atm_latenti
-c      real atm_netsol, atm_netlongi
 
 c Ocean and sea-ice long- and short-wave fluxes
       real netsw_ocn(imax, jmax), netsw_sic(imax, jmax)
@@ -263,7 +258,7 @@ c                 Long-wave
             endif
          enddo
       enddo
-                 
+
 c AY (11/12/03) : This next section executes routines that calculate
 c                 usurf from wind stresses.  If the winds are fixed,
 c                 as they are with the EMBM, this only needs be run
@@ -306,7 +301,6 @@ c     Von Karman constant (Dan = 0.41; Phil = 0.40)
 c     Roughness length (from Dan)
       z0 = 0.001
 c     Tunable parameter (sometimes called "gustiness")
-c     u0 = 3.
       u0 = gust
 
       do j=1,jmax
@@ -318,26 +312,24 @@ c                 the IGCM3
 c
 c     Lowest atmospheric level height (Phil's code says 10 m; my value
 c     of Cd suggests something closer to 100 m)
-c           z1 = 100.
             z1 = real(MAX(1.0, ahght(i,j)))
 c     Bulk aerodynamic constant
-c           Cd = cd
             Cd = (karman / (log(z1 / z0)))**2
 c
 c           u point
             ugrnd = u0 + sqrt(windspdxu_atm(i,j)**2 +
      +           windspdyu_atm(i,j)**2)
-            stressxu_ocn(i,j) = real(((Cd * rhogrnd * ugrnd) 
+            stressxu_ocn(i,j) = real(((Cd * rhogrnd * ugrnd)
      +           * windspdxu_atm(i,j)))
-            stressyu_ocn(i,j) = real(((Cd * rhogrnd * ugrnd) 
+            stressyu_ocn(i,j) = real(((Cd * rhogrnd * ugrnd)
      +           * windspdyu_atm(i,j)))
 c
 c           v point
             ugrnd = u0 + sqrt(windspdxv_atm(i,j)**2 +
      +           windspdyv_atm(i,j)**2)
-            stressxv_ocn(i,j) = real(((Cd * rhogrnd * ugrnd) 
+            stressxv_ocn(i,j) = real(((Cd * rhogrnd * ugrnd)
      +           * windspdxv_atm(i,j)))
-            stressyv_ocn(i,j) = real(((Cd * rhogrnd * ugrnd) 
+            stressyv_ocn(i,j) = real(((Cd * rhogrnd * ugrnd)
      +           * windspdyv_atm(i,j)))
          enddo
       enddo
@@ -348,7 +340,7 @@ c
 c     The stressx and stressy input arguments are assumed to be
 c     the wind stresses at the u and v points of the GOLDSTEIN
 c     grid (i.e. two x and y components)
-      
+
       do j=1,jmax
          do i=1,imax
             dztau(1,i,j) = scf*stressxu_ocn(i,j)
@@ -365,7 +357,7 @@ c     grid (i.e. two x and y components)
       enddo
 
 c AY (11/12/03) : code below taken from gseta.F
-      
+
       do j=1,jmax
          tv3 = 0.
          do i=1,imax
@@ -387,8 +379,8 @@ c AY (11/12/03) : code below taken from gseta.F
             if(j.le.2.or.j.ge.jmax-1)usurf(i,j) = tv3/imax
          enddo
       enddo
-      
-c AY (08/07/04) : derelict code      
+
+c AY (08/07/04) : derelict code
 c        Calculating usurf from wind speeds
 c        ----------------------------------
 c
@@ -447,7 +439,7 @@ c AY (09/03/04) : Write out current time (days, years, etc.) if required
       rt2 = real(it2)*rt1
       write(*,120) 'G-SURFLUX time : iteration',istep,', year',it4,
      +     ', day',rt2
-      
+
 #endif
 
 c ======================================================================
@@ -468,10 +460,6 @@ c-----------------------------------------------------------------------
 c reset some parameters
                albsic = 0.
 
-c AY (13/07/04) : hacked because of net longwave
-c downwelling longwave radiation
-c              alw = down_lw(i,j)
-
 c surface salinity-dependent freezing point:
                salt = saln0+osaln(i,j)
                tsfreez(i,j) = salt*(-0.0575 + 0.0017*sqrt(salt)
@@ -486,7 +474,7 @@ c              calculate terms over ice
 c-----------------------------------------------------------------------
 
                if(sica(i,j).gt.0.0)then
-c              * Sea-ice present *                 
+c              * Sea-ice present *
 
 c let albedo over sea ice vary as a function of tair (Holland et al. 1993)
                   albsic = max(0.20,min(0.7,0.40 - 0.04*atemp(i,j)))
@@ -504,29 +492,24 @@ c Dalton number
      &                    1.0e-3*(1.0022 - 0.0822*(atemp(i,j)
      1                    - ticold) + 0.0266*usurf(i,j))
                      cesic = max(6.0e-5,min(2.19e-3,cesic))
-                     
+
                      chsic = 0.94*cesic
 
-c sensible heat flux 
+c sensible heat flux
                      cfxsensic = rhoair*chsic*cpa*usurf(i,j)
-                     
-                     qsatsic = const1*exp(const2*ticold         
+
+                     qsatsic = const1*exp(const2*ticold
      1                    /(ticold + const3))
-                     
+
                      evapsic(i,j) = max(0.0,(qsatsic - ashum(i,j))
      1                    *rhoao*cesic*usurf(i,j))
 
-c AY (08/07/04) : hacked to insert net longwave flux
-c                    tieqn = sich(i,j)*(fxswsic + alw 
-c    1                     - emo*(ticold+zeroc)**4  - cfxsensic*(ticold 
-c    2                     - atemp(i,j)) - rho0*hls*evapsic(i,j))
-c    3                     + consic*(tsfreez(i,j)-ticold)
-                     tieqn = sich(i,j)*(fxswsic + netlw_sic(i,j) 
-     1                    - cfxsensic*(ticold 
+                     tieqn = sich(i,j)*(fxswsic + netlw_sic(i,j)
+     1                    - cfxsensic*(ticold
      2                    - atemp(i,j)) - rho0*hls*evapsic(i,j))
      3                    + consic*(tsfreez(i,j)-ticold)
 
-                     dtieq = sich(i,j)*( 
+                     dtieq = sich(i,j)*(
      1                    - 4.0*emo*(ticold+zeroc)**3 - cfxsensic
      1                    - hls*rhoair*cesic*usurf(i,j)*qsatsic*const2
      2                    *const3/((ticold + const3)**2)
@@ -534,8 +517,8 @@ c    3                     + consic*(tsfreez(i,j)-ticold)
      5                    - consic
 
                      tice(i,j) = real(ticold-tieqn/dtieq)
-                     
-                     if(abs(tice(i,j) - ticold).lt.tol .or.     
+
+                     if(abs(tice(i,j) - ticold).lt.tol .or.
      1                    ticold.gt.tfreez.and.tieqn.gt.0.0)goto 10
                   enddo
 
@@ -550,46 +533,31 @@ c-----------------------------------------------------------------------
 c                 recalc sea-ice terms in case tice's value is reset
 c-----------------------------------------------------------------------
 
-c AY (08/07/04) : hacked because of net longwave flux
-c AY (01/06/04) : outgoing sea-ice longwave
-c                 siclw = emo*(tice(i,j)+zeroc )**4
-
 c Dalton number
                   cesic = ene_tune*
      &                 1.0e-3*(1.0022 - 0.0822*(atemp(i,j)
      1                 - tice(i,j)) + 0.0266*usurf(i,j))
                   cesic = max(6.0e-5,min(2.19e-3,cesic))
-                  
+
                   chsic = 0.94*cesic
-                  
+
                   cfxsensic = rhoair*chsic*cpa*usurf(i,j)
 
                   fxsensic = cfxsensic*(tice(i,j) - atemp(i,j))
 
-                  qsatsic = const1*exp(const2*tice(i,j)      
+                  qsatsic = const1*exp(const2*tice(i,j)
      1                 /(tice(i,j) + const3))
-                  
+
                   evapsic(i,j) = max(0.0,(qsatsic - ashum(i,j))
      1                 *rhoao*cesic*usurf(i,j))
 
-c AY (08/07/04) : hacked to insert net longwave flux
-c                 fx0sic(i,j) = fxswsic - fxsensic
-c    1                        - siclw + alw - rho0*hls*evapsic(i,j)
                   fx0sic(i,j) = fxswsic - fxsensic
      1                 + netlw_sic(i,j) - rho0*hls*evapsic(i,j)
 
-c AY (01/06/04) : set up sea-ice components of atmosphere fluxes
-c                  atm_latenti   = 0.
                   atm_sensiblei = + fxsensic
-c AY (08/07/04) : hacked because of net shortwave flux
-c                 atm_netsoli   = + down_sw(i,j)*albsic
-c                  atm_netsoli   = 0.
-c AY (08/07/04) : hacked because of net longwave flux
-c                 atm_netlongi  = + siclw
-c                  atm_netlongi  = 0.
 
 c AY (01/06/04) : change in sea-ice height
-                  dhsic = rrholf*(qb(i,j) - fx0sic(i,j)) 
+                  dhsic = rrholf*(qb(i,j) - fx0sic(i,j))
      1                 - rhooi*evapsic(i,j)
 
                else
@@ -598,24 +566,14 @@ c                 * Sea-ice absent *
                   dhsic         = 0.
                   evapsic(i,j)  = 0.
                   tice(i,j)     = 0.
-c                  atm_latenti   = 0.
                   atm_sensiblei = 0.
-c                  atm_netsoli   = 0.
-c                  atm_netlongi  = 0.
                endif
 
 c-----------------------------------------------------------------------
 c              calculate terms over open ocean
 c-----------------------------------------------------------------------
 
-c AY (08/07/04) : hacked because of net shortwave flux
-c AY (01/06/04) : incoming short-wave
-c              fxswocn = down_sw(i,j)*(1. - albocn)
                fxswocn = netsw_ocn(i,j)
-
-c AY (08/07/04) : hacked because of net shortwave flux
-c AY (01/06/04) : outgoing long-wave
-c              olw = emo*(otemp(i,j)+zeroc)**4
 
 c Dalton number
                ce = ene_tune*
@@ -629,54 +587,29 @@ c sensible heat flux from ocean to atmosphere
                fxsen(i,j) = rhoair*ch*cpa*usurf(i,j)*
      1              (otemp(i,j)-atemp(i,j))
 
-c evaporation/sublimation rate 
+c evaporation/sublimation rate
                qsato(i,j) = const1*exp(const4*otemp(i,j)
      1              /(otemp(i,j)+const5))
 
                evap(i,j) = max(0.0,(qsato(i,j) - ashum(i,j))
      1              *rhoao*ce*usurf(i,j))
 
-c AY (10/12/03) : set up ocean components of atmosphere fluxes
-c              atm_latent   = evap(i,j)*rho0*hlv
-c              atm_latent   = ( - rho0*hlv*evap(i,j)
-c    &              + max(0.0,qb(i,j) - fx0o(i,j)))
                atm_sensible = + fxsen(i,j)
-c AY (08/07/04) : hacked because of net shortwave flux
-c              atm_netsol   = + down_sw(i,j)*albocn
-c               atm_netsol   = 0.
-c AY (08/07/04) : hacked because of net shortwave flux
-c              atm_netlong  = + olw
-c               atm_netlong  = 0.
 
-c AY (08/07/04) : hacked because of net longwave flux
-c heat flux from atmosphere into open ocean 
-c              fx0o(i,j) = + fxswocn - fxsen(i,j)
-c     1              - olw + alw - rho0*hlv*evap(i,j)
                fx0o(i,j) = + fxswocn - fxsen(i,j)
      1              + netlw_ocn(i,j) - rho0*hlv*evap(i,j)
 
 c-----------------------------------------------------------------------
 c              set up fluxes --> atmosphere
 c-----------------------------------------------------------------------
-c+DJL 16/11/2004
-c     The next 2 lines no longer used ... overwritten just below...
-c               fxlha(i,j)   = + ((sica(i,j)*atm_latenti)
-c     1              + ((1-sica(i,j))*atm_latent))
-c-DJL 16/11/2004
                fxsha(i,j) = + real(((sica(i,j)*atm_sensiblei)
      1              + ((1-sica(i,j))*atm_sensible)))
                fxsha(i,j) = real(-1. * fxsha(i,j))
-c AY (08/07/04) : hacked because of net heat fluxes
-c              fxswa(i,j) = (sica(i,j)*atm_netsoli)
-c    1              + ((1-sica(i,j))*atm_netsol)
-c              fxlwa(i,j)  = (sica(i,j)*atm_netlongi)
-c    1              + ((1-sica(i,j))*atm_netlong)
-c              evaporation flux (to atmosphere)
                evap_atm(i,j) = real(evap(i,j)*(1-sica(i,j))
      1              + evapsic(i,j)*sica(i,j))
 c AY (04/08/04) : use this evaporation flux to calculate latent heat flux
                fxlha(i,j) = real(- evap_atm(i,j)*rho0*hlv)
-               
+
 c AY (23/07/04) : convert evaporation from m/s to mm/s for Dan
                evap_atm(i,j) = real(evap_atm(i,j) * m2mm)
 
@@ -688,8 +621,6 @@ c-----------------------------------------------------------------------
      &              + sica(i,j)*qb(i,j))
                fxsho(i,j) = - real((1-sica(i,j))*fxsen(i,j))
                fxswo(i,j) = real((1-sica(i,j))*fxswocn)
-c AY (08/07/04) : hacked because of net longwave flux
-c              fxlwo(i,j) = - (1-sica(i,j))*(olw - alw)
                fxlwo(i,j) = real((1-sica(i,j))*netlw_ocn(i,j))
 
 c              evaporation flux (to ocean)
@@ -704,7 +635,7 @@ c-----------------------------------------------------------------------
                dho = max(0.0,rrholf*(qb(i,j) - fx0o(i,j)))
 
 c AY (02/06/04) : change in sea-ice height
-               dthsic(i,j) = real(sica(i,j)*dhsic 
+               dthsic(i,j) = real(sica(i,j)*dhsic
      1                     + (1-sica(i,j))*dho)
 
 c AY (02/06/04) : change in sea-ice area
@@ -747,7 +678,7 @@ c                 same way as a restart file)
 c AY (12/07/05) : removed surplus argument to function
          call outm_surf_ocn_sic(2,
      :        otemp, osaln,
-     :        atemp, ashum, apres, 
+     :        atemp, ashum, apres,
      :        sich, sica, tice,
      :        windspdxu_atm, windspdyu_atm,
      :        net_sw, net_lw,

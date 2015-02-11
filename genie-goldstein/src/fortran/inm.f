@@ -16,17 +16,12 @@ c
       read (unit,*)((((ts(l,i,j,k),l=1,2),(u1(l,i,j,k),l=1,2),
      1             k=1,kmax),i=1,imax),j=1,jmax)
 
-c     read (unit,*,end=10) t0
-c     t = t0
-c     print*,'t = ',t
-c 10  continue
-
 c     AY (08/03/04) : write out layer averages for restart checks
-      if (debug_init) 
+      if (debug_init)
      +     write(*,120) 'Layer','Avg T','Avg S','Avg U','Avg V',
      +     'Cells'
       do k=1,kmax
-c     
+c
 c        Clear temporary variables
          do l=1,4
             tmp_val(l) = 0
@@ -50,7 +45,7 @@ c                 Set up u array from read-in u1 array
          enddo
 c
 c        Print average values out
-         if (debug_init) 
+         if (debug_init)
      +        write(*,110) k,tmp_val(1)/icell,(tmp_val(2)/icell)+saln0,
      +        tmp_val(3)/(imax*jmax),tmp_val(4)/(imax*jmax),icell
       enddo

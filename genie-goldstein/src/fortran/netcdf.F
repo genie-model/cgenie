@@ -5,7 +5,7 @@
 * main changes are :
 *
 * - array bounds issues addressed in flip_both2 routine
-* - GOLDSTEIN's -260E to +100E longitude grid restored 
+* - GOLDSTEIN's -260E to +100E longitude grid restored
 * - ancillary longitude, latitude and depth arrays calculated in
 *   module initialisation routines, not netCDF routines
 * - new preparation routines for two dimensional fields (including
@@ -30,36 +30,18 @@
 c
 c
 #include "ocean.cmn"
-      include 'netcdf_grid.cmn' 
+      include 'netcdf_grid.cmn'
 c
       integer istep,imode
-c
-c AY (17/03/04) : alon1, etc. excised to ocean.cmn (renamed nclon1, etc.)
-c
-c      integer i,j,l
       real day,rtime
-c AY (17/03/04) : extra declarations
       integer iyear, imonth
-c
-c AY (17/03/04) : alon1, etc. now calculated in initialise_ocean.F
-c
       day=(istep*dt(1)*tsc/86400.0)
-c AY (17/03/04) : 365.25 days per GOLDSTEIN year (not 360.0)
-c AY (23/03/04) : small constant added to day calculation for round-off
-c                 reasons (i.e. 365.2499 vs. 365.25)
-c AY (08/04/04) : year length parameterised (in initialise_goldstein.F)
       iyear=int((day + 0.001)/yearlen)
       imonth=int((day-iyear*yearlen)/(yearlen/12.))+1
-c AY (24/03/04) : rtime added for netCDF file time
       rtime=iyear + ((day-iyear*yearlen))/yearlen
-      if (debug_loop) 
+      if (debug_loop)
      & print*,'istep',istep,'day',day,'iyear',iyear,'imonth',imonth,
      :     'rtime',rtime
-c AY (23/03/04) : removing year standardisation to 2000
-c     iyear=iyear+2000
-c
-c AY (19/03/04) : lout added to argument list to add identifier to
-c                 netCDF filenames
       call ini_netcdf_ocn1(outdir_name,lenout,lout,
      :                    imonth,iyear,rtime,
      :                    nclon1,nclat1,
@@ -139,8 +121,7 @@ c AY (19/03/04) : run identifier added to netCDF file names
       end if
 c
       ifname1=lnsig(fname1)
-ccc   print*,' Opening ',fname1(1:ifname1)
-c 
+c
       call ininc(fname1(1:ifname1),
      :           nmaxdims,ndim,nvar,
      :           natts,nattsvar,
@@ -178,8 +159,6 @@ c                 perhaps originally intended by Paul) by one point
 c                 so that OPSI, etc. data can be correctly plotted.
 c                 note : this doesn't affect the integrity of alat2
 c
-c AY (24/03/04) : alat3 is only jgg items long
-c     do j=1,jgg+1
       do j=1,jgg
          ycoord(j)=alat3(j)
       end do
@@ -232,7 +211,7 @@ c
 c
 c     This sets up a file similar to .pc files
 c
-      ndim=0 
+      ndim=0
       nvar=0
 c
       ndim=ndim+1
@@ -367,8 +346,6 @@ c
       attvarname(2,1,nvar)=
      :   'Temperature'
       attvarname(1,2,nvar)='units'
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     attvarname(2,2,nvar)='K'
       attvarname(2,2,nvar)='C'
 c
       nvar=nvar+1
@@ -587,7 +564,7 @@ c
      :                        work,
      :                        dsc,usc,rsc,saln0,
      :                        maxi,maxj,maxk,maxl,imode)
-      implicit none 
+      implicit none
       include 'netcdf.cmn'
       integer imax,jmax,kmax,maxi,maxj,maxk,maxl
       integer imode,k1(0:maxi+1,0:maxj+1)
@@ -631,11 +608,6 @@ c
 c     Temperature (i.e. final argument = 1)
       call prep_netcdf_ocn(ts,imax,jmax,kmax,work,k1,depth1,
      :                  1.0,2,maxl,1)
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     Correct temperature to Kelvin
-c     do i=1,((maxi+1)*(maxj+1)*(maxk+1))
-c        if (work(i).gt.-99999.0) work(i) = work(i) + 273.15
-c     enddo
       call writevar(nco(imode),idvaro(4,imode),work)
 c
 c     Salinity (i.e. final argument = 2)
@@ -643,35 +615,33 @@ c     Salinity (i.e. final argument = 2)
      :                  1.0,2,maxl,2)
 c     Correct salinity to PSU
       do i=1,((maxi+1)*(maxj+1)*(maxk+1))
-         if (work(i).gt.-99999.0) work(i) = work(i) + 
+         if (work(i).gt.-99999.0) work(i) = work(i) +
      :                            real(saln0)
       enddo
       call writevar(nco(imode),idvaro(5,imode),work)
 c
 c     Density
       call prep_netcdf_ocn(rho,imax,jmax,kmax,work,k1,depth1,
-     :                  1.0,2,1,1)      
+     :                  1.0,2,1,1)
       call writevar(nco(imode),idvaro(6,imode),work)
-c 
+c
 c     Ocean velocity (component 1)
       call prep_netcdf_ocn(u,imax,jmax,kmax,work,k1,depth1,
      :                  usc,3,3,1)
       call writevar(nco(imode),idvaro(7,imode),work)
 c
 c     Ocean velocity (component 2)
-c     AY (18/03/04) : There are potential problems with this output 
-c     because of necessary changes to its preparation to stop it 
+c     AY (18/03/04) : There are potential problems with this output
+c     because of necessary changes to its preparation to stop it
 c     causing a bounds error run failure)
       call prep_netcdf_ocn(u,imax,jmax,kmax,work,k1,depth1,
      :                  usc,4,3,2)
       call writevar(nco(imode),idvaro(8,imode),work)
 c
 c     Ocean velocity (component 3)
-c     AY (18/03/04) : There are potential problems with this output 
-c     because of necessary changes to its preparation to stop it 
+c     AY (18/03/04) : There are potential problems with this output
+c     because of necessary changes to its preparation to stop it
 c     causing a bounds error run failure)
-ccc      call prep_netcdf_ocn(u,imax,jmax,kmax,work,k1,depth1,
-ccc     :                  usc*dsc/rsc,5,3,3)
       call prep_netcdf_ocn_w(imax,jmax,kmax,u,work,k1,
      :                        usc*dsc/rsc)
       call writevar(nco(imode),idvaro(9,imode),work)
@@ -695,7 +665,7 @@ c     Net longwave heat flux
       call prep_netcdf_ocn(fx0flux,imax,jmax,0,work,k1,depth1,
      :                 1.0,8,5,3)
       call writevar(nco(imode),idvaro(13,imode),work)
-c      
+c
 c     Sea-ice heat flux
       call prep_netcdf_ocn(fx0flux,imax,jmax,0,work,k1,depth1,
      :                 1.0,8,5,5)
@@ -741,11 +711,10 @@ c
       implicit none
 c
       integer mg,jgg,nl,itype,it,ilev,iland(*)
-c      integer i,j,k
       real scale
       real data_i(*)
       real data_o(*), depth1(nl+1)
-c    
+c
       if (itype.eq.1) then
          call flip_vert(data_i,data_o,jgg,nl,scale)
       else if (itype.eq.2) then
@@ -758,17 +727,13 @@ c AY (18/03/04) : Values of two arguments (jgg+1 and 0 below) force
 c                 a loop in the called subroutine to exceed the bounds
 c                 of the output array.  This has been unsatisfactorily
 c                 solved by setting the last argument to 1.
-c        call flip_both2(data_i,data_o,mg,jgg,nl,mg,jgg+1,nl,
-c    :                   iland,scale,ilev,it,0)
          call flip_both2(data_i,data_o,mg,jgg,nl,mg,jgg+1,nl,
      :                   iland,scale,ilev,it,1)
       else if (itype.eq.5) then
 c AY (18/03/04) : Values of one argument (nl+1 below) forces a loop in
-c                 the called subroutine to exceed the bounds of the 
+c                 the called subroutine to exceed the bounds of the
 c                 input and output arrays.  This has been unsatisfactorily
 c                 solved by setting the argument to nl.
-c        call flip_both2(data_i,data_o,mg,jgg,nl,mg,jgg,nl+1,
-c    :                   iland,scale,ilev,it,1)
          call flip_both2(data_i,data_o,mg,jgg,nl,mg,jgg,nl,
      :                   iland,scale,ilev,it,1)
       else if (itype.eq.6) then
@@ -793,7 +758,7 @@ c
       subroutine prep_netcdf_ocn_w(imax,jmax,kmax,data_i,data_o,iland,
      :                        scale)
       implicit none
-c     
+c
       integer::imax,jmax,kmax
       real data_i(3,0:imax,0:jmax,1:kmax)
       real data_o((imax+1)*(jmax+1)*(kmax+1))
@@ -806,10 +771,10 @@ c
          do j=1,jmax
             do i=1,imax
                if (iland(i,j).ge.90.or.iland(i,j).gt.(kmax+1-k)) then
-                  data_o(i + (j-1)*imax + (k-1)*jmax*imax) = 
+                  data_o(i + (j-1)*imax + (k-1)*jmax*imax) =
      :                 -99999.0
                else
-                  data_o(i + (j-1)*imax + (k-1)*jmax*imax) = 
+                  data_o(i + (j-1)*imax + (k-1)*jmax*imax) =
      :                 real(scale*data_i(3,i,j,kmax+1-k))
                end if
             end do
@@ -818,7 +783,7 @@ c
       k = kmax+1
       do j=1,jmax
          do i=1,imax
-            data_o(i + (j-1)*imax + (k-1)*jmax*imax) = 
+            data_o(i + (j-1)*imax + (k-1)*jmax*imax) =
      :           -99999.0
          end do
       end do
@@ -841,17 +806,17 @@ c
       real scale
       real data_in(0:iy,0:iz)
       real data_out(0:iy,0:iz)
-c         
+c
       integer j,k
-c 
+c
       do k=0,iz
-         do j=0,iy 
+         do j=0,iy
             data_out(j,iz-k)=real(scale*data_in(j,k))
          end do
       end do
 c
       return
-      end 
+      end
 
 * ======================================================================
 * flip_both1
@@ -871,15 +836,7 @@ c
       real temp1(imax,jmax,kmax)
 c
       integer i,j,k
-c      integer ioff1, ioff2
-c
-c AY (22/03/04) : ioff1 and ioff2 offset the GOLDSTEIN grid to try
-c                 (unsuccessfully as it happens) to start the netCDF
-c                 output at longitude 0E.  The code below is modified
-c                 to remove this transformation
-c      ioff1=imax/4+1
-c      ioff2=imax-ioff1
-c
+
       do k=1,kmax
          do j=1,jmax
             do i=1,imax
@@ -904,7 +861,7 @@ c
 
       subroutine flip_both2(temper,temp1,
      :                     imax,jmax,kmax,
-     :                     ix,iy,iz,  
+     :                     ix,iy,iz,
      :                     iland,scale,iter,it,idom)
 c
       implicit none
@@ -915,21 +872,13 @@ c
       real temp1(ix,iy,iz)
 c
       integer i,j,k,jj
-c      integer ioff1, ioff2
-c
-c AY (22/03/04) : ioff1 and ioff2 offset the GOLDSTEIN grid to try
-c                 (unsuccessfully as it happens) to start the netCDF
-c                 output at longitude 0E.  The code below is modified
-c                 to remove this transformation
-c      ioff1=imax/4+1
-c      ioff2=imax-ioff1
-c 
+
 c AY (18/03/04) : The code below appears to contain an error which
 c                 allows the loop to reference parts of array temp
 c                 outside of its bounds.  The error manifests itself
 c                 when iy = jmax+1 and idom = 0.  This allows jj to
 c                 take a value of iy+1.
-c     
+c
 c                 A similar error occurs when iz = kmax+1, since this
 c                 references k=0 regions of the temp1 array and k=9
 c                 regions of the temper array.  Neither of which

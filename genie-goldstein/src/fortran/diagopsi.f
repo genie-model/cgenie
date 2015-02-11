@@ -1,8 +1,8 @@
 *
-* diagopsi.f subroutine for goldstein to calculate overturning 
+* diagopsi.f subroutine for goldstein to calculate overturning
 * streamfunctions nre 27/11/2
 * hacked to find Atlantic extrema in lower half of domain nre 11/6/3
-* 
+*
 * AY (05/05/04) : above hack unhacked and replaced with explicit
 *                 parameter controlling the depth from which max
 *                 or min overturning calculated from (overdep)
@@ -48,14 +48,14 @@ c
             ou(j,k) = 0
             do i=ips(j),ipf(j)
                ou(j,k) = ou(j,k) + cv(j)*u(2,i,j,k)*dphi
-            enddo    
+            enddo
             opsip(j,k) = opsip(j,k-1) - dz(k)*ou(j,k)
             if(opsip(j,k).lt.ominp.and.k.le.overdep)
      +           ominp = opsip(j,k)
             if(opsip(j,k).gt.omaxp.and.k.le.overdep)
      +           omaxp = opsip(j,k)
-         enddo   
-      enddo    
+         enddo
+      enddo
 
       omina = 0
       omaxa = 0
@@ -76,11 +76,6 @@ c conditionality to take care of "split Atlantic" (rma, 5/10/05)
                enddo
             endif
             opsia(j,k) = opsia(j,k-1) - dz(k)*ou(j,k)
-c           if(opsia(j,k).lt.omina)omina = opsia(j,k)
-c           if(opsia(j,k).gt.omaxa)omaxa = opsia(j,k)
-c AY (05/05/04)
-c           if(opsia(j,k).lt.omina.and.k.le.kmax/2)omina = opsia(j,k)
-c           if(opsia(j,k).gt.omaxa.and.k.le.kmax/2)omaxa = opsia(j,k)
             if(opsia(j,k).lt.omina.and.k.le.overdep)
      +           omina = opsia(j,k)
             if(opsia(j,k).gt.omaxa.and.k.le.overdep) then
@@ -89,7 +84,7 @@ c AY (05/05/04) : position of Atlantic maximum overturning now recorded
                iposa(1) = j
                iposa(2) = k
             endif
-         enddo   
-      enddo    
+         enddo
+      enddo
 
       end

@@ -6,7 +6,7 @@ c error corrected 14/6/97, split in two 9/2/1
 c altered for non-trivial islands 17/2/2, should give same answers
 c slower with old code (not yet checked)
 c uninitialised bottom pressures where k1=kmax could cause loss of
-c significance, although they exactly cancel, hence bp now defined 
+c significance, although they exactly cancel, hence bp now defined
 c at all wet points 16/6/3
 c updated for generalised grid (RMA, 10/5/05)
 c
@@ -17,12 +17,10 @@ c
       common /lars/getj
 
       integer i,j,k,l,n,ip1
-c      integer m
 
       real tv1, tv2, tv3, tv4
 
       n = imax
-c      m = jmax + 1
 
 c calculate easy part of double p integral
 
@@ -37,7 +35,7 @@ c calculate easy part of double p integral
          enddo
       enddo
 
-c sbp now defined if mk.gt.0 ie all wet points 
+c sbp now defined if mk.gt.0 ie all wet points
 
       do j=1,jmax
          do i=1,imax
@@ -51,7 +49,7 @@ c sbp now defined if mk.gt.0 ie all wet points
       enddo
 
 c periodic b.c. required for Antarctic island integral
-c (if bp was defined everywhere would not need ifs) 
+c (if bp was defined everywhere would not need ifs)
 
       do j=1,jmax
          if(k1(1,j).lt.kmax)then
@@ -118,11 +116,5 @@ c
                gb(l) = gbold(l)
             endif
    70 continue
-c don't currently need the following lines as gb already 
-c reset to zero at these boundaries by mains
-c     do i=1,imax
-c        gb(i) = gbold(i)
-c        gb(i+jmax*imax) = gbold(i+imax*jmax)
-c     enddo
-         
+
       end

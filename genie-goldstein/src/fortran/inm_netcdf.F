@@ -1,6 +1,6 @@
       subroutine inm_netcdf(lrestart_genie)
 
-c     This module reads netcdf restarts for goldstein      
+c     This module reads netcdf restarts for goldstein
 
 #include "ocean.cmn"
       include 'netcdf.inc'
@@ -22,13 +22,13 @@ c      integer status
       integer ncid
       logical lexist
       character*200 fnamein
-      
+
       real timestep
 
 c AY (06/10/04) : extra variables for printing out average model properties
       integer i,j,k,l,icell
       real    tmp_val(4)
-      
+
       logical lrestart_genie
 
       timestep=24.0*60.0*60.0*yearlen/real(nyear)
@@ -103,7 +103,7 @@ c     Means timestep can never be less than 1/1000 of a day!!!!
       u(:,:,:,:)=u1(:,:,:,:)
 
 c     The i and j below were :,: but this fails at
-c       compilation time in the 64x32 case for a 
+c       compilation time in the 64x32 case for a
 c       reason I can't work out.  DJL 27/10/2005
       if (lrestart_genie) then
         do j=1,jmax
@@ -126,10 +126,10 @@ c       reason I can't work out.  DJL 27/10/2005
 c AY (06/10/04) : copied from inm.f
 
 c     AY (08/03/04) : write out layer averages for restart checks
-      if (debug_init) write(*,120) 'Layer','Avg T','Avg S','Avg U','Avg V',
-     +     'Cells'
+      if (debug_init) write(*,120) 'Layer','Avg T','Avg S','Avg U',
+     +     'Avg V','Cells'
       do k=1,kmax
-c     
+c
 c        Clear temporary variables
          do l=1,4
             tmp_val(l) = 0
@@ -153,7 +153,7 @@ c                 Set up u array from read-in u1 array
          enddo
 c
 c        Print average values out
-         if (debug_init) 
+         if (debug_init)
      +        write(*,110) k,tmp_val(1)/icell,(tmp_val(2)/icell)+saln0,
      +        tmp_val(3)/(imax*jmax),tmp_val(4)/(imax*jmax),icell
       enddo

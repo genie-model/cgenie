@@ -1,7 +1,7 @@
-c 
+c
 c veldif.f  reordered to sensible order
 c
-      program veldif 
+      program veldif
       use genie_util, ONLY: check_unit, check_iostat
       character lin*30
       real tmp(6,40,40,40), u(6,40,40,40)
@@ -35,9 +35,7 @@ c
       write(1,10,iostat=ios)((((u(l,i,j,k)-tmp(l,i,j,k),l=1,lmax),i=1,
      &     imax),j=1,jmax),k=1,kmax)
       call check_iostat(ios,__LINE__,__FILE__)
-c    1 ,i=10,10 ),j=10,10 )
       close(1,iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
   10  format(e16.9)
-c 10  format(6e15.5)
       end

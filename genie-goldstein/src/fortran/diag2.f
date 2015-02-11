@@ -13,7 +13,6 @@ c
 #include "ocean.cmn"
 
       real sum(8*maxl), avn,  avs, vol(8)
-c      real tv
 
       integer i,j,k,l,mo,ndep
 
@@ -26,8 +25,7 @@ c      real tv
 
       do i=1,8*lmax
          sum(i) = 0
-      enddo      
-c      tv = 0
+      enddo
       avn = 0
       avs = 0
       do 10 k=1,kmax
@@ -48,14 +46,11 @@ c      tv = 0
                   endif
                   do 60 l=1,lmax
                      sum(mo + 4*ndep + 8*(l-1)) =
-     1                  sum(mo + 4*ndep + 8*(l-1)) + 
+     1                  sum(mo + 4*ndep + 8*(l-1)) +
      1                  ts(l,i,j,k)*dphi*ds(j)*dz(k)
-c                    print*,i,j,k,l,mo + 4*ndep + 8*(l-1)
-c    2                   ,sum(mo + 4*ndep + 8*(l-1))
    60             continue
-                  if(first)vol(mo + 4*ndep) = vol(mo + 4*ndep) 
+                  if(first)vol(mo + 4*ndep) = vol(mo + 4*ndep)
      1                                      + dphi*ds(j)*dz(k)
-c                 print*,i,j,k,mo + 4*ndep,vol(mo + 4*ndep)
                   if(k.lt.kmax)
      1               avn = avn + abs(rho(i,j,k) - rho(i,j,k+1))/dza(k)
 
@@ -74,7 +69,7 @@ c crash barrier added 111099
         stop
       endif
 
-      do i=1,8     
+      do i=1,8
          do l=1,lmax
             if (vol(i) .ne. 0.0) then
                sum(i + 8*(l-1)) = sum(i + 8*(l-1))/vol(i)

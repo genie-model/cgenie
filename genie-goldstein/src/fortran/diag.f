@@ -1,6 +1,6 @@
 c
 c diag.f diagnostics for program goldstein variable depth
-c lmax > 2 allowed, 27/5/2       
+c lmax > 2 allowed, 27/5/2
 c updated for generalised grid (RMA, 10/5/05)
 c
       subroutine diag
@@ -9,16 +9,14 @@ c
 
       real sum(maxl), sumsq(maxl), umax(3), cnmax, avs, vol, area, tmax
      1   ,tmin, ubmax(2), tv, tmax1, tmin1, tv1, tv2
-c      real enmax(maxk), rdmn
 
       integer i, j, k, l, imm(3,3), isl
-c      integer ien(maxk) , jen(maxk), ird, jrd
 
       vol = 0.0
       do l=1,lmax
          sum(l) = 0.0
          sumsq(l) = 0.0
-      enddo       
+      enddo
       do i=1,3
          umax(i) = 0
          do j=1,3
@@ -32,8 +30,6 @@ c      integer ien(maxk) , jen(maxk), ird, jrd
       ubmax(1) = 0
       ubmax(2) = 0
       do 10 k=1,kmax
-c        cnmax = 0
-c        cnvax = 0
          do 20 j=1,jmax
             do 30 i=1,imax
                if(k.ge.k1(i,j))then
@@ -42,9 +38,8 @@ c        cnvax = 0
                      sum(l) = sum(l) + ts(l,i,j,k)*dphi*ds(j)*dz(k)
                      sumsq(l) = sumsq(l)
      1                        + ts(l,i,j,k)**2*dphi*ds(j)*dz(k)
-                  enddo   
+                  enddo
                   do 40 l=1,3
-c                    if(l.eq.1.and.ts(l,i,j,k).eq.0)print*,i,j,k,'zero'
                      if(abs(u(l,i,j,k)).gt.umax(l))then
                         umax(l)=abs(u(l,i,j,k))
                         imm(1,l) = i
@@ -124,9 +119,8 @@ c AY (02/12/03) : indicate that the following are GOLDSTEIN outputs
       print*,'max and min T at k=1  ',tmax1,tmin1
       print*,'<T>, <S> ..., <T**2>, <S**2> ...'
      1      ,(sum(l)/vol,l=1,lmax),(sumsq(l)/vol,l=1,lmax)
-c     print*,'ts(1,3,3,4)'
       print*,'ts(1,1,1,1)'
-     1      ,ts(1,1,1,1)  
+     1      ,ts(1,1,1,1)
       print*,'Cn ',cnmax
       print*,'Dmax',dmax
       print*,'flux limited at ',limps,' points'
