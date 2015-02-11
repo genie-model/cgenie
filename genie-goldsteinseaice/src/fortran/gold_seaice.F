@@ -5,7 +5,7 @@
 * AY (20/01/04) : adding c-GOLDSTEIN sea-ice to GENIE framework
 *
 *	          this code takes pieces from surflux.F, mains.F
-* 
+*
 * AY (23/09/04) : upgraded to handle sea-ice albedo
 
       subroutine gold_seaice(istep,
@@ -39,8 +39,6 @@ c Declare variables passed into this subroutine
 c AY (20/01/04)
 c Local variables
       integer i, j, l, itv, iout, ios
-
-c nre real t ! already declared
       real fw_delta(imax,jmax), fx_delta(imax,jmax)
 
 c AY (03/05/04) : time-series variables
@@ -73,11 +71,11 @@ c     FOR THE ENERGY CALCULATIONS.....
 c ======================================================================
 c DJL
 c This bit just calculates the inital diagnostic of the total seaice
-c   thermal energy and water.  
+c   thermal energy and water.
 c The water bit has units of kg
 c The energy bit has units of J
 
-       if (ifirst.eq.1) then 
+       if (ifirst.eq.1) then
        vsc = dphi*rsc*rsc
        ini_energy=0.0
        ini_water=0.0
@@ -86,7 +84,7 @@ c The energy bit has units of J
              ini_water=ini_water+varice(1,i,j)*ds(j)
            enddo
          enddo
-c      The m2mm is because internally, goldseaice uses m, 
+c      The m2mm is because internally, goldseaice uses m,
 c        but genie uses mm.
        ini_water=m2mm*ini_water*vsc*rhoio
        ifirst=0
@@ -130,7 +128,7 @@ c AY (09/03/04) : Write out current time (days, years, etc.) if required
       it4 = it3 / nyear
       rt1 = yearlen / nyear
       rt2 = real(it2)*rt1
-      if (debug_loop) 
+      if (debug_loop)
      & write(*,120) 'G-SEAICE time : iteration',istep,', year',it4,
      +     ', day',rt2
 
@@ -139,13 +137,11 @@ c AY (09/03/04) : Write out current time (days, years, etc.) if required
 c AY (20/01/04) : previously in surflux.F ...
 c ----------------------------------------------------------------------
 
-c update ice 
+c update ice
       if (impsic) then
          call tstipsic
-c     print*,'implicit sea ice '
       else
          call tstepsic
-c     print*,'explicit sea ice '
       endif
 
 c modify heat and salinity fluxes into ocean according to sea-ice update;
@@ -169,8 +165,6 @@ c                 consistent with the previous calculations below.
                   fx_delta(i,j) = - varice(1,i,j)*rhoice*hlf*rdtdim
                   fw_delta(i,j) = fw_delta(i,j)
      +                 + varice(1,i,j)*rhoio*rdtdim
-c AY (20/01/04) : global heat excised for now
-c                 ghs = ghs - varice(1,i,j)*rhoice*hlf*rdtdim
                   do l=1,2
                      varice(l,i,j) = 0.
                   enddo
@@ -215,12 +209,12 @@ c        Write restart file
             close(22,iostat=ios)
             call check_iostat(ios,__LINE__,__FILE__)
          endif
-         
+
          iw = iw + 1
          if (debug_loop)print*
       endif
 
-c AY (29/04/04) : format statements for time-series files of average 
+c AY (29/04/04) : format statements for time-series files of average
 c                 sea-ice properties
  110  format(6e15.6,2i5,1e15.6,2i5,1e15.6,2i5)
 
@@ -247,7 +241,7 @@ c                 genie.F level)
 
       if (dosc) then
 c average the last nyear steps in every ianav steps (if ianav>nyear)
-         
+
       itv = mod(istep+nyear-1,ianav)
       if(itv.lt.nyear)then
          ext=conv_sic(mod(iav,10))
@@ -306,7 +300,7 @@ c           Heat flux         [-> GOLDSTEIN]
 
 c ======================================================================
 c DJL
-c This bit just calculates the diagnostic of the total seaice 
+c This bit just calculates the diagnostic of the total seaice
 c   thermal energy and water.
 c The water bit has units of kg, relative to an initial value.
 c The energy bit has units of J, relative to an initial value.
@@ -323,15 +317,15 @@ c IS A COMPLETE FIX.  SEE DJL FOR MORE INFO.
              tot_water=tot_water+varice(1,i,j)*ds(j)
            enddo
          enddo
-c      The m2mm is because internally, goldseaice uses m, 
+c      The m2mm is because internally, goldseaice uses m,
 c        but genie uses mm.
        tot_energy=vsc*tsc*tv*tot_energy
        tot_water=m2mm*vsc*rhoio*tot_water
        test_energy_seaice=real(test_energy_seaice+tot_energy-ini_energy)
        test_water_seaice=real(tot_water-ini_water)
-       if (debug_loop) 
+       if (debug_loop)
      & print*,'GoldSeaice energy diagnostic: ',test_energy_seaice
-       if (debug_loop) 
+       if (debug_loop)
      & print*,'GoldSeaice water diagnostic: ',test_water_seaice
        endif
 c ======================================================================

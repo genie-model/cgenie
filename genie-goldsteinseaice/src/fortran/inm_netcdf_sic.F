@@ -3,7 +3,7 @@
 
       subroutine inm_netcdf_sic
 
-c     This module reads netcdf restarts for goldstein sea-ice      
+c     This module reads netcdf restarts for goldstein sea-ice
 
 #include "seaice.cmn"
       include 'netcdf.inc'
@@ -84,9 +84,9 @@ c     Means timestep can never be less than 1/1000 of a day!!!!
         endif
       endif
       iday=nint(day_rest)
-      if (debug_init) 
+      if (debug_init)
      &   print*,'day in goldstein sea-ice restart is now',day_rest
-      if (debug_init) 
+      if (debug_init)
      &   print*,'iday in goldstein sea-ice restart is now',iday
 
       varice(1,1:maxi,1:maxj)=hght_read(:,:)
@@ -97,20 +97,18 @@ c     Means timestep can never be less than 1/1000 of a day!!!!
 c AY (06/10/04) : copied from inm_seaice.f
 
 c     AY (08/03/04) : write out averages for restart checks
-      if (debug_init) 
+      if (debug_init)
      &    write(*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
-c     
+c
 c     Clear temporary variables
       do l=1,4
          tmp_val(l) = 0
       enddo
       icell = 0
-c     
+c
 c     Sum layer state variables and flow field
       do j=1,jmax
          do i=1,imax
-c AY (23/09/04) : if statement modified to only consider cells with ice
-c           if(k1(i,j).le.kmax) then
             if(k1(i,j).le.kmax.and.varice(2,i,j).gt.0.) then
                icell = icell + 1
                do l=1,2
@@ -129,9 +127,9 @@ c     Print average values out
       else
          if (debug_init) write(*,310) 0.0,0.0,0.0,0.0
       endif
-      
+
  310  format(4f13.9)
  320  format(4a13)
-    
+
       return
       end

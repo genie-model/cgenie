@@ -5,7 +5,7 @@
 * main changes are :
 *
 * - array bounds issues addressed in flip_both2 routine
-* - GOLDSTEIN's -260E to +100E longitude grid restored 
+* - GOLDSTEIN's -260E to +100E longitude grid restored
 * - ancillary longitude, latitude and depth arrays calculated in
 *   module initialisation routines, not netCDF routines
 * - new preparation routines for two dimensional fields
@@ -28,7 +28,7 @@
       SUBROUTINE INI_NETCDF_SIC(istep,imode)
 c
 #include "seaice.cmn"
-      include 'netcdf_grid.cmn' 
+      include 'netcdf_grid.cmn'
 c
       integer istep,imode
 c
@@ -48,12 +48,10 @@ c                 reasons (i.e. 365.2499 vs. 365.25)
       imonth=int((day-iyear*yearlen)/(yearlen/12.))+1
 c AY (24/03/04) : rtime added for netCDF file time
       rtime=iyear + ((day-iyear*yearlen))/yearlen
-      if (debug_loop) 
+      if (debug_loop)
      & print*,'istep',istep,'day',day,'iyear',iyear,'imonth',imonth,
      :     'rtime',rtime
-c AY (23/03/04) : leaving year increment as is - though I don't like it
-c     iyear=iyear+2000
-c
+
 c AY (19/03/04) : lout added to argument list to add identifier to
 c                 netCDF filenames
       call ini_netcdf_sic1(outdir_name,lenout,lout,
@@ -91,7 +89,7 @@ c
      :          attvarname(2,nmaxdims,nall)*200
 c
       integer mg,jgg
-      real 
+      real
      :     alon1(mg),alon2(mg),alon3(mg),
      :     alat1(jgg),alat2(jgg),alat3(jgg)
       real rtime
@@ -122,7 +120,6 @@ c
      :                  dimname,varname,attdimname,
      :                  attvarname)
 c
-ccc write(cyear,'(i10.10)')iyear
 c AY (19/03/04) : run identifier added to netCDF file names
       if (imode.eq.1) then
          fname1=dir_name(1:ilen)//'gsic_'//runid(1:3)//'_rs_'
@@ -133,8 +130,7 @@ c AY (19/03/04) : run identifier added to netCDF file names
       end if
 c
       ifname1=lnsig(fname1)
-ccc print*,' Opening ',fname1(1:ifname1)
-c 
+c
       call ininc(fname1(1:ifname1),
      :           nmaxdims,ndim,nvar,
      :           natts,nattsvar,
@@ -166,8 +162,6 @@ c     Latitude coordinates (tracer, u-point, v-point)
          ycoord(j)=alat2(j)
       end do
       call writedim(nco(imode),iddimo(5,imode),ycoord)
-c AY (24/03/04) : alat3 is only jgg items long
-c     do j=1,jgg+1
       do j=1,jgg
          ycoord(j)=alat3(j)
       end do
@@ -209,7 +203,7 @@ c
 c
 c     This sets up a file similar to .pc files
 c
-      ndim=0 
+      ndim=0
       nvar=0
 c
       ndim=ndim+1
@@ -312,8 +306,6 @@ c
       attvarname(2,1,nvar)=
      :   'Sea-ice temperature'
       attvarname(1,2,nvar)='units'
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     attvarname(2,2,nvar)='K'
       attvarname(2,2,nvar)='C'
 c
       nvar=nvar+1
@@ -396,7 +388,7 @@ c
      :                        dtha,fx0_sic,fw_sic,
      :                        work,
      :                        maxi,maxj,imode)
-      implicit none 
+      implicit none
       include 'netcdf_sic.cmn'
 
       integer imax,jmax,maxi,maxj,imode,k1(0:maxi+1,0:maxj+1)
@@ -418,11 +410,6 @@ c
 c     Sea-ice temperature
       call prep_netcdf_sic(tice,imax,jmax,work,k1,
      :                 1.0,6,1,1)
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     Correct temperature to Kelvin
-c     do i=1,((maxi+1)*(maxj+1))
-c        if (work(i).gt.-99999.0) work(i) = work(i) + 273.15
-c     enddo
       call writevar(nco(imode),idvaro(3,imode),work)
 c
 c     Sea-ice albedo
@@ -439,7 +426,7 @@ c     Change in sea-ice fractional cover
       call prep_netcdf_sic(dtha,imax,jmax,work,k1,
      :                 1.0,7,2,2)
       call writevar(nco(imode),idvaro(6,imode),work)
-c      
+c
 c     Sea-ice heat flux
       call prep_netcdf_sic(fx0_sic,imax,jmax,work,k1,
      :                 1.0,6,1,1)
@@ -561,9 +548,7 @@ c
 c
       integer imode
 c
-ccc print*,' calling end_netcdf_sic for file = ',imode
       call closenc(nco(imode))
-ccc print*,' called end_netcdf_sic for file = ',imode
 c
       return
       end

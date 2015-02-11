@@ -4,7 +4,7 @@
 *
 * AY (03/12/03) : restarting conversion of c-GOLDSTEIN into
 *                 GOLDSTEIN + EMBM + sea-ice for genie.f
-* 
+*
 *                 this code takes pieces from mains.F, gseta.F
 *	          and gseto.F
 *
@@ -62,8 +62,6 @@ c Local variables
 
       real tv
       real u_tau_ice,ch_ice,cpo_ice
-c AY (03/05/04) : moved to seaice.cmn
-c     real asurf
 
 crma extra explicit declarations (rma, 22/12/03)
       real th0, th1, s0, s1, phix
@@ -80,15 +78,8 @@ crma extra explicit declarations (rma, 22/12/03)
 crma grid type (rma, 2/6/05)
       integer igrid
 
-crma      logical ldeg
-c choose between grids (ldeg=.true. gives const dlat; ldeg=.false. gives const dsinlat)
-c      parameter(ldeg=.true. )
-c      parameter(ldeg=.false. )
-
       character(len=6) world
       integer          lenworld
-c AY (02/02/05) : now read in from GOIN information
-c     parameter(world='worbe2')
 
 c AY (09/01/04) : local variables reinstated
       character ans, lin*13
@@ -97,20 +88,6 @@ c AY (04/10/04) : for netCDF restarts (following Dan)
       character netin*1,netout*1,ascout*1
 
       real test_energy_seaice
-
-c-DJL 21/9/05 (for reading IGCM grid), inserted by RMA
-ccc
-ccc      integer nx_igcm
-ccc      parameter(nx_igcm=64)
-ccc      integer ny_igcm
-ccc      parameter(ny_igcm=32)
-ccc
-ccc      real igcm_lons(nx_igcm)
-ccc      real igcm_lats(ny_igcm)
-ccc      real igcm_lons_edge(nx_igcm+1)
-ccc      real igcm_lats_edge(ny_igcm+1)
-ccc
-ccc      real dx_igcm
 
       NAMELIST /ini_sic_nml/indir_name,outdir_name,rstdir_name
       NAMELIST /ini_sic_nml/igrid,world
@@ -131,26 +108,9 @@ c ======================================================================
 c AY (22/10/04) : just for reference ...
       if (debug_init) print*
 
-cccc-DJL 21/9/05 (for reading IGCM grid), inserted by RMA
-ccc      dx_igcm=360.0/real(nx_igcm)
-ccc      do i=1,nx_igcm
-ccc         igcm_lons(i)=real((i-1.0)*dx_igcm)
-ccc         igcm_lons_edge(i)=real((i-1.5)*dx_igcm)
-ccc      end do
-ccc      igcm_lons_edge(nx_igcm+1)=real((nx_igcm-0.5)*dx_igcm)
-ccc      call gwtcnr(igcm_lats,ny_igcm/2)
-ccc      call gwtbox(igcm_lats_edge,ny_igcm/2)
-ccc
-ccc      if (debug_init) print*,'These are the igcm latitude edges:'
-ccc      if (debug_init) print*,igcm_lats_edge
-ccc      if (debug_init) print*,'These are the igcm longitude edges:'
-ccc      if (debug_init) print*,igcm_lons_edge
-ccc
-crma      stop
-
 c AY (01/12/03) : previously in mains.F ...
 c ----------------------------------------------------------------------
-      
+
 c read DATA (i.e. namelist) file
       call check_unit(56,__LINE__,__FILE__)
       open(unit=56,file='data_goldSIC',status='old',iostat=ios)
@@ -196,10 +156,6 @@ c        This 'if' checks for a terminal slash symbol
       end if
       if (debug_init) print*,'Restart dir. name ',rstdir_name(1:lenrst)
 
-crma (15/09/05) : read in grid type
-crma (0 = const dsinlat; 1 = const dlat; 2 = IGCM)
-crma      if(igrid.eq.0) ldeg=.false.
-crma      if(igrid.eq.1) ldeg=.true.
 c AY (02/02/05) : read in topography filename
       lenworld = lnsig1(world)
       if (debug_init) print*,'Topography name ',world(1:lenworld)
@@ -216,8 +172,6 @@ c     New or continuing run
       if (debug_init) print*,'new or continuing run ?'
       if (debug_init) print*,ans
 
-c AY (05/05/04) : number of days per GOLDSTEIN sea-ice year (usually 365.25)
-c     yearlen = 365.25
       if (debug_init) print*,'number of days per GOLDSTEIN sea-ice year'
       if (debug_init) print*,yearlen
 
@@ -241,16 +195,13 @@ c dimensional scale values
       cpsc = 3981.1
       tsc = rsc/usc
 
-c EMBM reference salinity
-c     saln0 = 34.9
-
 c parameters for setting up grid
 c th is latitude, coords are sin(th), longitude phi, and z
 
-      th0 = - pi/2    
-      th1 = pi/2 
-      s0 = sin(th0)    
-      s1 = sin(th1)     
+      th0 = - pi/2
+      th1 = pi/2
+      s0 = sin(th0)
+      s1 = sin(th1)
       phix = 2*pi
       deg_to_rad = pi/180.
 
@@ -258,20 +209,14 @@ c grid dimensions must be no greater than array dimensions in var.cmn
 c kmax needed to interpret topography file for masking
 
       imax = maxi
-      jmax = maxj 
+      jmax = maxj
       kmax = maxk
 
       dphi = phix/imax
       if (igrid.lt.2) then
          phi0 = -260.0*deg_to_rad
-      else
-ccc         phi0 = igcm_lons_edge(1)*deg_to_rad
       endif
-crma      ds = (s1-s0)/jmax
-crma      dphi2 = dphi*2
-crma      ds2 = ds*2
       rdphi = 1.0/dphi
-crma      rds = 1.0/ds
 
 c set up horizontal grid: sin and cos factors at rho and v points (c grid)
 c fix for global domain although only cv and cv2 are referred to at or beyond
@@ -279,7 +224,6 @@ c limits 24/6/2 if no flow out of N + S boundaries.
 
       sv(0) = s0
       cv(0) = cos(th0)
-crma      if(ldeg)then
       if(igrid.eq.1)then
 crma set up const dlat grid
          dth = (th1 - th0)/jmax
@@ -298,18 +242,6 @@ crma set up const dsinlat grid
             cv(j) = sqrt(1 - sv(j)*sv(j))
             s(j) = sv(j) - 0.5*dscon
          enddo
-ccc      elseif(igrid.eq.2)then
-ccccrma set up IGCM grid (21/9/05)
-ccccrma note igcm orders latitude north-to-south!
-ccc         do j=1,jmax
-ccc            thv = deg_to_rad*igcm_lats_edge(jmax+1-j)
-ccc            dth = deg_to_rad*(igcm_lats_edge(jmax+2-j)
-ccc     1                      - igcm_lats_edge(jmax+1-j))
-ccc            theta = thv - 0.5*dth
-ccc            sv(j) = sin(thv)
-ccc            s(j) = sin(theta)
-ccc            cv(j) = cos(thv)
-ccc         enddo
       endif
       if (debug_init) print*,'SIC latitudes: velocity; tracers'
       if (debug_init) print*,'j, 180/pi*asin(sv(j)), 180/pi*asin(s(j))'
@@ -327,7 +259,6 @@ ccc         enddo
             if(j.gt.1)rds2(j) = 2.0/(dsv(j)+dsv(j-1))
          endif
         if (debug_init) print*,j,180/pi*asin(sv(j)),180/pi*asin(s(j))
-c     &,180/pi*asin(ds(j)),sv(j),s(j),ds(j)
       enddo
 
 c v2 seasonality
@@ -336,7 +267,7 @@ c v2 seasonality
       tv = 86400.0*yearlen/(nyear*tsc)
 
 c AY (13/01/04) : oops!  left this out
-      dtsic = tv  
+      dtsic = tv
       if (debug_init) print*,'sea-ice timestep in days',tv*tsc/86400
 
       rdtdim = 1.0/(tsc*dtsic)
@@ -348,23 +279,6 @@ c set up sin and cos factors at rho and v points (c grid)
 c fix for global domain although only cv and cv2 are referred to at or beyond
 c limits 24/6/2 if no flow out of N + S boundaries.
 
-crma      do j=0,jmax
-crma         sv(j) = s0 + j*ds
-crma         if(abs(1.0 - abs(sv(j))).lt.1e-12)then
-crma            cv(j) = 0.
-crma            rcv(j) = 1e12
-crma         else
-crma            cv(j) = sqrt(1 - sv(j)*sv(j))
-crma            rcv(j) = 1.0/cv(j)
-crma         endif
-crma         cv2(j) = cv(j)*cv(j)*rds
-crma         s(j) = sv(j) - 0.5*ds
-crma         if(s(j).lt.-1.0)s(j) = -2.0 - s(j)
-crma         c(j) = sqrt(1 - s(j)*s(j))
-crma         rc(j) = 1.0/c(j)
-crma         rc2(j) = rc(j)*rc(j)*rdphi
-crma      enddo   
-
 c AY (04/12/03) : reading in ocean bathymetry/runoff patterns - not
 c                 sure yet if this is entirely necessary.
 c seabed depth h needed BEFORE forcing if coastlines are non-trivial
@@ -373,27 +287,14 @@ c k1(1,j) - k1(imax+1,j) = 0
 
 c AY (06/01/04) : reinstate bathymetry/runoff read-in
 c AY (01/12/03) : line modified to point to input directory
-c     open(13,file=world//'.k1')
       if (debug_init) print*,'Bathymetry being read in'
       call check_unit(13,__LINE__,__FILE__)
       open(13,file=indir_name(1:lenin)//world//'.k1',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-c note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
-c k1(1,j) - k1(imax+1,j) = 0, as enforced below;
-c
-c AY (07/01/04) : write out contents of k1 array prior to filling it
-c     do j=jmax+1,0,-1
-c        write(6,'(i4,40i3)')j,(k1(i,j),i=0,imax+1)
-c        do i=0,imax+1
-c           k1(i,j) = 100
-c        enddo
-c     enddo
 
       do j=jmax+1,0,-1
          read(13,*,iostat=ios)(k1(i,j),i=0,imax+1)
          call check_iostat(ios,__LINE__,__FILE__)
-c rotate grid to check b.c.s
-c        read(13,*)xxx,(k1(i,j),i=19,36),(k1(i,j),i=1,18),xxx
          k1(0,j) = k1(imax,j)
          k1(imax+1,j) = k1(1,j)
          if(j.ne.0.and.j.ne.jmax+1.and.debug_init)
@@ -417,7 +318,7 @@ cc EMBM stuff follows...
 
       do j=1,jmax
       asurf(j) = rsc*rsc*ds(j)*dphi
-      if (debug_init) 
+      if (debug_init)
      & print*,'j = ',j,'SIC grid cell area is',asurf(j),'m2'
       enddo
 
@@ -428,7 +329,6 @@ c AY (11/12/03) : year length inconsistent here - corrected to 365.25
 
 c more constants
 
-c     rhoair = 1.25
       rho0 = 1e3
 c latent heat of fusion of ice (J/kg)
       hlf = 3.34e5
@@ -443,7 +343,7 @@ c read sea-ice parameters
 
 c non-dimensionalise eddy diffusivity
       diffsic = diffsic/(rsc*usc)
-      
+
 c empirical constant
       ch_ice = 0.0058
 c skin friction velocity (m/s)
@@ -452,13 +352,11 @@ c specific heat of sea water under ice at constant pressure (J/kg/K)
       cpo_ice = 4044
 c representative ice density (kg/m**3)
       rhoice = 913.
-c representative under-seaice water density (kg/m**3)
-c     rho0sea = 1035.
       hmin = 0.01
       rhmin = 1.0/hmin
 c density ratios
-      rhooi = rho0/rhoice 
-      rhoio = rhoice/rho0 
+      rhooi = rho0/rhoice
+      rhoio = rhoice/rho0
 c FW flux conversion parameters
       m2mm = 1000.
       mm2m = 1.0/(m2mm)
@@ -506,8 +404,6 @@ c thickness, fractional area and temperature
 c v2 seasonal. Annual averages
 
             do l=1,2
-c AY (20/01/04) : EMBM properties excised
-c              tqavg(l,i,j) = 0.
                haavg(l,i,j) = 0.
             enddo
             ticeavg(i,j) = 0.
@@ -519,11 +415,6 @@ c              tqavg(l,i,j) = 0.
          endif
          enddo
       enddo
-
-c AY (11/12/03) : calculated in surflux - excised from here
-c diagnostic calculation of global heat source
-c
-c     ghs = 0.
 
 c AY (04/12/03) : previously in mains.F ...
 c ----------------------------------------------------------------------
@@ -540,7 +431,7 @@ c ----------------------------------------
       else
         lnetin=.true.
       endif
-c      
+c
       if (debug_init) print*,'netCDF restart output ?'
       if (debug_init) print*,netout
       if ((netout.eq.'n').or.(netout.eq.'N')) then
@@ -558,10 +449,11 @@ c
       endif
 c
       if (debug_init) print*,'filename for netCDF restart input ?'
-      if (debug_init) print*,filenetin 
+      if (debug_init) print*,filenetin
 c
-      if (debug_init) print*,'directory name for netCDF restart output ?'
-      if (debug_init) print*,dirnetout 
+      if (debug_init)
+     &    print*,'directory name for netCDF restart output ?'
+      if (debug_init) print*,dirnetout
 c ----------------------------------------
 
 c Is this a new or continuing run?
@@ -572,8 +464,6 @@ c        But set up initial default time and date....
          iyear_rest=2000
          imonth_rest=1
          ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c        day_rest=2.0
          day_rest=yearlen / nyear
          if (debug_init) print*,'day_rest = ',real(day_rest)
       else
@@ -593,12 +483,10 @@ c        But set up initial default time and date....
             iyear_rest=2000
             imonth_rest=1
             ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c           day_rest=2.0
             day_rest=yearlen / real(nyear)
             if (debug_init) print*,'day_rest = ',day_rest
          endif
-         
+
 c AY (20/01/04)
 c Sea-ice
          do j=1,jmax
@@ -615,8 +503,6 @@ c ======================================================================
 
 c AY (08/12/03) : this section creates output files that have data
 c                 put into them throughout model runs (time series)
-
-c 110  format(6e14.6,2i5,1e14.6,2i5)
 
 c Average, etc. values of sea-ice properties
       call check_unit(43,__LINE__,__FILE__)
@@ -635,17 +521,6 @@ c Average, etc. values of sea-ice properties
       call check_iostat(ios,__LINE__,__FILE__)
       close(43,iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-
-      if (dosc) then
-c Seasonal averages
-c
-c AY (30/04/04) : don't need to call this here anymore
-c
-c At present only N. hemisphere air temperature is output
-c     open(50,file=outdir_name(1:lenout)//lout//'.osc')
-c     write(50,'(a26)') '%time      N. hemisphere air temp'
-c     close(50)
-      endif
 
 c AY (06/01/04) : count variable for output file numbers
       iw  = 1
@@ -743,8 +618,8 @@ c     The genie grid is offset from the goldstein grid by imax/4
 c     in the longitudinal direction.
 c
       do j=1,jmax
-         do i=1,imax        
-            if (k1(i,j).ge.90) then 
+         do i=1,imax
+            if (k1(i,j).ge.90) then
                ilandmask1(i,j)=1
                ilandmask2(i,j)=1
                ilandmask3(i,j)=1
@@ -754,7 +629,7 @@ c
                ilandmask3(i,j)=0
             end if
          end do
-      end do  
+      end do
       if (debug_init) print*
 
 c+DJL initialise the seaice energy=0.0

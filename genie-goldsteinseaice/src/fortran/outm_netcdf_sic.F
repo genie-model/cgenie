@@ -39,7 +39,7 @@ c     For date and restarts...
       integer iday
       integer iyearid
       integer imonthid
-      integer idayid   
+      integer idayid
       character yearstring*10
       character monthstring*2
       character daystring*2
@@ -72,7 +72,7 @@ c     30 day months are assumed
 c     WRITE A RESTART.....
 
 c AY (06/10/04) : calculate time in years, months and days
-         
+
 
 c AY (04/10/04) : uses grid variables calculated in initialise_seaice.F
       do i=1,maxi
@@ -172,24 +172,22 @@ c	          but the routine doesn't know about maxk
         status=nf_put_var_double(ncid,nalbdid,albd_write)
         call check_err(status)
 
-      status=nf_close(ncid)     
+      status=nf_close(ncid)
 
 c AY (06/10/04) : copied from outm_seaice.f
 
 c     AY (08/03/04) : write out averages for restart checks
       write(*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
-c     
+c
 c     Clear temporary variables
       do l=1,4
          tmp_val(l) = 0
       enddo
       icell = 0
-c     
+c
 c     Sum layer state variables and flow field
       do j=1,jmax
          do i=1,imax
-c AY (23/09/04) : if statement modified to only consider cells with ice
-c           if(k1(i,j).le.kmax) then
             if(k1(i,j).le.kmax.and.varice(2,i,j).gt.0.) then
                icell = icell + 1
                do l=1,2
@@ -200,7 +198,7 @@ c           if(k1(i,j).le.kmax) then
             endif
          enddo
       enddo
-c     
+c
 c     Print average values out
       if (icell.gt.0) then
          write(*,310) tmp_val(1)/icell,tmp_val(2)/icell,
@@ -208,7 +206,7 @@ c     Print average values out
       else
          write(*,310) 0.,0.,0.,0.
       endif
-      
+
  310  format(4f13.9)
  320  format(4a13)
 

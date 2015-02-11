@@ -31,11 +31,11 @@ c     Calculate averages, minima, maxima, etc.
 c
 c           Northern/Southern hemisphere totals
             if(j.gt.(jmax/2))then
-               sum1(1) = sum1(1) 
+               sum1(1) = sum1(1)
      1                 + (varice(1,i,j)*varice(2,i,j))*asurf(j)
                sum2(1) = sum2(1) + varice(2,i,j)*asurf(j)
             else
-               sum1(2) = sum1(2) 
+               sum1(2) = sum1(2)
      1                 + (varice(1,i,j)*varice(2,i,j))*asurf(j)
                sum2(2) = sum2(2) + varice(2,i,j)*asurf(j)
             endif
@@ -61,11 +61,5 @@ c Note : sum4(2) not used at present
 c
          enddo
       enddo
-
-c Multiply by the area of a grid cell to get total volume/area
-crma      do i=1,2
-crma         sum1(i) = sum1(i)*asurf
-crma         sum2(i) = sum2(i)*asurf
-crma      enddo
 
       end

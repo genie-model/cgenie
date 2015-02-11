@@ -2,7 +2,7 @@
 * subroutine tstipsic.f for c-goldstein
 * JGS iterative implicit version 2/10/00
 * cimp=1 fully implicit, cimp=0 explicit
-* coeffs for iterative implicit scheme are defined at cell faces. 
+* coeffs for iterative implicit scheme are defined at cell faces.
 * eg flux across east face = cie(i)*T(i+1) + ciw(i)*T(i)
 * converted from ocean to ice 28/10/04 yka, edited nre
 *
@@ -22,9 +22,6 @@ c iterations to solve timestep
 
 c implicit
       parameter (nii=4, ups0=0.0, cimp=0.5)
-c     parameter (nii=4, ups0=0.8, cimp=1.0)
-c recover old explicit 
-c     parameter (nii=8, ups0=0.0, cimp=0.0)
 
       integer i, j, l
 
@@ -51,13 +48,8 @@ c flux to east
                cie(i,j) = 0
                ciw(i,j) = 0
             else
-c              cie(i,j) = uice(1,i,j)*rc(j)*0.5*rdphi
                cie(i,j) = u(1,i,j)*rc(j)*0.5*rdphi
                tv = rc(j)*rc(j)*rdphi*diffsic*rdphi
-c recover old explicit 
-c              ups = sign(ups0, uice(1,i,j))
-c              ups = sign(ups0, u(1,i,j))
-c              pec = uice(1,i,j)*dphi/diffsic
                pec = u(1,i,j)*dphi/diffsic
                ups = pec / (2.0 + abs(pec))
                ciw(i,j) = cie(i,j)*(1+ups) + tv
@@ -68,13 +60,8 @@ c flux to north
                cin(i,j) = 0
                cis(i,j) = 0
             else
-c              cin(i,j) = cv(j)*uice(2,i,j)*0.5
                cin(i,j) = cv(j)*u(2,i,j)*0.5
                tv = cv(j)*cv(j)*rdsv(j)*diffsic
-c recover old explicit 
-c              ups = sign(ups0, uice(2,i,j))
-c              ups = sign(ups0, u(2,i,j))
-c              pec = uice(2,i,j)*dsv(j)/diffsic
                pec = u(2,i,j)*dsv(j)/diffsic
                ups = pec / (2.0 + abs(pec))
                cis(i,j) = cin(i,j)*(1+ups) + tv
@@ -135,7 +122,7 @@ c iterate to solve timestep
                do i=1,imax
                   if(kmax.ge.k1(i,j))then
 c
-c explicit and conservative corrector step 
+c explicit and conservative corrector step
 c
                      varice(l,i,j) =  varice1(l,i,j)- dtsic*(
      1                           - dtha(l,i,j)*tsc +
@@ -144,7 +131,7 @@ c
      3                          + (cin(i,j)  *varice2(i,j+1)
      4                           - cis(i,j-1)*varice2(i,j-1))*rds(j))
      7                           - dtsic*varice2(i,j)*(
-     8                             ciw(i,j) - cie(i-1,j) 
+     8                             ciw(i,j) - cie(i-1,j)
      9                          + (cis(i,j) - cin(i,j-1))*rds(j))
                  endif
                enddo

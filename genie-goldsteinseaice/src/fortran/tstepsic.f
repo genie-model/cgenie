@@ -1,15 +1,13 @@
 *
-* subroutine tstepsic.f for program goldstein introduced 18/9/02 
+* subroutine tstepsic.f for program goldstein introduced 18/9/02
 * updates sea-ice height and area
-* 
-      subroutine tstepsic 
+*
+      subroutine tstepsic
 
 #include "seaice.cmn"
 
       integer i, j, l
-
-      real fe(2), fw(2), fn(2), fs(2,maxi)
-     +    ,fwsave(2)
+      real fe(2), fw(2), fn(2), fs(2,maxi), fwsave(2)
 
 c 2nd order explicit transport code using upper level ocean velocities
 
@@ -62,7 +60,7 @@ c eastern edge(doorway or wall)
                elseif(kmax.lt.max(k1(i,j),k1(i+1,j)))then
                   fe(l) = 0
                else
-                  fe(l) = u(1,i,j)*rc(j)*(varice1(l,i+1,j) + 
+                  fe(l) = u(1,i,j)*rc(j)*(varice1(l,i+1,j) +
      1                    varice1(l,i,j))*0.5
                   if (u(1,i,j).ge.0.0) then
                      if (varice1(2,i+1,j).gt.par_sica_thresh) then

@@ -25,7 +25,7 @@ c AY (23/09/04) : upgraded to output sea-ice albedo
       albiceaav = 0.0
       icepts = 0
       area = 0.0
-      
+
       do j=1,jmax
          do i=1,imax
             do l=1,2
@@ -47,10 +47,6 @@ c AY (23/09/04) : upgraded to output sea-ice albedo
          enddo
       enddo
       if(icepts.gt.0)then
-crma         haaav(1) = haaav(1)/icepts
-crma         haaav(2) = haaav(2)/icepts
-crma         ticeaav  = ticeaav /icepts
-crma         albiceaav = albiceaav / icepts
          haaav(1) = haaav(1)/area
          haaav(2) = haaav(2)/area
          ticeaav  = ticeaav /area
