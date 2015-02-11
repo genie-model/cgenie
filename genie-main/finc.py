@@ -16,14 +16,14 @@ def find_includes(filename):
 
     # list of files (common blocks etc.) 'included' in source
     filelist = []
-    
+
     f = open(filename)                 # open the filehandle
     while 1:
         line = f.readline()            # read the next line
         if not line: break             # break loop on EOF
         line = line.strip()            # strip '\n'
         if line == '': continue        # ignore blank lines
-        
+
         # match lines we're interested in with a regular expression
         # first compile the regexp
         p = re.compile(r'#?include\s*[\'\"](\w*\.\w*)[\'\"]', re.IGNORECASE)
@@ -31,10 +31,10 @@ def find_includes(filename):
         m = p.match(line)
         # if there is a match
         if m:
-            file = m.group(1)         # the included filename 
+            file = m.group(1)         # the included filename
             if file not in filelist:  # test for duplicates
                 filelist.append(file) # add to list if not
-                
+
     f.close()                         # close the filehandle
     filelist.sort()                   # sort the list
     return filelist                   # and return it
@@ -66,6 +66,6 @@ if __name__ == '__main__':
         return_string = base + '.o : ' + tail + ' '
         for inc in include_list:
             return_string += inc + ' '
-        print return_string
+        print(return_string)
         # and exit
         sys.exit(0)
