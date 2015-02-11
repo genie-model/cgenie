@@ -12,12 +12,6 @@ MODULE genie_end_wrappers
 contains
 
   !!
-  subroutine end_goldlite_wrapper
-    implicit none
-    call end_goldlite()
-  end subroutine end_goldlite_wrapper
-
-  !!
   subroutine end_ocnlite_wrapper
     implicit none
     call end_ocnlite()

@@ -48,7 +48,6 @@ MODULE_NAMES = goldstein \
                biogem \
                sedgem \
                rokgem \
-               goldlite \
                gemlite \
                ocnlite
 

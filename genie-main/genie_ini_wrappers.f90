@@ -89,15 +89,6 @@ contains
   end subroutine initialise_gem_wrapper
 
   !!
-  subroutine initialise_goldlite_wrapper
-    implicit none
-    call initialise_goldlite(                                                 &
-         & go_ts(intrac_ocn-n_intrac_col:intrac_ocn,1:ilon1_ocn,1:ilat1_ocn,1:inl1_ocn), & ! input/output
-         & go_ts1(intrac_ocn-n_intrac_col:intrac_ocn,1:ilon1_ocn,1:ilat1_ocn,1:inl1_ocn) & ! input/output
-         & )
-  end subroutine initialise_goldlite_wrapper
-
-  !!
   subroutine initialise_ocnlite_wrapper
     implicit none
     call initialise_ocnlite()

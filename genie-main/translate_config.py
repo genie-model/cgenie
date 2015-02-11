@@ -28,7 +28,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
     #
     # iii) write translated configuration
     #
-    
+
     # Extract parameters from 'definition.xml' for various sections or
     # subsets and use translations to filter parameters from old-style
     # configuration for the individual sections
@@ -87,7 +87,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
     #           -> n
     #      translation: if in list of exceptions replace accordingly,
     #                  otherwise construct <prefix>_<var><array_convention>n
-    
+
     # Translation rules:
     # ==================
     #
@@ -135,8 +135,8 @@ def translate_config(config_filename,script_name='translate_config.py'):
     #     yv_wstress->ea_tauy_v
     #     u_wspeed->ea_adv_u
     #     v_wspeed->ea_adv_v
-    #     npstp->ea_3, 
-    #     iwstp->ea_4, 
+    #     npstp->ea_3,
+    #     iwstp->ea_4,
     #     itstp->ea_5
     #     ianav->ea_6
     #     ans->ea_7
@@ -199,20 +199,20 @@ def translate_config(config_filename,script_name='translate_config.py'):
     #     temp0->go_10
     #     temp1->go_11
     #     rel->go_12
-    #     scf->go_13,                 
+    #     scf->go_13,
     #     diff(1)->go_14
-    #     diff(2)->go_15,                               
+    #     diff(2)->go_15,
     #     adrag->go_16
     #     fwanomin->go_fwanom
-    #     cmip_model->go_fwanomfile,                              
-    #     albocn->go_albedo,                               
+    #     cmip_model->go_fwanomfile,
+    #     albocn->go_albedo,
     #     iconv->go_ocnconv
     #     tdatafile->go_Tdata
     #     sdatafile->go_Sdata
-    #     lout->go_17,                                      
-    #     netin->go_18,                                      
-    #     netout->go_19,                                      
-    #     ascout->go_20,                                      
+    #     lout->go_17,
+    #     netin->go_18,
+    #     netout->go_19,
+    #     ascout->go_20,
     #     filenetin->go_21
     #     dirnetout->go_22
     #     lin->go_23
@@ -256,8 +256,8 @@ def translate_config(config_filename,script_name='translate_config.py'):
     #     ents_dirnetout->ents_22
     #     ents_restart_file->ents_24
     #     ents_offlineswitch->ents_25
-    
-    prefixes = {'genie' : 'ma', 'embm' : 'ea', 'igcm' : 'ia', 'fixedatmos' : 'fa', 'fakeatmos' : 'fk', 'goldstein' : 'go', 'slabocean' : 'so', 'fixedocean' : 'fo', 'goldsteinseaice' : 'gs', 'slabseaice' : 'ss', 'fixedseaice' : 'fs', 'fixedicesheet' : 'fi', 'fixedchem' : 'fc', 'ichem' : 'ic', 'mosestriffid' : 'ml', 'ents' : 'ents', 'GEM' : 'gm', 'biogem' : 'bg', 'atchem' : 'ac', 'sedgem' : 'sg', 'rokgem' : 'rg', 'wind' : 'wi', 'gemlite' : 'gl', 'goldlite' : 'gi'}
+
+    prefixes = {'genie' : 'ma', 'embm' : 'ea', 'igcm' : 'ia', 'fixedatmos' : 'fa', 'fakeatmos' : 'fk', 'goldstein' : 'go', 'slabocean' : 'so', 'fixedocean' : 'fo', 'goldsteinseaice' : 'gs', 'slabseaice' : 'ss', 'fixedseaice' : 'fs', 'fixedicesheet' : 'fi', 'fixedchem' : 'fc', 'ichem' : 'ic', 'mosestriffid' : 'ml', 'ents' : 'ents', 'GEM' : 'gm', 'biogem' : 'bg', 'atchem' : 'ac', 'sedgem' : 'sg', 'rokgem' : 'rg', 'wind' : 'wi', 'gemlite' : 'gl'}
     array_conventions = {'ia': '',
                          'ml': '',
                          'gm': '_',
@@ -395,7 +395,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                    'go': exceptions_go,
                    'gs': exceptions_gs,
                    'ents': exceptions_ents }
-    
+
     # Parse old-style parameters from configuration file:
     #    - parse lines of format \s*<variable_name>\s*=\s*<value>.*,
     #                            \s*<variable_name>\s*=\s*'<value>'.*, or
@@ -415,7 +415,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
     import sys
     import os.path
     import re
-    
+
     # ensure that the arg is a genuine file
     if not os.path.isfile(config_filename):
         print "Error: File %s not found!" % configname
@@ -459,12 +459,12 @@ def translate_config(config_filename,script_name='translate_config.py'):
     # Read 'definition.xml' and extract parameters for various sections or
     # subsets
     # ====================================================================
-    
+
     # Use DOM approach to extract parameters
     import xml.dom.minidom
-    
+
     dom_definition = xml.dom.minidom.parse('./src/xml-config/xml/definition.xml')
-    
+
     # Helper functions to extract nodes and attributes
     def select_elements(dom,names):
         """ returns a list of elements accoding to a list of hierarchical tag names, i.e. <names[0]><names[1]><names[2]>... """
@@ -478,7 +478,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                         child_elements.append(child_element)
             elements = child_elements
         return elements
-    
+
     def get_attribute_values(elements,name):
         """ returns a list of attributes 'name' from a list of elements """
         attribute_values = []
@@ -489,13 +489,13 @@ def translate_config(config_filename,script_name='translate_config.py'):
                 if attribute.name == name:
                     attribute_values.append(attribute.value)
         return attribute_values
-    
+
     # Section i: 'name' attribute from all '/var/vars' elements
     def get_vars(dom_definition):
         elements = select_elements(dom_definition,['definition','vars','var'])
         attribute_values = get_attribute_values(elements,'name')
         return attribute_values
-    
+
     # Section i: 'flagname' attribute from all '/definition/config/model' elements
     def get_config_model_flags(dom_definition):
         elements = select_elements(dom_definition,['definition','config','model'])
@@ -505,25 +505,25 @@ def translate_config(config_filename,script_name='translate_config.py'):
             model = get_attribute_values([element],'name')[0]
             model_flags[flag] = model
         return model_flags
-    
+
     # Section ii: read 'name' attribute from all '/definition/build/make-arg' elements
     def get_build_make_args(dom_definition):
         elements = select_elements(dom_definition,['definition','build','make-arg'])
         attribute_values = get_attribute_values(elements,'name')
         return attribute_values
-    
+
     # Section iii: read 'handle' attribute from all '/definition/build/macro' elements
     def get_build_macros(dom_definition):
         elements = select_elements(dom_definition,['definition','build','macro'])
         attribute_values = get_attribute_values(elements,'handle')
         return attribute_values
-    
+
     # Section iv: read 'name' attribute from all '/definition/testing/var' elements
     def get_testing_vars(dom_definition):
         elements = select_elements(dom_definition,['definition','testing','var'])
         attribute_values = get_attribute_values(elements,'name')
         return attribute_values
-    
+
     # Section v: read 'name' attribute from '/definition/parameters/control/file';
     #           -> remove prefix 'data_', translate to <prefix>
     #      read 'name' attribute from all '/definition/parameters/control/file/namelist/param' elements
@@ -540,7 +540,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
             param_names = get_attribute_values(params,'name')
             control_params[name] = param_names
         return control_params
-    
+
     # Section vi: read 'name' attribute from '/definition/control';
     #           -> translate to <prefix>, look up <array_convention>
     #      read 'name' attribute from all '/definition/control/file/namelist/paramArray/param' elements
@@ -566,7 +566,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                 arrays[param_array_name] = param_indices
             control_params[name] = arrays
         return control_params
-    
+
     # Section vii: read 'name' attribute from '/definition/parameter/model';
     #           -> translate to <prefix>
     #      read 'name' attribute from all '/definition/parameter/model/file/namelist/param' elements
@@ -582,7 +582,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
             param_names = get_attribute_values(params,'name')
             control_params[name] = param_names
         return control_params
-    
+
     # Section viii: read 'name' attribute from '/definition/model';
     #           -> translate to <prefix>, look up <array_convention>
     #      read 'name' attribute from all '/definition/model/file/namelist/paramArray/param' elements
@@ -607,7 +607,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                 arrays[param_array_name] = param_indices
             model_params[name] = arrays
         return model_params
-    
+
     vars = get_vars(dom_definition)
     model_flags = get_config_model_flags(dom_definition)
     make_args = get_build_make_args(dom_definition)
@@ -617,20 +617,20 @@ def translate_config(config_filename,script_name='translate_config.py'):
     control_param_arrays = get_control_param_arrays(dom_definition)
     model_params = get_model_params(dom_definition)
     model_param_arrays = get_model_param_arrays(dom_definition)
-    
+
     dom_definition.unlink()
-    
+
     from xml.dom.minidom import getDOMImplementation
     from os.path import basename
     from datetime import date
-    
+
     # Create XML document for output of translated configuration
     dom_config = getDOMImplementation()
     job = dom_config.createDocument(None, "job", None)
     job_element = job.documentElement
     job_element.setAttribute('creator',os.path.basename(script_name))
     job_element.setAttribute('date',date.today().strftime("%Y-%m-%d"))
-    
+
     # Helper function to add text nodes, which includes the translation of
     # variables by varref elements, and '/' separators by '<sep/>'
     # elements. Variables are identified if written in either of the
@@ -662,12 +662,12 @@ def translate_config(config_filename,script_name='translate_config.py'):
                     element.appendChild(var_element)
                     text_parts[n] = text_part.group(5)
         return None
-    
+
     # Apply translations and filter parameters from old-style
     # configuration for the individual sections to build a translated XML
     # config file
-    
-    
+
+
     # Section i: '/var/vars' elements
     #      no translation required
     vars_element = job.createElement('vars')
@@ -680,7 +680,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
             del old_config[old_config_key]
             vars_element.appendChild(element)
     job_element.appendChild(vars_element)
-    
+
     # Section ii: '/definition/config/model' elements
     #      translation: flag_* -> ma_flag_*
     #                   only parameters set to .true. are copied into
@@ -698,10 +698,10 @@ def translate_config(config_filename,script_name='translate_config.py'):
             del old_config[old_config_key]
     # Append config element
     job_element.appendChild(config_element)
-    
+
     # /job/build element needed for both sections iii and iv
     build_element = job.createElement('build')
-    
+
     # Section iii: '/definition/build/make-arg' elements
     #      no translation required
     for make_arg in make_args:
@@ -712,7 +712,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
             translateAndAppendParameterValue(job,element,old_config[old_config_key])
             del old_config[old_config_key]
             build_element.appendChild(element)
-    
+
     # Section iv: '/definition/build/macro' elements
     #      translation: value in the old configuration contains two parts,
     #      which have to be copied to the two different elements
@@ -732,10 +732,10 @@ def translate_config(config_filename,script_name='translate_config.py'):
             element.appendChild(replacement_element)
             build_element.appendChild(element)
             del old_config[old_config_key]
-    
+
     # Append build element
     job_element.appendChild(build_element)
-    
+
     # Section v: '/definition/testing/var' elements
     #      no translation required
     testing_element = job.createElement('testing')
@@ -748,13 +748,13 @@ def translate_config(config_filename,script_name='translate_config.py'):
             del old_config[old_config_key]
             testing_element.appendChild(element)
     job_element.appendChild(testing_element)
-    
+
     # /job/parameters element needed for all sections vi to ix
     parameters_element = job.createElement('parameters')
-    
+
     # /job/parameters/control element needed for both sections vi to ix
     control_element = job.createElement('control')
-    
+
     # Section vi: '/definition/parameters/control/file/namelist/param' elements
     #      translation: if in list of exceptions replace accordingly,
     #                  otherwise <var> -> <prefix>_<var>
@@ -772,7 +772,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                 del old_config[old_param]
                 control_element.appendChild(param_element)
     parameters_element.appendChild(control_element)
-    
+
     # Section vii: '/definition/control/file/namelist/paramArray/param' elements
     #      translation: if in list of exceptions replace accordingly,
     #                  otherwise construct <prefix>_<var><array_convention>n
@@ -799,12 +799,12 @@ def translate_config(config_filename,script_name='translate_config.py'):
             if param_array_element_created:
                 control_element.appendChild(param_array_element)
     parameters_element.appendChild(control_element)
-    
+
     for key in set(model_params.keys()).union(model_param_arrays.keys()):
 
     # /job/parameters/model element needed for both sections viii to ix, but will only be created when really required
         model_element_created = 0
-    
+
     # Section viii: '/definition/parameter/model/file/namelist/param' elements
     #      translation: if in list of exceptions replace accordingly,
     #                  otherwise <var> -> <prefix>_<var>
@@ -825,7 +825,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
                     translateAndAppendParameterValue(job,param_element,old_config[old_param])
                     del old_config[old_param]
                     model_element.appendChild(param_element)
-    
+
     # Section ix: '/definition/model/file/namelist/paramArray/param' elements
     #      translation: if in list of exceptions replace accordingly,
     #                  otherwise construct <prefix>_<var><array_convention>n
@@ -858,7 +858,7 @@ def translate_config(config_filename,script_name='translate_config.py'):
 
         if model_element_created:
             parameters_element.appendChild(model_element)
-    
+
     job_element.appendChild(parameters_element)
     xml_config = job.toprettyxml(encoding="UTF-8")
 
@@ -887,4 +887,3 @@ if __name__ == "__main__":
         print "Usage: translate_config.py <old-style config file>"
         sys.exit(1)
     print translate_config(sys.argv[1],sys.argv[0])
-
