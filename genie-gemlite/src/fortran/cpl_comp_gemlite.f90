@@ -27,12 +27,10 @@ SUBROUTINE cpl_comp_gemglt(               &
      ia = conv_iselected_ia(l)
      atm(l,:,:) = dum_genie_atm1(ia,:,:)
   end do
-  !atm = dum_genie_atm
   DO l=1,n_l_ocn
      io = conv_iselected_io(l)
      ocn(l,:,:,:) = dum_genie_ocn(io,:,:,:)
   end do
-  !ocn = dum_genie_ocn
   ! reset composition arrays
   dum_genie_atm1(:,:,:)  = 0.0
   dum_genie_ocn(:,:,:,:) = 0.0
@@ -66,12 +64,10 @@ SUBROUTINE cpl_comp_gltgem_d(               &
      ia = conv_iselected_ia(l)
      dum_genie_datm1(ia,:,:) = datm(l,:,:)
   end do
-  !dum_genie_atm = atm
   DO l=1,n_l_ocn
      io = conv_iselected_io(l)
      dum_genie_docn(io,:,:,:) = docn(l,:,:,:)
   end do
-  !dum_genie_ocn = ocn
   ! reset composition anomaly arrays
   datm(:,:,:)   = 0.0
   docn(:,:,:,:) = 0.0
@@ -106,15 +102,12 @@ SUBROUTINE cpl_comp_gltgem_dsum(            &
      ia = conv_iselected_ia(l)
      dum_genie_datm1(ia,:,:) = datm_sum(l,:,:)
   end do
-  !dum_genie_atm = atm
   DO l=1,n_l_ocn
      io = conv_iselected_io(l)
      dum_genie_docn(io,:,:,:) = docn_sum(l,:,:,:)
   end do
-  !dum_genie_ocn = ocn
   ! reset composition anomaly arrays
   datm_sum(:,:,:)   = 0.0
   docn_sum(:,:,:,:) = 0.0
 end SUBROUTINE cpl_comp_gltgem_dsum
 ! ******************************************************************************************************************************** !
-

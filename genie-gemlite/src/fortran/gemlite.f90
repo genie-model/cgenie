@@ -26,19 +26,19 @@ subroutine gemlite(    &
   ! LOCAL VARIABLES
   INTEGER::i,j,k                                                        ! counting indices
   INTEGER::l,ia,io,is                                                      ! counting indices
-  integer::loc_i,loc_tot_i                                              ! 
+  integer::loc_i,loc_tot_i                                              !
   integer::loc_k1                                                       ! topography
-  real::loc_T,loc_S,loc_DIC,loc_ALK                                     ! 
-  real::loc_Ca,loc_SO4                                                  ! 
-  real::loc_PO4,loc_SiO2,loc_B,loc_F,loc_H2S,loc_NH4                    ! 
+  real::loc_T,loc_S,loc_DIC,loc_ALK                                     !
+  real::loc_Ca,loc_SO4                                                  !
+  real::loc_PO4,loc_SiO2,loc_B,loc_F,loc_H2S,loc_NH4                    !
   real::loc_atm_tot_V,loc_ocn_tot_V,loc_ocn_tot_M                       ! atmosphere volume, ocean volume
   real,DIMENSION(n_ocn)::loc_fsed                                       ! tracer sink (sedimentation flux) (ocn tracer array)
   real,DIMENSION(n_l_ocn)::loc_tot_fdis                                 ! total sediment dissolution flux
   real,DIMENSION(n_l_ocn)::loc_tot_fsed                                 ! total sedimentation flux
   real,DIMENSION(n_l_ocn)::loc_tot_fwea                                 ! total weathering flux
-  real,DIMENSION(n_l_atm)::loc_tot_fatm                                 ! 
+  real,DIMENSION(n_l_atm)::loc_tot_fatm                                 !
   real::loc_datm_flux,loc_docn_flux                                     ! atmosphere & ocean tracer change from net external fluxes
-  real::loc_tot_A                                                       ! 
+  real::loc_tot_A                                                       !
   real::loc_tot_pCO2,loc_tot_fCO2                                       !
   real::loc_mean_fCO2,loc_mean_pCO2                                     !
   real::loc_mean_fCO2_NEW,loc_mean_pCO2_NEW                             !
@@ -139,7 +139,7 @@ subroutine gemlite(    &
                  ! set local tracer values
                  ! NOTE: although climate and hence salinity is implicitly assumed to have not changed,
                  !       not all the tracers may have been selected (and hence included in the dimensionable array),
-                 !       hence re-estimate Ca and borate concentrations from salinity 
+                 !       hence re-estimate Ca and borate concentrations from salinity
                  loc_T   = ocn(conv_io_lselected(io_T),i,j,n_k)
                  loc_S   = ocn(conv_io_lselected(io_S),i,j,n_k)
                  loc_DIC = ocn(conv_io_lselected(io_DIC),i,j,n_k)
@@ -198,9 +198,9 @@ subroutine gemlite(    &
                       & loc_F ,                                 &
                       & loc_H2S,                                &
                       & loc_NH4,                                &
-                      & carbconst(:,i,j),                       & 
-                      & carb(:,i,j),                            &  
-                      & carbalk(:,i,j)                          & 
+                      & carbconst(:,i,j),                       &
+                      & carb(:,i,j),                            &
+                      & carbalk(:,i,j)                          &
                       & )
                  ! re-calculate carbonate system isotopic properties
                  if (ocn_select(io_DIC_13C)) then
@@ -333,10 +333,6 @@ subroutine gemlite(    &
            print*,loc_mean_pCO2_OLD,loc_mean_pCO2_NEW
            print*,loc_mean_DpCO2_OLD,loc_mean_DpCO2_NEW
            print*,loc_count,ABS(loc_mean_DpCO2_NEW - loc_mean_DpCO2_OLD),par_DpCO2_thresh
-           !!!print*,'--- ocean fCO2 ---'
-           !!!print*,carb(ic_fug_CO2,:,:)
-           !!!print*,'--- atmosphere pCO2 ---'
-           !!!print*,atm(ia_pCO2,:,:)
            print*,'--- END ---'
            stop !!!exit
         endif
@@ -419,8 +415,8 @@ subroutine gemlite(    &
   DO i=1,n_i
      DO j=1,n_j
         ! (1) atmosphere
-        !     NOTE: /real(n_i*n_j) is used once in calculating a mean conversion between atm and mol, 
-        !           and a second time in dividing up the total flux between atm grid points 
+        !     NOTE: /real(n_i*n_j) is used once in calculating a mean conversion between atm and mol,
+        !           and a second time in dividing up the total flux between atm grid points
            DO l=3,n_l_atm
               ia = conv_iselected_ia(l)
               loc_datm_flux   = loc_tot_fatm(l)/(sum(loc_conv_atm_mol(:,:))/real(n_i*n_j))/real(n_i*n_j)
@@ -432,7 +428,7 @@ subroutine gemlite(    &
         ! set local depth loop limit
         loc_k1 = goldstein_k1(i,j)
         IF (n_k >= loc_k1) THEN
-           ! 
+           !
            DO k=loc_k1,n_k
               DO l=3,n_l_ocn
                  io = conv_iselected_io(l)
@@ -507,7 +503,7 @@ end subroutine gemlite_cycleinit
   USE gemlite_lib
   IMPLICIT NONE
   ! dummy arguments
-  REAL,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1_gem       ! 
+  REAL,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1_gem       !
 
   ! *** RE-INITIALIZE VARIABLES ***
   ! reset cumulative (annual average) weathering array (<dum_sfxsumrok1_gem>)
