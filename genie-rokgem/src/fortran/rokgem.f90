@@ -1,17 +1,17 @@
 ! File: rokgem.f90
 !
-! Contains main time-stepping subroutine for RokGeM  
+! Contains main time-stepping subroutine for RokGeM
 !
 ! Subroutine: rokgem
 !
-! Main time-stepping subroutine for RokGeM 
+! Main time-stepping subroutine for RokGeM
 !
 ! Uses:
 !
 ! - <rokgem_lib.f90>
 ! - <rokgem_data.f90>
 ! - <rokgem_box.f90>
-! 
+!
 ! Calls:
 !
 ! - <sub_glob_avg_weath>
@@ -24,7 +24,7 @@
 ! dum_sfcatm1 - atmosphere composition interface array
 ! dum_runoff - run-off to be read in from exernal module (EMBM, or ENTS)
 ! dum_photo(n_i,n_j) - photosynthesis array from land veg module (ENTS)
-! dum_respveg(n_i,n_j) - vegetation respiration array from land veg module (ENTS). 
+! dum_respveg(n_i,n_j) - vegetation respiration array from land veg module (ENTS).
 ! NOTE - run_off, photo and respveg only work for same grid as RokGeM at the moment
 !
 ! Output:
@@ -32,7 +32,7 @@
 ! dum_sfxrok - ocean flux interface array (same no of tracers as used in biogem ocean)
 ! dum_sfxatm1 - atmosphere flux interface array (same no of tracers as used in atchem atmosphere)
 
-subroutine rokgem (dum_dts,dum_sfcatm1,dum_runoff,dum_photo,dum_respveg,dum_sfxrok,dum_sfxatm1)   
+subroutine rokgem (dum_dts,dum_sfcatm1,dum_runoff,dum_photo,dum_respveg,dum_sfxrok,dum_sfxatm1)
 
   use rokgem_lib
   use rokgem_data
@@ -46,7 +46,7 @@ subroutine rokgem (dum_dts,dum_sfcatm1,dum_runoff,dum_photo,dum_respveg,dum_sfxr
   REAL,INTENT(in)         :: dum_runoff(n_i,n_j)                  ! run-off to be read in from exernal module (EMBM, or ENTS)
   REAL,INTENT(in)               :: dum_photo(n_i,n_j)           ! photosythesis from land veg module (ENTS)
   REAL,INTENT(in)               :: dum_respveg(n_i,n_j)         ! vegetation respiration from land veg module (ENTS)
-  ! -> NOTE - run_off, photo and respveg only work 
+  ! -> NOTE - run_off, photo and respveg only work
   ! for same grid as RokGeM at the moment
   REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)   ! ocean flux interface array
   !  (same no of tracers as used in biogem ocean)
@@ -106,34 +106,27 @@ SUBROUTINE rest_rokgem()
   ! dump restart data
   loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
   OPEN(20,status='replace',file=loc_filename,form='formatted',action='write',iostat=ios)
-  !call check_iostat(ios,__LINE__,__FILE__)
-  WRITE(20,fmt='(i6)') ncout2d_ntrec_rg                             
+  WRITE(20,fmt='(i6)') ncout2d_ntrec_rg
   close(20)
 
 
-  !        Conditionals commented out because no calibration is done for stage 1 spin-up 
+  !        Conditionals commented out because no calibration is done for stage 1 spin-up
   ! and files are needed to be written for stage 2.
-  !        IF (opt_calibrate_T_2D) THEN
   if (debug_init > 1) PRINT*,'saving 2D temperature reference field for calibration: ',TRIM(par_ref_T0_2D)
   OPEN(20,status='replace',file=TRIM(par_outdir_name)//'rg_par_ref_T0_2D',form='formatted',action='write',iostat=ios)
   WRITE(20,fmt='(A100)') par_ref_T0_2D
   CLOSE(20)
-  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_T0_2D),n_i,n_j,ref_T0_2D(:,:))   
-  !        ENDIF
-  !        IF (opt_calibrate_R_2D) THEN
+  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_T0_2D),n_i,n_j,ref_T0_2D(:,:))
   if (debug_init > 1) PRINT*,'saving 2D runoff reference field for calibration: ',TRIM(par_ref_R0_2D)
   OPEN(20,status='replace',file=TRIM(par_outdir_name)//'rg_par_ref_R0_2D',form='formatted',action='write',iostat=ios)
   WRITE(20,fmt='(A100)') par_ref_R0_2D
   CLOSE(20)
-  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_R0_2D),n_i,n_j,ref_R0_2D(:,:))   
-  !        ENDIF
-  !        IF (opt_calibrate_P_2D) THEN
+  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_R0_2D),n_i,n_j,ref_R0_2D(:,:))
   if (debug_init > 1) PRINT*,'saving 2D productivity reference field for calibration: ',TRIM(par_ref_P0_2D)
   OPEN(20,status='replace',file=TRIM(par_outdir_name)//'rg_par_ref_P0_2D',form='formatted',action='write',iostat=ios)
   WRITE(20,fmt='(A100)') par_ref_P0_2D
   CLOSE(20)
-  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_P0_2D),n_i,n_j,ref_P0_2D(:,:))   
-  !        ENDIF
+  CALL sub_save_data_ij(TRIM(par_outdir_name)//TRIM(par_ref_P0_2D),n_i,n_j,ref_P0_2D(:,:))
 
 END SUBROUTINE rest_rokgem
 
@@ -146,7 +139,7 @@ subroutine reinit_flux_rokatm( &
   USE rokgem_lib
   IMPLICIT NONE
   ! dummy arguments
-  REAL,dimension(n_atm,n_i,n_j),intent(inout)::dum_sfxsumatm1           ! 
+  REAL,dimension(n_atm,n_i,n_j),intent(inout)::dum_sfxsumatm1           !
 
   ! *** RE-INITIALIZE VARIABLES ***
   ! reset cumulative weathering array
@@ -164,7 +157,7 @@ subroutine reinit_flux_rokocn( &
   USE rokgem_lib
   IMPLICIT NONE
   ! dummy arguments
-  REAL,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1           ! 
+  REAL,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1           !
 
   ! *** RE-INITIALIZE VARIABLES ***
   ! reset cumulative weathering array

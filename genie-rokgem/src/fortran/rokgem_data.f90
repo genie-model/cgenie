@@ -74,7 +74,7 @@ if (ctrl_debug_init > 0) then
     ! --- RIVER ROUTING PARAMETERS ---------------------------------------------------------------------------------------------- !
     print*,'--- RIVER ROUTING PARAMETERS ---'
     print*,'routing scheme to use: '
-    print*,'1 = roof routing using k1 file;' 
+    print*,'1 = roof routing using k1 file;'
     print*,'2 = intermediate using detailed map, but roof for'
     print*,'    stuff that ends up on genie land grid (~1/2)'
     print*,'3 = detailed scheme, scaling up coastal ocean flux'
@@ -88,12 +88,12 @@ if (ctrl_debug_init > 0) then
     print*,'    routes to                                       : ',max_drain_cells
     !--- WEATHERING PARAMETERS -------------------------------------------------------------------------------------------------- !
     print*,'--- WEATHERING PARAMETERS ---'
-    print*,'short circuit atmosphere                            : ',opt_short_circuit_atm                     
-    print*,'weathering scheme ID string                         : ',trim(par_weathopt)               
-    print*,'global CaCO3 weathering scheme ID string            : ',trim(opt_weather_CaCO3)       
+    print*,'short circuit atmosphere                            : ',opt_short_circuit_atm
+    print*,'weathering scheme ID string                         : ',trim(par_weathopt)
+    print*,'global CaCO3 weathering scheme ID string            : ',trim(opt_weather_CaCO3)
     print*,'global CaSiO3 weathering scheme ID string           : ',trim(opt_weather_CaSiO3)
-    print*,'CaCO3 weathering - temperature feedback             : ',opt_weather_T_Ca    
-    print*,'CaSiO3 weathering - temperature feedback            : ',opt_weather_T_Si   
+    print*,'CaCO3 weathering - temperature feedback             : ',opt_weather_T_Ca
+    print*,'CaSiO3 weathering - temperature feedback            : ',opt_weather_T_Si
     print*,'alt CaSiO3 weathering - temperature feedback        : ',opt_weather_Talt_Si
     print*,'explicit runoff feedback (or T dependence)          : ',opt_weather_R_explicit
     print*,'CaCO3 weathering - runoff feedback                  : ',opt_weather_R_Ca
@@ -167,7 +167,7 @@ if (ctrl_debug_init > 0) then
     print*,'calibration value for CaSiO3 weath in GEM_CO2 scheme: ',calibrate_weather_GEM_CO2_CaSiO3
     print*,'calibrate temperature fields to data                : ',opt_calibrate_T_2D
     print*,'calibrate runoff fields to data                     : ',opt_calibrate_R_2D
-    print*,'calibrate productivity fields to data               : ',opt_calibrate_P_2D 
+    print*,'calibrate productivity fields to data               : ',opt_calibrate_P_2D
     print*,'land surface temp (C) reference scaling field       : ',par_ref_T0_2D
     print*,'land surface runoff (mm/yr) reference scaling field : ',par_ref_R0_2D
     print*,'land surface prod (kgC m-2 yr-1) ref. scaling field : ',par_ref_P0_2D
@@ -206,8 +206,7 @@ end if
     ! retrieve restart data
     loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
     OPEN(unit=in,status='old',file=loc_filename,form='formatted',action='read',iostat=ios)
-    !call check_iostat(ios,__LINE__,__FILE__)
-    READ(unit=in,fmt='(i6)') ncout2d_ntrec_rg                             
+    READ(unit=in,fmt='(i6)') ncout2d_ntrec_rg
     close(unit=in)
   end SUBROUTINE sub_load_rokgem_restart
   ! ****************************************************************************************************************************** !
@@ -233,7 +232,7 @@ end if
   SUBROUTINE sub_land(dum_drainage,dum_landmask)
 
     REAL, INTENT(in)                :: dum_drainage(n_i+2,n_j+2)            ! this is the *.k1 file
-    INTEGER, INTENT(inout)          :: dum_landmask(n_i,n_j)              
+    INTEGER, INTENT(inout)          :: dum_landmask(n_i,n_j)
 
     INTEGER                         :: i, j
 
@@ -260,7 +259,7 @@ end if
 
 
   ! ****************************************************************************************************************************** !
-  ! Subroutine: sub_init_phys_rok 
+  ! Subroutine: sub_init_phys_rok
   !
   ! Initialises the weathering array
 
@@ -272,9 +271,9 @@ end if
     ! zero array
     phys_rok(:,:,:) = 0.0
     ! calculate local constants
-    loc_th0 = -const_pi/2 
-    loc_th1 = const_pi/2 
-    loc_s0 = sin(loc_th0) ! =1   
+    loc_th0 = -const_pi/2
+    loc_th1 = const_pi/2
+    loc_s0 = sin(loc_th0) ! =1
     loc_s1 = sin(loc_th1) ! =-1
     loc_ds = (loc_s1-loc_s0)/real(n_j) ! = -1/18 [for 36x36 grid]
     DO j=0,n_j
@@ -301,42 +300,8 @@ end if
   ! ****************************************************************************************************************************** !
   ! INITIALIZE 'PHYSICS' - OCEAN-ROKGEM INTERFACE
   SUBROUTINE sub_init_phys_ocnrok()
-    ! local variables
-    INTEGER::i,j
-    !    CHARACTER(len=255)::loc_filename
-    ! zero array
-    !   phys_ocnrok(:,:,:) = 0.0
-    ! initialize array values
-    DO i=1,n_i
-       DO j=1,n_j
-          !          phys_ocnrok(ipor_lat,i,j)  = (180.0/const_pi)*ASIN(goldstein_s(j))
-          !          phys_ocnrok(ipor_lon,i,j)  = (360.0/n_i)*(real(i)-0.5) + par_grid_lon_offset
-          !          phys_ocnrok(ipor_dlat,i,j) = (180.0/const_pi)*(ASIN(goldstein_sv(j)) - ASIN(goldstein_sv(j-1)))
-          !          phys_ocnrok(ipor_dlon,i,j) = (360.0/n_i)
-          !          phys_ocnrok(ipor_A,i,j)    = 2.0*const_pi*(const_rEarth**2)*(1.0/n_i)*(goldstein_sv(j) - goldstein_sv(j-1))
-          !          phys_ocnrok(ipor_rA,i,j)   = 1.0/ phys_ocnrok(ipor_A,i,j)
-          !          IF (n_k >= goldstein_k1(i,j)) THEN
-          !             phys_ocnrok(ipor_seaice,i,j) = 0.0
-          !             phys_ocnrok(ipor_u,i,j)      = 0.0
-          !             phys_ocnrok(ipor_mask_ocn,i,j) = 1.0
-          !          END IF
-       END DO
-    END DO
-    ! load prescribed sea-ice cover (if requested)
-    ! NOTE: convert from %cover to fractional cover
-    !    if (ctrl_force_seaice) then
-    !       loc_filename = TRIM(par_indir_name)//'biogem_force_seaice'//TRIM(string_data_ext)
-    !       CALL sub_load_data_ij(loc_filename,n_i,n_j,par_phys_seaice(:,:))
-    !       par_phys_seaice(:,:) = par_phys_seaice(:,:)/100.0
-    !    end if
-    ! load prescribed wind-speed (if requested)
-    ! NOTE: (m s-1)
-    !    if (ctrl_force_windspeed) then
-    !       loc_filename = TRIM(par_indir_name)//'biogem_force_windspeed'//TRIM(string_data_ext)
-    !       CALL sub_load_data_ij(loc_filename,n_i,n_j,par_phys_windspeed(:,:))
-    !    end if
   END SUBROUTINE sub_init_phys_ocnrok
-  ! ****************************************************************************************************************************** !     
+  ! ****************************************************************************************************************************** !
 
   !======= SUBROUTINE TO READ IN OUTPUT YEARS ========================================================!
 
@@ -366,7 +331,6 @@ end if
     n_output_years=0
     DO
        READ(in,*,iostat=ios) year
-       !call check_iostat(ios,__LINE__,__FILE__)
        IF (ios.lt.0) EXIT
        n_years = n_years + 1
        IF (year.gt.start_year) THEN
@@ -385,7 +349,6 @@ end if
     i = 1
     DO
        READ(in,*,iostat=ios) year
-       !call check_iostat(ios,__LINE__,__FILE__)
        IF (ios.lt.0) EXIT
        IF (year.gt.start_year) THEN
           output_years_0d(i) = year
@@ -394,8 +357,6 @@ end if
     END DO
     close(unit=in)
 
-    !PRINT*,'output years_0d:'
-    !write(6,fmt='(f14.1)'),output_years_0d
     output_tsteps_0d = int(tsteps_per_year*(output_years_0d-start_year))
     output_counter_0d = 1
 
@@ -407,7 +368,6 @@ end if
     n_output_years=0
     DO
        READ(in,*,iostat=ios) year
-       !call check_iostat(ios,__LINE__,__FILE__)
        IF (ios.lt.0) EXIT
        n_years = n_years + 1
        IF (year.gt.start_year) THEN
@@ -426,7 +386,6 @@ end if
     i = 1
     DO
        READ(in,*,iostat=ios) year
-       !call check_iostat(ios,__LINE__,__FILE__)
        IF (ios.lt.0) EXIT
        IF (year.gt.start_year) THEN
           output_years_2d(i) = year
@@ -435,8 +394,6 @@ end if
     END DO
     close(in)
 
-    !PRINT*,'output years_2d:'
-    !write(6,fmt='(f14.1)'),output_years_2d
     output_tsteps_2d = int(tsteps_per_year*(output_years_2d-start_year))
     output_counter_2d = 1
 
@@ -457,11 +414,9 @@ end if
        year = output_years_0d(output_counter_0d)
     ENDIF
 
-    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN 
+    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
        year = output_years_2d(output_counter_2d)
     ENDIF
-
-    !print*,tstep_count,output_counter_0d,output_counter_2d,year
 
     year_int = int(year)
     year_remainder = int(1000*(year - real(year_int)))
@@ -483,8 +438,8 @@ end if
        output_counter_0d = output_counter_0d + 1
     ENDIF
 
-    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN 
-       output_counter_2d = output_counter_2d + 1 
+    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
+       output_counter_2d = output_counter_2d + 1
     ENDIF
 
   END SUBROUTINE sub_output_counters
@@ -577,15 +532,15 @@ end if
     ALLOCATE(outputs(n_outputs),stat=alloc_stat)
     call check_iostat(alloc_stat,__LINE__,__FILE__)
 
-    DO i=1,n_outputs    
+    DO i=1,n_outputs
        IF ((output_counter_0d.eq.1).AND.(((opt_append_data.eqv..FALSE.).OR.(ctrl_continuing.eqv..FALSE.)))) THEN
           call check_unit(20,__LINE__,__FILE__)
           open(20,file=TRIM(par_outdir_name)//'rokgem_series_'//TRIM(time_series_names(i))//string_results_ext, &
                & action='write',status='replace',form='formatted',iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
           write(20,fmt='(A16,A52)',iostat=ios)TRIM('%     year    / '),output_descriptions(i)
-          call check_iostat(ios,__LINE__,__FILE__) 
-          close(20,iostat=ios)  
+          call check_iostat(ios,__LINE__,__FILE__)
+          close(20,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        END IF
     END DO
@@ -594,9 +549,9 @@ end if
 
   !======= SUBROUTINE TO READ IN LITHOLOGIES ========================================================!
 
-  ! Subroutine: sub_data_input_3D 
+  ! Subroutine: sub_data_input_3D
   !
-  ! Reads a set of files (each containing the fraction of land in each grid cell that is 
+  ! Reads a set of files (each containing the fraction of land in each grid cell that is
   ! a particular lithology) from the data input directory into a single array.
   !
   ! Uses:
@@ -659,11 +614,11 @@ end if
 
     DO k=1,dum_nfiles
        CALL sub_load_data_ij(TRIM(dum_input_dir)//TRIM(dum_filenames(k)),                    &
-            & dum_i,dum_j,dum_array_3D(k,:,:)) 
+            & dum_i,dum_j,dum_array_3D(k,:,:))
     END DO
 
     DO k=1,dum_nfiles
-       ! count number of land cells in each lithological map   
+       ! count number of land cells in each lithological map
        n = 0
        DO i=1,n_i
           DO j=1,n_j
@@ -704,7 +659,7 @@ end if
        if (ctrl_debug_init > 1) print*,'scaling up to land surface area'
        dum_array_3D(:,:,:) = dum_array_3D(:,:,:) * scaling
        if (ctrl_debug_init > 1) print*,'total land cells covered: ',SUM(dum_array_3D(:,:,:))
-    ELSE 
+    ELSE
        if (ctrl_debug_init > 1) print*,'not scaling up to land surface area'
     ENDIF
 
@@ -785,7 +740,7 @@ end if
   ! Uses:
 !
   ! <genie_util>, ONLY: <check_unit>, <check_iostat>
-  ! 
+  !
   ! Input:
   !
   ! dum_n_outputs
@@ -807,10 +762,10 @@ end if
 
     ! local variable
     INTEGER                         :: i, j, k, l, ios, out(2)
-    CHARACTER(LEN=6)                :: loc_num_format      
+    CHARACTER(LEN=6)                :: loc_num_format
 
     ! time series
-    DO i=1,dum_n_outputs    
+    DO i=1,dum_n_outputs
        loc_num_format = 'f14.6'
 
        call check_unit(20,__LINE__,__FILE__)
@@ -818,8 +773,8 @@ end if
             & action='write',POSITION='APPEND',form='formatted',iostat=ios)
        write(20,fmt='(f14.6,'//TRIM(loc_num_format)//')',iostat=ios) year,dum_outputs(i)
        call check_iostat(ios,__LINE__,__FILE__)
-       close(20,iostat=ios)  
-       call check_iostat(ios,__LINE__,__FILE__) 
+       close(20,iostat=ios)
+       call check_iostat(ios,__LINE__,__FILE__)
     END DO
 
     !global data report for each time
@@ -864,7 +819,7 @@ end if
        write(out(j),*) ''
        write(out(j),*) ''
     END DO
-    close(20) 
+    close(20)
 
   END SUBROUTINE sub_output_0d
 

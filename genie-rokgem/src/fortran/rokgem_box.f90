@@ -1,6 +1,6 @@
 !
 ! File: rokgem_box.f90
-! 
+!
 ! Description: this module contains all the main subroutines for running rokgem
 ! Note: variables listed as Output in the subroutines are actually inout because they are defined in <rokgem.lib>
 !
@@ -35,7 +35,7 @@ CONTAINS
   ! Subroutine: sub_antarctica
   !
   ! Subroutine to work out the number of grid cells and rows taken up by Antarctica,
-  ! for the purposes of subtracting Antarctica from output when river-routing (see <sub_drainage>) 
+  ! for the purposes of subtracting Antarctica from output when river-routing (see <sub_drainage>)
   ! scheme 3 is used as there is no detailed river-routing information for Antarctica.
   !
   ! Input:
@@ -49,9 +49,9 @@ CONTAINS
 
   SUBROUTINE sub_antarctica(dum_landmask,dum_ncells_antarctica,dum_nrows_antarctica)
 
-    INTEGER, INTENT(in)             :: dum_landmask(n_i,n_j)  
+    INTEGER, INTENT(in)             :: dum_landmask(n_i,n_j)
     INTEGER, INTENT(inout)          :: dum_ncells_antarctica
-    INTEGER, INTENT(inout)          :: dum_nrows_antarctica             
+    INTEGER, INTENT(inout)          :: dum_nrows_antarctica
 
     INTEGER                         :: i, j, n
 
@@ -104,10 +104,10 @@ CONTAINS
     IMPLICIT NONE
     INTEGER                         :: i, j, k, l, m, n, row, col, lon, lat
     REAL, INTENT(in)                :: dum_drainage(n_i+2,n_j+2)                        ! this is the *.k1 file
-    INTEGER, INTENT(inout)          :: dum_drainto_1(n_i,n_j,2)         
+    INTEGER, INTENT(inout)          :: dum_drainto_1(n_i,n_j,2)
  ! array with coastal (lat,lon)s for routing fluxes (simple)
-       REAL, INTENT(inout)             :: dum_drainto_2(runoff_detail_i,runoff_detail_j)   
-! detailed river routing file (lat,lon,amount)s - several for each cell 
+       REAL, INTENT(inout)             :: dum_drainto_2(runoff_detail_i,runoff_detail_j)
+! detailed river routing file (lat,lon,amount)s - several for each cell
     REAL, INTENT(inout)             :: dum_coast(n_i,n_j)
 
     ! *******
@@ -115,8 +115,8 @@ CONTAINS
     ! *******
 
     ! BASIC DRAINAGE (scheme 1) ---------------------------------------------------------------------
-    ! Work out where on the coast to dump riverine solutes from each grid point 
-    ! (create array 'runoff_drainto' of lon, lat (i,j) values for each grid cell) 
+    ! Work out where on the coast to dump riverine solutes from each grid point
+    ! (create array 'runoff_drainto' of lon, lat (i,j) values for each grid cell)
     ! using the fact that 91=East, 92=South, 93=West & 94=North in the *.k1 files.
     ! Note that the input array 'dum_drainage' is 38x38 for the 36x36 genie grid.
 
@@ -157,11 +157,11 @@ CONTAINS
                 ENDIF
              END DO
              dum_drainto_1(i,j,1) = l - 1
-             dum_drainto_1(i,j,2) = m - 1     
+             dum_drainto_1(i,j,2) = m - 1
           END DO
        END DO
 
-       ! Save output to files 'runoff_drainto_long.dat' and 'runoff_drainto_latt.dat' which give 
+       ! Save output to files 'runoff_drainto_long.dat' and 'runoff_drainto_latt.dat' which give
        ! the lattitude and longitude respectively of the costal grid point that run-off reaches from
        ! each inland grid point (ocean is denoted by 0s)
        if (debug_init > 2) PRINT*, &
@@ -178,8 +178,8 @@ CONTAINS
     ENDIF
 
     ! INTERMEDIATE (level2) and DETAILED (level 3) ---------------------------------------------------
-    ! use the array runoff_detail read in from file: contains n_i*n_j rows, each with a sucession of 
-    ! (lat, long, fraction) data for each ocean cell corresponding to the land cell in question 
+    ! use the array runoff_detail read in from file: contains n_i*n_j rows, each with a sucession of
+    ! (lat, long, fraction) data for each ocean cell corresponding to the land cell in question
     ! (each row represents the landcell given by lat= floor(rownumber/n_j) lon=mod(rownumber,n_i)).
     IF ( routing_scheme.gt.1 ) THEN
 
@@ -198,7 +198,7 @@ CONTAINS
        END DO
 
        ! INTERMEDIATE (level 2)--------------------------------------------------------------------------
-       ! With drainage that ends up on genie's land rather than in the ocean (about half!), use the basic 'roof' 
+       ! With drainage that ends up on genie's land rather than in the ocean (about half!), use the basic 'roof'
        ! routing provided by the k1 file to change the lats and lons contained in the detailed routing file appropriately.
        IF ( routing_scheme.eq.2 ) THEN
           DO i=1,n_i
@@ -211,7 +211,7 @@ CONTAINS
                    IF (lat.GT.0.1) THEN
                       IF (landmask(lon,lat).EQ.1) THEN
                          dum_drainto_2(col+1,row) = dum_drainto_1(lon,lat,2)
-                         dum_drainto_2(col+2,row) = dum_drainto_1(lon,lat,1)      
+                         dum_drainto_2(col+2,row) = dum_drainto_1(lon,lat,1)
                       ENDIF
                    ENDIF
                 END DO
@@ -248,7 +248,7 @@ CONTAINS
     ENDIF
 
     ! INTERMEDIATE (level2) and DETAILED (level 3)-----------------------------------------------------
-    ! Ignore ocean cells denoted by 0 at start of line in detailed routing file; 
+    ! Ignore ocean cells denoted by 0 at start of line in detailed routing file;
     ! also check that the cell is covered by the genie landmask (this is now done in Mathematica).
     ! Add up fractions and dump them into the coastal output array.
     IF ( routing_scheme.gt.1 ) THEN
@@ -320,7 +320,7 @@ CONTAINS
     ! Dummy variables
     REAL, INTENT(in)                :: dum_input_array(n_i,n_j)                         !array with fluxes
     INTEGER, INTENT(in)             :: dum_drainto_1(n_i,n_j,2)          !array with coastal (lat,lon)s for routing fluxes (simple)
-       REAL, INTENT(in)                :: dum_drainto_2(runoff_detail_i,runoff_detail_j)   !detailed river routing file (lat,lon,amount)s - several for each cell 
+       REAL, INTENT(in)                :: dum_drainto_2(runoff_detail_i,runoff_detail_j)   !detailed river routing file (lat,lon,amount)s - several for each cell
     REAL, INTENT(inout)             :: dum_output_coast(n_i,n_j)         !array with fluxes in coastal ocean
 
     ! Local counting variables
@@ -343,18 +343,18 @@ CONTAINS
              IF ((lon.NE.0).AND.(lat.NE.0)) THEN
                 dum_output_coast(lon,lat) = dum_output_coast(lon,lat) + dum_input_array(i,j)
              ENDIF
-             ! ...unless the lithology map has land in the genie ocean - then dump weathering flux 
+             ! ...unless the lithology map has land in the genie ocean - then dump weathering flux
              ! straight into that ocean cell. Currently not used as land output is truncated to the genie landmask.
              ! if land output isn't truncated, get approx 1.5 times more flux.
              IF ((dum_input_array(i,j).NE.0).AND.(lon.EQ.0).AND.(lat.EQ.0)) THEN
-                dum_output_coast(i,j) = dum_output_coast(i,j) + dum_input_array(i,j)  
+                dum_output_coast(i,j) = dum_output_coast(i,j) + dum_input_array(i,j)
              ENDIF
           END DO
        END DO
     ENDIF
 
     ! INTERMEDIATE (level2) and DETAILED (level 3)-----------------------------------------------------
-    ! Ignore ocean cells denoted by 0 at start of line in detailed routing file; 
+    ! Ignore ocean cells denoted by 0 at start of line in detailed routing file;
     ! also check that the cell is covered by the genie landmask (this is now done in Mathematica).
     ! Add up fractions (multiplied by the flux in the input array) and dump them into the coastal output array.
     IF ( routing_scheme.gt.1 ) THEN
@@ -369,7 +369,7 @@ CONTAINS
                 IF ((lon.NE.0).AND.(lat.NE.0)) THEN
                    dum_output_coast(lon,lat) = dum_output_coast(lon,lat) + dum_input_array(n_i+1-i,j)*dum_drainto_2(col+3,row)
                 ENDIF
-                ! ...unless the lithology map has land in the genie ocean - then dump weathering flux 
+                ! ...unless the lithology map has land in the genie ocean - then dump weathering flux
                 ! straight into that ocean cell. Currently not used as land output is truncated to the genie landmask.
                 ! if land output isn't truncated, get approx 1.5 times more flux.
                 IF ((k.EQ.1).AND.(dum_input_array(i,j).NE.0).AND.(landmask(i,j).EQ.0)) THEN
@@ -441,7 +441,7 @@ CONTAINS
     ! code originally from biogem.main.f90 (cbms_goldstein.v8.0.1) by AJR:
 
     ! dummy variables
-    REAL,INTENT(in)::dum_dts        
+    REAL,INTENT(in)::dum_dts
     REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_io,n_jo)                   ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                            ! run-off array (taken from EMBM)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                            ! photosythesis from land veg module (ENTS)
@@ -471,19 +471,18 @@ CONTAINS
     REAL                            :: loc_CO20
     REAL                            :: loc_maxCO2
     REAL                            :: loc_minCO2
-    !REAL                            :: loc_A
     REAL                            :: loc_weather_ratio_CaSiO3
     REAL                            :: loc_weather_ratio_CaCO3
     REAL                            :: n, m
 
-    REAL                            :: loc_force_flux_weather_a(n_atm)            ! total fluxes (atmosphere variables) 
+    REAL                            :: loc_force_flux_weather_a(n_atm)            ! total fluxes (atmosphere variables)
        REAL                            :: loc_force_flux_weather_a_percell(n_ocn)                    ! flux per grid cell for even distribution (atmosphere variables)
        REAL                            :: loc_force_flux_weather_a_land(n_atm,n_i,n_j)                ! fluxes out of atmosphere (atmosphere variables)
 
     REAL                            :: loc_force_flux_weather_o(n_ocn)                    ! total fluxes (ocean variables)
        REAL                            :: loc_force_flux_weather_o_percell(n_ocn)                    ! flux per grid cell for even distribution (ocean variables)
     REAL                            :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j)    ! fluxes shared over land (ocean variables)
-       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables) 
+       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 
     real::loc_epsilon
     REAL                            :: loc_standard
@@ -492,7 +491,7 @@ CONTAINS
     CHARACTER(LEN=7),DIMENSION(n_ocn)       :: globtracer_names
 
 
-    ! initialise tracer names       
+    ! initialise tracer names
     globtracer_names(io_ALK)                  = 'ALK    '
     globtracer_names(io_DIC)                  = 'DIC    '
     globtracer_names(io_Ca)                   = 'Ca     '
@@ -500,12 +499,12 @@ CONTAINS
     globtracer_names(io_DIC_14C)              = 'DIC_14C'
 
     ! initialise arrays
-    loc_force_flux_weather_a(:)                 = 0.0                            
-    loc_force_flux_weather_a_percell(:)         = 0.0              
-    loc_force_flux_weather_a_land(:,:,:)        = 0.0 
-    loc_force_flux_weather_o(:)                 = 0.0                            
-    loc_force_flux_weather_o_percell(:)         = 0.0              
-    loc_force_flux_weather_o_land(:,:,:)        = 0.0       
+    loc_force_flux_weather_a(:)                 = 0.0
+    loc_force_flux_weather_a_percell(:)         = 0.0
+    loc_force_flux_weather_a_land(:,:,:)        = 0.0
+    loc_force_flux_weather_o(:)                 = 0.0
+    loc_force_flux_weather_o_percell(:)         = 0.0
+    loc_force_flux_weather_o_land(:,:,:)        = 0.0
     loc_force_flux_weather_o_ocean(:,:,:)       = 0.0
 
     ! set reference surface land (air) temperature, runoff and productivity and CO2 level
@@ -557,22 +556,6 @@ CONTAINS
           END DO
        END DO
        loc_avSLT = loc_avSLT/nlandcells
-       !code below is alternative to that above, but causes compilation issues!
-       !loc_avSLT = sum(landmask(:,:) * RESHAPE(dum_sfcatm1(ia_T,:,:),SHAPE=(/ n_i,n_j /)))/nlandcells
-
-    ELSE
-       ! from genie (accomodates non-equal-area grids):
-       !       goldstein_k1(:,:) = go_k1(:,:)
-       !       loc_A = 0.0
-       !       DO i=1,n_io
-       !          DO j=1,n_jo
-       !             IF (n_ko < goldstein_k1(i,j)) THEN
-       !                loc_avSLT = loc_avSLT + phys_ocnrok(ipoa_A,i,j)*loc_SLT(i,j)
-       !                loc_A = loc_A + phys_ocnrok(ipoa_A,i,j)
-       !             end IF
-       !          end DO
-       !       end DO
-       !       loc_avSLT = loc_avSLT/loc_A
 
     ENDIF
 
@@ -811,7 +794,7 @@ CONTAINS
           ! NOTE: '-' because coming out of atmosphere
           ! NOTE: not 2.0*weather_fCaSiO3 becasue outgassing is being assumed to balance net silicate weathering
           loc_force_flux_weather_a(ia_PCO2) = -(weather_fCaSiO3 + weather_fCaCO3)
-       ELSE 
+       ELSE
           ! NOTE: '-' because coming out of atmosphere
           ! NOTE: straight-forward -- outgassing minus CO2 consumed in weathering
           loc_force_flux_weather_a(ia_PCO2) = par_outgas_CO2 -(2.0*weather_fCaSiO3 + weather_fCaCO3)
@@ -833,7 +816,7 @@ CONTAINS
        ELSE
           loc_force_flux_weather_o(io_DIC_13C) =  &
                & fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*par_outgas_CO2 + &
-               & fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3       
+               & fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3
        ENDIF
     ELSE
        IF (opt_outgas_eq_Si.eqv..true.) THEN
@@ -842,15 +825,15 @@ CONTAINS
                & -( &
                &   fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaSiO3 + &
                &   fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaCO3 &
-               & ) 
+               & )
        ELSE
           ! NOTE: '-' because coming out of atmosphere
           loc_force_flux_weather_a(ia_pCO2_13C) = &
-               & fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*par_outgas_CO2 - & 
+               & fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*par_outgas_CO2 - &
                & ( &
                & 2.0*fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaSiO3 + &
                & fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaCO3 &
-               & ) 
+               & )
        ENDIF
        loc_standard = const_standards(ocn_type(io_DIC_13C))
        loc_force_flux_weather_o(io_DIC_13C) = &
@@ -867,24 +850,15 @@ CONTAINS
     ! bulk silicate Li weathering flux
     loc_force_flux_weather_o(io_Li) = loc_force_flux_weather_o(io_Li) + &
          & par_weather_CaSiO3_fracLi*weather_fCaSiO3
-!!$    ! adjust dissolved load for clay formation
-!!$    loc_R_flux = 1.0/(1.0 + exp(par_weather_Li_Rscale*(1.0 - loc_weather_ratio_CaSiO3 + par_weather_Li_Roffset/par_weather_Li_Rscale)))
-!!$    loc_force_flux_weather_o(io_Li) = loc_R_flux*loc_force_flux_weather_o(io_Li)
-!!$    ! calculate clay fractionation
-!!$    IF (loc_weather_ratio_CaSiO3 > const_real_nullsmall) then
-!!$       loc_epsilon = par_weather_CaSiO3_Li_d7Li + 1000.0*(loc_R_flux**((par_weather_Li_7Li_epsilon/1000.0 + 1.0) - 1.0) - 1.0)
-!!$    else
-!!$       loc_epsilon = par_weather_CaSiO3_Li_d7Li
-!!$    end IF
     ! calculate net Li isotopic weathering signature
     loc_standard = const_standards(ocn_type(io_Li_7Li))
     loc_epsilon = par_weather_CaSiO3_Li_d7Li
     loc_force_flux_weather_o(io_Li_7Li) = loc_force_flux_weather_o(io_Li_7Li) + &
          & fun_calc_isotope_fraction(loc_epsilon,loc_standard)*loc_force_flux_weather_o(io_Li)
     ! bulk carbonate flux
-    ! 
+    !
     ! *** DISCOUNT LI CONTENT OF CARBONATES ***
-    ! 
+    !
     ! ######################################################################################################################### !
 
     ! ######################################################################################################################### !
@@ -968,16 +942,15 @@ CONTAINS
     ! route it into the coastal ocean cells (to pass to biogem in coupled model) and save the output to file
     DO k=1,n_ocn
        IF(k.gt.2) THEN
-!!$            IF((k.EQ.io_ALK).OR.(k.EQ.io_DIC).OR.(k.EQ.io_Ca).OR.(k.EQ.io_DIC_13C).OR.(k.EQ.io_DIC_14C)) THEN
           CALL sub_coastal_output(  loc_force_flux_weather_o_land(k,:,:),             &
                &  runoff_drainto(:,:,:),runoff_detail(:,:),                           &
                &  loc_force_flux_weather_o_ocean(k,:,:)                               )
        ENDIF
     END DO
-    ! convert from Mol/yr to Mol/sec and put it into passing array 
+    ! convert from Mol/yr to Mol/sec and put it into passing array
     dum_sfxrok(:,:,:) = loc_force_flux_weather_o_ocean(:,:,:)/conv_yr_s
 
-    ! Output     
+    ! Output
 
     IF (tstep_count.eq.output_tsteps_0d(output_counter_0d)) THEN
 
@@ -1008,14 +981,14 @@ CONTAINS
              IF ((k.EQ.io_ALK).OR.(k.EQ.io_DIC).OR.(k.EQ.io_Ca).OR.(k.EQ.io_DIC_13C).OR.(k.EQ.io_DIC_14C)) THEN
                 CALL sub_save_data_ij( &
                      & TRIM(par_outdir_name)//'globavg_land_'//TRIM(globtracer_names(k))//'_year_'//TRIM(year_text)//'.dat', &
-                     n_i,n_j,loc_force_flux_weather_o_land(k,:,:))                                   
+                     n_i,n_j,loc_force_flux_weather_o_land(k,:,:))
                 CALL sub_save_data_ij( &
                      & TRIM(par_outdir_name)//'globavg_ocean_'//TRIM(globtracer_names(k))//'_year_'//TRIM(year_text)//'.dat', &
-                     n_i,n_j,loc_force_flux_weather_o_ocean(k,:,:))  
+                     n_i,n_j,loc_force_flux_weather_o_ocean(k,:,:))
              ENDIF
           END DO
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'globavg_atm_PCO2_year_'//TRIM(year_text)//'.dat', &
-               n_i,n_j,loc_force_flux_weather_a_land(ia_PCO2,:,:))                                   
+               n_i,n_j,loc_force_flux_weather_a_land(ia_PCO2,:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'temperature_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_SLT(:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'runoff_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_runoff(:,:)*conv_yr_s)
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'productivity_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_P(:,:))
@@ -1109,7 +1082,7 @@ CONTAINS
        r_avg_runoff = 1.0/avg_runoff
     endif
 
-    ! Divide weathering up into transport and kinetic limited regimes if requested     
+    ! Divide weathering up into transport and kinetic limited regimes if requested
     IF (opt_weath_regimes) THEN
 
        DO i=1,n_i
@@ -1130,14 +1103,14 @@ CONTAINS
        ! Speed up numerics by combining conversion factor, calibration with average runoff, and k
        do k = 1, par_nliths
           ! see initialise_rokgem.f90 for info on conversion factors conv_*
-          conv_factor(k) = weath_consts(k,1) * conv_GKWM * ((conv_GKWM_runoff*r_avg_runoff) ** weath_consts(k,2)) 
+          conv_factor(k) = weath_consts(k,1) * conv_GKWM * ((conv_GKWM_runoff*r_avg_runoff) ** weath_consts(k,2))
        end do
 
-       ! Calculate F_HCO_3- (calcium_flux)       
+       ! Calculate F_HCO_3- (calcium_flux)
        DO k = 1, par_nliths
           DO i = 1, n_i
              DO j = 1, n_j
-                dum_calcium_flux(k,i,j) = conv_factor(k) * regimes_calib(i,j)*&              
+                dum_calcium_flux(k,i,j) = conv_factor(k) * regimes_calib(i,j)*&
                      &                                dum_lithology(k,i,j) *               &
                      &                                (loc_runoff(i,j) ** weath_consts(k,2))
              END DO
@@ -1166,11 +1139,11 @@ CONTAINS
           conv_factor(k) = weath_consts(k,1) * conv_GKWM * ((conv_GKWM_runoff*rescale_runoff*r_avg_runoff) ** weath_consts(k,2))
        end do
 
-       ! Calculate F_HCO_3- (calcium_flux)       
+       ! Calculate F_HCO_3- (calcium_flux)
        DO k = 1, par_nliths
           DO i = 1, n_i
              DO j = 1, n_j
-                dum_calcium_flux(k,i,j) = conv_factor(k) *                   &              
+                dum_calcium_flux(k,i,j) = conv_factor(k) *                   &
                      &                                dum_lithology(k,i,j) *              &
                      &                                (loc_runoff(i,j) ** weath_consts(k,2))
              END DO
@@ -1185,10 +1158,8 @@ CONTAINS
     IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
        IF (opt_2d_ascii_output) THEN
           DO k = 1,par_nliths
-             !          PRINT*,'Saving map of calcium flux for ',TRIM(lithology_names(k)),                            &
-             !                &' to calcium_',lithology_names(k)(1:LEN(TRIM(lithology_names(k)))-4)//'.dat'
              call check_unit(17,__LINE__,__FILE__)
-             OPEN(17,file=TRIM(par_outdir_name)// &  
+             OPEN(17,file=TRIM(par_outdir_name)// &
                   & 'calcium_'//lithology_names(k)(1:LEN(TRIM(lithology_names(k)))-4)//'_'//       &
                   TRIM(year_text)//'.dat',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -1207,7 +1178,7 @@ CONTAINS
 
   !========================================================================================!
 
-  ! Subroutine: sub_GEM_CO2 
+  ! Subroutine: sub_GEM_CO2
   !
   ! Subroutine for spatially-explicit weathering based on Amiotte-Suchet et al. (2003)
   !
@@ -1294,7 +1265,7 @@ CONTAINS
        conv_factor(k) = weath_consts(k,1) * conv_GEM_CO2 * rescale_runoff * r_avg_runoff
     end do
 
-    ! Calculate F_HCO_3- (calcium_flux)       
+    ! Calculate F_HCO_3- (calcium_flux)
     DO k = 1, par_nliths
        DO i = 1, n_i
           DO j = 1, n_j
@@ -1303,8 +1274,8 @@ CONTAINS
        END DO
     END DO
 
-    ! Divide weathering up into transport and kinetic limited regimes if requested     
-    IF (opt_weath_regimes) THEN  
+    ! Divide weathering up into transport and kinetic limited regimes if requested
+    IF (opt_weath_regimes) THEN
        DO k = 1, par_nliths
           DO i=1,n_i
              DO j=1,n_j
@@ -1320,8 +1291,6 @@ CONTAINS
     IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
        IF (opt_2d_ascii_output) THEN
           DO k = 1,par_nliths
-             !          PRINT*,'Saving map of calcium flux for ',TRIM(lithology_names(k)),                            &
-             !                &' to calcium_',lithology_names(k)(1:LEN(TRIM(lithology_names(k)))-4)//'.dat'
              call check_unit(17,__LINE__,__FILE__)
              OPEN(17,file=TRIM(par_outdir_name)// &
                   & 'calcium_'//lithology_names(k)(1:LEN(TRIM(lithology_names(k)))-4)//'_year_'// &
@@ -1383,7 +1352,7 @@ CONTAINS
        IF (opt_2d_ascii_output) THEN
           CALL sub_save_data_ij( &
                & TRIM(par_outdir_name)//'calcium_total_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_total_calcium_flux(:,:) &
-               & )   
+               & )
        ENDIF
     ENDIF
 
@@ -1445,7 +1414,7 @@ CONTAINS
        IF (opt_2d_ascii_output) THEN
           CALL sub_save_data_ij( &
                & TRIM(par_outdir_name)//'calcium_total_Ca_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_total_calcium_flux_Ca(:,:) &
-               & )   
+               & )
           CALL sub_save_data_ij( &
                & TRIM(par_outdir_name)//'calcium_total_Si_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_total_calcium_flux_Si(:,:) &
                & )
@@ -1508,20 +1477,20 @@ CONTAINS
 
     REAL                            :: loc_force_flux_weather_a_land(n_atm,n_i,n_j) ! fluxes shared over land (atmosphere variables)
     REAL                            :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j) ! fluxes shared over land (ocean variables)
-       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)      
+       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 
     CHARACTER(LEN=7),DIMENSION(n_ocn)       :: globtracer_names
 
-    ! initialise tracer names       
+    ! initialise tracer names
     globtracer_names(io_ALK)                  = 'ALK    '
     globtracer_names(io_DIC)                  = 'DIC    '
     globtracer_names(io_Ca)                   = 'Ca     '
     globtracer_names(io_DIC_13C)              = 'DIC_13C'
     globtracer_names(io_DIC_14C)              = 'DIC_14C'
 
-    ! initialise arrays   
-    loc_force_flux_weather_a_land(:,:,:)        = 0.0           
-    loc_force_flux_weather_o_land(:,:,:)        = 0.0       
+    ! initialise arrays
+    loc_force_flux_weather_a_land(:,:,:)        = 0.0
+    loc_force_flux_weather_o_land(:,:,:)        = 0.0
     loc_force_flux_weather_o_ocean(:,:,:)       = 0.0
 
     ! set reference surface land (air) temperature and productivity
@@ -1530,7 +1499,7 @@ CONTAINS
     loc_CO20 = par_ref_CO20
 
     ! Initialise ocean array for temperature
-    CALL sub_init_phys_ocnrok()  
+    CALL sub_init_phys_ocnrok()
 
     ! Put runoff into local array
     loc_runoff(:,:) = dum_runoff(:,:)
@@ -1566,7 +1535,6 @@ CONTAINS
        END DO
     END DO
     ! extract temperature to local array to please intel compilers
-    !                     print*,"after calib", loc_SLT(:,1)
 
     ! calculate mean surface productivity (kgC m-2 yr-1)
     SELECT case (par_prodopt)
@@ -1634,7 +1602,7 @@ CONTAINS
     IF (opt_weather_T_Si) THEN
        DO i=1,n_i
           DO j=1,n_j
-             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ia_T,i,j) - loc_SLT0)) 
+             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ia_T,i,j) - loc_SLT0))
           END DO
        END DO
     ENDIF
@@ -1647,8 +1615,8 @@ CONTAINS
        ENDIF
     ENDIF
 
-    ! Divide weathering up into transport and kinetic limited regimes if requested     
-    IF (opt_weath_regimes) THEN       
+    ! Divide weathering up into transport and kinetic limited regimes if requested
+    IF (opt_weath_regimes) THEN
        DO i=1,n_i
           DO j=1,n_j
              IF (orogeny(i,j).eq.1) THEN
@@ -1684,7 +1652,7 @@ CONTAINS
        ENDIF
     ELSE
        IF (opt_outgas_eq_Si.eqv..true.) THEN
-          loc_force_flux_weather_a_land(ia_PCO2,:,:) = & 
+          loc_force_flux_weather_a_land(ia_PCO2,:,:) = &
                & - 1.0*(weather_fCaSiO3_2D(:,:) + weather_fCaCO3_2D(:,:)) !'-' because coming out of atmosphere
        ELSE
           loc_force_flux_weather_a_land(ia_PCO2,:,:) = landmask(:,:)*par_outgas_CO2/nlandcells - &
@@ -1708,19 +1676,19 @@ CONTAINS
        loc_standard = const_standards(atm_type(ia_pCO2_13C ))
        !'-' because coming out of atmosphere
        loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
-            fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - & 
+            fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - &
             1.0*(2.0*fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
-            fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:)) 
+            fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
        IF (opt_outgas_eq_Si.eqv..true.) THEN
           loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
                - 1.0*(fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
-               fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:)) 
+               fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
        ELSE
           !'-' because coming out of atmosphere
           loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
-               fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - & 
+               fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - &
                1.0*(2.0*fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
-               fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:)) 
+               fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
        ENDIF
        loc_standard = const_standards(ocn_type(io_DIC_13C))
        loc_force_flux_weather_o_land(io_DIC,:,:) = &
@@ -1779,21 +1747,21 @@ CONTAINS
              IF ((k.EQ.io_ALK).OR.(k.EQ.io_DIC).OR.(k.EQ.io_Ca).OR.(k.EQ.io_DIC_13C).OR.(k.EQ.io_DIC_14C)) THEN
                 CALL sub_save_data_ij( &
                      & TRIM(par_outdir_name)//'spatial_land_'//TRIM(globtracer_names(k))//'_year_'//TRIM(year_text)//'.dat', &
-                     & n_i,n_j,loc_force_flux_weather_o_land(k,:,:))                                 
+                     & n_i,n_j,loc_force_flux_weather_o_land(k,:,:))
                 CALL sub_save_data_ij( &
                      & TRIM(par_outdir_name)//'spatial_ocean_'//TRIM(globtracer_names(k))//'_year_'//TRIM(year_text)//'.dat', &
-                     & n_i,n_j,loc_force_flux_weather_o_ocean(k,:,:)) 
+                     & n_i,n_j,loc_force_flux_weather_o_ocean(k,:,:))
              ENDIF
           END DO
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'temperature_year_'//TRIM(year_text)//'.dat', &
                & n_i,n_j,loc_SLT)
-          CALL sub_save_data_ij(TRIM(par_outdir_name)//'runoff_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_runoff(:,:)*conv_yr_s) 
-          CALL sub_save_data_ij(TRIM(par_outdir_name)//'productivity_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_P(:,:))    
+          CALL sub_save_data_ij(TRIM(par_outdir_name)//'runoff_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_runoff(:,:)*conv_yr_s)
+          CALL sub_save_data_ij(TRIM(par_outdir_name)//'productivity_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_P(:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'CO2_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_CO2(:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'loc_weather_ratio_CaSiO3_year_'//TRIM(year_text)//'.dat', &
-               n_i,n_j,loc_weather_ratio_CaSiO3(:,:))                                         
+               n_i,n_j,loc_weather_ratio_CaSiO3(:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'loc_weather_ratio_CaCO3_year_'//TRIM(year_text)//'.dat', &
-               n_i,n_j,loc_weather_ratio_CaCO3(:,:))       
+               n_i,n_j,loc_weather_ratio_CaCO3(:,:))
        ENDIF
 
     ENDIF

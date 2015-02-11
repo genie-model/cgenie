@@ -1,6 +1,6 @@
 !
 ! File: rokgem_data_netCDF.f90
-! 
+!
 ! Description: this module contains the subroutines for generating netCDF output from rokgem.
 !
 ! Uses:
@@ -36,11 +36,11 @@ CONTAINS
        REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
        REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)     
+       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
 
            ! re-open netcdf file
            call sub_save_netcdf(output_years_2d(output_counter_2d))
-           CALL sub_save_netcdf_2d_rg(dum_temp,dum_CO2,dum_runoff,dum_photo,dum_respveg,dum_loc_P, &                      
+           CALL sub_save_netcdf_2d_rg(dum_temp,dum_CO2,dum_runoff,dum_photo,dum_respveg,dum_loc_P, &
                     & dum_force_flux_weather_a_land,dum_force_flux_weather_o_land,dum_force_flux_weather_o_ocean)
 
            ! close netcdf file and update record number
@@ -71,7 +71,7 @@ CONTAINS
   !       dum_lb   = length of data
   !       dum_is   = starting point for write
   !       dum_din  = data to be written (default real)
-  !       dum_mask = topography mask for printing 
+  !       dum_mask = topography mask for printing
 
   SUBROUTINE sub_save_netcdf_2d_rg(dum_temp,dum_CO2,dum_runoff,dum_photo,dum_respveg,dum_loc_P,&
                                   & dum_force_flux_weather_a_land,dum_force_flux_weather_o_land,&
@@ -87,7 +87,7 @@ CONTAINS
        REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
        REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)     
+       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
 
     !-----------------------------------------------------------------------
     !       DEFINE LOCAL VARIABLES
@@ -248,7 +248,7 @@ CONTAINS
     integer        :: loc_id_lat_e, loc_id_xu_e, loc_id_yu_e
     integer        :: loc_id_misc
     !-----------------------------------------------------------------------
-    !       initialize local variables 
+    !       initialize local variables
     !-----------------------------------------------------------------------
     loc_c0 = 0.
     loc_c1 = 1.
@@ -258,7 +258,7 @@ CONTAINS
     loc_c1e3 = 1.e3
     loc_c1e6 = 1.e6
     !-----------------------------------------------------------------------
-    !       open file 
+    !       open file
     !-----------------------------------------------------------------------
     call sub_opennew (dum_name, dum_iou)
     !-----------------------------------------------------------------------
@@ -335,22 +335,6 @@ CONTAINS
     loc_it(2) = loc_id_latm
     call sub_defvar ('grid_mask', dum_iou, 2, loc_it, loc_c0, loc_c100, ' ', 'F', &
          &'land-sea mask', ' ' ,'n/a')
-
-!!$    !-----------------------------------------------------------------------
-!!$       !-----------------------------------------------------------------------
-!!$       !       define 3d data (x,y,t)
-!!$       !-----------------------------------------------------------------------
-!!$       loc_it(1) = loc_id_lonm
-!!$       loc_it(2) = loc_id_latm
-!!$       loc_it(3) = loc_id_time
-!!$       if (opt_data(iopt_data_save_slice_ocnatm)) then
-!!$         do n = 3,n_l_atm
-!!$           call sub_defvar ('atm_'//string_atm_tname(n), dum_iou, 3, &
-!!$               & loc_it, atm_mima(n,1), atm_mima(n,2), ' ', 'F', &
-!!$               & string_atm_tlname(n), ' ', string_atm_unit(n))
-!!$         enddo
-!!$       end if
-!!$       !-----------------------------------------------------------------------
     !-----------------------------------------------------------------------
     !       end definitions
     !-----------------------------------------------------------------------
@@ -378,7 +362,7 @@ CONTAINS
     real,dimension(n_j+1) :: loc_lat_e, loc_yu_e
     logical :: loc_defined
     !-----------------------------------------------------------------------
-    !       initialize local variables 
+    !       initialize local variables
     !-----------------------------------------------------------------------
     loc_c0 = 0.
     loc_c1 = 1.
@@ -393,7 +377,7 @@ CONTAINS
     loc_xu_e(:)        = 0.0
     loc_lat_e(:)       = 0.0
     loc_yu_e(:)        = 0.0
-    ! 
+    !
     loc_name = string_ncout2d_rg
     !print*,'loc_name = ',string_ncout2d_rg
     loc_iou = ncout2d_iou_rg
@@ -405,7 +389,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_defined = .true.
     loc_i = 0
-    if (loc_ntrec .eq. 0) then 
+    if (loc_ntrec .eq. 0) then
        loc_defined = .false.
        loc_i = 1
     end if
@@ -415,9 +399,9 @@ CONTAINS
     !-----------------------------------------------------------------------
     call sub_putvars  ('time', loc_iou, loc_ntrec, dum_yr, loc_c1, loc_c0)
     call sub_putvarIs  ('year', loc_iou, loc_ntrec, nint(dum_yr), loc_c1, loc_c0)
-    ! 
+    !
     if(.not. loc_defined) then
-       
+
        call sub_putvar1d ('lon', loc_iou, n_i, loc_ntrec, n_i, &
             & phys_rok(ipr_lon,:,1), loc_c1, loc_c0)
        call edge_maker (1, loc_lon_e, phys_rok(ipr_lon,:,1), &
@@ -430,7 +414,7 @@ CONTAINS
             & phys_rok(ipr_lone,:,1), phys_rok(ipr_dlon,:,1), n_i)
        call sub_putvar1d ('xu_edges', loc_iou, n_i+1, loc_ntrec, n_i+1, &
             & loc_xu_e, loc_c1, loc_c0)
-       
+
        call sub_putvar1d ('lat', loc_iou, n_j, loc_ntrec, n_j, &
             & phys_rok(ipr_lat,1,:), loc_c1, loc_c0)
        call edge_maker (1, loc_lat_e, phys_rok(ipr_lat,1,:), &
@@ -443,7 +427,7 @@ CONTAINS
             & phys_rok(ipr_latn,1,:), phys_rok(ipr_dlat,1,:), n_j)
        call sub_putvar1d ('yu_edges', loc_iou, n_j+1, loc_ntrec, n_j+1, &
             & loc_yu_e, loc_c1, loc_c0)
-      
+
        !-----------------------------------------------------------------------
        !       write 2d data (x,y)
        !-----------------------------------------------------------------------
@@ -460,7 +444,7 @@ CONTAINS
        ncout2d_ntrec_rg = loc_ntrec
        ncout2d_iou_rg = loc_iou
 
-    ! 
+    !
     call sub_sync(loc_iou)
     !-----------------------------------------------------------------------
   END SUBROUTINE sub_save_netcdf

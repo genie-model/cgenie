@@ -6,9 +6,9 @@
 ! ******************************************************************************************************************************** !
 
 
-! Edited from original cpl_flux_sedocn.f90 (or cpl_flux_sedgem.f90) 
+! Edited from original cpl_flux_sedocn.f90 (or cpl_flux_sedgem.f90)
 !  -> changed instances of sed->rok (for rocks on land)
-! Want runoff flux from ocean grid (goldstein) to land (rok grid) 
+! Want runoff flux from ocean grid (goldstein) to land (rok grid)
 !  and weathering flux from land to ocean
 ! Maybe don't need this as should be dumping solute fluxes in coastal cells rather than doing
 !  a cell to cell flux matching 2 grids!
@@ -64,9 +64,5 @@
         end do
      end DO
   end DO
-  if (.NOT. dum_gem) then
-     !dum_sfxrok(:,:,:) = 0.0
-  end if
 end SUBROUTINE cpl_flux_rokocn
 ! ******************************************************************************************************************************** !
-
