@@ -4,11 +4,9 @@ cmsw Calculation performed at initialisation stage for every latitude and
 cmsw istep.
 cmsw
       subroutine ocean_alb(oscss,osccc,oscday,j,istep)
-     
-c      include '../genie-cgoldstein/var.cmn'
-c      include '../genie-simpleland/var_ents.cmn'
+
 #include "embm.cmn"
- 
+
       real oscss,osccc,oscday
       real h
       real a,b,sum,tol
@@ -34,14 +32,14 @@ cmsw specified tolerance. See Numerical Recipes Ch. 4
 cmsw Initial values
       old=-1.e30
       int=1.e30
-cmsw Integration limits     
+cmsw Integration limits
       a=0.
       b=oscday
 
       if(b.le.0.)then
          albo(j,istep)=1.
       else
-         do n=1,15 
+         do n=1,15
 cmsw Initial guess based on end points
             if(n.eq.1)then
                p=1
@@ -54,7 +52,7 @@ cmsw Initial guess based on end points
                old=int
             endif
 cmsw Interval size doubles with each iteration
-            h=(b-a)/(2*p) 
+            h=(b-a)/(2*p)
 cmsw Calculate for new points only then add to the running sum
             do x=1,p
                xp=a+h+(2*h*(x-1))
@@ -78,7 +76,7 @@ c*************************************************************
 cmsw Function to work out instantaneous outgoing radiation   *
 c*************************************************************
       subroutine rad_out(radout,h,oscss,osccc)
-      
+
       real oscss,osccc
       real czsol,h,rspec,rtot,radout
       real rdiff
@@ -100,9 +98,8 @@ cmsw specular reflectance according to Briegleb et al. (1986)
 
 cmsw total reflectance
       rtot=rspec+rdiff
-      
+
 cmsw Instantaneous outgoing radiation (but without the constants)
       radout=rtot*czsol
 
       end
-

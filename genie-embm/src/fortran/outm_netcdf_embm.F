@@ -38,7 +38,7 @@ c     For date and restarts...
       integer iday
       integer iyearid
       integer imonthid
-      integer idayid   
+      integer idayid
       character yearstring*10
       character monthstring*2
       character daystring*2
@@ -52,7 +52,6 @@ c     For netcdf...
 
 c AY (06/10/04) : extra variables for printing out average model properties
       integer l
-c      integer icell
       real    tmp_val(2)
       real    area
 
@@ -80,14 +79,6 @@ c AY (04/10/04) : uses grid variables calculated in initialise_seaice.F
       do j=1,maxj
          lats1(j)=nclat1(j)
       enddo
-
-c AY (05/10/04) : landmask not necessary here
-c     landmask(:,:)=0
-c     do i=1,maxi
-c        do j=1,maxj
-c           if (k1(i,j).gt.maxk) landmask(i,j)=1
-c        enddo
-c     enddo
 
       temp_write(:,:)=real(tq(1,1:maxi,1:maxj))
       shum_write(:,:)=real(tq(2,1:maxi,1:maxj))
@@ -163,7 +154,7 @@ c AY (06/10/04) : copied from outm_embm.f
 
 c     AY (08/03/04) : write out averages for restart checks
       write(*,220) 'Avg T','Avg Q'
-c     
+c
 c     Clear temporary variables
       do l=1,2
          tmp_val(l) = 0
@@ -181,8 +172,6 @@ c     Sum layer state variables and flow field
       enddo
 c
 c     Print average values out
-crma      write(*,210) tmp_val(1)/(imax*jmax),
-crma     +     (tmp_val(2)/(imax*jmax))*1000.
       write(*,210) tmp_val(1)/area,
      +     (tmp_val(2)/area)*1000.
 

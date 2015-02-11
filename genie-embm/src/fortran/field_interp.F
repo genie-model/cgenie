@@ -11,11 +11,9 @@ cmsw
       subroutine field_interp(uatml1,usurfl1,tncep1,pncep1,rhncep1,
      1                        atm_alb1)
 
-c      include '../genie-cgoldstein/var.cmn'
-c      include '../genie-simpleland/var_ents.cmn'
 #include "embm.cmn"
 
-      real invmat(nmth,nmth) 
+      real invmat(nmth,nmth)
 
       real uatml1(2,imax,jmax,nmth+1)
       real usurfl1(imax,jmax,nmth+1)
@@ -24,7 +22,7 @@ c      include '../genie-simpleland/var_ents.cmn'
       real rhncep1(imax,jmax,nmth+1)
       real atm_alb1(imax,jmax,nmth+1)
 
-      real puatml(2,imax,jmax,nmth) 
+      real puatml(2,imax,jmax,nmth)
       real pusurfl(imax,jmax,nmth)
       real ptncep(imax,jmax,nmth)
       real ppncep(imax,jmax,nmth)

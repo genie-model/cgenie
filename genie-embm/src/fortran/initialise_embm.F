@@ -7,7 +7,7 @@
 *
 * AY (03/12/03) : restarting conversion of c-GOLDSTEIN into
 *                 GOLDSTEIN + EMBM + sea-ice for genie.f
-* 
+*
 *                 this code takes pieces from mains.F, gseta.F
 *	          and gseto.F
 *
@@ -96,7 +96,6 @@ crma extra explicit declarations (rma, 22/12/03)
       real radfor_scl_ch4,radfor_pc_ch4_rise
       real radfor_scl_n2o,radfor_pc_n2o_rise
       real u_tau_ice,ch_ice,cpo_ice
-crma      real  asurf(maxj)
 
 crma extra explicit declarations (rma, 22/12/03)
       real th0, th1, s0, s1, phix, scl_fwf
@@ -116,8 +115,6 @@ crma extra explicit declarations (rma, 22/12/03)
 
       character(len=6) world
       integer          lenworld
-c AY (02/02/05) : now read in from GOIN information
-c     parameter(world='worbe2')
 
 c AY (02/02/05) : add filename variables for wind stress and wind speed
 c                 files
@@ -136,15 +133,14 @@ c AY (05/10/04) : for netCDF restarts (following Dan)
 
 c AJR value of solar constant to be passed to radfor
       real solconst
-      
-c SG > Dummy variables to be passed to/from ENTS via genie.F    
+
+c SG > Dummy variables to be passed to/from ENTS via genie.F
       real eb_rmax
       real eb_dphi
       real eb_rdtdim
       real eb_ca(maxi,maxj)
-c      real eb_co2(maxi,maxj)
       real gn_daysperyear
-c SG <      
+c SG <
 
       real,intent(out)::torog_atm(maxi,maxj)
       real,intent(out)::surf_orog_atm(maxi,maxj)
@@ -300,21 +296,6 @@ c ======================================================================
 
       if (debug_init) print*
 
-cccc-DJL 21/9/05 (for reading IGCM grid), inserted by RMA
-ccc      dx_igcm=360.0/real(nx_igcm)
-ccc      do i=1,nx_igcm
-ccc         igcm_lons(i)=real((i-1.0)*dx_igcm)
-ccc         igcm_lons_edge(i)=real((i-1.5)*dx_igcm)
-ccc      end do
-ccc      igcm_lons_edge(nx_igcm+1)=real((nx_igcm-0.5)*dx_igcm)
-ccc      call gwtcnr(igcm_lats,ny_igcm/2)
-ccc      call gwtbox(igcm_lats_edge,ny_igcm/2)
-ccc
-ccc      if (debug_init) print*,'These are the igcm latitude edges:'
-ccc      if (debug_init) print*,igcm_lats_edge
-ccc      if (debug_init) print*,'These are the igcm longitude edges:'
-ccc      if (debug_init) print*,igcm_lons_edge
-
 c AY (01/12/03) : previously in mains.F ...
 c ----------------------------------------------------------------------
 
@@ -343,7 +324,7 @@ c read in namelist
       end if
 
 c      stop
-      
+
 c     Input directory name
       lenin = lnsig1(indir_name)
       if (indir_name(lenin:lenin).ne.'/') then
@@ -371,10 +352,6 @@ c        This 'if' checks for a terminal slash symbol
       end if
       if (debug_init) print*,'Restart dir. name ',rstdir_name(1:lenrst)
 
-crma (15/09/05) : read in grid type
-crma (0 = const dsinlat; 1 = const dlat; 2 = IGCM)
-crma      if(igrid.eq.0) ldeg=.false.
-crma      if(igrid.eq.1) ldeg=.true.
 c AY (02/02/05) : read in topography filename
       lenworld = lnsig1(world)
       if (debug_init) print*,'Topography name ',world(1:lenworld)
@@ -391,7 +368,7 @@ c AY (02/02/05) : read in wind stress filenames
      & 'y windstress at u point ',yu_wstress(1:len_yu)
       if (debug_init) print*,
      & 'x windstress at v point ',xv_wstress(1:len_xv)
-      if (debug_init) print*, 
+      if (debug_init) print*,
      & 'y windstress at v point ',yv_wstress(1:len_yv)
       endif
 
@@ -413,7 +390,6 @@ c     New or continuing run
       if (debug_init) print*,ans
 
 c AY (05/05/04) : number of days per EMBM year (usually 365.25)
-c     yearlen = 365.25
       if (debug_init) print*,'number of days per EMBM year'
       if (debug_init) print*,yearlen
 
@@ -447,34 +423,25 @@ c EMBM scaling for freshwater forcing of ocean
 c parameters for setting up grid
 c th is latitude, coords are sin(th), longitude phi, and z
 
-      th0 = - pi/2    
-      th1 = pi/2 
-c     th0 = - pi*7/18
-c     th1 = pi*7/18
-      s0 = sin(th0)    
-      s1 = sin(th1)     
-c     phix = pi/3
+      th0 = - pi/2
+      th1 = pi/2
+      s0 = sin(th0)
+      s1 = sin(th1)
       phix = 2*pi
       deg_to_rad = pi/180.
 
 c grid dimensions must be no greater than array dimensions in var.cmn
 
       imax = maxi
-      jmax = maxj 
-      kmax = maxk   
+      jmax = maxj
+      kmax = maxk
       lmax = 2
 
       dphi = phix/imax
       if (igrid.lt.2) then
          phi0 = -260.0*deg_to_rad
-      else
-ccc         phi0 = igcm_lons_edge(1)*deg_to_rad
       endif
-crma      ds = (s1-s0)/jmax
-crma      dphi2 = dphi*2
-crma      ds2 = ds*2
       rdphi = 1.0/dphi
-crma      rds = 1.0/ds
 
 c set up horizontal grid: sin and cos factors at rho and v points (c grid)
 c fix for global domain although only cv and cv2 are referred to at or beyond
@@ -482,7 +449,6 @@ c limits 24/6/2 if no flow out of N + S boundaries.
 
       sv(0) = s0
       cv(0) = cos(th0)
-crma      if(ldeg)then
       if(igrid.eq.1)then
 crma set up const dlat grid
          dth = (th1 - th0)/jmax
@@ -501,18 +467,6 @@ crma set up const dsinlat grid
             cv(j) = sqrt(1 - sv(j)*sv(j))
             s(j) = sv(j) - 0.5*dscon
          enddo
-ccc      elseif(igrid.eq.2)then
-ccccrma set up IGCM grid (21/9/05)
-ccccrma note igcm orders latitude north-to-south!
-ccc         do j=1,jmax
-ccc            thv = deg_to_rad*igcm_lats_edge(jmax+1-j)
-ccc            dth = deg_to_rad*(igcm_lats_edge(jmax+2-j)
-ccc     1                      - igcm_lats_edge(jmax+1-j))
-ccc            theta = thv - 0.5*dth
-ccc            sv(j) = sin(thv)
-ccc            s(j) = sin(theta)
-ccc            cv(j) = cos(thv)
-ccc         enddo
       endif
       if (debug_init) print*,'EMBM latitudes: velocity; tracers'
       if (debug_init) print*,'j, 180/pi*asin(sv(j)), 180/pi*asin(s(j))'
@@ -530,7 +484,6 @@ ccc         enddo
             if(j.gt.1)rds2(j) = 2.0/(dsv(j)+dsv(j-1))
          endif
         if (debug_init) print*,j,180/pi*asin(sv(j)),180/pi*asin(s(j))
-c     &,180/pi*asin(ds(j)),sv(j),s(j),ds(j)
       enddo
 
 c AY (29/11/04) : area of grid cell (assumes sine(lat) grid)
@@ -543,7 +496,7 @@ c AY (29/11/04) : area of grid cell (assumes sine(lat) grid)
 c v2 seasonality
       if (debug_init) print*,'timesteps per year and A/O dt ratio'
       if (debug_init) print*,nyear,ndta
-      if(nyear.gt.maxnyr)stop 'embm : nyear > maxnyr' 
+      if(nyear.gt.maxnyr)stop 'embm : nyear > maxnyr'
       tv = 86400.0*yearlen/(nyear*tsc)
       ryear = 1.0/(yearlen*86400)
 
@@ -554,10 +507,7 @@ c v2 seasonality
 c AY (13/01/04) : oops!  left this out
 c variable timestep option not recommended
       do k=1,kmax
-         dt(k) = tv  
-c initialize
-c        dzu(1,k) = 0
-c        dzu(2,k) = 0
+         dt(k) = tv
       enddo
       if (debug_init) print*,'dimensional ocean timestep',tv*tsc/86400
       if (debug_init) print*,'dimensionless O/A timesteps',tv,dtatm
@@ -571,7 +521,6 @@ c set up grid
 c For variable (exponential) dz use ez0 > 0, else use ez0 < 0
 
       ez0 = 0.1
-c     ez0 = - 1.0
       z1 = ez0*((1.0 + 1/ez0)**(1.0/kmax) - 1.0)
       if (debug_init)print*,'z1',z1
       tv4 = ez0*((z1/ez0+1)**0.5-1)
@@ -603,7 +552,7 @@ c tv5 is the depth of the k+1th density level from the top
       if (debug_init)
      & write(6,'(i4,3e12.4)')(k,dsc*zw(k),dsc*zro(k),dsc*dz(k)
      1        ,k=kmax,1,-1)
-         
+
       if (debug_init) print*,'dzz'
       dzz = dz(kmax)*dza(kmax-1)/2
       if (debug_init) print*,dzz
@@ -624,23 +573,6 @@ c set up sin and cos factors at rho and v points (c grid)
 c fix for global domain although only cv and cv2 are referred to at or beyond
 c limits 24/6/2 if no flow out of N + S boundaries.
 
-crma      do j=0,jmax
-crma         sv(j) = s0 + j*ds
-crma         if(abs(1.0 - abs(sv(j))).lt.1e-12)then
-crma            cv(j) = 0.
-crma            rcv(j) = 1e12
-crma         else
-crma            cv(j) = sqrt(1 - sv(j)*sv(j))
-crma            rcv(j) = 1.0/cv(j)
-crma         endif
-crma         cv2(j) = cv(j)*cv(j)*rds
-crma         s(j) = sv(j) - 0.5*ds
-crma         if(s(j).lt.-1.0)s(j) = -2.0 - s(j)
-crma         c(j) = sqrt(1 - s(j)*s(j))
-crma         rc(j) = 1.0/c(j)
-crma         rc2(j) = rc(j)*rc(j)*rdphi
-crma      enddo   
-
 c AY (16/01/04) : read in scf from input file (this should have the
 c                 same value used by GOLDSTEIN)
       if (debug_init) print*,'scf'
@@ -659,11 +591,11 @@ c taux,tauy at u-points
       call check_unit(96,__LINE__,__FILE__)
       open(96,file=indir_name(1:lenin)//xu_wstress(1:len_xu),iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-         
+
       call check_unit(97,__LINE__,__FILE__)
       open(97,file=indir_name(1:lenin)//yu_wstress(1:len_yu),iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-         
+
 c taux,tauy at v-points
       call check_unit(98,__LINE__,__FILE__)
       open(98,file=indir_name(1:lenin)//xv_wstress(1:len_xv),iostat=ios)
@@ -672,13 +604,9 @@ c taux,tauy at v-points
       call check_unit(99,__LINE__,__FILE__)
       open(99,file=indir_name(1:lenin)//yv_wstress(1:len_yv),iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
-      
+
       do j=1,jmax
          do i=1,imax
-c rotate grid to check b.c.s
-c           do idum=1,imax
-c              i=1+mod(idum+18-1,36)
-               
 c AY (19/12/03) : Variables dztau and dztav are renamed here to
 c                 separate the unscaled (hence 'us') versions read
 c	          in from files, from those scaled versions used
@@ -695,20 +623,6 @@ c	          in surflux and GOLDSTEIN.
 
             read(99,*,iostat=ios)us_dztav(2,i,j)
             call check_iostat(ios,__LINE__,__FILE__)
-
-c AY (11/12/03) : not clear yet where best to do this scaling
-
-c AY (04/12/03) : following scaling excised - may be done instead in
-c                 other modules, e.g. goldstein.F
-c multiply by scaling factor scf (to drive correct gyre strengths)
-c
-c           dztau(1,i,j) = scf*dztau(1,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztau(2,i,j) = scf*dztau(2,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztav(1,i,j) = scf*dztav(1,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c           dztav(2,i,j) = scf*dztav(2,i,j)/(rh0sc*dsc*usc*fsc)/dzz
-c
-c           tau(1,i,j) = dztau(1,i,j)*dzz
-c           tau(2,i,j) = dztav(2,i,j)*dzz
          enddo
       enddo
 
@@ -731,58 +645,26 @@ c           tau(2,i,j) = dztav(2,i,j)*dzz
          enddo
       endif
 
-crma dzz from initialise_ocean.f
-c     dzz = 7.09513476982982024E-4
-c     scf = 2.0
-c     print*, '*** WARNING: hard-wired dzz, scf ***'
-
-c AY (11/12/03) : neither bathymetry nor runoff required here - moved
-c                 to surflux instead.
-
-c AY (04/12/03) : reading in ocean bathymetry/runoff patterns - not
-c                 sure yet if this is entirely necessary.
-c seabed depth h needed BEFORE forcing if coastlines are non-trivial
-c note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
-c k1(1,j) - k1(imax+1,j) = 0
-
       ntot = 0
       intot = 0
 
 c AY (06/01/04) : reinstate bathymetry/runoff read-in
-c AY (01/12/03) : line modified to point to input directory
-c     open(13,file=world//'.k1')
       if (debug_init) print*,'Land runoff being read in'
-      
+
       call check_unit(13,__LINE__,__FILE__)
       open(13,file=indir_name(1:lenin)//world//'.k1',iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
 
 c note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
 c k1(1,j) - k1(imax+1,j) = 0, as enforced below;
-c
-c AY (07/01/04) : write out contents of k1 array prior to filling it
-c     do j=jmax+1,0,-1
-c        write(6,'(i4,40i3)')j,(k1(i,j),i=0,imax+1)
-c        do i=0,imax+1
-c           k1(i,j) = 100
-c        enddo
-c     enddo
 
       do j=jmax+1,0,-1
          read(13,*,iostat=ios)(k1(i,j),i=0,imax+1)
          call check_iostat(ios,__LINE__,__FILE__)
 
 c rotate grid to check b.c.s
-c        read(13,*)xxx,(k1(i,j),i=19,36),(k1(i,j),i=1,18),xxx
          k1(0,j) = k1(imax,j)
          k1(imax+1,j) = k1(1,j)
-c AY (07/01/04) : ocean depth variables - excised
-c        do i=0,imax+1
-c           do k=1,3
-c              h(k,i,j) = 0
-c              rh(k,i,j) = 0
-c           enddo
-c        enddo
          if (debug_init.and.(j.ne.0.and.j.ne.jmax+1))
      1    write(6,'(i4,32i3)')j,(k1(i,j),i=1,32)
       enddo
@@ -836,21 +718,15 @@ c constants used in OLW parameterization
 
 cc EMBM stuff follows...
 
-crma need to sort out extra1, etc.
-
-crma      asurf = rsc*rsc*ds*dphi
-crma      print*,'EMBM grid cell area is',asurf,'m2'
-
 c climatological albedo (similar to Weaver et al. 2001)
 c AR/080930 : modified climatological albedo for greater flexibility
 c             and to fit HadCM3 predictions
       if (debug_init) print*,'climatological albedo, by latitude'
       do j=1,jmax
           albedop_scl = ((albedop_skew - s(j))/2.0)**albedop_skewp
-          tv = asin(s(j))          
-c          tv2 = 0.2 + 0.36*0.5*(1.0 - cos(2.0*tv))
-          tv2 = albedop_offs + albedop_amp*0.5*(1.0 - 
-     &          cos(2.0*tv) + 
+          tv = asin(s(j))
+          tv2 = albedop_offs + albedop_amp*0.5*(1.0 -
+     &          cos(2.0*tv) +
      &          albedop_scl*albedop_mod2*cos(2.0*tv) +
      &          albedop_scl*albedop_mod4*cos(4.0*tv) +
      &          albedop_scl*albedop_mod6*cos(6.0*tv)
@@ -884,7 +760,6 @@ c     read some scalings
 c factor corresponding to radiative forcing of 4 W/m**2
 c per doubling of atmospheric CO2
 c NOTE: value now set via a namelist
-c      delf2x = 5.77
       if (debug_init) print*,'delf2x =',delf2x
       if (debug_init) print*,
      & '=> climate sensitivity =',delf2x*log(2.0),' Wm-2'
@@ -938,22 +813,18 @@ c latent heat of vapourization (J/kg)
 c latent heat of fusion of ice (J/kg)
       hlf = 3.34e5
 c latent heat of sublimation (J/kg)
-c     hls = 2.835e6
 c for conservation of heat, require
-      hls = hlv + hlf 
+      hls = hlv + hlf
 
 c scaling for heat forcing of atmosphere
 
-      rfluxsca = rsc/(hatmbl(1)*usc*rhoair*cpa)   
+      rfluxsca = rsc/(hatmbl(1)*usc*rhoair*cpa)
 
 c atmospheric winds
       if (.not.flag_wind) then
 
 c AY (11/12/03) : note to self - these winds are the advective transport
 c	          winds used in tstepa/tstipa
-
-c AY (04/12/03) : file location altered to include input directory
-c     open(35,file='uncep.silo')
 
       call check_unit(35,__LINE__,__FILE__)
       open(35,file=indir_name(1:lenin)//u_wspeed(1:len_uws),
@@ -964,7 +835,6 @@ c     open(35,file='uncep.silo')
       close(35,iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
 
-c     open(35,file='vncep.silo')
       open(35,file=indir_name(1:lenin)//v_wspeed(1:len_vws),iostat=ios)
       call check_iostat(ios,__LINE__,__FILE__)
       read(35,*,iostat=ios)((uatm(2,i,j),i=1,imax),j=1,jmax)
@@ -992,18 +862,17 @@ cLJG 2 removes all conditional zonal averages
                enddo
             endif
          enddo
-      endif 
-      
-c remove zonal average of v else fail mass conservation (may not be 
+      endif
+
+c remove zonal average of v else fail mass conservation (may not be
 c disastrous).
 
       do i=1,imax
          do j=1,jmax
             uatm(1,i,j) = uatm(1,i,j)/usc
             uatm(2,i,j) = uatm(2,i,j)/usc
-c           uatm(2,i,j) = uatm(2,i,j)*0.0
          enddo
-         if (par_wind_polar_avg.ne.1.and.par_wind_polar_avg.ne.2) then 
+         if (par_wind_polar_avg.ne.1.and.par_wind_polar_avg.ne.2) then
          uatm(2,i,jmax) = 0.
          endif
       enddo
@@ -1019,7 +888,6 @@ c           uatm(2,i,j) = uatm(2,i,j)*0.0
 
 c parameters for extra heat diffusion where pptn high
 
-c     diffmod0 = 60e6
       diffmod0 = 0.
       ppmin = 2./(yearlen*86400.)
       ppmax = 4./(yearlen*86400.)
@@ -1027,25 +895,13 @@ c     diffmod0 = 60e6
 c nre simpler diffusivity
 
       diffend = exp(-(0.5*pi/diffwid)**2)
-c     open(47,file='diff_ADVDIF.dat')
       if (debug_init) print*,
      & 'atm stability numbers, need to be small for explicit dt'
       do j=1,jmax
          tv = asin(s(j))
          tv2 = asin(sv(j))
-c Weaver diffusivities as interpolated by Bob
-c        read(47,'(4x,5e15.5)')tv3,diffa(1,1,j)
-c    1   ,diffa(2,1,j),diffa(1,2,j),diffa(2,2,j)
          diffa(2,1,j) = diffamp(2)
          diffa(2,2,j) = diffamp(2)
-c Weaver-type diffusivities but analytical  
-c        diffa(1,1,j) = diffamp(1)*(0.02 + 0.2*(tv+0.5*pi)/pi      
-c    &                + 0.8*0.5*(1 + cos(2*tv)))
-c        diffa(1,2,j) = diffamp(1)*(0.02 + 0.2*(tv2+0.5*pi)/pi      
-c    &                + 0.8*0.5*(1 + cos(2*tv2)))
-c Weaver-type diffusivities, symmetrical 
-c        diffa(1,1,j) = diffamp(1)*(0.2 + 0.8*0.5*(1 + cos(2*tv)))
-c        diffa(1,2,j) = diffamp(1)*(0.2 + 0.8*0.5*(1 + cos(2*tv2)))
 c Variable-width and asymmetry (or slope) thermal diffusivity
          diffa(1,1,j) = diffamp(1)*(difflin*2.0*(tv+0.5*pi)/pi
      &              + (1.0-difflin)*(exp(-(tv/diffwid)**2) - diffend)
@@ -1073,14 +929,11 @@ c non-dimensionalise diffusivities
          diffa(1,2,j) = diffa(1,2,j)/(rsc*usc)
          diffa(2,1,j) = diffa(2,1,j)/(rsc*usc)
          diffa(2,2,j) = diffa(2,2,j)/(rsc*usc)
-c        write(47,'(i4,5e15.5)')j,asin(s(j)),diffa(1,1,j)*rsc*usc
-c    1   ,diffa(2,1,j)*rsc*usc,diffa(1,2,j)*rsc*usc,diffa(2,2,j)*rsc*usc
 
 c nre ???? TEST for const lat, very unstable diffusivities so control
 c T diffusion by input params and make sure q diff is no bigger
 c only if constant lat grid (i.e. allowing compatibility with 36x36 version)
 
-crma      if(ldeg)then
       if(igrid.eq.1.or.igrid.eq.2)then
          diffa(2,1,j) = min(diffa(2,1,j),diffa(1,1,j))
       endif
@@ -1090,7 +943,6 @@ crma      if(ldeg)then
      &      ,diffa(1,2,j-1)*dtatm*cv(j-1)*cv(j-1)*rdsv(j-1)*rds(j)
      &      ,diffa(2,2,j-1)*dtatm*cv(j-1)*cv(j-1)*rdsv(j-1)*rds(j)
       enddo
-c     close(47)
 
 c scale height for specific humidity (Peixoto and Oort 1992)
       hatmbl(2) = 1800.
@@ -1103,22 +955,16 @@ c consts for saturation specific humidity (Bolton 1980)
       const4 = 17.67
       const5 = 243.5
 
-c threshold relative humidity
-c pbh now a user input
-c      rmax = 0.85
-
 c scaling for P-E forcing of atmosphere
 
-c     rpmesca = rsc*rho0/(dsc*usc*rhoair)
       rpmesca = rsc*rho0/(hatmbl(2)*usc*rhoair)
 
 c reconstruct surface wind field for bulk turbulent transfer and
 c zonally average near poles as for uatm for stability
 
-c LG: I thik the following is useless here 
+c LG: I thik the following is useless here
 c because tau hasn't been assigned yet
 c this piece of code is also in usurf.F after tau has been assigned
-c     open(55,file='usurf.dat')
 
       cd = 0.0013
 
@@ -1137,19 +983,16 @@ c     open(55,file='usurf.dat')
             endif
             usurf(i,j) = sqrt((sqrt(tv**2 + tv2**2))
      1          *rh0sc*dsc*usc*fsc/(rhoair*cd*scf))
-c    1          *rh0sc*dsc*usc*fsc/(rhoair*cd))
             tv3 = tv3 + usurf(i,j)
          enddo
-c          LG :  added wind_polar_avg that undoes the 
+c          LG :  added wind_polar_avg that undoes the
 c          zonal average of usurf near poles when eq 2
          if (par_wind_polar_avg.ne.2) then
             do i=1,imax
                if(j.le.2.or.j.ge.jmax-1)usurf(i,j) = tv3/imax
-c           write(55,*)usurf(i,j)
             enddo
          endif
       enddo
-c     close(55)
 
 
 c AY (06/01/04) : sea-ice parameter definitions
@@ -1176,10 +1019,7 @@ c representative ice density (kg/m**3)
       rhoice = 913.
       if (debug_init) print*,
      & 'representative ice density, rhoice =',rhoice
-c representative under-seaice water density (kg/m**3)
-c     rho0sea = 1035.
 c useful constant proportional to inverse timscale for surface freezing
-c     rsictscsf = ch_ice*u_tau_ice*rho0sea*cpo_ice
       rsictscsf = ch_ice*u_tau_ice*rho0*cpo_ice
       if (debug_init) print*,'rsictscsf = ',rsictscsf
       rsictscsf = dsc*dz(kmax)*rho0*cpo_ice/(17.5*86400.0)
@@ -1190,9 +1030,9 @@ c minimum average sea-ice thickness over a grid cell
      & 'minimum average sea-ice thickness, hmin =',hmin
       rhmin = 1.0/hmin
 c density ratios
-      rhooi = rho0/rhoice 
+      rhooi = rho0/rhoice
       if (debug_init) print*,'density ratios, rhooi =',rhooi
-      rhoio = rhoice/rho0 
+      rhoio = rhoice/rho0
 c melting factor
       rrholf = 1.0/(rhoice*hlf)
       if (debug_init) print*,'rrholf = ',rrholf
@@ -1341,22 +1181,22 @@ c conditionality to take care of "split Atlantic" (rma, 5/10/05)
       do j=j1cs,jmax
          do i=ips(j),ipf(j)
             if(k1(i,j).le.kmax)
-     1         area_pac1c = area_pac1c + asurf(j)  
+     1         area_pac1c = area_pac1c + asurf(j)
          enddo
 c conditionality to take care of "split Atlantic" (rma, 5/10/05)
          if(ias(j).gt.iaf(j)) then
             do i=ias(j),imax
                if(k1(i,j).le.kmax)
-     1         area_atl1c = area_atl1c + asurf(j)  
+     1         area_atl1c = area_atl1c + asurf(j)
             enddo
             do i=1,iaf(j)
                if(k1(i,j).le.kmax)
-     1         area_atl1c = area_atl1c + asurf(j)  
+     1         area_atl1c = area_atl1c + asurf(j)
             enddo
          else
             do i=ias(j),iaf(j)
                if(k1(i,j).le.kmax)
-     1         area_atl1c = area_atl1c + asurf(j)  
+     1         area_atl1c = area_atl1c + asurf(j)
             enddo
          endif
       enddo
@@ -1364,7 +1204,7 @@ c conditionality to take care of "split Atlantic" (rma, 5/10/05)
       endif
 
       if (debug_init) print*,
-     & natl1a, npac1a, natl1b, npac1b, natl1c, npac1c 
+     & natl1a, npac1a, natl1b, npac1b, natl1c, npac1c
       if (debug_init) print*,
      & 'natl1a, npac1a, natl1b, npac1b, natl1c, npac1c '
 
@@ -1542,17 +1382,17 @@ ccc equally by area in Pac/Atl resp.
       enddo
       do j=1,jmax
          do i=1,imax
-         if (bmask(i,j).eq.31) 
+         if (bmask(i,j).eq.31)
      1         pmeadj(i,j) = -1e6*extra1a/(natl1a*asurf(j))
-         if (bmask(i,j).eq.21) 
+         if (bmask(i,j).eq.21)
      1         pmeadj(i,j) = 1e6*extra1a/(npac1a*asurf(j))
-         if (bmask(i,j).eq.32) 
+         if (bmask(i,j).eq.32)
      1         pmeadj(i,j) = -1e6*extra1b/(natl1b*asurf(j))
-         if (bmask(i,j).eq.22) 
+         if (bmask(i,j).eq.22)
      1         pmeadj(i,j) = 1e6*extra1b/(npac1b*asurf(j))
-         if (bmask(i,j).eq.33) 
+         if (bmask(i,j).eq.33)
      1         pmeadj(i,j) = -1e6*extra1c/(natl1c*asurf(j))
-         if (bmask(i,j).eq.23) 
+         if (bmask(i,j).eq.23)
      1         pmeadj(i,j) = 1e6*extra1c/(npac1c*asurf(j))
          enddo
       enddo
@@ -1602,9 +1442,6 @@ c v2 seasonal. Annual averages
 c AY (09/01/04) : sea-ice properties excised
 c              haavg(l,i,j) = 0.
             enddo
-c AP (03/08/06) : precipitated atm. humidity
-c variable 'qdryavg' has been superseded by 'q_pa_avg'
-c            qdryavg(i,j) = 0.
 c Annual average fields for diagnostic of precipitation-adjusted
 c humidity (i.e., humidity after precipitation)
             q_pa_avg(i,j) = 0.
@@ -1616,7 +1453,6 @@ c humidity (i.e., humidity after precipitation)
             do l=3,4
                fx0avg(l,i,j)  = 0.
             enddo
-c           ticeavg(i,j) = 0.
 c SG > For ENTS
             palbavg(i,j)=0.
 c SG <
@@ -1626,11 +1462,6 @@ c SG <
 
 c AY (06/01/04) : reinstate runoff catchment data
       call readroff
-
-c AY (11/12/03) : calculated in surflux - excised from here
-c diagnostic calculation of global heat source
-c
-c     ghs = 0.
 
 c AY (02/02/05) : read in observational data filenames
       lentdata = lnsig1(tdatafile)
@@ -1664,7 +1495,7 @@ c pbh read in time varying orbital forcing
 c AR (14/10/08) -- input format changed to 5 column format (time first)
 c AR (14/10/08) -- also re-order time(!)
       if(orbit_radfor.eq."y".or.orbit_radfor.eq."Y") then
-        open(unit=729,file=indir_name(1:lenin)// 
+        open(unit=729,file=indir_name(1:lenin)//
      $ trim(filenameorbit),iostat=ios)
         do i=1,norbit
            read(729,*,iostat=ios)(orbitall_vect(i,n),n=1,5)
@@ -1697,7 +1528,7 @@ c ----------------------------------------
       else
         lnetin=.true.
       endif
-c      
+c
       if (debug_init) print*,'netCDF restart output ?'
       if (debug_init) print*,netout
       if ((netout.eq.'n').or.(netout.eq.'N')) then
@@ -1715,11 +1546,11 @@ c
       endif
 c
       if (debug_init) print*,'filename for netCDF restart input ?'
-      if (debug_init) print*,filenetin 
+      if (debug_init) print*,filenetin
 c
       if (debug_init) print*,
      & 'directory name for netCDF restart output ?'
-      if (debug_init) print*,dirnetout 
+      if (debug_init) print*,dirnetout
 c ----------------------------------------
 
       if (debug_init) print*,
@@ -1734,8 +1565,6 @@ c        But set up initial default time and date....
          iyear_rest=2000
          imonth_rest=1
          ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c        day_rest=2.0
          day_rest=yearlen / (nyear*ndta)
          if (debug_init) print*,'day_rest = ',day_rest
       else
@@ -1759,8 +1588,6 @@ c     But set up initial default time and date....
             iyear_rest=2000
             imonth_rest=1
             ioffset_rest=0
-c AY (15/09/04) : why is this 2.0?  Is this some default time-step?
-c           day_rest=2.0
             day_rest=yearlen / (nyear*ndta)
             if (debug_init) print*,'day_rest = ',day_rest
          endif
@@ -1780,8 +1607,6 @@ c ======================================================================
 
 c AY (08/12/03) : this section creates output files that have data
 c                 put into them throughout model runs (time series)
-
-c 110  format(4e14.6,2i5,1e14.6,2i5)
 
 c Average, etc. values of surface air temperature
       call check_unit(41,__LINE__,__FILE__)
@@ -1812,14 +1637,6 @@ c Average, etc. values of surface specific humidity
       call check_iostat(ios,__LINE__,__FILE__)
 
       if (dosc) then
-c Seasonal averages
-c
-c AY (30/04/04) : don't need to call this here anymore
-c
-c At present only N. hemisphere air temperature is output
-c     open(50,file=outdir_name(1:lenout)//lout//'.osc')
-c     write(50,'(a26)') '%time      N. hemisphere air temp'
-c     close(50)
       endif
 
 c AY (06/01/04) : count variable for output file numbers
@@ -1841,9 +1658,9 @@ c                 EMBM grid overlaps that of GOLDSTEIN, so am using
 c                 code from initialise_ocean.F here.
 c
 c AY (04/03/04) : Grid definitions extended to include third grid
-c                 position (= v points).  Original code contains 
-c                 bounds error in lat3 and boxedge3_lat arrays.  An 
-c                 if statement has been used here to stop this from 
+c                 position (= v points).  Original code contains
+c                 bounds error in lat3 and boxedge3_lat arrays.  An
+c                 if statement has been used here to stop this from
 c                 happening.
 
  313  format(i3,6f8.2)
@@ -1915,8 +1732,8 @@ c     The genie grid is offset from the goldstein grid by imax/4
 c     in the longitudinal direction.
 c
       do j=1,jmax
-         do i=1,imax         
-            if (k1(i,j).ge.90) then 
+         do i=1,imax
+            if (k1(i,j).ge.90) then
                ilandmask1(i,j)=1
                ilandmask2(i,j)=1
                ilandmask3(i,j)=1
@@ -1926,7 +1743,7 @@ c
                ilandmask3(i,j)=0
             end if
          end do
-      end do  
+      end do
       if (debug_init) print*
 
 c Output arguments
@@ -1963,7 +1780,7 @@ c SG <
          enddo
 
 c Set values of dummy variables destined for BIOGEM
-       
+
 c SG > Dummy variables for ENTS
        eb_rmax = real(rmax)
        eb_dphi = real(dphi)
@@ -2011,7 +1828,7 @@ c minimum (modern) orography
               read(77,*) d18o_orog_min(i,j)
             enddo
           enddo
-c "gradient" of orography wrt d180 
+c "gradient" of orography wrt d180
           open(77,file=trim(filenamed18ooroggrad))
           do i=1,imax
             do j=1,jmax
@@ -2068,7 +1885,7 @@ c land (no ice)
              endif
           enddo
        enddo
-               
+
 cmsw Read in where ice sheets are (0=ocean, 1=land, 2=ice sheet)
 cdjl If t_lice is on (i.e. time-varying ice-sheets) then file is big.
 
@@ -2100,7 +1917,7 @@ c ocean
 c ice sheets
               landice_slicemask_lic(i,j)=2.0
             else
-c land 
+c land
               landice_slicemask_lic(i,j)=1.0
             endif
           enddo
@@ -2164,19 +1981,19 @@ cmsw Create atmospheric albedo fields
          close(77)
 
 cmsw Read in and initialise monthly winds
-  
+
             open(35,file=indir_name(1:lenin)//'uvic_windx.silo')
             read(35,*)(((uatml1(1,i,j,l),i=1,imax),j=1,jmax)
      1           ,l=1,nmth+1)
             close(35)
-            
+
             open(35,file=indir_name(1:lenin)//'uvic_windy.silo')
             read(35,*)(((uatml1(2,i,j,l),i=1,imax),j=1,jmax)
      1           ,l=1,nmth+1)
             close(35)
-            
+
 cmsw read in wind speeds for use in radiation/evap calc.
-            
+
             open(35,file=indir_name(1:lenin)//'monthly_windspd.silo')
             read(35,*)(((usurfl1(i,j,l),i=1,imax),j=1,jmax)
      1           ,l=1,nmth+1)
@@ -2198,9 +2015,6 @@ cLG Step avoided if par_wind_polar_avg is 2
                            enddo
                            tv = tv / imax
                            tv1= tv1/ imax
-c     tv = tv * imax_real
-c     tv1= tv1 * imax_real
-                           
                            do i=1,imax
                               uatml1(l,i,j,m) = tv
                               usurfl1(i,j,m) = tv1
@@ -2210,7 +2024,7 @@ c     tv1= tv1 * imax_real
                   enddo
                enddo
             endif
-            
+
 c remove zonal average of v else fail mass conservation (may not be
 c disastrous).
 cLG Step avoided if par_wind_polar_avg is 2
@@ -2274,7 +2088,7 @@ cmsw Define lambda i.e. atm timestep/pptn timescale converted to secs
       if (debug_init) print*,'timepptn=',timepptn
       lambdapptn = min(1.,gn_daysperyear/(real(nyear)*timepptn))
       if (debug_init) print*,'lambdapptn=',lambdapptn
-cmsw typical land depth scale 
+cmsw typical land depth scale
       hld = 1.
 cmsw typical land heat capacity (J/m3/K)
       cld = 3.3e5
@@ -2308,7 +2122,7 @@ c     has been made
          enddo
       enddo
 
-cghc scheme to allocate land runoff: 0 - bucket overflow (default); 1 - Leaky bucket (Meissner et al '03); 2 - soil moisture 'half-life'      
+cghc scheme to allocate land runoff: 0 - bucket overflow (default); 1 - Leaky bucket (Meissner et al '03); 2 - soil moisture 'half-life'
       if (debug_init) print*,'runoff scheme ',par_runoff_scheme
       if (debug_init) print*,
      & 'Clapp-Hornberger exponent  (for runoff scheme = 1) = ',
@@ -2316,12 +2130,10 @@ cghc scheme to allocate land runoff: 0 - bucket overflow (default); 1 - Leaky bu
       if (debug_init) print*,
      & 'soil moisture half-life (for runoff scheme = 2) = ',
      1 par_runoff_tau
-     
-!      conv_yr_s=3.15576E7
+
       if (debug_init) print*,'syr = ',syr
-      
+
       runoff_factor_1 = 2*par_runoff_b+3
-      ! dtatm*ndta*tsc = timestep in seconds
       runoff_factor_2 = 1-exp(-0.693*dtatm*ndta*tsc/
      1                  (par_runoff_tau*syr/12.0))
       if (debug_init) print*,'runoff factor 1 = ',runoff_factor_1

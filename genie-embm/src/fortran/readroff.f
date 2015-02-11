@@ -1,12 +1,12 @@
-* 
-* code fragment to define runoff matrix for embm version of 
+*
+* code fragment to define runoff matrix for embm version of
 * c-goldstein (goldberg?) last change  30/4/02
-* 
+*
 * The dry points in the k1 file now define a compass direction
 * for the runoff from that point/cell. By following this direction
-* to the sea (where k1.le.kmax) we build up the 
+* to the sea (where k1.le.kmax) we build up the
 * matrix (iroff(i,j),jroff(i,j))
-* which defines where to put the runoff from point (i,j) 
+* which defines where to put the runoff from point (i,j)
 *
       subroutine readroff
 
@@ -14,7 +14,7 @@ c AY (06/01/04) : common block reference updated
 #include "embm.cmn"
 
       integer i, j, loop, iroe, iros, irow, iron
-    
+
       parameter (iroe=91, iros=92, irow=93, iron=94)
 
       if (debug_init) print*,'Calculating runoff routing'
@@ -54,8 +54,6 @@ c avoid inf. loops
                   stop 'problem calculating runoff'
                endif
             enddo
-c           print*,'runoff from (',i,j,') to ('
-c    &            ,iroff(i,j),jroff(i,j),')'
          enddo
       enddo
 

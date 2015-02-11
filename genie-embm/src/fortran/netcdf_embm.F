@@ -5,7 +5,7 @@
 * main changes are :
 *
 * - array bounds issues addressed in flip_both2 routine
-* - GOLDSTEIN's -260E to +100E longitude grid restored 
+* - GOLDSTEIN's -260E to +100E longitude grid restored
 * - ancillary longitude, latitude and depth arrays calculated in
 *   module initialisation routines, not netCDF routines
 * - new preparation routines for two dimensional fields
@@ -26,7 +26,7 @@
       SUBROUTINE INI_NETCDF_EMBM(istep,imode)
 c
 #include "embm.cmn"
-      include 'netcdf_grid.cmn' 
+      include 'netcdf_grid.cmn'
 c
       integer istep,imode
 c
@@ -46,12 +46,9 @@ c                 reasons (i.e. 365.2499 vs. 365.25)
       imonth=int((day-iyear*yearlen)/(yearlen/12.))+1
 c AY (24/03/04) : rtime added for netCDF file time
       rtime=iyear + ((day-iyear*yearlen))/yearlen
-      if (debug_loop) 
+      if (debug_loop)
      & print*,'istep',istep,'day',day,'iyear',iyear,'imonth',imonth,
      :     'rtime',rtime
-c AY (23/03/04) : removing year standardisation to 2000
-c     iyear=iyear+2000
-c
 c AY (19/03/04) : lout added to argument list to add identifier to
 c                 netCDF filenames
       call ini_netcdf_embm1(outdir_name,lenout,lout,
@@ -121,7 +118,6 @@ c
      :                  dimname,varname,attdimname,
      :                  attvarname)
 c
-ccc write(cyear,'(i10.10)')iyear
 c AY (19/03/04) : run identifier added to netCDF file names
       if (imode.eq.1) then
          fname1=dir_name(1:ilen)//'embm_'//runid(1:3)//'_rs_'
@@ -132,8 +128,7 @@ c AY (19/03/04) : run identifier added to netCDF file names
       end if
 c
       ifname1=lnsig(fname1)
-ccc print*,' Opening ',fname1(1:ifname1)
-c 
+c
       call ininc(fname1(1:ifname1),
      :           nmaxdims,ndim,nvar,
      :           natts,nattsvar,
@@ -165,8 +160,6 @@ c     Latitude coordinates (tracer, u-point, v-point)
          ycoord(j)=alat2(j)
       end do
       call writedim(nco(imode),iddimo(5,imode),ycoord)
-c AY (24/03/04) : alat3 is only jgg items long
-c     do j=1,jgg+1
       do j=1,jgg
          ycoord(j)=alat3(j)
       end do
@@ -208,7 +201,7 @@ c
 c
 c     This sets up a file similar to .pc files
 c
-      ndim=0 
+      ndim=0
       nvar=0
 c
       ndim=ndim+1
@@ -285,8 +278,6 @@ c
       attvarname(2,1,nvar)=
      :   'Air temperature'
       attvarname(1,2,nvar)='units'
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     attvarname(2,2,nvar)='K'
       attvarname(2,2,nvar)='C'
 c
       nvar=nvar+1
@@ -437,17 +428,15 @@ c
 
       subroutine write_netcdf_embm(imax,jmax,k1,
      :                        tq,
-c qdry
      :                        q_pa, rq_pa,
      :                        fx0flux,fwflux,
      :                        work,
      :                        maxi,maxj,imode)
-      implicit none 
+      implicit none
       include 'netcdf_embm.cmn'
 
       integer imax,jmax,maxi,maxj,imode,k1(0:maxi+1,0:maxj+1)
       real tq(2,maxi,maxj),
-c qdry(maxi,maxj)
      &     q_pa(maxi,maxj), rq_pa(maxi,maxj),
      :     fx0flux(4,maxi,maxj),fwflux(2,maxi,maxj)
       real work((maxi+1)*(maxj+1))
@@ -458,11 +447,6 @@ c
 c     Temperature (i.e. final argument = 1)
       call prep_netcdf_embm(tq,imax,jmax,work,k1,
      :                  1.0,7,2,1)
-c AY (07/10/04) : hacked out to return centigrade temperatures
-c     Correct temperature to Kelvin
-c     do i=1,((maxi+1)*(maxj+1))
-c        if (work(i).gt.-99999.0) work(i) = work(i) + 273.15
-c     enddo
       call writevar(nco(imode),idvaro(1,imode),work)
 c
 c     Specific humidity (i.e. final argument = 2)
@@ -667,9 +651,7 @@ c
 c
       integer imode
 c
-ccc print*,' calling end_netcdf_embm for file = ',imode
       call closenc(nco(imode))
-ccc print*,' called end_netcdf_embm for file = ',imode
 c
       return
       end

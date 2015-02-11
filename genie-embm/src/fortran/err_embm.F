@@ -72,7 +72,7 @@ c Observational data, average and variance
      $     ,varname,missing,lon,lat,obsdata)
 
 c calculate weights based on variance of data NB not real spatial but
-c computational spatial 
+c computational spatial
       obsdata_av  = 0.
       obsdata_var = 0.
       do j=1,jmax
@@ -93,11 +93,6 @@ c calculate the rms error
           enddo
       enddo
       err_embm = sqrt(err/(imax*jmax))
-
-c print error value
-c print 400,tracerid,err_embm
-c 400   format (' err_embm: weighted r.m.s. model-data error (',i1,') ',
-c     &     g24.16)
 
       end function err_embm
 
@@ -551,7 +546,7 @@ c     vertically interpolate at point with shortest distance from target point
          print *, real(n_int)/real(n_int+n_ext),
      &        real(n_ext)/real(n_int+n_ext),
      &        distmean*180./pi,distmax*180./pi
-      
+
 ! Clean up
          deallocate(sinlat_obs,stat=status)
          if (status /= 0) call die("Could not allocate memory")

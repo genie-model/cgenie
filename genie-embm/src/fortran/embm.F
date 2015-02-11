@@ -3,15 +3,15 @@
 * ======================================================================
 *
 * mains.F main program for thermocline equation model goldstein
-* variable depth 3/5/95 
+* variable depth 3/5/95
 * extra outputs for global version 19/4/00
 * #ifdef's added so that mains.f -> mains.F 6/5/2
 * #ifdef's added for BioGeM 16/09/03 ajr
 * #ifdefs added for land 25/09/03 pph
-* 
+*
 * AY (04/12/03) : restarting conversion of c-GOLDSTEIN into
 *                 GOLDSTEIN + EMBM + sea-ice for genie.f
-* 
+*
 *                 this code takes pieces from mains.F
 
 c nre time to be added to argument list, but type defined in embm.cmn
@@ -66,9 +66,6 @@ c Local variables
 c AY (03/05/04) : time-series variables
       real sum1(4), sum2(4)
       integer isum1(4), isum2(4)
-
-c AY (09/01/04) : testing variables
-c      real avgFX
 
 c AY (09/03/04) : "time" variables for Dan
 #ifdef clock
@@ -126,7 +123,7 @@ c	          using lines scavanged from old surflux.F
 c reset internal atmospheric wind fields
             uatm(1,i,j) = lowestlu2_atm(i,j)/usc
             uatm(2,i,j) = lowestlv3_atm(i,j)/usc
-   
+
 c *** Heat flux ***
 
 c net heat flux into atmosphere
@@ -147,7 +144,6 @@ c	          that it's not the reason for the persistent difference
 c	          between c-GOLDSTEIN and GENIE - precip is now handled
 c	          by an explicit change to tq and tq1 in SURFLUX.
 c AY (02/02/04) : above change reversed (then reversed again!)
-c           fwfxneta = evap_atm(i,j) + pptn_atm(i,j)
             fwfxneta = evap_atm(i,j)
 
 c AY (23/07/04) : convert freshwater fluxes from mm/s to m/s
@@ -190,11 +186,9 @@ c ----------------------------------------------------------------------
 
 c EMBM update 1-layer atmosphere
 
-c AY (04/12/03) : remove looping here (happens in genie.f)
-c        do natm = 1,ndta
 #ifdef dimpa
       call tstipa
-#else 
+#else
       call tstepa
 #endif
 c
@@ -235,14 +229,9 @@ c     has been made
          if (debug_loop) call diaga
          if (debug_loop) print*
       endif
-c        enddo
-        
+
 c Atmosphere diagnostics and output
 c ----------------------------------------------------------------------
-
-c AY (16/12/03) : required in diagosc (previously from mains.F)
-c                 this should really be passed to relevant routines
-c     t = ((istep*dt(kmax))/real(ndta)) + t0
 
 c AY (05/10/04) : netCDF output added
       if (lnetout) then
@@ -269,7 +258,7 @@ c write EMBM restart file
          if (debug_loop) print*
       endif
 
-c AY (29/04/04) : format statements for time-series files of average 
+c AY (29/04/04) : format statements for time-series files of average
 c                 air temperature and specific humidity
  110  format(4e15.6,2i5,1e15.6,2i5)
 
@@ -293,11 +282,11 @@ c                 of them (need f90 compilation for this)
 
          call diag3(sum1,sum2,isum1,isum2)
 
-         if (debug_loop) 
+         if (debug_loop)
      & write(41,110,iostat=ios)t,sum1(1),sum1(2),sum1(3),isum1(1),
      +        isum1(2),sum1(4),isum1(3),isum1(4)
          call check_iostat(ios,__LINE__,__FILE__)
-         if (debug_loop) 
+         if (debug_loop)
      & write(42,110,iostat=ios)t,sum2(1),sum2(2),sum2(3),isum2(1),
      +        isum2(2),sum2(4),isum2(3),isum2(4)
          call check_iostat(ios,__LINE__,__FILE__)
@@ -313,7 +302,6 @@ c                 of them (need f90 compilation for this)
       if (dosc) then
 c average the last nyear steps in every ianav steps (if ianav>nyear)
       itv = mod(istep+(nyear*ndta)-1,(ianav*ndta))
-c      if(itv.lt.(nyear*ndta))then
       if(itv.lt.(nyear*ndta) .and. (mod(istep,ndta).lt.1))then
          ext=conv_embm(mod(iav,10))
          if(istep.ge.(nyear*ndta).and.itv.eq.(nyear*ndta)-1)then
@@ -323,7 +311,6 @@ c      if(itv.lt.(nyear*ndta))then
          endif
          if (debug_loop) call diagosc_embm(istep, iout, ext, fx0flux, fwflux,
      :     wateratm)
-c         endif
       endif
       endif
 
@@ -340,7 +327,7 @@ c also use dummy field for qdry for rq_pa
          qdrydum(:,:)=0.
          call write_netcdf_embm(imax, jmax, k1,
      :        tq, qdrydum, qdrydum,
-     :        fx0flux, fwflux, 
+     :        fx0flux, fwflux,
      :        work,
      :        maxi, maxj, 1)
 c
@@ -417,5 +404,3 @@ c           Wind stress y components [-> ocean, surface fluxes]
         conv_embm=a//b//c
       endif
       end
-
-

@@ -3,7 +3,7 @@
 
       subroutine inm_netcdf_embm
 
-c     This module reads netcdf restarts for goldstein sea-ice      
+c     This module reads netcdf restarts for goldstein sea-ice
 
 #include "embm.cmn"
       include 'netcdf.inc'
@@ -19,7 +19,7 @@ c     For netcdf...
       integer ncid
       logical lexist
       character*200 fnamein
-      
+
       real timestep
 
 c AY (06/10/04) : extra variables for printing out average model properties
@@ -27,11 +27,8 @@ c AY (06/10/04) : extra variables for printing out average model properties
       real    tmp_val(2)
       real    area
 
-c      timestep=24.0*60.0*60.0*yearlen/real(nyear)
       timestep=24.0*60.0*60.0*yearlen/real(nyear*ndta)
 
-c AY (06/10/04) : append input filename to input directory name
-c      fnamein=trim(indir_name(1:lenin))//trim(filenetin)
       fnamein=trim(filenetin)
 
          ifail=0
@@ -92,7 +89,7 @@ c AY (06/10/04) : copied from inm_embm.f
 
 c     AY (08/03/04) : write out averages for restart checks
       write(*,220) 'Avg T','Avg Q'
-c     
+c
 c     Clear temporary variables
       do l=1,2
          tmp_val(l) = 0
@@ -110,8 +107,6 @@ c     Sum layer state variables and flow field
       enddo
 c
 c     Print average values out
-crma      write(*,210) tmp_val(1)/(imax*jmax),
-crma     +     (tmp_val(2)/(imax*jmax))*1000.
       write(*,210) tmp_val(1)/area,
      +     (tmp_val(2)/area)*1000.
 

@@ -1,6 +1,6 @@
 *
-* var.cmn common block containing variables update 15/2/2       
-* EMBM variables added 29/8/2 
+* var.cmn common block containing variables update 15/2/2
+* EMBM variables added 29/8/2
 * v2 seasonality variables nyear, maxnyr added 3/6/3
 *
 #ifndef GOLDSTEINNLONS
@@ -23,7 +23,6 @@ c     integer mpi, mpxi, mpxj
      1 ,ku(2,maxi,maxj),mk(maxi+1,maxj),nyear
       common /embm_invars/imax,jmax,kmax,lmax,ntot,intot,k1,ku,mk,nyear
 
-crma      real dt(maxk),dphi,dphi2,ds,ds2,dz(maxk)
       real dt(maxk),phi0,dphi,ds(maxj),dsv(1:maxj-1),rds2(2:maxj-1),
      1 dz(maxk),time,s(0:maxj),c(0:maxj),dzu(2,maxk)
      2 ,tau(2,maxi,maxj),drag(2,maxi+1,maxj),dztau(2,maxi,maxj)
@@ -33,7 +32,6 @@ crma      real dt(maxk),dphi,dphi2,ds,ds2,dz(maxk)
      6 cv(0:maxj),dza(maxk),dztav(2,maxi,maxj),ez0
      9 ,sda1,sdomg,dzz,tau0(maxi,maxj),dztav0(maxi,maxj)
      1 ,tau1(maxi,maxj),dztav1(maxi,maxj),tsa0(maxj),t0
-crma      common /embm_vars/dt,dphi,dphi2,ds,ds2,dz
       common /embm_vars/dt,phi0,dphi,ds,dsv,rds2,dz
      1 ,time,s,c,dzu
      2 ,tau,drag,dztau
@@ -43,9 +41,6 @@ crma      common /embm_vars/dt,dphi,dphi2,ds,ds2,dz
      6 ,sda1,sdomg,dzz,tau0,dztav0
      7 ,tau1,dztav1,tsa0,t0
 c reciprocal and other variables to speed up fortran
-crma      real rc(0:maxj),rcv(0:maxj),rdphi,rds,cv2(0:maxj),rc2(0:maxj)
-crma     1 ,rtv(maxi,maxj),rtv3(maxi,maxj),rdz(maxk),rdza(maxk)
-crma      common /embm_recips/rc,rcv,rdphi,rds,cv2,rc2,rtv,rtv3,rdz,rdza
       real rc(0:maxj),rcv(1:maxj-1),rdphi,rds(maxj),rdsv(1:maxj-1)
      1 ,cv2(1:maxj-1)
      2 ,rc2(0:maxj),rtv(maxi,maxj),rtv3(maxi,maxj),rdz(maxk),rdza(maxk)
@@ -75,7 +70,7 @@ c RMA (30/09/05) : grid cell area
       real asurf(maxj)
       common /sic_area/asurf
 
-c EMBM 
+c EMBM
       integer igrid, ndta
       common /embm_inebm/igrid, ndta
       real cd,tq(2,maxi,maxj),tq1(2,maxi,maxj)
@@ -125,9 +120,6 @@ c arrays for embm
      3 ,fxlw,diffa,betam,betaz,hatmbl,ca
      4 ,qb,qbsic,fx0sic,fx0neto
      5 ,fwfxneto,evapsic,tsfreez
-c      real, allocatable:: embm_forc(:,:)
-cc      real embm_forc(4,10)
-c      common /embm_forcing/embm_forc
 c forcing stuff
        logical useforc
        common /embm_useforc/useforc
@@ -225,14 +217,6 @@ c AY (23/07/04) : variables to convert FW fluxes mm/s <--> m/s
       common /ebmfwconv/m2mm,mm2m
 
 
-c AY (22/03/04) : GENIE grid variables required in embm.F for
-c                 netCDF operations
-c AY (05/10/04) : moved from here to netcdf_grid.cmn
-c     real nclon1(maxi),nclat1(maxj),
-c    :     nclon2(maxi),nclat2(maxj),
-c    :     nclon3(maxi),nclat3(maxj)
-c     common /embm_grid/nclon1,nclat1,nclon2,nclat2,nclon3,nclat3
-
 c AY (05/10/04) : copying Dan's GOLDSTEIN changes
 c     Added by DJL for netcdf restarts
       character filenetin*200,dirnetout*200,rstdir_name*200
@@ -270,11 +254,11 @@ c SG (16/02/2K7) : added orbital parameters for albedo calculation
      &                  t_orbit,norbit,orbitsteps,
      &                  filenameorbit
 
-c pbh co2 times series 
+c pbh co2 times series
       character*200 filenameco2
       integer t_co2,nco2,co2steps
       real co2_vect(en_ntimes_max)
-      
+
       common/co2_vary/
      &                  co2_vect,
      &                  t_co2,nco2,co2steps,
@@ -368,7 +352,7 @@ c ghc ents runoff scheme
      &       runoff_factor_1,runoff_factor_2,par_runoff_scheme
 
 c LG: added option to get get rid of the conditional zonal averaging
-c     of winds near the poles     
+c     of winds near the poles
       integer par_wind_polar_avg
       integer unify_winds
       common /embm_wind_par/par_wind_polar_avg,unify_winds

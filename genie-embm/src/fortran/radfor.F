@@ -9,7 +9,7 @@ c oscsob = sin of obliquity
 c osce = eccentricity
 c oscgam = ??
 c oscday = 0.5 * sunlit (angular) fraction of day, ie 1/2 length of day
-c solfor = solar forcing = scaling factor * integral of cosine of solar 
+c solfor = solar forcing = scaling factor * integral of cosine of solar
 c          elevation during daylight
 c
 
@@ -21,7 +21,7 @@ c
 
       integer istep, j
       real rpi, osce, oscsob, oscgam, tv, osce1, osce2, osce3, osce4
-      real oscryr, osct, oscv, oscsolf, oscsind, oscss, osccc, osctt 
+      real oscryr, osct, oscv, oscsolf, oscsind, oscss, osccc, osctt
       real oscday
 
 c SG (16/02/2K7) orbital variables
@@ -32,10 +32,9 @@ c SG (16/02/2K7) orbital variables
 
       real solavg(maxj)
       real alboavg(maxj)
-      
+
       logical flag_ents
 
-c      parameter(osce=0.0167, oscsob=0.397789, oscgam=1.352631)
 c SG (16/02/2K7) : Changed static declaration of osce,oscsob
 c & oscgam.
       osce=0.0167
@@ -44,9 +43,6 @@ c & oscgam.
 c pbh initialise osctau0 for angular time of year.
 c value of osctau0=-0.5 (=> osctau1=0.0) reproduces old orbital calculation
       osctau0=-0.5
-
-c pbh this if statement removed so that transient orbital forcing can be used without ents
-c      if ((ents_radfor.eq.'y').or.(ents_radfor.eq.'Y')) then
 
       if ((orbit_radfor.eq.'y').or.(orbit_radfor.eq.'Y')) then
 
@@ -80,7 +76,7 @@ c      if ((ents_radfor.eq.'y').or.(ents_radfor.eq.'Y')) then
               oscgam=mod((1-time_frac)*(orbitpre_vect(time_1)+2*pi)+
      &                time_frac*(orbitpre_vect(time_2)),2*pi)
             endif
-  
+
           else
           oscgam=(1-time_frac)*orbitpre_vect(time_1)+
      &                time_frac*orbitpre_vect(time_2)
@@ -105,7 +101,7 @@ c      if ((ents_radfor.eq.'y').or.(ents_radfor.eq.'Y')) then
      &                time_frac*orbittau_vect(time_2)
           endif
 
-        else 
+        else
           if (time_frac.ne.0) print*,'Time out of bounds for orbit'
           osce=orbitecc_vect(norbit)
           oscsob=orbitobl_vect(norbit)
@@ -123,34 +119,29 @@ c      if ((ents_radfor.eq.'y').or.(ents_radfor.eq.'Y')) then
 
       endif
       endif
-c pbh conditionality on ents_radfor has been removed
-c      endif
 
 c SG < end of orbit modifications
-
-c     open(1,file='oscsun.dat')
 
       rpi = 1.0/pi
 
       tv = osce*osce
       osce1 = osce * (2.0 - 0.25*tv)
-      osce2 = 1.25 * tv 
+      osce2 = 1.25 * tv
       osce3 = osce*tv * 13./12.
-      osce4 = ((1.0 + 0.5*tv)/(1.0 - tv))**2 
+      osce4 = ((1.0 + 0.5*tv)/(1.0 - tv))**2
       oscryr = 2.0*pi/float(nyear)
 
 c pbh
       osctau1 = osctau0 + 0.5
- 
+
       do istep=1,nyear
 
 c pbh Dan's offset for angular time of year
-c         osct = float(mod(istep-1,nyear)+1)*oscryr
-         osct = (float(mod(istep-1,nyear)+1) - 
+         osct = (float(mod(istep-1,nyear)+1) -
      &          (nyear*osctau1/gn_daysperyear))*oscryr
 
          do j=1,jmax
-            oscv = osct + osce1*sin(osct) + osce2*sin(2.0*osct) 
+            oscv = osct + osce1*sin(osct) + osce2*sin(2.0*osct)
      &           + osce3*sin(3.0*osct)
             oscsolf = osce4*(1.0 + osce*cos(oscv))**2
             oscsind = oscsob*sin(oscv-oscgam)
@@ -158,7 +149,7 @@ c         osct = float(mod(istep-1,nyear)+1)*oscryr
             oscss = oscsind * s(j)
             osccc = sqrt(1.0 - oscsind**2) * c(j)
             osctt = min(1.0,max(-1.0,oscss/osccc))
-            
+
             oscday = acos(- osctt)
 
             solfor(j,istep) = solconst*oscsolf*rpi*
@@ -168,7 +159,6 @@ c SG > ENTS albedo scheme mod
             call ocean_alb(oscss,osccc,oscday,j,istep)
          endif
 c SG <
-c           write(1,'(e15.5)')solfor(j,istep)
          enddo
       enddo
 
@@ -200,23 +190,4 @@ c SG <
       enddo
       endif
 
-c     close(1)
-
       end
-
-
-c      subroutine update_radfor(genie_solconst)
-c
-c#include "embm.cmn"
-c
-c      real(rk_in) genie_solconst
-cc
-c      integer istep, j
-cc     
-c      do j=1,jmax
-c         do istep=1,nyear
-c            solfor(j,istep) = (genie_solconst/solconst)*solfor(j,istep)
-c         enddo
-c      enddo
-c
-c      end

@@ -4,7 +4,7 @@
 *
 * AY (09/12/03) : restarting conversion of c-GOLDSTEIN into
 *                 GOLDSTEIN + EMBM + sea-ice + surflux for genie.f
-* 
+*
 *                 this code takes pieces from mains.F, gseto.F,
 *                 gseta.F and surflux.F
 *
@@ -13,8 +13,8 @@
 *           thus eg fxsho = sensible heat flux into (???) ocean
 *           dthsic,dtareasic are rates of change (thermodynamic only) of
 *           sea-ice height and area
-* 
-* Note evap array passed to the ocean is the NET evaporation, NOT the 
+*
+* Note evap array passed to the ocean is the NET evaporation, NOT the
 * evaporation from the ocean alone, hence renamed
 c AY (10/12/03) : output fluxes now dimensional (ie SI)
 !
@@ -25,7 +25,7 @@ c AY (10/12/03) : output fluxes now dimensional (ie SI)
 c
 * Notes for coupling; for IGCM pptn and atm state variables atemp, ashum
 * should become unalterable input fields. Ouput heat flux to atm includes
-* both surface fluxes like surface LW (same for IGCM) and interior fluxes 
+* both surface fluxes like surface LW (same for IGCM) and interior fluxes
 * like planetary OLWR (not needed for IGCM. Net fluxes are only diagnostic,
 * however in componentised, GENIE version.
 *
@@ -36,7 +36,7 @@ c
 * AY (12/07/05) : removed surplus input argument to subroutine
 *
 * RM (16/05/05) : edited for variable sin(lat) resolution (from NRE, 6/12/04)
-* 
+*
 * JDA 23/07/08 : adding in generalised (annual) time-varying forcing and
 * "new" sensitivity method based on olr_adj
 *
@@ -115,8 +115,7 @@ c Declare variables passed into this subroutine
      :     evap_atm(imax,jmax),pptn_atm(imax,jmax),
      :     dthsic(imax,jmax),dtareasic(imax,jmax),
      :     co2_out(imax,jmax),ch4_out(imax,jmax),n2o_out(imax,jmax)
-c     :     precip_rok(imax,jmax)
-c 
+c
       REAL,INTENT(out),DIMENSION(imax,jmax) :: atmos_lowestlh_atm
 
 c Dummy variables to be passed to/from BIOGEM via genie.F
@@ -124,7 +123,7 @@ c Dummy variables to be passed to/from BIOGEM via genie.F
       real go_fxsw(imax,jmax)
       integer,intent(in)::dum_n_atm
       real,intent(in),dimension(dum_n_atm,imax,jmax)::dum_sfcatm
-      
+
       real,intent(inout)::surf_orog_atm(imax,jmax)
 
 c land ice sheet mask
@@ -145,7 +144,7 @@ c land temperature
 c land moisture content
       real,dimension(maxi,maxj),intent(inout)::land_moisture_lnd
 
-c SG > Dummy variables passed to/from ENTS      
+c SG > Dummy variables passed to/from ENTS
       real orog_exact(imax,jmax)
       real lice_exact(imax,jmax)
 
@@ -154,7 +153,7 @@ c pbh for interpolation between time series d18o input
       real surf_orog_atm_previous(imax,jmax)
 
 c pbh for ice sheet melt runoff
-      real ice_runoff(imax,jmax) 
+      real ice_runoff(imax,jmax)
 
 c Variables required for/from ENTS
       real beta,tolld
@@ -164,10 +163,10 @@ c Variables required for/from ENTS
       real qsalt
       real fxswsica
       real,intent(in)::eb_ca(imax,jmax)
-      
+
       integer itld,devapcheck,itldmax
       parameter( itldmax = 21, tolld = 1e-3)
-      
+
       real deltq,talt,lmd
 
 c pbh for orography
@@ -187,11 +186,9 @@ c Existing declarations
 
       real runoff(imax,jmax)
       real ce,ch,cesic,chsic,rq,tv0,tv,tv1,tv2,tv3,tol
-c      real tv4,tv5
       real albsic, fxswsic , fxlwsic, fxsensic , fx0oa, fx0sica
       real qsatsic, zeroc, alw, ticold, cfxsensic, salt, dho, dhsic
       real tieqn, dtieq
-c      real dhadj,set0
 
       real atm_latent, atm_sensible, atm_netsol, atm_netlong
       real atm_latenti, atm_sensiblei, atm_netsoli, atm_netlongi
@@ -217,7 +214,6 @@ c AY (05/02/04) : variables for surface flux output routine
       character ext*3, conv_surf*3
 
 c AY (22/10/04) : edit to sea-ice convergence tolerance
-c     parameter(itice = 21 , tol=1e-10)
       parameter(itice = 21)
 
 c JDA adding some variables relating to the forcing
@@ -273,26 +269,8 @@ c pbh initialise ice sheet meltwater
       if (flag_ents) then
 c SG > istot defined currently as zero
 c N.B. RESTARTS WILL NOT WORK!!!
-c       imth=mod(istep+istot-1,nyear)+1
        imth=mod(istep+0-1,nyear)+1
 
-c If we have ents running, then calculate the 
-c   atmospheric co2 concentration, orog, and icemask  if they're varying.
-c      if (t_co2.eq.1) then
-c        time_1=int(istot/real(co2steps))+1
-c        time_2=time_1+1
-c        time_frac=(mod(istot,co2steps))/real(co2steps)
-c        if (time_2.le.nco2) then
-c          co2_exact=(1-time_frac)*co2_vect(time_1)+
-c     &                time_frac*co2_vect(time_2)
-c        else 
-c          if (time_frac.ne.0) print*,'Time out of bounds for co2'
-c          co2_exact=co2_vect(nco2)
-c        endif
-c        if (mod(istot,10000).eq.0) then
-c          print*,'co2:',istot,time_1,time_frac,co2_exact
-c        endif
-c      endif
       if (t_orog.eq.1) then
         time_1=int(istot/real(orogsteps))+1
         time_2=time_1+1
@@ -428,7 +406,7 @@ c LG don't use ents winds when winds are unified
       enddo
 
 c AY (11/12/03) : code below taken from gseta.F
-      cd = 0.0013 
+      cd = 0.0013
       if (unify_winds .eq. 1 .or..not.flag_ents) then
          do j=1,jmax
             tv3 = 0.
@@ -448,7 +426,7 @@ c LG: use embm winds even with ents (unify_winds=1
      1              *rh0sc*dsc*usc*fsc/(rhoair*cd*scf))
                tv3 = tv3 + usurf(i,j)
             enddo
-c LG :  added wind_polar_avg that undoes the 
+c LG :  added wind_polar_avg that undoes the
 c zonal average of usurf near poles when eq 2
             if (par_wind_polar_avg.ne.2) then
                do i=1,imax
@@ -463,18 +441,6 @@ c LG: and now replace usufl with usurf for the rest of the calculations
             enddo
          enddo
       endif
-c LG: this is to output calculated surface winds if needed      
-c$$$      write(imthstring,'(i50)') imth
-c$$$      lenstring = lnsig1(imthstring)
-c$$$      open(45,file='usurf_'//imthstring(1:lenstring)//'.dat')
-c$$$      do j=1,jmax
-c$$$         do i=1,imax
-c$$$            write(45,*)usurf(i,j)
-c$$$         enddo
-c$$$      enddo
-c$$$      close(45)
-c$$$
-c$$$
 
 c     WHAT IS THIS FOR ... ?
       do j=1,jmax
@@ -501,7 +467,7 @@ c     *** 1 ***
       if ((atchem_radfor.eq.'y').or.(atchem_radfor.eq.'Y')) then
          do j=1,jmax
             do i=1,imax
-               if (dum_sfcatm(3,i,j).lt.(co20/1000.0)) then 
+               if (dum_sfcatm(3,i,j).lt.(co20/1000.0)) then
                   co2(i,j) = co20
                else
                   co2(i,j) = dum_sfcatm(3,i,j)
@@ -528,8 +494,7 @@ c     JDA reading forcings (if appropriate)
             vol=0.
             open(25,file=rstdir_name(1:lenrst)//forcname)
             read(25,*)header
-c     if (io .eq. 0) then
-c     file exists, will read contents and use                      
+c     file exists, will read contents and use
             j=0
             do while (j.lt.my_year)
                read(25,*,iostat=io)i,co2lev,vol,aero,solar
@@ -545,7 +510,7 @@ c     now set forcings
             co2(:,:)=co2lev*1.E-6
 c pbh update global values
             co2_out(:,:)=co2(:,:)
-c     
+c
             call radfor(0,real(nyear),real((solar-1368.)*solfac+1368.
      &           +(aero*aerofac+vol*volfac)*4./0.7),flag_ents)
             close(25)
@@ -606,14 +571,6 @@ c AY (09/03/04) : Write out current time (days, years, etc.) if required
 
 #endif
 
-c pbh istot defined at start of routine
-c AY (15/01/04) : forgot about istot
-c nre this must be reinstated to give correct continuation eg from time
-c swop these lines as soon as time is available.
-c     time = timein
-c     istot = nint(time/dt(kmax)) + 1
-c      istot = istep
-
 c initialize integrated runoff (and other arrays)
       do j=1,jmax
          do i=1,imax
@@ -666,20 +623,15 @@ c JDA make global mean temp for use in sensitivity adjustment
            enddo
       enddo
       meantemp=meantemp/real(jmax*imax)
-c      print *,'mean temp and parameters'
-c      print *,meantemp,t_eqm,olr_adj,aerofac,volfac,solfac
-c      stop
 c JDA end
 
 ccc main i,j loop to compute surface flux terms
 c nre note for IGCM ; the first section defines P, OLWR, rel hum. CO2, all
 c irrelevant to IGCM
 
-c      do j=1,jmax
-c         do i=1,imax
       do i=1,imax
          do j=1,jmax
-            
+
             if (flag_ents) then
 c SG > Adding mods for ENTS
 c Optional effect of altitude in ENTS.
@@ -710,7 +662,7 @@ c pbh no orography for precipitation (orography only affects surface processes i
 c pbh surface saturation humidity for evaporation (used if orogswitch=2)
                surf_qsata = const1*exp(const4*talt
      1              /(talt+const5))
-               
+
 c SG > replace ashum(i,j)_rmax*qsata(i,j) with deltq
                deltq = lmd*(ashum(i,j)-(rmax*qsata(i,j)))
 
@@ -766,11 +718,6 @@ c cgv2 seasonal
                fxsw(i,j) = solfor(j,mod(istot-1,nyear)+1)
      &              *(1.- albcl(i,j))
             endif
-c
-c AY (08/03/04) : check solar radiation for simulation time
-c           if(i.eq.18.and.j.eq.18) print*,'solfor(18,18) =',
-c    +           fxsw(18,18),'at istep =',istep,', koverall =',koverall
-
             if (flag_ents) then
 c SG > Added for ENTS
                if (t_orog.eq.1) then
@@ -784,7 +731,7 @@ c store orography at previous timestep to derive meltwater
                   lice_exact(i,j) = landice_slicemask_lic(i,j)
                endif
             endif
-            
+
 c-----------------------------------------------------------------------
 c     OUTGOING PLANETARY LONGWAVE
 c-----------------------------------------------------------------------
@@ -797,27 +744,27 @@ c     calculate coefficients
             tv3 = b03 + rq*(b13 + b23*rq)
 c     calculate CH4 and N2O contributions
 c     NOTE units are ppb for CH4 and N2O calculation
-            ch4_term = 
+            ch4_term =
      1           alphach4*(sqrt(1e9*ch4(i,j)) - sqrt(1e9*ch40))
-     2           - ch4_func(1e9*ch4(i,j),1e9*n2o0) 
+     2           - ch4_func(1e9*ch4(i,j),1e9*n2o0)
      3           + ch4_func(1e9*ch40,1e9*n2o0)
-            n2o_term = 
+            n2o_term =
      1           alphan2o*(sqrt(1e9*n2o(i,j)) - sqrt(1e9*n2o0))
      2           - ch4_func(1e9*ch40,1e9*n2o(i,j))
      3           + ch4_func(1e9*ch40,1e9*n2o0)
 c     calculate outgoign longwave
 c pbh talt dependence removed for olr (orography only affects surface proceses now if orogswitch=2)
             if((orogswitch.lt.2).and.(flag_ents)) then
-               fxplw(i,j) = tv0 + talt*(tv1 
-     1              + talt*(tv2 
+               fxplw(i,j) = tv0 + talt*(tv1
+     1              + talt*(tv2
      2              + talt*tv3))
      3              - delf2x*log(co2(i,j)/co20)
      4              - ch4_term - n2o_term
      5              + olr_adj*(meantemp-t_eqm)
      6              - olr_adj0
             else
-               fxplw(i,j) = tv0 + atemp(i,j)*(tv1 
-     1              + atemp(i,j)*(tv2 
+               fxplw(i,j) = tv0 + atemp(i,j)*(tv1
+     1              + atemp(i,j)*(tv2
      2              + atemp(i,j)*tv3))
      3              - delf2x*log(co2(i,j)/co20)
      4              - ch4_term - n2o_term
@@ -828,7 +775,7 @@ c pbh talt dependence removed for olr (orography only affects surface proceses n
 c-----------------------------------------------------------------------
 c     LATENT HEAT FLUX
 c-----------------------------------------------------------------------
-c     latent heat flux into atmos associated with condensation 
+c     latent heat flux into atmos associated with condensation
 c     no account taken of snow melting, must assume all pptn is rain
             fxlata(i,j) = rho0*pptn(i,j)*hlv
 
@@ -837,7 +784,7 @@ c calculate terms over ocean or ice
 c-----------------------------------------------------------------------
             if(k1(i,j).le.kmax) then
 
-c longwave radiation 
+c longwave radiation
 
                alw = atemp(i,j)+zeroc
                alw = alw * alw
@@ -863,11 +810,11 @@ c-----------------------------------------------------------------------
 c AY (18/12/03) : standard c-GOLDSTEIN sea-ice routine
 c                 would be nice to include dummy routine as well
                if(sica(i,j).gt.0.0)then
-c              * Sea-ice present *                 
+c              * Sea-ice present *
 
 c let albedo over sea ice vary as a function of tair (Holland et al. 1993)
 
-                  albsic = max(par_albsic_min, 
+                  albsic = max(par_albsic_min,
      &             min(par_albsic_max,0.40 - 0.04*atemp(i,j)))
 c cgv2 seasonal
 c nre note for IGCM needs changing
@@ -896,21 +843,21 @@ c Dalton number
 
                      chsic = 0.94*cesic
 
-c sensible heat flux 
+c sensible heat flux
                      cfxsensic = rhoair*chsic*cpa*usurf(i,j)
 
-                     qsatsic = const1*exp(const2*ticold         
+                     qsatsic = const1*exp(const2*ticold
      1                            /(ticold + const3))
 
                      evapsic(i,j) = max(0.0,(qsatsic - ashum(i,j))
      1                         *rhoao*cesic*usurf(i,j))
 
-                     tieqn = sich(i,j)*((1-ca(i,j))*fxswsic + alw 
-     1                     - emo*(ticold+zeroc)**4  - cfxsensic*(ticold 
+                     tieqn = sich(i,j)*((1-ca(i,j))*fxswsic + alw
+     1                     - emo*(ticold+zeroc)**4  - cfxsensic*(ticold
      2                     - atemp(i,j)) - rho0*hls*evapsic(i,j) )
      3                     + consic*(tsfreez(i,j)-ticold)
 
-                     dtieq = sich(i,j)*( 
+                     dtieq = sich(i,j)*(
      1                     - 4.0*emo*(ticold+zeroc)**3 - cfxsensic
      1                     - hls*rhoair*cesic*usurf(i,j)*qsatsic*const2
      2                     *const3/((ticold + const3)**2)
@@ -919,7 +866,7 @@ c sensible heat flux
 
                      tice(i,j) = real(ticold - tieqn/dtieq)
 
-                     if(abs(tice(i,j) - ticold).lt.tol .or.     
+                     if(abs(tice(i,j) - ticold).lt.tol .or.
      1                  ticold.gt.tfreez.and.tieqn.gt.0.0)goto 10
                   enddo
 
@@ -945,7 +892,7 @@ c recalc everything in case of resetting of tice
 
                   fxsensic = cfxsensic*(tice(i,j) - atemp(i,j))
 
-                  qsatsic = const1*exp(const2*tice(i,j)      
+                  qsatsic = const1*exp(const2*tice(i,j)
      1                            /(tice(i,j) + const3))
 
                   evapsic(i,j) = max(0.0,(qsatsic - ashum(i,j))
@@ -956,20 +903,20 @@ c recalc everything in case of resetting of tice
 
                   if (flag_ents) then
 c SG > Modded for ENTS
-                     fx0sica = ca(i,j)*fxswsica 
+                     fx0sica = ca(i,j)*fxswsica
      1                    + fxlata(i,j)
      2                    + fxsensic + fxlwsic
      3                    - fxplw(i,j)
 c SG <
                   else
-                     fx0sica = ca(i,j)*fxswsic 
+                     fx0sica = ca(i,j)*fxswsic
      1                    + fxlata(i,j)
      2                    + fxsensic + fxlwsic
      3                    - fxplw(i,j)
                   endif
                   if (flag_ents) then
 c SG > Modded for ENTS
-                     fx0sica = ca(i,j)*fxswsica 
+                     fx0sica = ca(i,j)*fxswsica
      1                    + fxlata(i,j)
      2                    + fxsensic + fxlwsic
      3                    - fxplw(i,j)
@@ -988,17 +935,17 @@ c nre only fxlwsic and fxsensic relevant for IGCM
                   endif
                   atm_netlongi  = + fxlwsic - fxplw(i,j)
 
-                  dhsic = rrholf*(qb(i,j) - fx0sic(i,j)) 
+                  dhsic = rrholf*(qb(i,j) - fx0sic(i,j))
      1                  - rhooi*evapsic(i,j)
 
 c AR (19/12/12): assign a dummy value of qb(i,j) calculated to give
-c                no further sea-ice growth if existing thickness 
+c                no further sea-ice growth if existing thickness
 c                exceeds a given  threshold (par_sich_max)
                   if (sich(i,j) >= par_sich_max) then
                      if (dhsic > 0.0) then
                         qbsic(i,j) = (0.0 + rhooi*evapsic(i,j))/rrholf
      1                       + fx0sic(i,j)
-                        dhsic = rrholf*(qbsic(i,j) - fx0sic(i,j)) 
+                        dhsic = rrholf*(qbsic(i,j) - fx0sic(i,j))
      1                       - rhooi*evapsic(i,j)
                      endif
                   endif
@@ -1036,7 +983,7 @@ c sensible heat flux from ocean to atmosphere
                fxsen(i,j) = rhoair*ch*cpa*usurf(i,j)*
      1              (otemp(i,j)-atemp(i,j))
 
-c evaporation/sublimation rate 
+c evaporation/sublimation rate
 
                qsato(i,j) = const1*exp(const4*otemp(i,j)
      1              /(otemp(i,j)+const5))
@@ -1045,14 +992,14 @@ c evaporation/sublimation rate
      1              *rhoao*ce*usurf(i,j))
 
 c net heat flux into atmosphere
-c nre only fxlw and fxsen relevant for IGCM 
+c nre only fxlw and fxsen relevant for IGCM
 c total fluxes fx0oa, fx0a etc not needed for IGCM except for diagnostics
 
-               fx0oa = ca(i,j)*fxsw(i,j) + fxlata(i,j) + fxsen(i,j) 
+               fx0oa = ca(i,j)*fxsw(i,j) + fxlata(i,j) + fxsen(i,j)
      1              + fxlw(i,j) - fxplw(i,j)
 
 c AY (10/12/03) : set up fluxes -> atmosphere
-               atm_latent   = + fxlata(i,j) 
+               atm_latent   = + fxlata(i,j)
                atm_sensible = + fxsen(i,j)
                atm_netsol = + ca(i,j)*fxsw(i,j)
                atm_netlong  = + fxlw(i,j) - fxplw(i,j)
@@ -1073,7 +1020,7 @@ c AY (10/12/03) : add fluxes to include sea-ice and ocean components
                fxlwa(i,j)  = real((sica(i,j)*atm_netlongi)
      1              + ((1-sica(i,j))*atm_netlong))
 
-c heat flux from atmosphere into open ocean 
+c heat flux from atmosphere into open ocean
                if (flag_ents) then
 c SG > Modded for ENTS
                   fx0o(i,j) = ((1-ca(i,j))*fxsw(i,j)*
@@ -1109,7 +1056,7 @@ c AY (10/12/03) : set up fluxes -> ocean
 
                dho = max(0.0,rrholf*(qb(i,j) - fx0o(i,j)))
 
-               dthsic(i,j) = real(sica(i,j)*dhsic 
+               dthsic(i,j) = real(sica(i,j)*dhsic
      1                     + (1-sica(i,j))*dho)
 
                dtareasic(i,j) = real(max(0.0,rhmin*dho*(1-sica(i,j))))
@@ -1129,24 +1076,17 @@ cmsw Calculate planetary albedo over ocean boxes
      2                 + albedo(i,j)
 c SG <
                endif
-                  
+
 c nre albedo array, purely diagnostic variable
 
                if (.not.flag_ents) then
                   albedo(i,j)=real(sica(i,j)*albsic+(1-sica(i,j))*
-     1                 albcl(i,j)) 
+     1                 albcl(i,j))
                endif
 
 c AY (23/09/04) : sea-ice albedo now output
                albice(i,j) = real(albsic)
 
-c AY (23/01/04) : excised for now
-c global heat source diagnostic
-c
-c              ghs = ghs + sica(i,j)*(fx0sic(i,j) + fx0sica)
-c    1              + (1-sica(i,j))*(fx0o(i,j) + fx0oa)
-c    2              + rhoice*hlf*(dtareasic(i,j)
-c    3              + evapsic(i,j)*sica(i,j)*rhooi)
             else
 c-----------------------------------------------------------------------
 c calculate terms over land
@@ -1167,10 +1107,6 @@ c                 do now)
                   fxlwa(i,j) = - fxplw(i,j)
                   fx0o(i,j)  = 0.0
                endif
-
-c AY (23/01/04) : excised for now
-c Update global heat souce over land
-c              ghs = ghs + fx0a(i,j) + fx0o(i,j)
 #else
                if (.not.flag_ents) then
                   fx0a(i,j) = fxsw(i,j) + fxlata(i,j)
@@ -1187,7 +1123,6 @@ c AY (10/12/03) : set up fluxes -> atmosphere
 
 c runoff; add pptn to appropriate coastal grid cell
 
-crma               if(ldeg)then
                if (.not.flag_ents) then
                   if(igrid.ne.0)then
                      runoff(iroff(i,j),jroff(i,j)) = runoff(iroff(i,j)
@@ -1201,10 +1136,6 @@ crma               if(ldeg)then
                if (.not.flag_ents) then
                   runoff_land(i,j) = real(pptn(i,j))
                endif
-
-c AY (23/01/04) : excised for now
-c Update global heat souce over land
-c              ghs = ghs + fx0a(i,j)
 #endif
 
                if (flag_ents) then
@@ -1256,13 +1187,7 @@ c pbh LOOK should this be moved after affects of slicemask calculated?
 
 cmsw Albedo functionality
 
-c#ifdef fixedveg
-c               fv(i,j)=fvfv(i,j)
-c#endif
                if(abs(landice_slicemask_lic(i,j)-2.0).lt.1e-19) then
-c#ifdef fixedveg
-c                  fv(i,j)=0.
-c#endif
                   albs_atm(i,j)=albs_atm(i,j)
      &                 *(2-lice_exact(i,j)) +
      1                            0.8*(lice_exact(i,j)-1)
@@ -1277,7 +1202,6 @@ cmsw Newton-Raphson iteration loop to solve for eqm
 cmsw land temperature. Justified for 1 ocean timestep.
 
               do itld=1,itldmax
-c              do itld=1,1
 
 cmsw sensible heat flux from land to atmosphere
 
@@ -1390,8 +1314,8 @@ cmsw calculate new value of tqld(1,i,j)
        print*,'last iteration value was ',tldlast
        print*,'istep ',istep
        print*,' '
-        
-                 
+
+
                  endif
 
               enddo
@@ -1419,7 +1343,7 @@ cmsw gridbox/gridboxes and add the surplus as runoff there
      1                    ,jroff(i,j)) +((land_moisture_lnd(i,j)
      2                    -land_bcap_lnd(i,j))*rdtsurfdim)*ds(j)
      3                    *rds(jroff(i,j))
-! need the excess surface water skimmed off anyway before trying other schemes                 
+! need the excess surface water skimmed off anyway before trying other schemes
                      if (par_runoff_scheme.gt.0) then
                      runoff_land(i,j) = runoff_land(i,j)+
      1        ((land_moisture_lnd(i,j)-land_bcap_lnd(i,j))*rdtsurfdim)*ds(j)
@@ -1429,7 +1353,7 @@ cmsw gridbox/gridboxes and add the surplus as runoff there
                      runoff(iroff(i,j),jroff(i,j)) = runoff(iroff(i,j)
      1                    ,jroff(i,j)) +((land_moisture_lnd(i,j)
      2                    -land_bcap_lnd(i,j))*rdtsurfdim)
-! need the excess surface water skimmed off anyway before trying other schemes                 
+! need the excess surface water skimmed off anyway before trying other schemes
                      if (par_runoff_scheme.gt.0) then
                      runoff_land(i,j) = runoff_land(i,j)+
      1        ((land_moisture_lnd(i,j)-land_bcap_lnd(i,j))*rdtsurfdim)
@@ -1454,18 +1378,16 @@ cghc /(11.0-min(10,istep)) is used to ramp up runoff to full steam so as to avoi
       runoff_land(i,j)=runoff_land(i,j)+
      1  ((0.0000047/(11.0-min(10,istep)))*
      2  (land_moisture_lnd(i,j)/land_bcap_lnd(i,j))**runoff_factor_1)
-     
-!       print*,land_moisture_lnd(i,j)/land_bcap_lnd(i,j)
-     
+
 cghc balance water budget
 
       land_moisture_lnd(i,j)=land_moisture_lnd(i,j)-
      1  runoff_land(i,j)*dtsurfdim/(11.0-min(10,istep))
-       
+
       runoff(iroff(i,j),jroff(i,j)) =
      1               runoff(iroff(i,j),jroff(i,j))+runoff_land(i,j)
        endif
-          
+
 cghc Try Phil Holden's idea of soil moiture half-life (residence time) of 1-2 months (call it 1.5) from
 cghc Pidwirny, M. (2006). "The Hydrologic Cycle". Fundamentals of Physical Geography, 2nd Edition. Date Viewed. http://www.physicalgeography.net/fundamentals/8b.html
 cghc residence time = tau = 1.5 months = 1/8 year = 3944700sec. dtdim = timestep = 315576sec
@@ -1475,19 +1397,19 @@ cghc runoff_factor_2 = [1-exp(-tln2/tau)] =0.054 with 100 tsteps/year
       runoff_land(i,j)=runoff_land(i,j)+
      1   land_moisture_lnd(i,j)*
      2   runoff_factor_2*rdtsurfdim
-     
+
 cghc balance water budget
 
       land_moisture_lnd(i,j)=land_moisture_lnd(i,j)-runoff_land(i,j)*dtsurfdim
-      
+
       runoff(iroff(i,j),jroff(i,j)) =
      1               runoff(iroff(i,j),jroff(i,j))+runoff_land(i,j)
        endif
-       
+
        if (par_runoff_scheme.eq.0) then
           runoff_land(i,j) = real(pptn(i,j))
        endif
-       
+
 cmsw Calculate planetary albedo over land
 
                palb(i,j)=((1.-albedo(i,j))*albs_atm(i,j))
@@ -1520,7 +1442,7 @@ c---------------------------------------------------------------
 
 c add in effects of runoff (non-local in i,j) and set up fluxes
 c freshwater forcing in m/s open ocean P-E over ocean gridboxes
-c evap zero over land, 
+c evap zero over land,
 c nre P goes straight through as no snow allowed, but E is E total
 c for atm model and solely E_ocean for the fwflux
 
@@ -1542,7 +1464,7 @@ c                 FW fluxes has an odd status in a split-apart model.
 c	          As present it is added here via the precipitation
 c	          term.  It may make sense to add it differently or
 c	          not at all in the future.
-c nre Remove for IGCM 
+c nre Remove for IGCM
 
                pptn_ocn(i,j) = real(pptn_ocn(i,j) + pmeadj(i,j))
             else
@@ -1569,7 +1491,7 @@ c AY (23/07/04) : convert FW fluxes from m/s to mm/s for Dan
             pptn_ocn(i,j) = real(pptn_ocn(i,j) * m2mm)
             evap_ocn(i,j) = real(evap_ocn(i,j) * m2mm)
             runoff_ocn(i,j) = real(runoff_ocn(i,j) * m2mm)
-            runoff_land(i,j) = real(runoff_land(i,j) * m2mm)     
+            runoff_land(i,j) = real(runoff_land(i,j) * m2mm)
             pptn_atm(i,j) = real(pptn_atm(i,j) * m2mm)
             evap_atm(i,j) = real(evap_atm(i,j) * m2mm)
 
@@ -1611,14 +1533,11 @@ c AY (12/07/04) : removed surplus input arguments to subroutine
       endif
 
 c Set values of dummy variables destined for BIOGEM & ENTS
-c NOTE: convert precision between GOLDSTEIn (real*8) and GENIE 
+c NOTE: convert precision between GOLDSTEIn (real*8) and GENIE
 c       (which can be real*4 or real* depending on the IGCM)
-c      do j=1,jmax
-c         do i=1,imax
       do i=1,imax
          do j=1,jmax
             go_fxsw(i,j) = real(fxsw(i,j))
-ccc            if (flag_ents) then
                eb_fx0a(i,j)  = real(fx0a(i,j))
                eb_fx0o(i,j)  = real(fx0o(i,j))
                eb_fxsen(i,j) = real(fxsen(i,j))
@@ -1628,15 +1547,13 @@ ccc            if (flag_ents) then
                eb_uv(1,i,j)  = usc*uatm(1,i,j)
                eb_uv(2,i,j)  = usc*uatm(2,i,j)
                eb_usurf(i,j) = usurf(i,j)
-c     eb_relh(i,j) = real(relh(i,j))
-ccc            endif
          enddo
       enddo
       do j=1,jmax
-         go_solfor(j) = 
+         go_solfor(j) =
      :     real(solfor(j,mod(istot-1,nyear)+1))
       enddo
-      
+
 c pbh annual call to radfor if transient orbit is applied
       if(t_orbit.eq.1) then
         if(mod(istep-1,nyear).eq.0) then
@@ -1688,7 +1605,7 @@ c     see: IPCC [1990, 2001]
       real function ch4_func(ch4, n2o)
       implicit none
       real ch4,n2o
-      ch4_func = 0.47 * log( 
+      ch4_func = 0.47 * log(
      1     1.0 +
      2     2.01e-5*(ch4*n2o)**0.75 +
      3     5.31e-15*ch4*(ch4*n2o)**1.52

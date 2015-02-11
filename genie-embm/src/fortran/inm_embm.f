@@ -19,7 +19,7 @@ c extra read statement for embm atmos
 
 c     AY (08/03/04) : write out averages for restart checks
       if (debug_init) write(*,220) 'Avg T','Avg Q'
-c     
+c
 c     Clear temporary variables
       do l=1,2
          tmp_val(l) = 0
@@ -37,8 +37,6 @@ c     Sum layer state variables and flow field
       enddo
 c
 c     Print average values out
-crma      write(*,210) tmp_val(1)/(imax*jmax),
-crma     +     (tmp_val(2)/(imax*jmax))*1000.
       if (debug_init) write(*,210) tmp_val(1)/area,
      +     (tmp_val(2)/area)*1000.
 
