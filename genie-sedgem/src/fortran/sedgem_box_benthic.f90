@@ -16,10 +16,6 @@ MODULE sedgem_box_benthic
 CONTAINS
 
 
-!SUBROUTINE BENTHIC
-
-!subroutine benthic()
-
   function fun_arndtetal2013_sedflx(dum_frac_POC)
 
     ! result variable
@@ -35,7 +31,7 @@ real*8 doc1_1, doc2_1, doc1_2, doc2_2
 real*8 koc1, koc2
 real*8 a_oc1_1, a_oc2_1, a_oc1_2, a_oc2_2
 real*8 aa_oc1_1, aa_oc2_1, aa_oc1_2, aa_oc2_2
-real*8 bb_oc1_1, bb_oc2_1 
+real*8 bb_oc1_1, bb_oc2_1
 real*8 oc1_zbur, oc2_zbur
 real*8 f_oc1, f_oc2
 !__________________________________________________________
@@ -64,7 +60,7 @@ zbur=100
 zbio=10
 
 !bioturbation coefficient [cm^2 yr^-1](Pb210-based, Middelburg et al., Deep Sea Res. 1, 1997)
-dbio=10.0**(0.76241122-0.00039724*wdepth)*5.2 
+dbio=10.0**(0.76241122-0.00039724*wdepth)*5.2
 
 !dispersion coefficients [cm^2 yr^-1]
 doc1_1=dbio! first organic matter fraction, bioturbated layer
@@ -109,7 +105,7 @@ oc2_zbur=a_oc2_2*exp(aa_oc2_2*zbur)
 f_oc1=oc1_zbur/oc1_0
 f_oc2=oc2_zbur/oc2_0
 
-write(*,*) '% of deposited OC buried' 
+write(*,*) '% of deposited OC buried'
 write(*,*) 'OC1:', f_oc1*100, 'OC2:', f_oc2*100
 ! *****************************************************************
 
@@ -119,4 +115,3 @@ write(*,*) 'OC1:', f_oc1*100, 'OC2:', f_oc2*100
 end function fun_arndtetal2013_sedflx
 
 END MODULE sedgem_box_benthic
-

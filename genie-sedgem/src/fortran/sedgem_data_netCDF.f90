@@ -6,7 +6,7 @@
 
 MODULE sedgem_data_netCDF
 
-  
+
   use genie_control
   USE gem_cmn
   USE gem_util
@@ -18,8 +18,8 @@ MODULE sedgem_data_netCDF
 
 
 CONTAINS
-  
-  
+
+
   ! ****************************************************************************************************************************** !
   ! SAVE NETCDF RESTART DATA
   ! ****************************************************************************************************************************** !
@@ -27,8 +27,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    character(LEN=*),INTENT(IN)::dum_name                      ! 
-    REAL,INTENT(in)::dum_yr                                    ! 
+    character(LEN=*),INTENT(IN)::dum_name                      !
+    REAL,INTENT(in)::dum_yr                                    !
     INTEGER,INTENT(OUT)::dum_iou                               !
     real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfxocn       ! sediment dissolution flux interface array
     ! -------------------------------------------------------- !
@@ -63,7 +63,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! WRITE TO FILE
     ! -------------------------------------------------------- !
-    ! -------------------------------------------------------- ! open file 
+    ! -------------------------------------------------------- ! open file
     call sub_opennew(dum_name,loc_iou)
     ! -------------------------------------------------------- ! start definitions
     call sub_redef(loc_iou)
@@ -123,7 +123,7 @@ CONTAINS
     ! -------------------------------------------------------- ! end definitions
     call sub_enddef (loc_iou)
     call sub_sync(loc_iou)
-    ! -------------------------------------------------------- ! 
+    ! -------------------------------------------------------- !
     loc_ntrec = 1
     ! -------------------------------------------------------- ! write 1D variables
     call sub_putvar1d ('lon', loc_iou, n_i, loc_ntrec, n_i, &
@@ -198,7 +198,7 @@ CONTAINS
   END SUBROUTINE sub_data_netCDF_ncrstsave
   ! ****************************************************************************************************************************** !
 
-  
+
   ! ****************************************************************************************************************************** !
   ! SAVE NETCDF RESTART DATA
   ! ****************************************************************************************************************************** !
@@ -207,9 +207,9 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    character(LEN=*),INTENT(IN)::dum_namein                    ! 
-    character(LEN=*),INTENT(IN)::dum_nameout                   ! 
-    REAL,INTENT(in)::dum_yr                                    ! 
+    character(LEN=*),INTENT(IN)::dum_namein                    !
+    character(LEN=*),INTENT(IN)::dum_nameout                   !
+    REAL,INTENT(in)::dum_yr                                    !
     INTEGER,INTENT(OUT)::dum_iou                               !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
@@ -217,7 +217,7 @@ CONTAINS
     integer::l,ll,m,mm,o,oo
     integer::is
     integer::loc_i,loc_j,loc_ii,loc_jj
-    integer::loc_o,loc_oo                                      ! 
+    integer::loc_o,loc_oo                                      !
     ! -------------------------------------------------------- ! netCDF: out (save)
     integer::loc_ntrec,loc_iou
     integer::loc_id_latm,loc_id_lat_e
@@ -230,8 +230,8 @@ CONTAINS
     real::loc_c0,loc_c1
     real,dimension(nv_sedcore)::loc_lat,loc_dlat
     real,dimension(0:nv_sedcore)::loc_lat_e
-    real,DIMENSION(:),ALLOCATABLE::loc_depth_e                 ! 
-    real,DIMENSION(:),ALLOCATABLE::loc_depth,loc_ddepth        ! 
+    real,DIMENSION(:),ALLOCATABLE::loc_depth_e                 !
+    real,DIMENSION(:),ALLOCATABLE::loc_depth,loc_ddepth        !
     real,dimension(:,:),ALLOCATABLE::loc_mk,loc_mk_mask
     integer,dimension(:),ALLOCATABLE::loc_m
     ! -------------------------------------------------------- ! netCDF: in (restart)
@@ -253,7 +253,7 @@ CONTAINS
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_depth_rst
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_poros_rst     !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_th_rst        !
-    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_cal_rst   ! 
+    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_cal_rst   !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_det_rst   !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_ash_rst   !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_14C_rst
@@ -262,14 +262,14 @@ CONTAINS
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_depth
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_poros         !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_th            !
-    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_cal       ! 
-    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_det       ! 
+    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_cal       !
+    real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_det       !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_ash       !
     real,dimension(:,:),ALLOCATABLE::loc_sedcore_age_14C
     integer::loc_n_sedcore_tot
     integer::loc_n_sedcore_store_tot
     integer::loc_n_sed_stack_tot
-    integer,dimension(nv_sedcore)::loc_n_sedcore_store_top     ! 
+    integer,dimension(nv_sedcore)::loc_n_sedcore_store_top     !
     type(fieldsedcore),DIMENSION(:),ALLOCATABLE::loc_vsedcore  !
     integer,dimension(n_i,n_j)::loc_n_sed_stack_top
     real,dimension(n_i,n_j)::loc_sed_stack_top_th
@@ -804,7 +804,7 @@ CONTAINS
                       loc_o = loc_n_sedcore_store_top(m) + loc_n_sed_stack_top(loc_i,loc_j) + 1
                       loc_oo = loc_nv_sed_stack_top_rst(mm)
                       loc_vsedcore(m)%lay(1:n_sedcore_tracer,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_vsedcore_rst(mm)%lay(1:n_sedcore_tracer,loc_oo + 1:loc_n_sedcore_tot_rst) 
+                           & loc_vsedcore_rst(mm)%lay(1:n_sedcore_tracer,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_layer(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
                            & loc_sedcore_layer_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst) + &
                            & (loc_o - loc_oo)
@@ -812,15 +812,15 @@ CONTAINS
                            & loc_sedcore_depth_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst) + &
                            & real(loc_o - loc_oo) + loc_sed_stack_top_th(loc_i,loc_j) - (loc_sedcore_depth_rst(mm,2) - 1.0)/0.5
                       loc_sedcore_th(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_sedcore_th_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)        
+                           & loc_sedcore_th_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_poros(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_sedcore_poros_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst) 
+                           & loc_sedcore_poros_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_age_cal(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_sedcore_age_cal_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)   
+                           & loc_sedcore_age_cal_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_age_det(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_sedcore_age_det_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)   
+                           & loc_sedcore_age_det_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_age_ash(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
-                           & loc_sedcore_age_ash_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)  
+                           & loc_sedcore_age_ash_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                       loc_sedcore_age_14C(m,loc_o + 1:loc_o + (loc_n_sedcore_tot_rst - loc_oo)) = &
                            & loc_sedcore_age_14C_rst(mm,loc_oo + 1:loc_n_sedcore_tot_rst)
                    end if
@@ -859,7 +859,7 @@ CONTAINS
        loc_depth(o) = real(o) - 0.5
        loc_ddepth(o) = 1.0
     end do
-    ! -------------------------------------------------------- ! open file 
+    ! -------------------------------------------------------- ! open file
     call sub_opennew(dum_nameout,loc_iou)
     ! -------------------------------------------------------- ! start definitions
     call sub_redef(loc_iou)
@@ -922,7 +922,7 @@ CONTAINS
     ! -------------------------------------------------------- ! end definitions
     call sub_enddef (loc_iou)
     call sub_sync(loc_iou)
-    ! -------------------------------------------------------- ! 
+    ! -------------------------------------------------------- !
     loc_ntrec = 1
     ! -------------------------------------------------------- ! write 1D variables: 'latitude'/sed depth
     call sub_putvar1d ('lat',loc_iou,nv_sedcore,loc_ntrec,nv_sedcore, &
@@ -1103,22 +1103,21 @@ CONTAINS
 
     loc_defined = .true.
     loc_i = 0
-    if (ntrec_sout .eq. 0) then 
+    if (ntrec_sout .eq. 0) then
        loc_defined = .false.
        loc_i = 1
     end if
-    !print*,'filename = ',string_ncout2d
     call sub_opennext (string_ncout2d, dum_yr, loc_i, ntrec_sout, ntrec_siou)
 
     if (.not. loc_defined ) then
-      
+
      IF (ctrl_timeseries_output) THEN
-       !-----------------------------------------------------------------------       
-       !       open file        
-       !-----------------------------------------------------------------------       
+       !-----------------------------------------------------------------------
+       !       open file
+       !-----------------------------------------------------------------------
        call sub_opennew (string_ncout2d, ntrec_siou)
      ENDIF
-     
+
        !-----------------------------------------------------------------------
        !       start definitions
        !-----------------------------------------------------------------------
@@ -1232,10 +1231,10 @@ CONTAINS
     REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_coretop
     REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_preservation
     REAL,DIMENSION(n_i,n_j)::loc_ij,loc_mask
-    REAL,DIMENSION(n_i,n_j)::loc_mask_reef,loc_mask_muds       ! 
-    REAL,DIMENSION(n_i,n_j)::loc_mask_dsea                     ! 
-    real::loc_tot,loc_frac,loc_standard                        ! 
-    real::loc_c0,loc_c1                                        ! 
+    REAL,DIMENSION(n_i,n_j)::loc_mask_reef,loc_mask_muds       !
+    REAL,DIMENSION(n_i,n_j)::loc_mask_dsea                     !
+    real::loc_tot,loc_frac,loc_standard                        !
+    real::loc_c0,loc_c1                                        !
 
     ! *** INITIALIZE ***
     ! initialize local variables
@@ -1272,10 +1271,10 @@ CONTAINS
           DO j=1,n_j
              SELECT CASE (ocn_type(io))
              CASE (0)
-                if (io == io_T) then 
+                if (io == io_T) then
                    loc_ij(i,j) = dum_sfcsumocn(io,i,j) - const_zeroC
                 else
-                   loc_ij(i,j) = dum_sfcsumocn(io,i,j)                   
+                   loc_ij(i,j) = dum_sfcsumocn(io,i,j)
                 end if
                 If (io == io_T) loc_unitsname = 'C'
                 If (io == io_S) loc_unitsname = 'o/oo'
@@ -1496,39 +1495,39 @@ CONTAINS
     call sub_putvar2d('muds_sed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask_muds)
 
     ! MISCELLANEOUS FIELDS
-    ! 
+    !
     loc_unitsname = 'cm3 cm-3'
     loc_ij(:,:) = phys_sed(ips_poros,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'misc_sed_porosity', &
          & 'sediment surface porosity',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('misc_sed_porosity',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
-    ! 
+    !
     loc_unitsname = 'cm2 yr-1'
     loc_ij(:,:) = phys_sed(ips_mix_k0,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'misc_sed_max_k', &
          & 'maximum (surface) sediment bioturbation mixing rate',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('misc_sed_max_k',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
-    ! 
+    !
     loc_unitsname = 'n/a'
     loc_ij(:,:) = loc_mask_dsea(:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'grid_mask_dsea','deep sea sediments mask',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('grid_mask_dsea',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
-    ! 
+    !
     loc_unitsname = 'n/a'
     loc_ij(:,:) = loc_mask_reef(:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'grid_mask_reef','reef area mask',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('grid_mask_reef',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
-    ! 
+    !
     loc_unitsname = 'n/a'
     loc_ij(:,:) = loc_mask_muds(:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'grid_mask_muds','shallow sediments mask',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('grid_mask_muds',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
-    ! 
+    !
     loc_unitsname = 'm'
     loc_ij(:,:) = loc_mask_reef(:,:)*phys_sed(ips_D,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'grid_topo_reef','reef topography',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('grid_topo_reef',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask_reef)
-    ! 
+    !
     DO i=1,n_i
        DO j=1,n_j
           IF (sed_save_mask(i,j)) THEN

@@ -30,22 +30,22 @@ SUBROUTINE sedgem(          &
   REAL,DIMENSION(n_sed)::loc_fracdecay_sed                     ! local reduction factor for decaying sediment tracers
   real,DIMENSION(n_ocn)::loc_fhydrothermal                     ! local dissolved tracer array for hydrothermal input
   real,DIMENSION(n_ocn)::loc_flowTalteration                   ! local dissolved tracer array for low T alteration sink
-  real,DIMENSION(n_i,n_j)::loc_phys_sed_mask_deepsea           ! 
-  real::loc_tot,loc_standard                                   ! 
-  real::loc_r7Li,loc_r44Ca                                     ! 
-  real::loc_alpha,loc_R,loc_delta                              ! 
-  real::loc_fsed                                               ! 
+  real,DIMENSION(n_i,n_j)::loc_phys_sed_mask_deepsea           !
+  real::loc_tot,loc_standard                                   !
+  real::loc_r7Li,loc_r44Ca                                     !
+  real::loc_alpha,loc_R,loc_delta                              !
+  real::loc_fsed                                               !
   real,DIMENSION(n_sed,n_i,n_j)::loc_sfxsumsed_OLD                      ! sediment rain flux interface array (COPY)
 
   ! *** STORE PREVIOUS ITERATION DATA ***
-  sed_fsed_OLD(:,:,:) = sed_fsed(:,:,:) 
+  sed_fsed_OLD(:,:,:) = sed_fsed(:,:,:)
   sed_fdis_OLD(:,:,:) = sed_fdis(:,:,:)
   ! copy current (passed) sediemnt flux
   loc_sfxsumsed_OLD(:,:,:) = dum_sfxsumsed(:,:,:)
 
   ! *** INITIALIZE RESULTS ARRAYS ***
-  dum_sfxocn(:,:,:)  = 0.0     ! 
-  sed_fdis(:,:,:)    = 0.0     ! 
+  dum_sfxocn(:,:,:)  = 0.0     !
+  sed_fdis(:,:,:)    = 0.0     !
   sedocn_fnet(:,:,:) = 0.0     !
 
   ! *** INITIALIZE LOCAL ARRAYS ***
@@ -171,7 +171,7 @@ SUBROUTINE sedgem(          &
            ! NOTE: convert units from (g cm-2 kyr-1) to (mol m-2 (per time-step))
            ! NOTE: add age tracer if selected
            ! NOTE: assuming that not both surface-derived flux and prescribed benthic addition of detrital will be done
-           !       (otherwise a flux-weighting of age will be required) 
+           !       (otherwise a flux-weighting of age will be required)
            if (sed_select(is_det)) then
               dum_sfxsumsed(is_det,i,j) = dum_sfxsumsed(is_det,i,j) + &
                    & conv_m2_cm2*conv_det_g_mol*(conv_yr_kyr*loc_dtyr)*par_sed_fdet
@@ -218,7 +218,7 @@ SUBROUTINE sedgem(          &
   endif
 
   ! *** FORAM TRACERS ***
-  ! 
+  !
   DO i=1,n_i
      DO j=1,n_j
         IF (sed_mask(i,j)) THEN
@@ -308,7 +308,7 @@ SUBROUTINE sedgem(          &
         end if
      end do
   end do
-  
+
   ! *** HYDROTHERMAL / SEAFLOOR ALTERATION ***
   IF (ctrl_misc_debug4) print*,'*** HYDROTHERMAL / SEAFLOOR ALTERATION ***'
   ! calculate hydrothermal source fluxes (inputs)
@@ -459,24 +459,20 @@ SUBROUTINE sedgem(          &
   ! *** RUN-TIME OUTPUT ***
   ! GHC 20/05/09 - Save time-series output
   IF (ctrl_timeseries_output) THEN
-     ! increment timestep counter  
-     tstep_count = tstep_count + 1  
-     ! if output due then change year  
-     CALL sub_output_year()  
+     ! increment timestep counter
+     tstep_count = tstep_count + 1
+     ! if output due then change year
+     CALL sub_output_year()
      IF (tstep_count.eq.output_tsteps_0d(output_counter_0d)) THEN
-        call sub_data_save_seddiag_GLOBAL(loc_dtyr,dum_sfcsumocn)  
+        call sub_data_save_seddiag_GLOBAL(loc_dtyr,dum_sfcsumocn)
      ENDIF
      IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
-        ! save requested sediment cores as ASCII     
-        ! call sub_sedgem_save_sedcore()
-        ! save oecan-sediment interface properties
-        !if (ctrl_data_save_ascii) call sub_data_save_seddiag_2D(loc_dtyr,dum_sfcsumocn)
         call sub_save_netcdf(year)
         call sub_save_netcdf_sed2d(loc_dtyr,dum_sfcsumocn)
         call sub_closefile(ntrec_siou)
-        ntrec_sout = ntrec_sout + 1  
+        ntrec_sout = ntrec_sout + 1
      ENDIF
-     ! if output then increment output counter  
+     ! if output then increment output counter
      CALL sub_output_counters()
   ENDIF
 
@@ -502,7 +498,7 @@ SUBROUTINE sedgem_dsedage(  &
   real,DIMENSION(n_sed,n_i,n_j),intent(inout)::dum_sfxsumsed            ! sediment rain flux interface array
   ! local variables
   integer::i,j                                                 ! COUNTING AND ARRAY INDEX VARIABLES
-  real::loc_dtyr                                               ! 
+  real::loc_dtyr                                               !
   ! set age decrement (years)
   loc_dtyr = dum_dts/conv_yr_s
   ! decrement (CaCO3) sediment age tracer
@@ -538,8 +534,8 @@ SUBROUTINE sedgem_save_rst(dum_genie_clock,dum_sfxocn)
   ! DEFINE LOCAL VARIABLES
   ! ---------------------------------------------------------- !
   integer::l
-  integer::loc_iou 
-  real::loc_yr                                                 ! 
+  integer::loc_iou
+  real::loc_yr                                                 !
   CHARACTER(len=255)::loc_filename
   ! ---------------------------------------------------------- ! calculate local time (years)
   loc_yr = real(dum_genie_clock)/(1000.0*conv_yr_s)
