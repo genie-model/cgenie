@@ -72,9 +72,6 @@ fi
 # (2) SET LOCAL FILE AND DIRECTORY NAMES
 # --------------------------------------
 #
-OMP_NUM_THREADS=2
-export OMP_NUM_THREADS
-#
 OUTPUTPATH=$OUTPUTDIR/$RUNID
 CONFIGPATH=$HOMEDIR/cgenie.muffin/genie-main/configs
 CONFIGNAME=$RUNID".config"
@@ -322,7 +319,7 @@ echo ">> Here we go ..."
 echo ""
 cd $BINARYPATH
 # test for change of base-config
-if test -e 'current_config.dat' 
+if test -e 'current_config.dat'
 then
     current_config=$(<'current_config.dat')
     if [ "$current_config" != "$MODELID" ]; then

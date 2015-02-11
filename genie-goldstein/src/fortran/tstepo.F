@@ -1,5 +1,5 @@
 *
-* subroutine tstep.f for program goldstein 
+* subroutine tstep.f for program goldstein
 * error in order of co call and rho b.c. corrected 9/2/1
 * flux version fully explicit one step second order variable depth
 *
@@ -8,15 +8,13 @@ c notes; fe/fn/fa in previous versions could have been scalars
 c error in isoneutral coeffs corrected 29/8/2
 c upstream weighting included 29/8/2
 c variable ds 6/12/4 nre
-c 
+c
 c AY (12/07/05) : removed surplus input argument to function
 c
       subroutine tstepo
 
-      use omp_lib
-
 #include "ocean.cmn"
-      
+
       real ups0
       integer i, j, k, l
       parameter(ups0 = 0.)
@@ -68,36 +66,14 @@ c **********************************************************************
                rho_t2(i,j,k)  = rho(i,j,k)
             enddo
          enddo
-      enddo  
-ccc      call cpu_time(t1)
-ccc      print*,t1
-c!$omp parallel private(nthreads,thread_id)
-c            call omp_set_num_threads(2)
-c            nthreads = omp_get_max_threads()
-c            print*,'* # MAX THREADS: ',nthreads
-c            nthreads = omp_get_num_threads()
-c            print*,'* # ACTUAL THREADS: ',nthreads
-c!$OMP SECTIONS
-c!$OMP SECTION
-ccc      call cpu_time(t2)
-c      call tstepo_flux_t(ts_t1(:,:,:,:),ts1_t1(:,:,:,:),rho_t1(:,:,:))
-c!$OMP SECTION
-ccc      call cpu_time(t3)
-c      call tstepo_flux_t(ts_t2(:,:,:,:),ts1_t2(:,:,:,:),rho_t2(:,:,:))
-c!$OMP SECTION
+      enddo
       call tstepo_flux()
-c!$OMP END SECTIONS
-c!$omp end parallel
-ccc      call cpu_time(t4)
-ccc      print*,'tstepo_flux   : ',1.e6*(t2-t1)
-ccc      print*,'tstepo_flux_t1: ',1.e6*(t3-t2)
-ccc      print*,'tstepo_flux_t2: ',1.e6*(t4-t3)
 c **********************************************************************
 c **********************************************************************
 c **********************************************************************
 
        if(imld.eq.1) then
-c KICO 18/09/07, remember old T and S only so we can calculate PE 
+c KICO 18/09/07, remember old T and S only so we can calculate PE
 c change. Code inefficient at present because only surface mixed points
 c are compared (energy released due to eg bottom mixed layers is
 c excluded, although surface plumes from coshuffle are accounted for),

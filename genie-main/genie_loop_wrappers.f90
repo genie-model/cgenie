@@ -2,7 +2,6 @@
 
 MODULE genie_loop_wrappers
 
-  use omp_lib
   use genie_global
 
 contains
@@ -245,10 +244,6 @@ contains
     implicit none
     !
     integer ::  thread_id
-    if (debug_loop.gt.2) then
-       thread_id = omp_get_thread_num()
-       print *,"*m* goldstein_wrapper #thread: ",thread_id
-    end if
     call goldstein( &
          istep_ocn, &                              !
          latent_ocn,sensible_ocn, &                ! input
@@ -539,10 +534,6 @@ contains
     implicit none
     !
     integer ::  thread_id
-    if (debug_loop.gt.2) then
-       thread_id = omp_get_thread_num()
-       print *,"*m* biogem_wrapper #thread: ",thread_id
-    end if
     call biogem(                                             &
          & real(conv_kocn_kbiogem*kocn_loop)*genie_timestep, & ! input
          & genie_clock,                                      & ! input

@@ -4,7 +4,6 @@ c     ******************************************************************
 
       program GENIE
 
-      use omp_lib
       use genie_util, only : die
       use write_netcdf
       use genie_control
@@ -338,48 +337,6 @@ c            as fluxes passed from ROKGEM are re-set ...
                endif
             endif
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-
-c$$$  c$$$!$omp parallel private(nthreads,thread_id)
-c$$$
-c$$$  c$$$            call omp_set_num_threads(4)
-c$$$  c$$$            nthreads = omp_get_max_threads()
-c$$$  c$$$            print*,'* # MAX THREADS: ',nthreads
-c$$$  c$$$            nthreads = omp_get_num_threads()
-c$$$  c$$$            print*,'* # ACTUAL THREADS: ',nthreads
-c$$$
-c$$$  c$$$!$OMP SECTIONS
-c$$$  c$$$!$OMP SECTION
-c$$$
-c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$  c     *** GOLDSTEIN ocean model
-c$$$  if (flag_goldsteinocean) then
-c$$$  if(mod(koverall,kocn_loop).eq.0) then
-c$$$  if (debug_loop.gt.2) PRINT*,'>m> GOLDSTEIN @ ',
-c$$$  &                 koverall,kocn_loop
-c$$$  call goldstein_wrapper
-c$$$  if (debug_loop.gt.2) PRINT*,'<m< GOLDSTEIN'
-c$$$  endif
-c$$$  endif
-c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$
-c$$$  c$$$!$OMP SECTION
-c$$$
-c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$  c     *** BIOGEM model - UPDATE
-c$$$  if (flag_biogem) then
-c$$$  if (mod(koverall,conv_kocn_kbiogem*kocn_loop).eq.0)
-c$$$  &              then
-c$$$  if (debug_loop.gt.2) PRINT*,'>m> BIOGEM @ ',
-c$$$  &                 koverall,conv_kocn_kbiogem*kocn_loop
-c$$$  call biogem_forcing_wrapper
-c$$$  call biogem_wrapper
-c$$$  if (debug_loop.gt.2) PRINT*,'<m< BIOGEM'
-c$$$  endif
-c$$$  endif
-c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$
-c$$$  c$$$!$OMP END SECTIONS
-c$$$  c$$$!$omp end parallel
 
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c     *** BIOGEM model - UPDATE

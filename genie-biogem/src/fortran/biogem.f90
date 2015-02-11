@@ -12,7 +12,6 @@ subroutine biogem(       &
      & dum_sfxsed1,      &
      & dum_sfxsumrok1    &
      & )
-  use omp_lib
   use gem_carbchem
   USE biogem_lib
   USE biogem_box
@@ -34,20 +33,20 @@ subroutine biogem(       &
   INTEGER::i,j,k,l,io,ia,is,n                                    ! counting indices
   integer::lo,ls
   integer::loc_k1                                                ! local topography
-  integer::loc_i,loc_j,loc_tot_i                                 ! 
+  integer::loc_i,loc_j,loc_tot_i                                 !
   integer::loc_n_k_tot                                           !
   real::loc_k_tot_icefree,loc_k_icefree                          !
 !!$  integer::loc_m,loc_tot_m                                       ! tracer array conversion indices
   real::loc_dts,loc_dtyr,loc_t,loc_yr                            ! local time and time step BLAH actual year
   real::loc_rdts,loc_rdtyr                                       ! time reciprocals
-  logical::loc_debug_ij                                          ! 
-  logical,DIMENSION(n_ocn)::locio_mask                           ! 
+  logical::loc_debug_ij                                          !
+  logical,DIMENSION(n_ocn)::locio_mask                           !
   REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
   REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_focn                 ! local ocean tracer flux array
   REAL,DIMENSION(n_sed,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
   REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
-  REAL,DIMENSION(n_atm)::loc_datm_restore                        ! 
-  REAL,DIMENSION(n_ocn)::loc_force_flux_dust                     ! 
+  REAL,DIMENSION(n_atm)::loc_datm_restore                        !
+  REAL,DIMENSION(n_ocn)::loc_force_flux_dust                     !
   real::loc_ocn_tot_M,loc_ocn_rtot_M                             ! ocean mass and reciprocal
   real::loc_ocn_tot_V,loc_ocn_rtot_V                             ! ocean volume  and reciprocal
   real::loc_fS,loc_fT                                            !
@@ -62,7 +61,7 @@ subroutine biogem(       &
   REAL,DIMENSION(n_sed)::loc_fracdecay_sed                       ! local reduction factor for decaying sediment tracers
   real::loc_det_tot,loc_det_sol_tot,loc_det_Fe_sol_sf            !
   REAL,DIMENSION(n_ocn)::loc_fweather_tot,loc_fseddis_tot        ! local total weathering flux, dissolution flux
-  REAL,DIMENSION(n_ocn)::loc_fsedpres_tot,loc_fsedsettle_tot     ! 
+  REAL,DIMENSION(n_ocn)::loc_fsedpres_tot,loc_fsedsettle_tot     !
   real::loc_frac,loc_standard                                    !
   real::loc_delta_actual,loc_delta_target,loc_delta_source       !
   real::loc_force_sign
@@ -70,8 +69,8 @@ subroutine biogem(       &
   real::loc_force_actual
   real::loc_force_actual_d13C
   real::loc_force_actual_d44Ca
-  real,dimension(1:n_l_ocn)::loc_vocn                            ! 
-  real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                ! 
+  real,dimension(1:n_l_ocn)::loc_vocn                            !
+  real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                !
 !!!integer::nthreads,thread_id
 
   loc_debug_ij = .FALSE.
@@ -183,7 +182,7 @@ subroutine biogem(       &
      loc_force_actual          = 0.0
      loc_force_actual_d13C     = 0.0
      loc_force_actual_d44Ca    = 0.0
-     ! 
+     !
      DO i=1,n_i
         DO j=1,n_j
            loc_k1 = goldstein_k1(i,j)
@@ -237,7 +236,7 @@ subroutine biogem(       &
                     if (ctrl_force_ohmega_calcite) then
                        loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_ohm_cal,i,j,n_k)/loc_k_tot_icefree
                     else
-                       loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_ohm_arg,i,j,n_k)/loc_k_tot_icefree             
+                       loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_ohm_arg,i,j,n_k)/loc_k_tot_icefree
                     end if
                  end if
               elseif (force_flux_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
@@ -349,7 +348,7 @@ subroutine biogem(       &
               ! update ocean flux array
               locijk_focn(io_Fe,i,j,n_k) = locijk_focn(io_Fe,i,j,n_k) + loc_force_flux_dust(io_Fe)
               ! ### ADD CODE FOR ADDITIONAL AEOLIAN DISSOLUTION INPUTS ########################################################### !
-              ! 
+              !
               ! ################################################################################################################## !
 
               ! *** SEDIMENT DISSOLUTION INPUT ***
@@ -432,28 +431,6 @@ subroutine biogem(       &
            end if
         end do
      end do
-     ! ****************************************************************************************************************************
-
-     !     !$omp parallel private(nthreads,thread_id)
-     !     call omp_set_num_threads(4)
-
-     !     nthreads = omp_get_max_threads()
-     !     print*,'* # MAX THREADS: ',nthreads
-     !     nthreads = omp_get_num_threads()
-     !     print*,'* # ACTUAL THREADS: ',nthreads
-
-     !    !$OMP SECTIONS
-     !    !$OMP SECTION
-
-     !  call sub_wasteCPUcycles1(ocn,'1',1)
-
-     !  !$OMP SECTION
-
-     !  call sub_wasteCPUcycles2(ocn,'2',1)
-
-     !  !$OMP END SECTIONS
-     !  !$omp end parallel
-
      ! *** TMP: make vectorized copy of <ocn> *************************************************************************************
      vocn(:) = fun_lib_conv_ocnTOvocn(ocn(:,:,:,:))
      vbio_part(:) = fun_lib_conv_sedTOvsed(bio_part(:,:,:,:))
@@ -462,12 +439,6 @@ subroutine biogem(       &
      ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> !
      ! *** (v) GRID PT LOOP START *** !
      ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> !
-
-     !  ! Fork a team of threads giving them their own copies of variables
-     !  ! *NB* No space between '!' and '$omp' below...
-     !  !$omp parallel private(nthreads, tid)
-     !  ! Obtain thread number
-     !  tid = OMP_get_thread_num()
 
      do n=1,n_vocn
 
@@ -491,9 +462,6 @@ subroutine biogem(       &
      ! <<<<<<<<<<<<<<<<<<<<<<<<<<<< !
      ! *** (v) GRID PT LOOP END *** !
      ! <<<<<<<<<<<<<<<<<<<<<<<<<<<< !
-
-     !  ! All threads join master thread and disband
-     !  !$omp end parallel
 
      ! ****************************************************************************************************************************
      ! ****************************************************************************************************************************
@@ -586,9 +554,9 @@ subroutine biogem(       &
                       & ocn(io_F,i,j,n_k),    &
                       & ocn(io_H2S,i,j,n_k),  &
                       & ocn(io_NH4,i,j,n_k),  &
-                      & carbconst(:,i,j,n_k), & 
-                      & carb(:,i,j,n_k),      &  
-                      & carbalk(:,i,j,n_k)    & 
+                      & carbconst(:,i,j,n_k), &
+                      & carb(:,i,j,n_k),      &
+                      & carbalk(:,i,j,n_k)    &
                       & )
                  ! estimate Revelle factor
                  CALL sub_calc_carb_RF0(      &
@@ -601,8 +569,8 @@ subroutine biogem(       &
                       & ocn(io_F,i,j,n_k),    &
                       & ocn(io_H2S,i,j,n_k),  &
                       & ocn(io_NH4,i,j,n_k),  &
-                      & carbconst(:,i,j,n_k), & 
-                      & carb(:,i,j,n_k)    & 
+                      & carbconst(:,i,j,n_k), &
+                      & carb(:,i,j,n_k)    &
                       & )
                  ! re-calculate carbonate system isotopic properties
                  if (ocn_select(io_DIC_13C)) then
@@ -631,7 +599,7 @@ subroutine biogem(       &
               ! calculate tracer changes necessary to meet any imposed atmospheric restoring boundary conditions
               ! ATMOSPHERIC TRACERS
               ! NOTE: divide restoring atmospheric flux by <ocn_dt> to produce a value in units of mol yr-1,
-              !       (since in updating the atmosphere subsequently, the flux is multiplied by the timestep 
+              !       (since in updating the atmosphere subsequently, the flux is multiplied by the timestep
               !       to get the required increment)
               ! NOTE: use a crude conversion factor for partial pressure (atm) -> mol, BUT
               !       take into account that only 1/(imax x jmax) of the entire atmosphere is being forced under each grid point
@@ -923,7 +891,7 @@ subroutine biogem(       &
                        diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
                     else
                        ! (2b) atmospheric pCO2
-                       ! NOTE: this code has a similar effect of restoring forcing, except that it allows 
+                       ! NOTE: this code has a similar effect of restoring forcing, except that it allows
                        !       the isotopic properties of the flux to be prescribed rather than just the final isotopic state
                        ! NOTE: the threshold is set via a prescribed restoring signal
                        If (dum_sfcatm1(ia_pCO2,i,j) > force_restore_atm(ia_pCO2,i,j)) then
@@ -1265,7 +1233,7 @@ subroutine biogem(       &
               ! NOTE: convert units from (mol per timestep) to (mol m-2 s-1)
               ! NOTE: if 'allow particulate flux to sediments' option in biogem_config is not selected,
               !       the value of the particulate flux to sediments local array <locij_ocnsed> is zero
-              ! NOTE: for particulate fractions (type 9) -- scale by time such that the fraction is preserved 
+              ! NOTE: for particulate fractions (type 9) -- scale by time such that the fraction is preserved
               !       when passed through the ocean  -> sediment interface (the time scaling here is trial-and-error chosen!)
               DO l=1,n_l_sed
                  is = conv_iselected_is(l)
@@ -1430,9 +1398,9 @@ subroutine biogem_tracercoupling( &
   real::loc_Sratio,loc_rSratio                                 !
   REAL,DIMENSION(n_l_ocn)::loc_ocn_tot_OLD,loc_ocn_tot_NEW     !
   REAL,DIMENSION(n_l_ocn)::loc_ocn_rtot_NEW                    !
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::loc_vocn            ! 
-  type(fieldocn),DIMENSION(:),ALLOCATABLE::loc_vts             ! 
-  real,DIMENSION(:),ALLOCATABLE::loc_partialtot                ! 
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::loc_vocn            !
+  type(fieldocn),DIMENSION(:),ALLOCATABLE::loc_vts             !
+  real,DIMENSION(:),ALLOCATABLE::loc_partialtot                !
   ! ---------------------------------------------------------- !
   ! INITIALIZE LOCAL VARIABLES
   ! ---------------------------------------------------------- !
@@ -1478,7 +1446,7 @@ subroutine biogem_tracercoupling( &
   If (.NOT. error_stop) then
      IF (ctrl_debug_lvl1) print*, '*** OCEAN TRACER UPDATE ***'
      ! ---------------------------------------------------- !
-     ! (0) ORIGINAL TRACER INVENTORIES 
+     ! (0) ORIGINAL TRACER INVENTORIES
      ! ---------------------------------------------------- !
      ! ---------------------------------------------------- ! calculate original (OLD) mean ocean salinity
      loc_partialtot(:) = 0.0
@@ -1502,7 +1470,7 @@ subroutine biogem_tracercoupling( &
      ! ---------------------------------------------------- !
      ! (1) SALINITY-ADJUST (CIRCULATION-UPDATED) GOLDSTEIN <loc_vts> TRACER ARRAY
      ! ---------------------------------------------------- !
-     ! NOTE: copy T,S for completeness        
+     ! NOTE: copy T,S for completeness
      ! NOTE: no offset (array: <tstoocn_offset()>) required for biogeochem-only tracers
      do n=1,n_vocn
         loc_k1 = vocn(n)%k1
@@ -1739,8 +1707,8 @@ subroutine biogem_climate( &
            phys_ocn(ipo_rho,i,j,k) = fun_calc_rho(ocn(io_T,i,j,k),ocn(io_S,i,j,k))
            ! velocity
            phys_ocn(ipo_gu,i,j,k) = dum_uvw(1,i,j,k)
-           phys_ocn(ipo_gv,i,j,k) = dum_uvw(2,i,j,k) 
-           phys_ocn(ipo_gw,i,j,k) = dum_uvw(3,i,j,k) 
+           phys_ocn(ipo_gv,i,j,k) = dum_uvw(2,i,j,k)
+           phys_ocn(ipo_gw,i,j,k) = dum_uvw(3,i,j,k)
         end do
         ! solar insolation
         phys_ocnatm(ipoa_solfor,i,j) = dum_solfor(j)
@@ -1837,10 +1805,10 @@ subroutine diag_biogem_pCO2( &
      & dum_pCO2              &
      & )
   USE biogem_lib
-  IMPLICIT NONE                     
+  IMPLICIT NONE
   ! DUMMY ARGUMENTS
-  REAL,DIMENSION(n_atm,n_i,n_j),INTENT(in)::dum_sfcatm1          ! 
-  REAL,INTENT(inout)::dum_pCO2                                   ! 
+  REAL,DIMENSION(n_atm,n_i,n_j),INTENT(in)::dum_sfcatm1          !
+  REAL,INTENT(inout)::dum_pCO2                                   !
   ! calculate pCO2
   dum_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/sum(phys_ocnatm(ipoa_A,:,:))
 end subroutine diag_biogem_pCO2
@@ -1860,12 +1828,12 @@ SUBROUTINE biogem_save_restart(dum_genie_clock)
   ! DEFINE LOCAL VARIABLES
   ! ---------------------------------------------------------- !
   integer::l,i,j,io,is                                         ! tracer counter
-  integer::loc_iou 
+  integer::loc_iou
   CHARACTER(len=255)::loc_filename                             ! guess ...
   integer::ios                                                 ! file checks
   integer::loc_k1                                              ! local topography
   integer::loc_i,loc_tot_i                                     ! tracer array conversion indices
-  real::loc_yr                                                 ! 
+  real::loc_yr                                                 !
   REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::loc_docn                  ! local ocean tracer (change) array
   ! ---------------------------------------------------------- !
   ! ENSURE TRACER CONSERVATION
@@ -1956,7 +1924,7 @@ subroutine diag_biogem( &
   REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi                                 !
   REAL,DIMENSION(0:n_j,0:n_k)::loc_opsia,loc_opsip,loc_zpsi             !
   real::loc_opsi_scale                                                  !
-  REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax                  !  
+  REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax                  !
 
   ! calculate local variables
   loc_t = par_misc_t_runtime - real(dum_genie_clock)/(1000.0*conv_yr_s)
@@ -2030,10 +1998,10 @@ SUBROUTINE diag_biogem_timeslice( &
   logical,INTENT(IN)::dum_save                                   ! average and save data?
   logical,intent(in)::dum_gemlite                                ! in GEMlite phase of cycle?
   ! local variables
-  INTEGER::i,j,k,l,io,ia,is  
-  integer::loc_k1                                                ! 
-  real::loc_t,loc_dts,loc_dtyr                                   ! 
-  real::loc_yr_save                                              ! 
+  INTEGER::i,j,k,l,io,ia,is
+  integer::loc_k1                                                !
+  real::loc_t,loc_dts,loc_dtyr                                   !
+  real::loc_yr_save                                              !
   REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi,loc_opsia,loc_opsip !
   REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
   REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
@@ -2125,9 +2093,9 @@ SUBROUTINE diag_biogem_timeslice( &
                             & ocn(io_F,i,j,k),    &
                             & ocn(io_H2S,i,j,k),  &
                             & ocn(io_NH4,i,j,k),  &
-                            & carbconst(:,i,j,k), & 
-                            & carb(:,i,j,k),      & 
-                            & carbalk(:,i,j,k)    & 
+                            & carbconst(:,i,j,k), &
+                            & carb(:,i,j,k),      &
+                            & carbalk(:,i,j,k)    &
                             & )
                        ! estimate Revelle factor
                        CALL sub_calc_carb_RF0(      &
@@ -2140,8 +2108,8 @@ SUBROUTINE diag_biogem_timeslice( &
                             & ocn(io_F,i,j,n_k),    &
                             & ocn(io_H2S,i,j,n_k),  &
                             & ocn(io_NH4,i,j,n_k),  &
-                            & carbconst(:,i,j,n_k), & 
-                            & carb(:,i,j,n_k)       & 
+                            & carbconst(:,i,j,n_k), &
+                            & carb(:,i,j,n_k)       &
                             & )
                        ! re-calculate carbonate system isotopic properties
                        if (ocn_select(io_DIC_13C)) then
@@ -2328,9 +2296,9 @@ SUBROUTINE diag_biogem_timeseries( &
   logical,INTENT(IN)::dum_forcesave                              ! force data saving?
   logical,intent(in)::dum_gemlite                                ! in GEMlite phase of cycle?
   ! local variables
-  INTEGER::i,j,l,io,ia,is,ic 
+  INTEGER::i,j,l,io,ia,is,ic
   integer::ib,id,i2D                                             ! counting variables
-  integer::loc_k1                                                ! 
+  integer::loc_k1                                                !
   real::loc_t,loc_dts,loc_dtyr                                   !
   real::loc_yr,loc_yr_save                                       !
   REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi                 !
@@ -2340,12 +2308,12 @@ SUBROUTINE diag_biogem_timeseries( &
   REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
   REAL,DIMENSION(n_ocn,n_i,n_j)::locij_ocn_ben                   ! local benthic ocean composition
   REAL,DIMENSION(n_i,n_j)::locij_mask_ben                        ! benthic save mask
-  real::loc_ocn_tot_M,loc_ocn_tot_A,loc_ocnatm_tot_A             ! 
-  real::loc_ocn_rtot_M,loc_ocn_rtot_A,loc_ocnatm_rtot_A          ! 
-  real::loc_ocnsed_tot_A,loc_ocnsed_tot_A_ben                    ! 
-  real::loc_ocnsed_rtot_A,loc_ocnsed_rtot_A_ben                  ! 
-  real::loc_tot_A                                                ! 
-  real::loc_sig                                                  ! 
+  real::loc_ocn_tot_M,loc_ocn_tot_A,loc_ocnatm_tot_A             !
+  real::loc_ocn_rtot_M,loc_ocn_rtot_A,loc_ocnatm_rtot_A          !
+  real::loc_ocnsed_tot_A,loc_ocnsed_tot_A_ben                    !
+  real::loc_ocnsed_rtot_A,loc_ocnsed_rtot_A_ben                  !
+  real::loc_tot_A                                                !
+  real::loc_sig                                                  !
   REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
   real::loc_opsi_scale                                           !
 

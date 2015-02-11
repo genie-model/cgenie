@@ -64,9 +64,6 @@ fi
 # (2) SET LOCAL FILE AND DIRECTORY NAMES
 # --------------------------------------
 #
-OMP_NUM_THREADS=2
-export OMP_NUM_THREADS
-#
 OUTPUTPATH=$OUTPUTDIR/$RUNID
 CONFIGPATH=$HOMEDIR/cgenie.muffin/genie-main/configs
 CONFIGNAME=$RUNID".config"

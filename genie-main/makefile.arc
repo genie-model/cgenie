@@ -140,8 +140,6 @@ ifeq ($(F77),ifort)
   FFLAGS += -warn all -implicitnone -extend-source
   #FFLAGS += -diag-disable remark
   #FFLAGS +=  -noautomatic
-  FFLAGS += -openmp
-  LDFLAGS += -openmp
   ifeq ($(BUILD),SHIP)
     FFLAGS += -O3 -static
   endif
@@ -316,9 +314,7 @@ ifeq ($(F77),gfortran)
   F77FLAGS += -x f77-cpp-input -ffixed-line-length-80
   F90FLAGS += -x f95-cpp-input -ffree-line-length-none
   FFLAGS += -Wall -fimplicit-none
-  FFLAGS += -fopenmp
 ###  LDFLAGS += -static
-  LDFLAGS += -fopenmp
   ifeq ($(BUILD),SHIP)
     FFLAGS += -O2
     FFLAGS += -O3
