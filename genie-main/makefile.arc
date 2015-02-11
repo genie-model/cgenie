@@ -8,7 +8,7 @@
 # commonly required to be changed to suit your particular setup are
 # found in 'user.mak'.  The actual rules to be carried out in the
 # build process are mostly in 'makefile'; the testing specific rules
-# are in 'testing.mak'.  
+# are in 'testing.mak'.
 #
 # In addition to editing this file, variables can be overridden on
 # the command-line.  For example, you may type:
@@ -21,7 +21,7 @@
 #
 # ====================================================================
 
-# === get the setup-specific varaibles === 
+# === get the setup-specific varaibles ===
 include user.mak
 
 # === main path variables ===
@@ -84,15 +84,15 @@ LDFLAGSNC=$(GENIE_LDFLAGS)
 # Note that 's' adds an index and so ranlib shouldn't be needed.
 # However, Mac OSX doesn't use GNU, and we need the extra call to
 # ranlib, but only in that circumstance (-c not accepted by GNU ranlib).
-LIB_CMD=ar rcvs 
-RANLIB_CMD=ranlib -c 
+LIB_CMD=ar rcvs
+RANLIB_CMD=ranlib -c
 
 # === OS Specific flags and file extensions ===
-# *NB* For _UNIX_ OBJ_FLAG must have a trailing space, e.g. "-o " 
+# *NB* For _UNIX_ OBJ_FLAG must have a trailing space, e.g. "-o "
 COMPILEONLY =-c
 DEFINE      =-D
-OUT_FLAG    =-o 
-OBJ_FLAG    =-o 
+OUT_FLAG    =-o
+OBJ_FLAG    =-o
 OBJ_EXT     =o
 LIB_EXT     =a
 LIB_PREFIX  =lib
@@ -160,18 +160,18 @@ endif
 # === f95 compiler (Solaris) ===
 # -O4 much slower to compile than -O3 (defualt)
 # but gives a x2 speedup
-# -fast -native is slow to compile but gives a v. fast exe 
+# -fast -native is slow to compile but gives a v. fast exe
 # -stackval (equiv. to -auto) gives a seg fault, as expected
-# implies default is to 'save'  
+# implies default is to 'save'
 ifeq ($(F77),f95)
   F77_LD=f95
   FPPFLAGS += -fpp
-  FLAGR4=-xtypemap=real:32,double:64,integer:32 
-  FLAGR8=-xtypemap=real:64,double:64,integer:32 
+  FLAGR4=-xtypemap=real:32,double:64,integer:32
+  FLAGR8=-xtypemap=real:64,double:64,integer:32
   MOD_INC_FLAG=-M
-  FFLAGS += -e 
+  FFLAGS += -e
   ifeq ($(BUILD),SHIP)
-    FFLAGS += -fast -native 
+    FFLAGS += -fast -native
   endif
   ifeq ($(BUILD),DEBUG)
     FFLAGS += -g -xcheck=all
@@ -215,7 +215,7 @@ endif
 # -fastsse good deal faster than -fast
 # Similar compile time to select better
 # -Msave does create slowdown
-# able to run without, however, so some must be 'saved'? 
+# able to run without, however, so some must be 'saved'?
 ifeq ($(F77),pgf90)
   F77_LD=pgf90
   FLAGR4=-r4
@@ -321,8 +321,8 @@ ifeq ($(F77),gfortran)
   LDFLAGS += -fopenmp
   ifeq ($(BUILD),SHIP)
     FFLAGS += -O2
-    FFLAGS += -O3 
-    FFLAGS += -funroll-loops 
+    FFLAGS += -O3
+    FFLAGS += -funroll-loops
     FFLAGS += -msse
     FFLAGS += -fno-automatic
   endif
@@ -381,7 +381,7 @@ ifeq ($(F77),g95)
   FPPFLAGS += -cpp
   FFLAGS += -fno-second-underscore -Wall -O2
   FFLAGS += -fstatic
-  F77FLAGS += -ffixed-line-length-80 
+  F77FLAGS += -ffixed-line-length-80
   F90FLAGS += -ffree-line-length-huge
   LDFLAGS += -static
   ifneq ($(BUILD),DEBUG)
@@ -410,7 +410,7 @@ ifeq ($(F77),g95.exe)
   FLAGR8=-r8
   FPPFLAGS += -cpp
   FFLAGS += -Wall
-  F77FLAGS += -ffixed-line-length-80 
+  F77FLAGS += -ffixed-line-length-80
   F90FLAGS += -ffree-line-length-huge
   LDFLAGS += -static
   ifeq ($(BUILD),SHIP)
@@ -428,7 +428,7 @@ ifeq ($(F77),g95.exe)
   endif
 endif
 
-# This is the optimisation level applied to genie-goldstein, genie-embm 
+# This is the optimisation level applied to genie-goldstein, genie-embm
 # and genie-seaice.  Note that if BUILD=SHIP then the optimisation level
 # in FFLAGS overrides that set by GOLDOPTIM no matter which one is
 # greater.
@@ -456,7 +456,7 @@ ifeq ($(F77),f90.exe)
   FLAGR4      =
   FLAGR8      =/real_size:64
   ifeq ($(BUILD),SHIP)
-    FFLAGS += 
+    FFLAGS +=
   endif
   ifeq ($(BUILD),DEBUG)
     FFLAGS += /debug:full
@@ -488,7 +488,7 @@ ifeq ($(F77),ifort.exe)
 #    FFLAGS += /warn:errors
   endif
   ifeq ($(BUILD),SHIP)
-    FFLAGS += 
+    FFLAGS +=
   endif
   ifeq ($(BUILD),DEBUG)
     FFLAGS += /debug:full
@@ -533,11 +533,15 @@ endif
 
 # === NetCDF paths ===
 ###################################################
-### FOR COMBINED C+FORTRAN NETCDF LIBRARIES #######
-NETCDF=$(LIB_SEARCH_FLAG)$(PATH_QUOTE)$(NETCDF_DIR)/lib$(PATH_QUOTE) $(LIB_FLAG)$(NETCDF_NAME)
-### FOR SEPERATE C AND FORTRAN NETCDF LIBRARIES ###
-#NETCDF_NAMEF=$(NETCDF_NAME)f
-#NETCDF=$(LIB_SEARCH_FLAG)$(PATH_QUOTE)$(NETCDF_DIR)/lib$(PATH_QUOTE) $(LIB_FLAG)$(NETCDF_NAME)$(LIB_FLAG)$(NETCDF_NAMEF)
+NETCDF_PATH=$(LIB_SEARCH_FLAG)$(PATH_QUOTE)$(NETCDF_DIR)/lib$(PATH_QUOTE)
+ifneq ($(NETCDF_COMBINED),0)
+  ### FOR COMBINED C+FORTRAN NETCDF LIBRARIES #######
+  NETCDF=$(NETCDF_PATH) $(LIB_FLAG)$(NETCDF_NAME)
+else
+  ### FOR SEPERATE C AND FORTRAN NETCDF LIBRARIES ###
+  NETCDF_NAMEF=$(NETCDF_NAME)f
+  NETCDF=$(NETCDF_PATH) $(LIB_FLAG)$(NETCDF_NAME) $(LIB_FLAG)$(NETCDF_NAMEF)
+endif
 ###################################################
 NETCDF_INC=$(INC_FLAG)$(PATH_QUOTE)$(NETCDF_DIR)/include$(PATH_QUOTE)
 ifeq ($(F77),f95)
