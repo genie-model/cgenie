@@ -72,7 +72,7 @@ contains
          ilandmask3_ocn,koverall_total, &
          tstar_ocn,sstar_ocn,ustar_ocn,vstar_ocn,albedo_ocn, &
          ias_out,iaf_out,ips_out,ipf_out,jsf_out, &
-         lrestart_genie, & 
+         lrestart_genie, &
          go_saln0,go_rhoair,go_cd,go_ds,go_dphi,go_ips,go_ipf, &
          go_usc,go_dsc,go_fsc,go_rh0sc, &
          go_rhosc,go_cpsc,go_scf, &
@@ -102,12 +102,6 @@ contains
     implicit none
     call initialise_ocnlite()
   end subroutine initialise_ocnlite_wrapper
-
-  !!
-  subroutine initialise_ecogem_wrapper
-    implicit none
-    call initialise_ecogem()
-  end subroutine initialise_ecogem_wrapper
 
   !!
   subroutine initialise_biogem_wrapper
@@ -144,7 +138,7 @@ contains
   subroutine initialise_sedgem_wrapper
     implicit none
     call initialise_sedgem ( &
-         & genie_timestep,   & 
+         & genie_timestep,   &
          & genie_sfxsumsed,  &
          & genie_sfcsumocn,  &
          & genie_sfcsed,     &
@@ -182,7 +176,7 @@ contains
   subroutine initialise_rokgem_wrapper
     implicit none
     call initialise_rokgem ( &
-         & genie_timestep,   & 
+         & genie_timestep,   &
          & genie_sfxrok,     &
          & genie_sfxsumrok1  &
          & )
@@ -191,11 +185,11 @@ contains
   !!
   subroutine initialise_gemlite_wrapper
     implicit none
-    call initialise_gemlite(                     &                      ! 
-         & go_dsc,                               &                      ! 
-         & go_k1(1:ilon1_ocn,1:ilat1_ocn),       &                      ! 
-         & go_dz(1:inl1_ocn),go_dza(1:inl1_ocn), &                      ! 
-         & go_sv(0:ilat1_ocn),                   &                      ! 
+    call initialise_gemlite(                     &                      !
+         & go_dsc,                               &                      !
+         & go_k1(1:ilon1_ocn,1:ilat1_ocn),       &                      !
+         & go_dz(1:inl1_ocn),go_dza(1:inl1_ocn), &                      !
+         & go_sv(0:ilat1_ocn),                   &                      !
          & genie_sfxsumsed,                      &                      !
          & genie_sfxsumrok1_gem,                 &
          & genie_sfxsumatm1_gem                  &

@@ -170,7 +170,7 @@ contains
     !           atmos_lowestlu2_atm      zonal component of wind speed
     !           atmos_lowestlv3_atm      meridional component of wind speed
     call embm( &
-         istep_atm, &                             ! 
+         istep_atm, &                             !
          surf_latent_atm,surf_sensible_atm, &     ! input
          netsolar_atm,netlong_atm, &              ! input
          evap_atm,precip_atm, &                   ! input
@@ -189,7 +189,7 @@ contains
   !!
   subroutine radfor_wrapper
     implicit none
-    ! 
+    !
     call radfor(istep_atm, global_daysperyear, &
          genie_solar_constant &
          & )                                      ! input
@@ -934,7 +934,7 @@ contains
   subroutine gemlite_cycleclean_wrapper
     implicit none
     call gemlite_cycleclean( &
-         & genie_sfxsumrok1_gem                  &                      ! 
+         & genie_sfxsumrok1_gem                  &                      !
          )
   end subroutine gemlite_cycleclean_wrapper
 
@@ -1000,13 +1000,5 @@ print*,'> END goldlite_wrapper'
     call ocnlite(            &
          )
   end subroutine ocnlite_wrapper
-
-  !!
-  subroutine ecogem_wrapper
-    implicit none
-    call ecogem(            &
-         )
-  end subroutine ecogem_wrapper
-
 
 END MODULE genie_loop_wrappers

@@ -27,7 +27,7 @@ MODULE genie_control
       integer :: ilon1_sic,ilat1_sic
       integer :: ilon2_sic,ilat2_sic
       integer :: ilon3_sic,ilat3_sic
-! Land 
+! Land
       integer :: ilon1_lnd,ilat1_lnd
       integer :: ilon2_lnd,ilat2_lnd
       integer :: ilon3_lnd,ilat3_lnd
@@ -39,13 +39,13 @@ MODULE genie_control
       integer :: ilon1_sed,ilat1_sed
 ! weathering
       integer :: ilon1_rok,ilat1_rok
-!     
+!
 ! ======================================================================
 ! Assigning grid sizes (add your own [commented] entries below)
 ! For IGCM
 
 #ifndef GENIENL
-#define GENIENL 7 
+#define GENIENL 7
 #endif
 
 #ifndef GENIENX
@@ -136,7 +136,6 @@ MODULE genie_control
       integer(kind=8) :: conv_kocn_krokgem  !< rokgem loop modifier (relative to ocean loop)
       integer(kind=8) :: conv_kocn_kgoldlite  !< goldlite loop modifier (relative to ocean loop)
       integer(kind=8) :: conv_kocn_kocnlite  !< goldlite loop modifier (relative to ocean loop)
-      integer(kind=8) :: conv_kocn_kecogem  !< ecogem loop modifier (relative to ocean loop)
       integer :: kgemlite
 
       ! total defined tracer numbers
@@ -171,7 +170,6 @@ MODULE genie_control
       logical :: flag_biogem
       logical :: flag_sedgem
       logical :: flag_rokgem
-      logical :: flag_ecogem
       logical :: flag_goldlite
       logical :: flag_ocnlite
       logical :: flag_gemlite
@@ -194,7 +192,7 @@ integer :: debug_init,debug_end,debug_loop
       character(len=6) :: fname_topo
 
       integer(kind=8) :: dt_write
-      
+
       ! Days per year.
       real, parameter :: global_daysperyear = 365.25
 

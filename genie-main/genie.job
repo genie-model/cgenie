@@ -4,7 +4,7 @@
 #
 # ###################################################################
 #
-# genie.job - This script runs the GENIE model. 
+# genie.job - This script runs the GENIE model.
 #
 # Defaults (from src/xml-config/xml/definition.xml) are applied, unless they are
 # overridden by those in XML config' file, supplied on the command line.
@@ -37,7 +37,7 @@ MAKE=make
 source user.sh
 
 # *******************************************************************
-# 
+#
 # LOCAL FUNCTIONS - defined first, used later
 #
 # == useage information function ==
@@ -94,7 +94,7 @@ exit 1
 
 # == function to perform tests on the output of a run ==
 runtests () {
-    # set up 
+    # set up
     OK="FALSE"
     if [ $COMPARE_AGAINST_ASSUMEDGOOD = "TRUE" ] ; then
 	REF_DIR=$OUTROOT/$ASSUMEDGOOD_NAME
@@ -112,34 +112,34 @@ runtests () {
       OUTDIR=$(cygpath -m $OUTDIR)
       REF_DIR=$(cygpath -m $REF_DIR)
     fi
-    
+
     # choose comparison tool based on file suffix--not over the moon about this..
     if [ "${TESTFILE##*.}" = "nc" ] ; then
 	DIFFTOOL="$RUNTIME_ROOT/genie-main/src/c/nccompare.exe $DIFF_OPTS"
     else
 	DIFFTOOL="diff --strip-trailing-cr"
     fi
-    
+
     # perform comparison
     echo "${EXPID}:"
-    
+
     # Convervation tests are a special case
     if [ $CHECKFLUXES = "TRUE" ] ; then
 	RETVAL=`cat $OUTDIR/$TESTFILE`
 	if [ $RETVAL = "T" ] ; then
 	    OK="TRUE"
 	fi
-    else 
+    else
 	if $DIFFTOOL $OUTDIR/$TESTFILE $REF_DIR/$TESTFILE ; then
 	    OK="TRUE"
 	fi
     fi
-    
+
     # reporting
     if [ $OK = "TRUE" ] ; then
 	echo "**TEST OK**"
         # clean up if test successful
-	\rm -rf $OUTDIR 
+	\rm -rf $OUTDIR
 	# clean up comparison dir too if its a restartread test
 	if [ $RESTARTREAD = "TRUE" ] ; then
 	    \rm -rf $REF_DIR
@@ -184,7 +184,7 @@ while getopts "btrakzxCDOf:o:c:m:g:h:" options; do
     t ) TESTING_MODE="TRUE";
 	CREATE_REF_MODE="FALSE";;
     r ) TESTING_MODE="FALSE";
-	CREATE_REF_MODE="TRUE";;      
+	CREATE_REF_MODE="TRUE";;
     a ) COMPARE_AGAINST_ASSUMEDGOOD="TRUE";
         COMPARE_AGAINST_KNOWNGOOD="FALSE";;
     k ) COMPARE_AGAINST_ASSUMEDGOOD="FALSE";
@@ -230,9 +230,9 @@ if [ "$CONFIGFILES" != '' ] ; then
         # check for valid model names
 	#    checkConfig src/xml-config/xslt/CheckModelNames.xsl $conf_file
         # check that models specified in parameters exist in config
-	###    checkConfig src/xml-config/xslt/CheckModelNamesConsistency.xsl $conf_file 
+	###    checkConfig src/xml-config/xslt/CheckModelNamesConsistency.xsl $conf_file
         # check for valid param names
-	    checkConfig src/xml-config/xslt/CheckParamNames.xsl $conf_file 
+	    checkConfig src/xml-config/xslt/CheckParamNames.xsl $conf_file
 	# Other checks...
 	# all being well, process the config file
 	    xsltproc -stringparam OUTROOT $OUTROOT -stringparam CODEDIR $CODEDIR -stringparam RUNTIME_ROOT $RUNTIME_ROOT -stringparam RUNTIME_OUTDIR $RUNTIME_OUTDIR -stringparam DATE "$DATE" -stringparam user_xml ../../../$conf_file src/xml-config/xslt/apply_job_configuration.xsl tmp$$.configure.xml > tmp$$.configure.tmp.xml
@@ -257,14 +257,14 @@ fi
 # ###################################################################
 # This is dependent upon whether we are in testing mode,
 # and further whether we are creating test reference files.
-# (reference files be they assumed- or known-goods, always 
+# (reference files be they assumed- or known-goods, always
 # start life in assumedgood output location)
 if [ $TESTING_MODE = "TRUE" ] ; then
     echo "**** TESTING - $CONFIGFILES ****"
     OUTDIR=$OUTROOT/$TEST_NAME
 elif [ $CREATE_REF_MODE = "TRUE" ] ; then
     OUTDIR=$OUTROOT/$ASSUMEDGOOD_NAME
-else 
+else
     OUTDIR=$OUTROOT/$EXPID
 fi
 
@@ -273,16 +273,16 @@ fi
 # ###################################################################
 # NB Config files describe an expt.  Since GENIE has both
 # build-time and compile-time settings, options which effect
-# the compilation are also in the config files.  
+# the compilation are also in the config files.
 #
 # Preprocessor macros are read in from tmp$$.build.sh.
 #
 # arguments passed to subsequent calls to make are collected
-# (also from tmp$$.build.sh) blow. 
+# (also from tmp$$.build.sh) blow.
 
 MAKE_ARGS="${MAKEFLAGS}"
 # Build type
-if (set -u; : $BUILD_TYPE) 2> /dev/null; then 
+if (set -u; : $BUILD_TYPE) 2> /dev/null; then
     MAKE_ARGS="${MAKE_ARGS} BUILD=${BUILD_TYPE}"
 fi
 
@@ -307,7 +307,6 @@ fi
 [ ! -d $OUTDIR/atchem ]    &&   mkdir -p $OUTDIR/atchem
 [ ! -d $OUTDIR/sedgem ]    &&   mkdir -p $OUTDIR/sedgem
 [ ! -d $OUTDIR/rokgem ]    &&   mkdir -p $OUTDIR/rokgem
-[ ! -d $OUTDIR/ecogem ]    &&   mkdir -p $OUTDIR/ecogem
 [ ! -d $OUTDIR/goldlite ]    &&   mkdir -p $OUTDIR/goldlite
 [ ! -d $OUTDIR/ocnlite ]    &&   mkdir -p $OUTDIR/ocnlite
 [ ! -d $OUTDIR/gemlite ]    &&   mkdir -p $OUTDIR/gemlite

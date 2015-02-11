@@ -1,5 +1,5 @@
       subroutine initialise_genie()
-c      
+c
       use genie_control
       use genie_global
       use genie_util, ONLY: check_unit, check_iostat, message, die
@@ -26,7 +26,6 @@ c
      :      conv_kocn_krokgem,
      :      conv_kocn_kgoldlite,
      :      conv_kocn_kocnlite,
-     :      conv_kocn_kecogem,
      :      kgemlite,
      :      flag_ebatmos,flag_igcmatmos,
      :      flag_fixedocean,flag_slabocean,flag_goldsteinocean,
@@ -39,7 +38,6 @@ c
      :      flag_atchem,
      :      flag_sedgem,
      :      flag_rokgem,
-     :      flag_ecogem,
      :      flag_ichem,
      :      flag_wind,
      :      flag_goldlite,
@@ -55,7 +53,7 @@ c
      :      flag_checkfluxes_atlantic,
      :      genie_timestep,
      :      lrestart_genie,
-     :      flag_glim_t2m_force, 
+     :      flag_glim_t2m_force,
      :      flag_glim_pforce,
      :      genie_solar_constant,
      :      fname_topo,
@@ -77,7 +75,6 @@ c
       conv_kocn_krokgem=-1
       conv_kocn_kgoldlite=-1
       conv_kocn_kocnlite=-1
-      conv_kocn_kecogem=-1
       kgemlite=1
 c
       flag_igcmatmos=.FALSE.
@@ -107,7 +104,6 @@ c
       flag_atchem=.false.
       flag_sedgem=.false.
       flag_rokgem=.false.
-      flag_ecogem=.false.
       flag_gemlite=.false.
 c
       write_flag_atm=.true.

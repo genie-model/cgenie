@@ -26,11 +26,11 @@ c     ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< !
       print '("  *** Welcome to cGENIE -- version:",I5)',genie_version
       print*,'*******************************************************'
       print*
-      
+
 c     ******************************************************************
 c     *** INITIALIZE ***************************************************
 c     ******************************************************************
-c     
+c
 c     ==================================================================
 c     Initialize GENIE
       call initialise_genie
@@ -68,11 +68,6 @@ c     ==================================================================
 c     *** OCNlite model - START
       if (flag_ocnlite) then
          call initialise_ocnlite_wrapper
-      endif
-c     ==================================================================
-c     *** ECOGEM model - START
-      if (flag_ecogem) then
-         call initialise_ecogem_wrapper
       endif
 c     ==================================================================
 c     *** BIOGEM model - START
@@ -127,22 +122,22 @@ c     initialize GEM time-stepping
       gem_yr    = gem_yr_min
       gem_notyr = gem_notyr_max
 c     ==================================================================
-c     *** BIOGEM model - headers and initialization run-time reporting 
+c     *** BIOGEM model - headers and initialization run-time reporting
       if (flag_biogem) then
          call biogem_climate_wrapper
          call diag_biogem_wrapper
       endif
 c     ==================================================================
-c     
+c
 c     ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> !
 c     ! *** MAIN TIME-STEPPING LOOP START **************************** !
 c     ! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> !
-c     
+c
 c     NOTE: koverall is in hours
       do koverall=1,koverall_total
 c     increment the clock which accumulates total time
          call increment_genie_clock
-c     
+c
          if (flag_gemlite) then
             if(mod(koverall,kgemlite*kocn_loop).eq.1) then
 c     increment GEM year count
@@ -156,10 +151,10 @@ c     ### SWITCH TO GEM CYCLE ##########################################
                   if (debug_loop.gt.0) PRINT*,'### START GEM CYCLE ###'
 cc     adjust GEM cycle count
 c                  gem_notyr = gem_notyr - gem_dyr
-c                  if (gem_notyr.lt.gem_notyr_min) 
+c                  if (gem_notyr.lt.gem_notyr_min)
 c     &                 gem_notyr = gem_notyr_min
-c                  if (debug_loop.gt.1) 
-c     &                 PRINT*,'*** gem_yr, D(gem_yr)  :',  
+c                  if (debug_loop.gt.1)
+c     &                 PRINT*,'*** gem_yr, D(gem_yr)  :',
 c     &                 gem_yr,gem_dyr
                   if (debug_loop.gt.3) PRINT*,'* gemlite_cycleinit'
                   call gemlite_cycleinit_wrapper
@@ -167,11 +162,11 @@ c     copy current state of tracer arrays to GEMlite
                   if (debug_loop.gt.3) PRINT*,'* cpl_comp_gemglt'
                   call cpl_comp_gemglt_wrapper
 c     convert between sediment grids (for integrated sediment rain flux)
-                  if (debug_loop.gt.3) 
+                  if (debug_loop.gt.3)
      &                 PRINT*,'* cpl_flux_sedsed1'
                   call cpl_flux_sedsed1_wrapper
 c     copy climate state variables (here: sea-ice)
-                  if (debug_loop.gt.3) 
+                  if (debug_loop.gt.3)
      &                 PRINT*,'* gemlite_climate_wrapper'
                   call gemlite_climate_wrapper
 c     ##################################################################
@@ -188,10 +183,10 @@ c     adjust GEM cycle count
                   gem_yr = gem_yr + gem_dyr
                   if (gem_yr.gt.gem_yr_max) gem_yr = gem_yr_max
                   gem_notyr = gem_notyr - gem_dyr
-                  if (gem_notyr.lt.gem_notyr_min) 
+                  if (gem_notyr.lt.gem_notyr_min)
      &                 gem_notyr = gem_notyr_min
-                  if (debug_loop.gt.1) 
-     &                 PRINT*,'*** gem_yr, gem_notyr, gem_dyr  :', 
+                  if (debug_loop.gt.1)
+     &                 PRINT*,'*** gem_yr, gem_notyr, gem_dyr  :',
      &                 gem_yr,gem_notyr,gem_dyr
 c     apply *summed* anomolies to <atm>, <ocn>, <ts>, <ts1> so that
 c     the last state of the seasonal cycle is preserved
@@ -214,7 +209,7 @@ c     re-set <genie_atm1>
                   call cpl_comp_gematm_wrapper
 c     [genie-atchem/cpl_comp_atchem.f90]
 c     update <sfcatm1> ocean interface array
-                  if (debug_loop.gt.3) 
+                  if (debug_loop.gt.3)
      &                 PRINT*,'* cpl_comp_atmocn_wrapper'
                   call cpl_comp_atmocn_wrapper
 c     reset cumulative (annual average) weathering array
@@ -251,7 +246,7 @@ c     ******************************************************************
             endif
          endif
 c     ******************************************************************
-c     
+c
 c     test for being within 1st part of cycle
          if((istep_gem.le.gem_notyr).or.(.not.flag_gemlite)) then
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -278,7 +273,7 @@ c     surflux is executed on the first time-step
                   call surflux_wrapper
                   if (debug_loop.gt.2) PRINT*,'<<<'
                endif
-            endif 
+            endif
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c     *** EMBM atmosphere model
             if (flag_ebatmos) then
@@ -366,10 +361,10 @@ c        + atm exchnage (outgassing and weathering CO2 consumption)
 c      Couple ocean and atmosphere ROKGEM fluxes
 c      NOTE: carry out after possible pre-GEMlite integration step,
 c            as fluxes passed from ROKGEM are re-set ...
-                  if (debug_loop.gt.3) 
+                  if (debug_loop.gt.3)
      &                 PRINT*,'* cpl_flux_rokatm_wrapper'
                   call cpl_flux_rokatm_wrapper
-                  if (debug_loop.gt.3) 
+                  if (debug_loop.gt.3)
      &                 PRINT*,'* cpl_flux_rokocn_wrapper'
                   call cpl_flux_rokocn_wrapper
                endif
@@ -377,16 +372,16 @@ c            as fluxes passed from ROKGEM are re-set ...
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 c$$$  c$$$!$omp parallel private(nthreads,thread_id)
-c$$$  
+c$$$
 c$$$  c$$$            call omp_set_num_threads(4)
 c$$$  c$$$            nthreads = omp_get_max_threads()
 c$$$  c$$$            print*,'* # MAX THREADS: ',nthreads
 c$$$  c$$$            nthreads = omp_get_num_threads()
 c$$$  c$$$            print*,'* # ACTUAL THREADS: ',nthreads
-c$$$  
+c$$$
 c$$$  c$$$!$OMP SECTIONS
 c$$$  c$$$!$OMP SECTION
-c$$$  
+c$$$
 c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c$$$  c     *** GOLDSTEIN ocean model
 c$$$  if (flag_goldsteinocean) then
@@ -398,9 +393,9 @@ c$$$  if (debug_loop.gt.2) PRINT*,'<m< GOLDSTEIN'
 c$$$  endif
 c$$$  endif
 c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$  
+c$$$
 c$$$  c$$$!$OMP SECTION
-c$$$  
+c$$$
 c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c$$$  c     *** BIOGEM model - UPDATE
 c$$$  if (flag_biogem) then
@@ -414,7 +409,7 @@ c$$$  if (debug_loop.gt.2) PRINT*,'<m< BIOGEM'
 c$$$  endif
 c$$$  endif
 c$$$  c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-c$$$  
+c$$$
 c$$$  c$$$!$OMP END SECTIONS
 c$$$  c$$$!$omp end parallel
 
@@ -463,7 +458,7 @@ c     => create annual averages of <ocn> (for later transfer to GEMlite)
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c     *** ATCHEM model - UPDATE
             if (flag_atchem) then
-               if (mod(koverall,conv_kocn_katchem*kocn_loop).eq.0) 
+               if (mod(koverall,conv_kocn_katchem*kocn_loop).eq.0)
      &              then
                   if (debug_loop.gt.2) PRINT*,'>>> ATCHEM @ ',
      &                 koverall,conv_kocn_katchem*kocn_loop
@@ -501,8 +496,8 @@ c     to be cleanly predicted (at the start fo the last N cycle)
 c     decrement cycle phase counter to
 c     prolongue operation in full (non-GEM) time-stepping cycle phase
                         istep_gem = istep_gem - 1
-                        if (debug_loop.gt.1) 
-     &                       PRINT*,'$$$ NORMAL phase extended:', 
+                        if (debug_loop.gt.1)
+     &                       PRINT*,'$$$ NORMAL phase extended:',
      &                       istep_gem,
      &                       ' / dpCO2 (ppm) = ',
      &                       abs(gem_pCO2 - gem_pCO2_OLD)
@@ -522,7 +517,7 @@ c     for calculating rate of change of pCO2 between GEM (year) steps
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 c     *** SEDGEM model - UPDATE
             if (flag_sedgem) then
-               if (mod(koverall,conv_kocn_ksedgem*kocn_loop).eq.0) 
+               if (mod(koverall,conv_kocn_ksedgem*kocn_loop).eq.0)
      &              then
                   if(istep_gem.ne.gem_notyr) then
                      if (debug_loop.gt.2) PRINT*,'>>> SEDGEM @ ',
@@ -541,7 +536,7 @@ c     *** SEDGEM model - UPDATE
             endif
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
             if (flag_gemlite) then
-               If ((istep_gem.gt.1).AND.(istep_gem.lt.gem_notyr)) 
+               If ((istep_gem.gt.1).AND.(istep_gem.lt.gem_notyr))
      &              gem_switch=0
             end if
 c     $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -580,7 +575,7 @@ c     *** c-GOLDSTEIN - UPDATE
                if(mod(koverall,kocn_loop).eq.1) then
                   istep_ocn=istep_ocn+1
                endif
-            endif 
+            endif
 c     ##################################################################
 c     *** ROKGEM model - UPDATE (GEMlite)
             if (flag_rokgem) then
@@ -625,9 +620,9 @@ c     NOTE: no time-sveraging (GEMLITE, SEDGEM both @ 1yr time-steps)
                endif
             endif
 c     update BIOGEM diagnostics time points
-c     NOTE: failure to do this risks BIOGEM losing track of 
+c     NOTE: failure to do this risks BIOGEM losing track of
 c     which time-point to save time-series and slices at
-c     NOTE: BUT ... you will not get an exactly eqilvilant e.g. 
+c     NOTE: BUT ... you will not get an exactly eqilvilant e.g.
 c     annual average as GEMlite onyl updates at the very END
 c     of its (yearly) time-step
 c     (=> you will effectively get the start-of-year value
@@ -636,7 +631,7 @@ c     rather than the yearly mid-point (or average))
 c     i.e. ... the time-series is out of phase during the GEM segment
 c     NOTE: also update BIOGEM forcing time-series [biogem_forcing]
 c     (even though forcings are not applied in the GEMlite phase)
-c     (although ... sub_update_sig will find the correct point 
+c     (although ... sub_update_sig will find the correct point
 c     in the forcing time-series regardless ...)
             if (flag_biogem) then
                if (mod(koverall,conv_kocn_kbiogem*kocn_loop).eq.0)
@@ -655,7 +650,7 @@ c     or also calculate a full time-series and slice average and save
                endif
             endif
 c     ### ADAPT CYCLE STEP ###
-c     extend GEM cycle phase if the cumulative DpCO2 change 
+c     extend GEM cycle phase if the cumulative DpCO2 change
 c     remains below the specified threshold
             if (flag_gemlite) then
                if (mod(koverall,kgemlite*kocn_loop).eq.0) then
@@ -667,14 +662,14 @@ c     if not => test cumulative DpCO2 change for
 c     excessive pCO2 drift has occurred
                      if (istep_gem.eq.(gem_notyr+1)) then
                         gem_pCO2_INIT = gem_pCO2
-                        if (debug_loop.gt.1) 
+                        if (debug_loop.gt.1)
      &                       PRINT*,'### SETTING: gem_pCO2_INIT',
      &                       gem_pCO2_INIT
                      else
-                        if (debug_loop.gt.1) 
+                        if (debug_loop.gt.1)
      &                       PRINT*,'### CURRENT: gem_pCO2',
      &                       gem_pCO2
-                        if ( abs(gem_pCO2_INIT - gem_pCO2).lt. 
+                        if ( abs(gem_pCO2_INIT - gem_pCO2).lt.
      &                       gem_adapt_DpCO2 ) then
 c     decrement cycle phase counter to
 c     prolongue operation in accelerated (GEM) time-stepping cycle phase
@@ -682,7 +677,7 @@ c     but ONLY if selected (some risk of spurious stuff happening
 c     if staying in the GEM phase for ever ...)
                            if (gem_adapt_auto_unlimitedGEM) then
                               istep_gem = istep_gem - 1
-                              if (debug_loop.gt.1) 
+                              if (debug_loop.gt.1)
      &                             PRINT*,'### GEM phase extended :',
      &                             istep_gem,
      &                             ' / SUM(DpCO2) (ppm) =',
@@ -703,7 +698,7 @@ c     if staying in the GEM phase for ever ...)
 c     ##################################################################
 c     *** ATCHEM model - UPDATE (GEMlite)
             if (flag_atchem) then
-               if (mod(koverall,conv_kocn_katchem*kocn_loop).eq.0) 
+               if (mod(koverall,conv_kocn_katchem*kocn_loop).eq.0)
      &              then
 c     DO NOTHING! (currently)
                endif
@@ -711,7 +706,7 @@ c     DO NOTHING! (currently)
 c     ##################################################################
 c     *** SEDGEM model - UPDATE (GEMlite)
             if (flag_sedgem) then
-               if (mod(koverall,conv_kocn_ksedgem*kocn_loop).eq.0) 
+               if (mod(koverall,conv_kocn_ksedgem*kocn_loop).eq.0)
      &              then
 c     force (CaCO3) sediment aging
 c     (in the absence of BIOGEM sedimentation age updating)
@@ -740,9 +735,9 @@ c     ##################################################################
 c     ### END GEMLITE ##################################################
 c     ##################################################################
          endif
-c     
+c
       enddo
-c     
+c
 c     ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< !
 c     ! *** MAIN TIME-STEPPING LOOP END ****************************** !
 c     ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< !
@@ -806,7 +801,7 @@ c     *** GOLDSTEIN sea-ice - END
 c     ==================================================================
 c     *** GEM model - END
       if (flag_atchem.or.flag_biogem.or.flag_sedgem.or.flag_rokgem) then
-ccc   
+ccc
       endif
 c     ==================================================================
 c     *** GOLDlite model - END
@@ -817,11 +812,6 @@ c     ==================================================================
 c     *** OCNlite model - END
       if (flag_ocnlite) then
          call end_ocnlite_wrapper
-      endif
-c     ==================================================================
-c     *** ECOGEM model - END
-      if (flag_ecogem) then
-         call end_ecogem_wrapper
       endif
 c     ==================================================================
 c     *** BIOGEM model - END

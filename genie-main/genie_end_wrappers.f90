@@ -24,12 +24,6 @@ contains
   end subroutine end_ocnlite_wrapper
 
   !!
-  subroutine end_ecogem_wrapper
-    implicit none
-    call end_ecogem()
-  end subroutine end_ecogem_wrapper
-
-  !!
   subroutine end_gem_wrapper
     implicit none
     call end_gem()
