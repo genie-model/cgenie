@@ -1,6 +1,6 @@
 cmsw
 cmsw Makes a file averaged over the last
-cmsw year for ENTS model. 
+cmsw year for ENTS model.
 cmsw Files written to every ianav timesteps.
 cmsw
       subroutine annav_diags(istep,iout,
@@ -12,7 +12,6 @@ cmsw
      :     albs_lnd,                         !< surface albedo
      :     land_snow_lnd                     !< land snow cover
      :     )
-c #ifdef dosc
 
 #include "genie_ents.cmn"
 #include "var_ents.cmn"
@@ -64,8 +63,8 @@ ccccccccccccccccccccccccc FOR NETCDF
      : 'sleaf    ',
      : 'srespsoil','sCveg    ','sCsoil   ','sfv      ','sepsv    '/)
 
-        character*10, dimension(9) :: avlabels=(/'avgsl1','avgsl2','avgsl3',
-     :  'avgsl4','avgsl5','avgsl6','avgsl7','avgsl8','Gtatm2'/)
+        character*10, dimension(9) :: avlabels=(/'avgsl1','avgsl2',
+     :  'avgsl3','avgsl4','avgsl5','avgsl6','avgsl7','avgsl8','Gtatm2'/)
 
         character*10, dimension(13) :: avlabels2=(/'1avgs1  ','2avgs2  ',
      : '3avgs3  ','4avgs4  ','5avgs5  ','6avgs6  ','7avgs7  ',
@@ -107,7 +106,7 @@ c SG <
 
 cmsw Sum up quantities since last .avg calculation
 
-      pco2ld_tot=pco2ld_tot+pco2ld 
+      pco2ld_tot=pco2ld_tot+pco2ld
       do i=1,imax
          do j=1,jmax
             if(ents_k1(i,j).gt.ents_kmax)then
@@ -154,14 +153,14 @@ cmsw Mass of DIC in kg in ocean box
                 endif
              enddo
 #endif
-          enddo 
+          enddo
        enddo
 
 cmsw If istep divisable by ianav then write
 cmsw .sland.avg file
 
        rnyear=1./ents_nyear
-         
+
        if(iout.eq.1)then
 
          pco2ld_tot=pco2ld_tot+pco2ld
@@ -282,7 +281,7 @@ ccc	day since the beginning of the run
 
         fname=trim(outdir_name)//trim(ents_out_name)//'_TSannual.nc'
 
-cccccccccccccccccccccc 
+cccccccccccccccccccccc
        do kk=1,8
                 label=avlabels(kk)
                 var_data1=avgsl(kk)
@@ -324,23 +323,19 @@ cmsw Spatial average file
      1              //'sland.avg'
          open(1,file=trim(filename))
 #endif
-      
-c         print*,'Printing averaged land restart on istep=',istep
-c         print*,'Averaged over the last',ents_nyear,'isteps'
 
 cmsw Write to file
 
-         do l=1,8 
+         do l=1,8
             do i=1,imax
-               do j=1,jmax 
+               do j=1,jmax
                    write(1,10)cfavg(l,i,j)
                enddo
             enddo
          enddo
          write(1,10)real(yearosc)
 
-c   10 format(e14.4)  
-   10 format(e14.4e3)   
+   10 format(e14.4e3)
 
       close(1)
 
@@ -428,7 +423,7 @@ cmsw Zero arrays ready for next average
                sCsoil1(i,j)=0.
                sfv1(i,j)=0.
                sepsv1(i,j)=0.
- 
+
                do l=1,8
                   cfavg(l,i,j)=0.
                enddo
@@ -458,7 +453,6 @@ cmsw Zero arrays ready for next average
           enddo
           tot_mass_ocn_c=0.
           pco2ld_tot=0.
-       endif 
-c #endif
+       endif
       endif
       end

@@ -4,11 +4,10 @@ cmsw itstp timesteps
 cmsw
       subroutine carbt_diags(istep)
 
-c      include '../genie-cgoldstein/var.cmn'
 #include "genie_ents.cmn"
 #include "var_ents.cmn"
         include 'netcdf.inc'
-  
+
       integer i,j,istep
 
       real diagtime
@@ -16,7 +15,7 @@ c      include '../genie-cgoldstein/var.cmn'
       real sumphoto,sumrveg,sumrsoil,sumleaf
       real Gtveg,Gtsoil,Gtatm,Gfv
       real Gtphoto,Gtrveg,Gtrsoil,Gtleaf
-      
+
       character filename*200
 
 ccccccccccccccccccccccccc FOR NETCDF
@@ -27,7 +26,6 @@ ccccccccccccccccccccccccc FOR NETCDF
      :  'Gtatm  ','Gfv    ','pco2ld ','Gtphoto','Gtrveg ','Gtleaf ',
      : 'Gtrsoil'/)
         integer kk
-ccc        integer mymonth,myyear
         integer myday
         logical fexist
 
@@ -49,7 +47,6 @@ cccccccccccccccccccccccc
 c SG > Open slandt file for disgnostics
       filename = trim(outdir_name)//trim(ents_out_name)//'.'//'slandt'
       open(43,file=trim(filename),POSITION='APPEND')
-c      print*,trim(filename)
 c SG <
 
       diagtime=real(istep)/real(ents_nyear)
@@ -61,7 +58,7 @@ c SG <
       sumphoto=0.
       sumrveg=0.
       sumrsoil=0.
-      sumleaf=0. 
+      sumleaf=0.
 
 cmsw Sum up all carbon spatially in each reservoir
 
@@ -91,7 +88,7 @@ cmsw Covert back to average fraction
       Gfv=sumfv/land_pts_ents
 
 cmsw Convert to GtC/yr
-   
+
       Gtphoto=sumphoto*rgtk*asurfrea
       Gtrveg=sumrveg*rgtk*asurfrea
       Gtrsoil=sumrsoil*rgtk*asurfrea
@@ -105,9 +102,6 @@ cmsw Write to file
        close (43)
 
 ccccccccccccccccccccccccccccccccccccccc ncdf-replacement
-ccc	myyear=int(istep/ents_nyear)+1
-ccc	mymonth=int(12*mod(istep,ents_nyear)/ents_nyear)
-ccc	myday=int(360*istep/ents_nyear-mymonth*30-(myyear-1)*360)
         myday=int(360*istep/ents_nyear)
 
         fname=trim(outdir_name)//trim(ents_out_name)//'_TS.nc'
@@ -118,7 +112,7 @@ ccc	myday=int(360*istep/ents_nyear-mymonth*30-(myyear-1)*360)
                 close(8,status='delete')
         end if
         end if
-cccccccccccccccccccccc 
+cccccccccccccccccccccc
        do kk=1,9
           label=labels(kk)
                 select case (kk)
@@ -145,4 +139,4 @@ cccccccccccccccccccccc
         enddo
 cccccccccccccccccccccccccccccccc
 
-      end        
+      end

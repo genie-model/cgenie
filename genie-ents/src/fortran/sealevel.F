@@ -1,5 +1,5 @@
 cmsw
-cmsw sealevel.f calculates change in sealevel height 
+cmsw sealevel.f calculates change in sealevel height
 cmsw relative to a reference average density specified
 cmsw in goin_ents
 cnre dsc/ec(2) error corrected NRE 20/6/6
@@ -10,7 +10,7 @@ cmsw
 
 #include "genie_ents.cmn"
 #include "var_ents.cmn"
-      
+
       real vol,sumrho,avrho,mass,rho1,deltah
       real diagtime,vol1,areas
       integer pts,i,j,k,istep
@@ -35,7 +35,6 @@ ccccccccccccccccccccccccc FOR NETCDF
 ccc	'diagtime1'
         character*6, dimension(2) :: labels=(/'deltah','avrho '/)
         integer kk
-ccc        integer mymonth,myyear
         integer myday
 
         interface
@@ -66,7 +65,6 @@ c SG > Open sealevel file for disgnostics
       filename = trim(outdir_name)//trim(ents_out_name)//
      1   '.'//'sealevel'
       open(44,file=trim(filename),POSITION='APPEND')
-c      print*,trim(filename)
 c SG <
 
 cmsw Sealevel rise due to thermal expansion
@@ -75,8 +73,6 @@ cmsw Sealevel rise due to thermal expansion
          do j=1,jmax
             do k=1,ents_kmax
                if(k.ge.ents_k1(i,j))then
-cnre dsc error   rho1=(rho(i,j,k)*1.18376)+1000.+(34.9*0.7968)
-cnre dsc error   vol1=rsc*rsc*dphi*ds*dz(k)*5000.
                  rho1=(dum_rho(i,j,k) + dum_saln0*dum_ec(2))*dum_rhosc
      1            + dum_rh0sc
                  vol1=dum_rsc*dum_rsc*dum_dphi*dum_ds(1)*dum_dz(k)
@@ -95,7 +91,7 @@ cnre dsc error   vol1=rsc*rsc*dphi*ds*dz(k)*5000.
       mass=sumrho
 
       areas=dum_rsc*dum_rsc*dum_dphi*dum_ds(1)*pts
- 
+
       deltah=(vol/areas)*((rhoref/avrho)-1.)
 
 #ifdef icemelt
@@ -118,13 +114,10 @@ cmsw Calculate change in sealevel due to thermal expansion only
       close (44)
 
 ccccccccccccccccccccccccccccccccccccccc ncdf-replacement
-ccc	myyear=int(istep/ents_nyear)+1
-ccc	mymonth=int(12*mod(istep,ents_nyear)/ents_nyear)
-ccc	myday=int(360*istep/ents_nyear-mymonth*30-(myyear-1)*360)
         myday=int(360*istep/ents_nyear)
 
         fname=trim(outdir_name)//trim(ents_out_name)//'_TS.nc'
-cccccccccccccccccccccc 
+cccccccccccccccccccccc
        do kk=1,2
           label=labels(kk)
                 select case (kk)

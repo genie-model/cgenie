@@ -8,7 +8,7 @@ ccc
         include 'netcdf.inc'
 
         character*(*) fname, label
-        character dim1_name*200, dim2_name*200, dim3_name*200, 
+        character dim1_name*200, dim2_name*200, dim3_name*200,
      : var_name*200, var_att(2,2)*200
         integer ncid, status, var_id, dims(3),jj,myday,
      : vardim_id1,vardim_id2,vardim_id3,time_id,lon_id,lat_id
@@ -69,7 +69,7 @@ ccc
 
                status=nf_def_var(ncid,dim2_name,nf_float,1,dims(2),lat_id)
         if (status .ne. nf_noerr) call her(status)
-        
+
                status=nf_put_att_text(ncid,lat_id,'units',13,'degrees_north')
         if (status .ne. nf_noerr) call her(status)
 
@@ -80,8 +80,6 @@ ccc
         if (status .ne. nf_noerr) call her(status)
 
         end if
-
-ccc	print*,var_name
 
 cccccccccccccccccccc
 
@@ -136,7 +134,7 @@ cccccccccccccccccccccccccc
 
        end
 
-c	SUBROUTINE FOR ERROR PROCESSING 
+c	SUBROUTINE FOR ERROR PROCESSING
        subroutine her(err)
         implicit none
        include 'netcdf.inc'

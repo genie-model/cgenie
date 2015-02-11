@@ -14,7 +14,7 @@ cmsw
 #include "var_ents.cmn"
 
       real diagtime,sumavg2(13),avgsl2(13)
- 
+
       integer i,j,istep,l
 
       character filename*200
@@ -40,7 +40,6 @@ ccc	'diagtime1'
      :  'avgs3 ','avgs4 ','avgs5 ','avgs6 ','avgs7 ','avgs8 ','avgs9 ',
      :  'avgs10','avgs11','avgs12','avgs13'/)
         integer kk
-ccc        integer mymonth,myyear
         integer myday
 
         interface
@@ -58,12 +57,11 @@ ccc        integer mymonth,myyear
         end interface
 cccccccccccccccccccccccc
 
-      
+
 c SG > Open physt_diags file for disgnostics
       filename = trim(outdir_name)//trim(ents_out_name)//
      1   '.'//'pslandt'
       open(48,file=trim(filename),POSITION='APPEND')
-c      print*,trim(filename)
 c SG <
 
       diagtime=real(istep)/real(ents_nyear)
@@ -71,7 +69,7 @@ c SG <
       do l=1,13
          sumavg2(l)=0.
       enddo
- 
+
       do i=1,imax
          do j=1,jmax
             if(ents_k1(i,j).gt.ents_kmax)then
@@ -92,7 +90,7 @@ c SG <
             sumavg2(11)=sumavg2(11)+albs_lnd(i,j)
             sumavg2(12)=sumavg2(12)+land_snow_lnd(i,j)
             sumavg2(13)=sumavg2(13)+z0(i,j)
- 
+
             endif
          enddo
       enddo
@@ -114,14 +112,11 @@ cmsw write to file
        close(48)
 
 ccccccccccccccccccccccccccccccccccccccc ncdf-replacement
-ccc	myyear=int(istep/ents_nyear)+1
-ccc	mymonth=int(12*mod(istep,ents_nyear)/ents_nyear)
-ccc	myday=int(360*istep/ents_nyear-mymonth*30-(myyear-1)*360)
         myday=int(360*istep/ents_nyear)
 
         fname=trim(outdir_name)//trim(ents_out_name)//'_TS.nc'
 
-cccccccccccccccccccccc 
+cccccccccccccccccccccc
        do kk=1,13
           label=labels(kk)
           var_data=avgsl2(kk)

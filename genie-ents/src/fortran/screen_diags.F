@@ -6,7 +6,6 @@ cmsw
       subroutine screen_diags
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real amin,amax
@@ -34,7 +33,7 @@ c      include '../genie-cgoldstein/var.cmn'
       print*,tot_v,'(GtC) veg'
       print*,tot_s,'(GtC) soil'
       print*,tot_a,'(GtC) atm'
-      
+
       end
 
       subroutine aminmaxl(imax,jmax,ents_kmax,k1,a,amin,amax,
@@ -57,12 +56,12 @@ c      include '../genie-cgoldstein/var.cmn'
          do i=1,imax
             if(k1(i,j).gt.ents_kmax)then
                if(a(i,j).lt.amin)then
-                  amin = a(i,j) 
+                  amin = a(i,j)
                   iamin = i
                   jamin = j
                endif
                if(a(i,j).gt.amax)then
-                  amax = a(i,j) 
+                  amax = a(i,j)
                   iamax = i
                   jamax = j
                endif
@@ -75,7 +74,6 @@ c      include '../genie-cgoldstein/var.cmn'
       subroutine slnd_h2o_invent(sumh2o)
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real sumh2o
@@ -90,15 +88,14 @@ c      include '../genie-cgoldstein/var.cmn'
             endif
          enddo
       enddo
-          
-      sumh2o=sumh2o*asurfrea*1.e-12  
+
+      sumh2o=sumh2o*asurfrea*1.e-12
 
       end
 
       subroutine slnd_c_invent(sumc,sumv,sums,suma)
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real sumc,sumv,sums,suma
@@ -119,9 +116,8 @@ c      include '../genie-cgoldstein/var.cmn'
       enddo
 
       sumv=sumv*asurfrea*1.e-12
-      sums=sums*asurfrea*1.e-12 
+      sums=sums*asurfrea*1.e-12
       suma=suma*asurfrea*1.e-12
       sumc=sumv+sums+suma
 
       end
-

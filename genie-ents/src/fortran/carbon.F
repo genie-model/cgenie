@@ -33,7 +33,7 @@ cmsw Work out CO2 conc according to atchem (ppmv)
 c The following statement assumes spatially uniform pCO2 in the atmosphere
 c TODO: compute global average pCO2
       pco2ld=dum_co2_out(1,1)*rmtp
-      
+
 cmsw Start land_pts loop
 
       do i=1,imax
@@ -51,7 +51,7 @@ cmsw Set up temperature and water arrays in Kelvin
             qlnd(i,j)=tqld(2,i,j)
 
 cmsw Calculate photosynthesis (kgC/m2/yr)
-            
+
             call photosynthesis(Cveg(i,j),tair(i,j),
      &                          pco2ld,qlnd(i,j),bcap(i,j),
      &                          fv(i,j),photo(i,j))
@@ -99,7 +99,7 @@ cmsw If not a land point don't calculate
 
          enddo
       enddo
-       
+
 #endif
       end
 
@@ -138,7 +138,7 @@ c      include '../genie-cgoldstein/var.cmn'
      &    (1.+exp(-0.3*(dum_tair-k12))) ))
      & +  ((2.**(0.1*(dum_tair-topt))) /
      &    ( (1.+exp(0.6*(dum_tair-k11a)))*
-     &    (1.+exp(-0.3*(dum_tair-k12))) )) 
+     &    (1.+exp(-0.3*(dum_tair-k12))) ))
 
       dum_photo=k18*rk19*
      &          fco2*fws*fta*dum_fv
@@ -152,7 +152,6 @@ cmsw vegetation respiration (kgC/m2/yr)
       subroutine veg_resp(dum_cveg,dum_tair,dum_respveg)
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real,intent(in):: dum_cveg,dum_tair
@@ -174,7 +173,6 @@ cmsw Leaf litter (kgC/m2/yr)
      &                       dum_epsv,dum_leaf)
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real,intent(in):: dum_cveg,dum_photo,dum_respveg
@@ -193,7 +191,6 @@ cmsw Soil respiration (kgC/m2/yr)
       subroutine soil_resp(dum_csoil,dum_tlnd,dum_respsoil)
 
 #include "genie_ents.cmn"
-c      include '../genie-cgoldstein/var.cmn'
 #include "var_ents.cmn"
 
       real,intent(in):: dum_csoil,dum_tlnd

@@ -1,7 +1,7 @@
 * ======================================================================
 * initialise_ents.F
 * ======================================================================
-* 
+*
 * SG (02/01/2K7)
 * conversion of simpleland into geniefied ents (henceforth genie-ents)
 
@@ -13,7 +13,6 @@
      :     dum_rmax,dum_rdtdim,
      :     dum_tstar_atm,dum_qstar_atm,
      :     dum_ca,dum_co2_out,
-c daysperyear,
      :     gn_daysperyear,dum_lat,
      :     landice_slicemask_lic,            !< land ice sheet mask
      :     albs_lnd,                         !< surface albedo
@@ -29,13 +28,12 @@ c daysperyear,
      :     sfxatm_lnd                        !< land-atmosphere exchange fluxes
      :     )
 
-c      include 'var.cmn'
 #include "genie_ents.cmn"
 #include "var_ents.cmn"
 
 c Variable declaration
       character dum_lin*13
-      
+
       real dum_rsc
       real dum_syr
       integer :: dum_nyear
@@ -136,13 +134,9 @@ c SG read in namelist
       else
          close(59)
       end if
-      
 
-c SG > : read GOIN file
-c      open(unit=855,file='goin_ENTS',status='old')
 
 c     Input directory name
-c      read(855,'(a)')indir_name
       lenin = lnsig1(indir_name)
       if (indir_name(lenin:lenin).ne.'/') then
 c        This 'if' checks for a terminal slash symbol
@@ -152,7 +146,6 @@ c        This 'if' checks for a terminal slash symbol
       print*,'Input dir. name ',indir_name(1:lenin)
 
 c     Output directory name
-c      read(855,'(a)')outdir_name
       lenout = lnsig1(outdir_name)
       if (outdir_name(lenout:lenout).ne.'/') then
 c        This 'if' checks for a terminal slash symbol
@@ -160,9 +153,8 @@ c        This 'if' checks for a terminal slash symbol
          outdir_name(lenout:lenout+1) = '/'
       end if
       print*,'Output dir. name ',outdir_name(1:lenout)
-      
+
 c     Config directory name
-c      read(855,'(a)')condir_name
       lencon = lnsig1(condir_name)
       if (condir_name(lencon:lencon).ne.'/') then
 c        This 'if' checks for a terminal slash symbol
@@ -171,35 +163,27 @@ c        This 'if' checks for a terminal slash symbol
       end if
       print*,'Config dir. name ',condir_name(1:lencon)
 
-c      read (855,*),en_npstp
       print*,'npstp ',ents_npstp
-c      read(855,*) ents_out_name
       print*,'ents_out_name = ',trim(ents_out_name)
       print*,'ents_restart_file = ',trim(ents_restart_file)
 
-
-c      close (855)      
-      
       print*, 'lin = ',dum_lin
       print*,dum_rsc,dum_syr,ents_nyear
       print*,'rmax dphi ', dum_rmax,dum_dphi
-c      print*,'ilat1_ocn: ',ilat1_ocn
       print*, 'Seasonality enabled: ',dosc
 
 c SG Transfer variables to common variables within ents
        ents_kmax = dum_kmax
        ents_nyear = dum_nyear
-C       daysperyear = gn_daysperyear
 ccccccccccccccc VNL
         ents_lat=dum_lat
 ccccccccccccccc
 
-c Convert tstar_atm & qstar_atm arrays into one tq array  
+c Convert tstar_atm & qstar_atm arrays into one tq array
          do j=1,jmax
             do i=1,imax
                dum_tq(1,i,j) = real(dum_tstar_atm(i,j),kind(dum_tq))
                dum_tq(2,i,j) = real(dum_qstar_atm(i,j),kind(dum_tq))
-c	       co2(i,j) = dum_co2_out(i,j)
                ents_k1(i,j) = dum_k1(i,j)
             enddo
          enddo
@@ -218,14 +202,6 @@ c Initialise simple land variables
      :     albs_lnd,
      :     land_snow_lnd
      :     )
-cmsw Emissions setup
-      if(include_emissions.eq.'y'.or
-     &  .include_emissions.eq.'Y')then
-c         call setup_emissions(nsteps,maxemit,lenemit,tts,ets)
-c         print*,'Emissions timeseries array setup'
-c         print*,' '
-c         iemit = 1
-      endif
 
 c albedo
       do j=1,jmax
@@ -266,10 +242,10 @@ c initialise land-atmosphere fluxes
 
       print*,' <<< Initialisation complete'
       print*,'======================================================='
-            
+
 * ======================================================================
 * end of initialise_ents.F
 * ======================================================================
-      
+
       return
       end

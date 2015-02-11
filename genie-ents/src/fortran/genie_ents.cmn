@@ -2,7 +2,7 @@
 * SG 22/01/2K7 Adding variables that are used by ents, but reside
 * in var.cmn (genie-cgoldstein)
 * genie_ents.cmn
-* 
+*
 *
 ! For GOLDSTEIN ocean
 #ifndef GOLDSTEINNLONS
@@ -13,23 +13,18 @@
 #endif
 
       implicit none
-      
+
       integer maxi,maxj,maxnyr,imax,jmax
       parameter ( maxi = GOLDSTEINNLONS , maxj = GOLDSTEINNLATS)
       parameter (maxnyr=220)
       parameter ( imax = GOLDSTEINNLONS , jmax = GOLDSTEINNLATS)
       integer ents_k1(maxi,maxj),ents_kmax,ents_nyear
         real ents_lat(maxj)
-c      common /ocn_grid/maxi,maxj,maxnyr
       common /ocn_grid/ents_k1,ents_kmax,ents_nyear,ents_lat
 
-c      real daysperyear
-
-c      common /globvars/daysperyear
-
 c MAF : The par_output_years_0d and _2d, rstdir_name, start_year,
-c MAF : opt_timeseries_output, opt_append_data vars are defined to be 
-c MAF : a similar type here as the parameters with similar names 
+c MAF : opt_timeseries_output, opt_append_data vars are defined to be
+c MAF : a similar type here as the parameters with similar names
 c MAF : in the sedgem and rokgem namelists defined in their libs.
 c MAF : They are defined here because they are in the ents module in
 c MAF : genie-main/src/xml-config/xml/definition.xml
@@ -43,7 +38,7 @@ c MAF : genie-main/src/xml-config/xml/definition.xml
      1 ,ents_out_name,ents_restart_file,ents_netin,ents_netout
      2 ,ents_ascout,ents_filenetin,ents_dirnetout,rstdir_name
      3 ,par_output_years_file_0d,par_output_years_file_2d
-      
+
       integer lenin, lenout, lencon, iav,ents_npstp
       integer ents_igrid,ents_iwstp,ents_itstp,ents_ianav
       real ents_yearlen,start_year
@@ -64,7 +59,7 @@ c SG : run-time seasonality option
       logical atchem_fert,atchem_update
       common /ents_ctrl/atchem_fert,atchem_update
 
-c MAF : These 'opt_' variables are defined here because they appear in 
+c MAF : These 'opt_' variables are defined here because they appear in
 c MAF : genie-main/src/xml-config/xml/definition.xml
       logical opt_timeseries_output,opt_append_data
       common /ents_ctrl/opt_timeseries_output,opt_append_data

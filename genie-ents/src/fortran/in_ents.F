@@ -1,16 +1,13 @@
 cmsw
 cmsw Reads in restarts
 cmsw
-ccc      subroutine in_ents(unit)
          subroutine in_ents(fname)
 
-c      include '../genie-cgoldstein/var.cmn'
-c      include '../genie-simpleland/var_ents.cmn'
 #include "genie_ents.cmn"
       include 'var_ents.cmn'
- 
+
       integer i,j,unit
-  
+
         character*(*) fname
 
 cccccccccccccccc FOR NETCDF
@@ -19,35 +16,7 @@ cccccccccccccccc FOR NETCDF
      : mtqld2(:,:),msnow(:,:)
 c
         real mpco2ld
-c
-c	interface
-c
-c  	 subroutine netcdf_in_ents(a,p,r,b,c,d,e,f,g,h,k,m,n,o)
-c	  character*(*) :: a
-c	  real b(:,:), c(:,:), d(:,:), e(:,:), f(:,:), g(:,:),
-c     :	  h(:,:), k(:,:), m(:,:), n(:,:)
-c	  real o
-c	  integer p,r
-c	 end subroutine netcdf_in_ents
-c
-c	end interface	
-c
-ccccccccccccccccccccccccccccccccccccccccccccccccc  
-ccc	REPLACING INPUT RESTART ASCII WITH NETCDF
-ccc
-ccc      read(unit,*)((photo(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((respveg(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((leaf(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((respsoil(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((Cveg(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((Csoil(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((fv(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((tqld(1,i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((tqld(2,i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)((snow(i,j),i=1,imax),j=1,jmax)
-ccc      read(unit,*)pco2ld
-ccccccccccccccccccccccccccccccccccccccccccccccc
-ccc
+
 ccc	data coming in separate variables
 
         allocate(mphoto(imax,jmax))
@@ -60,9 +29,6 @@ ccc	data coming in separate variables
         allocate(mtqld1(imax,jmax))
         allocate(mtqld2(imax,jmax))
         allocate(msnow(imax,jmax))
-
-c	call netcdf_in_ents(fname,imax,jmax,mphoto,mrespveg,mleaf,mrespsoil,
-c    :	mCveg,mCsoil,mfv,mtqld1,mtqld2,msnow,mpco2ld)
 
         photo=mphoto
         respveg=mrespveg

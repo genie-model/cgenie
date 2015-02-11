@@ -1,7 +1,7 @@
 * ======================================================================
 * ents.F
 * ======================================================================
-* 
+*
 * SG (20/03/2K7)
 * conversion of simpleland into geniefied ents (henceforth genie-ents)
 
@@ -27,7 +27,7 @@
      :     sfcatm_lnd,                       !< atmospheric tracer concentrations
      :     sfxatm_lnd                        !< land-atmosphere exchange fluxes
      :     )
-     
+
 #include "genie_ents.cmn"
 #include "var_ents.cmn"
         include 'netcdf.inc'
@@ -45,13 +45,13 @@ c SG  Variables passed from other modules
       real dum_rhosc
       real dum_rsc
       real ,dimension(maxj)::dum_ds
-      real dum_dphi      
+      real dum_dphi
       real dum_dsc
       real dum_saln0
       real ,dimension(maxj)::dum_dz
       real ,dimension(4)::dum_ec
       real ,dimension(maxi,maxj,ents_kmax)::dum_rho
-      
+
       real ,dimension(maxi,maxj)::dum_fx0a
       real ,dimension(maxi,maxj)::dum_fx0o
       real ,dimension(maxi,maxj)::dum_fxsen
@@ -130,7 +130,7 @@ ccccccccccccccccccccccccc FOR NETCDF
 cccccccccccccccccccccccc
 
 #ifndef hfoutput
-c     dummy statement      
+c     dummy statement
         dum_istep0 = 0
 #endif
 
@@ -144,8 +144,7 @@ c     dummy statement
             tqld(2,i,j)=real(land_moisture_lnd(i,j),kind(tqld))
          enddo
       enddo
-                              
-c          itv = mod(istep+nyear-1,nyear)
+
           itv = mod(istep+nyear-1,ents_ianav)
           if(itv.lt.nyear)then
             if(istep.ge.nyear.and.itv.eq.nyear-1)then
@@ -189,7 +188,7 @@ c TODO: define this index globally
      &              ,sfxatm_lnd(3,:,:))
          endif
          endif
-         
+
 c SG > Write ENTS restarts
 
          if(mod(istep,ents_iwstp).eq.0)then
@@ -198,8 +197,6 @@ c SG > Write ENTS restarts
             filename = trim(outdir_name)//trim(ents_out_name)//'.'
      1               //'sland'
            open(3,file=trim(filename))
-c	   open(3,file='../results/'//trim(lout)//'.'//trim(ext)//
-c    1             '.sland')
             rewind 3
             call out_ents(3,land_snow_lnd)
             close(3)
@@ -304,7 +301,7 @@ cccccccccccccccccccccccccccccccccccccc
 
          if(mod(istep,ents_itstp).eq.0)then
            call carbt_diags (istep)
-         
+
            call sealevel (istep,
      :       dum_rh0sc,dum_rhosc,dum_rsc,dum_ds,dum_dphi,
      :       dum_dsc,dum_saln0,dum_dz,dum_ec,dum_rho)
@@ -313,7 +310,7 @@ cccccccccccccccccccccccccccccccccccccc
      :       dum_fxlw,dum_evap,dum_pptn,dum_relh,
      :          albs_lnd,
      :          land_snow_lnd)
-     
+
          endif
 
 c ghc > copy carbon arrays into genie_global arrays for rokgem

@@ -28,10 +28,8 @@ ccccc
       real photo_ini
       real fws,fta,fco2
       real rland_pts
-c      real asurf
 
       real z0_ini
-c      real copt
 
       real tv
 
@@ -46,19 +44,14 @@ c      real copt
 c SG > Variables passed from other modules
       real :: dum_rsc
       real :: dum_syr
-c      integer :: dum_nyear
       real :: dum_dphi
       real,dimension(maxj)::dum_ds
-c      integer :: dum_kmax
-c      integer,dimension(maxi,maxj) :: dum_k1
       real,intent (inout),dimension(maxi,maxj)::dum_ca
       real,dimension(2,maxi,maxj)::dum_tq
       real :: dum_rmax
       real :: dum_rdtdim
       real,dimension(maxi,maxj)::dum_co2_out
       real :: gn_daysperyear
-c     double precision :: imax_real
-c SG Remove imax_real if not needed
 c SG <
 
 c land ice mask
@@ -69,71 +62,26 @@ c surface albedo
 c land snow cover
       real,dimension(maxi,maxj),intent(inout)::land_snow_lnd
 
-ccccccccccccccccccccccccc FOR NETCDF
-
-c        interface
-c
-c         subroutine in_ents_netcdf(a,b)
-c                character*200 a
-c                integer b
-c         end subroutine in_ents_netcdf
-c
-c        end interface
-cccccccccccccccccccccccc
-
-c     imax_real = 1.0/imax
-cmsw values of tunable constants
 c pbh k_constants are no longer read in from "k_constants.dat" but are now namelist paramaters
-c k21 is now hard-wired. This is the Universal Gas Constant 
-
-c      open(65,file='../genie-ents/data/k_constants.dat')
-c      open(65,file=indir_name(1:lenin)//'k_constants.dat')
-
-c      read(65,*)topt
-c      read(65,*)copt
-
-c      read(65,*)k7
-c      read(65,*)k8
-c      read(65,*)k9
-c      read(65,*)k10
-c      read(65,*)k11
-c      read(65,*)k11a
-c      read(65,*)k12
-c      read(65,*)k13
-c      read(65,*)k14
-c      read(65,*)k16
-c      read(65,*)k17
-c      read(65,*)k18
+c k21 is now hard-wired. This is the Universal Gas Constant
 
       rk19=(copt-k13+k14)/(copt-k13)
-
-c      read(65,*)k20
-c      read(65,*)k21
       k21=8.314
-c      read(65,*)k24
-
-c      read(65,*)k26
-c      read(65,*)k29
-c      read(65,*)k31
-c      read(65,*)k32
-c      read(65,*)kz0
 
       k0=exp(-k31/(tzero-k32))
       q10=exp((10.*k31)/((tzero-k32)**2))
 
-c      close(65)
-
 ! molar mass of carbon (kgC/molC)
-      mu=0.012 
+      mu=0.012
 
 cmsw reciprocals used to speed up calculation
 
       rmu=1./mu
       rk30=1./exp(-k31/(topt-k32))
       rk25=1./exp(-k20/(k21*topt))
- 
+
 cmsw 'Proper' constants
- 
+
       k_a = 1.773e20            ! number of moles of molecules in the atm
 
 cmsw  Some conversion factors
@@ -143,57 +91,30 @@ cmsw  Some conversion factors
       rgtm = 12./1.e15          ! mol C to GtC
       rgtk = 1.e-12             ! kgC to GtC
       mtp = 1.e-6                ! ppmv to ppv
-      rmtp = 1.e6               ! ppv to ppmv 
+      rmtp = 1.e6               ! ppv to ppmv
       asurfrea = dum_rsc*dum_rsc*dum_ds(1)*dum_dphi ! Each grid box area (m2)
       rasurf = 1./asurfrea      ! reciprocal of above
       rsyr = 1./dum_syr         ! reciprocal no. of secs/year
- 
+
 cmsw intial values of global carbon reservoirs (GtC)
-   
+
       print*,' '
       print*,'ENTS (land) option used'
-
-cmsw Read parameters from goin_ents (cm/cmv) or goin_bioents (cbm/cbms)
-cmsw Read in parameters for pptn scheme
-#ifdef biogem
-#else
-c      if(ans.eq.'n'.or.ans.eq.'N')then
-c         read(5,*)dum
-c	 print*,'dum ',dum
-c      endif
-#endif
-
-cdjl  Read in filenames for orography and icemask
-cdjl  Also, time-varying parameters
-c      read(5,'(200a)') junk
-c      print*,'junk ',trim(junk)
-c      read(5,*) t_orog,norog,orogsteps
-c      print*,'t_orog,norog,orogsteps ',t_orog,norog,orogsteps
-c      read(5,'(200a)') filenameorog
-c      print*,'filenameorog ',trim(filenameorog)
-c      read(5,'(200a)') junk
-c      print*,'junk ',trim(junk)
-c      read(5,*) t_lice,nlice,licesteps
-c      print*,'t_lice,nlice,licesteps ',t_lice,nlice,licesteps
-c      read(5,'(200a)') filenamelice
-c      print*,'filenamelice ',trim(filenamelice)
 
 cmsw Precip parameters
 
       print*, 'rmax'
-c      read(5,*)dum_rmax,timepptn
       print*,dum_rmax
        print*,'daysperyear ',gn_daysperyear
        print*,'ents_nyear ',real(ents_nyear)
 
 cmsw Open goin file and read in restart if required
 
-c      open(66,file='../genie-ents/config/ents_config.par')
       open(66,file=condir_name(1:lencon)//'ents_config.par')
 
 cmsw Calculate length of timestep (yrs)
 
-      read(66,*) msimpleland 
+      read(66,*) msimpleland
       print*,'ENTS called every',msimpleland,'ocean timesteps'
       dtland=(real(msimpleland)/ents_nyear)
       print*,'dtland =',dtland,'yr'
@@ -215,7 +136,7 @@ cmsw Units kgC/m2
 
       do i=1,imax
          do j=1,jmax
-         
+
             if(ents_k1(i,j).gt.ents_kmax.and.
      &         landice_slicemask_lic(i,j).lt.2.)then
 
@@ -226,7 +147,7 @@ cmsw Units kgC/m2
 
               Cveg(i,j) = 0.
               Csoil(i,j) = 0.
-    
+
             endif
 
          enddo
@@ -254,7 +175,7 @@ cmsw Prescribed surface albedo
 cmsw Constant land surface albedo
 
                albs_lnd(i,j)=albedol
- 
+
 cmsw Prescribe surface albedo over ice sheets to be 0.8
 
                if(landice_slicemask_lic(i,j).gt.1.)then
@@ -288,7 +209,6 @@ cmsw Switch for offline model
 
       print*,'THIS OPTION IS NO LONGER IN USE HERE - offline'//
      & 'functionality has been moved to genie-embm'
-c     read(66,*)offlineswitch
       print*,tv
 
 cmsw Switch for seasonal fields
@@ -312,7 +232,7 @@ cmsw bucket size and set ca over land
      1          *1.e-12,'(*10^12 m^3)'
       print*,'Initial roughness length is'
       print*,z0_ini,'m'
-      
+
 
       do i=1,imax
          do j=1,jmax
@@ -336,12 +256,12 @@ cmsw snow matrix
              land_snow_lnd(i,j)=0
             enddo
        enddo
-      
+
 cmsw Length of ocean timestep (s)
 
        dtdim = 1./dum_rdtdim
 
-cmsw Initialize photo and fv arrays for use in surflux 
+cmsw Initialize photo and fv arrays for use in surflux
 cmsw (calculation of transpiration)
 
       fv_ini=max(1.e-5,1.-exp(-k17*Cveg_ini*gtk*rasurf
@@ -358,7 +278,7 @@ cmsw New temperature response function
      &    ( (1.+exp(0.6*(dum_tq(1,1,1)-k11a)))*
      &    (1.+exp(-0.3*(dum_tq(1,1,1)-k12))) ))
 
- 
+
       pco2ld=dum_co2_out(1,1)*rmtp
 
       if(pco2ld.ge.k13)then
@@ -375,7 +295,7 @@ cmsw New temperature response function
             if(ents_k1(i,j).gt.ents_kmax.and.
      &         landice_slicemask_lic(i,j).lt.2.)then
                fv(i,j)=fv_ini
-               photo(i,j)=photo_ini 
+               photo(i,j)=photo_ini
             else
                fv(i,j)=0.
                photo(i,j)=0.
@@ -394,9 +314,6 @@ c SG > if then loop is changed so that an alternative sland file is
 c      only read for a restart.
 
       if(ents_restart.eq.'c'.or.ents_restart.eq.'C') then
-c SG > ASCII restart files
-c       open(1,file='../results/'//trim(lin)//'.sland')
-c if netcdf restart output is not selected then ascii file is used
 
 cccccccccccccc CHANGES FOR NETCDF
        if (ents_netin.eq.'y'.or.ents_netin.eq.'Y') then
@@ -407,7 +324,6 @@ cccccccccccccccccccccccc
 
         open(1,file=trim(filename))
         call in_ents_ascii(1,land_snow_lnd)
-c       close(1)
 
 cmsw Continue ENTS from a different .sland file
 c SG > This option has not been tested!!!
@@ -419,13 +335,12 @@ c SG It will be incorporated later. Do NOT comment it out.
         read(66,'(a35)') dumpfl
         if(isdump.eq.1) then
           print*,'Different land restart file name is'
-          print*,dumpfl 
+          print*,dumpfl
           open(1,file=trim(dumpfl),status='old')
           print*,'ENTS restart file is ',dumpfl
           call in_ents_ascii(1,land_snow_lnd)
           close(1)
         else
-c         print*,'ENTS restart file is ',trim(lin),'.sland'
           print*,'ENTS restart file is ', filename
         endif
       close(66)
@@ -433,9 +348,9 @@ c SG <
         close(1)
       endif
       endif
-      
+
 #ifdef fixedveg
-cmsw Read fixed vegetation carbon, soil carbon and vegetation fraction 
+cmsw Read fixed vegetation carbon, soil carbon and vegetation fraction
       open(66,file=indir_name(1:lenin)//'fixedveg.dat')
       read(66,*)((Cveg(i,j),i=1,imax),j=1,jmax)
       read(66,*)((Csoil(i,j),i=1,imax),j=1,jmax)
@@ -448,20 +363,6 @@ cmsw Read fixed vegetation carbon, soil carbon and vegetation fraction
       print*,'Only physical quantities will be used in restart such as'
       print*,'snow cover and land water.'
 
-cmsw Change fixed vegetation, soil carbon, vegetation fraction and 
-cmsw photosynthesis to zero for evap calculation if land ice i.e.
-cmsw slicemask(i,j)=2
-c      do i=1,imax
-c         do j=1,jmax
-c            if(ents_k1(i,j).gt.ents_kmax.and.
-c     &         slicemask(i,j).gt.1.)then
-c               fv(i,j)=0.
-c            else
-c               fv(i,j)=fvfv(i,j)
-c            endif
-c         enddo
-c      enddo
-c
 cmsw Calculate bucket sizes
       do i=1,imax
         do j=1,jmax
@@ -482,7 +383,7 @@ cmsw Initialise sealevel module
 
 cmsw For change in sea level need a reference average
 cmsw ocean density
-   
+
       print*,'Reference average ocean density used'
      &      ,' for change in sea-level calculation'
       read(66,*)rhoref
@@ -534,7 +435,6 @@ cmsw Read in restart file if continuing run
       endif
 #endif
 
-c #ifdef dosc
       if (dosc) then
 cmsw zero annual average arrays
 
@@ -574,7 +474,6 @@ cmsw zero annual average arrays
             tqldavg(2,i,j)=0.
             snowavg(i,j)=0.
             albsavg(i,j)=0.
-c            palbavg(i,j)=0.
             pptnavg(i,j)=0.
             runavg(i,j)=0.
             bcapavg(i,j)=0.
@@ -590,6 +489,5 @@ c            palbavg(i,j)=0.
          enddo
       enddo
 
-c #endif
       endif
       end
