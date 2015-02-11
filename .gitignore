@@ -46,3 +46,4 @@ Temporary Items
 *.a
 *.mod
 *.dep
+/genie-main/current_config.dat
