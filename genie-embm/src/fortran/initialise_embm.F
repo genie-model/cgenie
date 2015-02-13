@@ -199,6 +199,8 @@ c zonal and meridional wind speed components
 c this flag indicates if external wind forcing from 'genie-wind' module is active
       logical flag_wind
 
+      real orbitall_vect(en_ntimes_max,5)
+
 c declare a namelist to store EMBM's initialisation vars
       NAMELIST /ini_embm_nml/indir_name,outdir_name
       NAMELIST /ini_embm_nml/rstdir_name

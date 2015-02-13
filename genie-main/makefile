@@ -20,19 +20,24 @@ OTHER_FILES = makefile makefile.arc testing.mak user.mak
 EXE_MAIN = genie.exe
 EXECUTABLES = $(EXE_MAIN) nccompare
 
-OBJ_MAIN = genie.$(OBJ_EXT)
-OBJS4 = initialise_genie.$(OBJ_EXT)
-OBJS5 = end_genie.$(OBJ_EXT) \
-	extrap.$(OBJ_EXT)
-OBJS6 = write_netcdf_genie.$(OBJ_EXT)
-OBJS8 = genie_ini_wrappers.$(OBJ_EXT) \
-	genie_loop_wrappers.$(OBJ_EXT) \
-	genie_end_wrappers.$(OBJ_EXT)
-CONTROL_OBJS = 	genie_control.$(OBJ_EXT) \
-		genie_global.$(OBJ_EXT) \
-		local_netcdf.$(OBJ_EXT) \
-		genie_util.$(OBJ_EXT) \
-		local_output.$(OBJ_EXT)
+SRC_MAIN=genie.F
+SRCS4=initialise_genie.F
+SRCS5=end_genie.f extrap.f
+SRCS6=write_netcdf_genie.f90
+SRCS8=genie_ini_wrappers.f90 genie_loop_wrappers.f90 genie_end_wrappers.f90
+CONTROL_SRCS=genie_control.f90 genie_global.f90 local_netcdf.f90 \
+             genie_util.f90 local_output.f90
+
+SOURCES = $(CONTROL_SRCS) $(SRCS6) $(SRCS8) $(SRCS4) $(SRCS5)
+SOURCES_MAIN = $(SOURCES) $(SRC_MAIN)
+SOURCES_ALL = $(SOURCES) $(SRC_MAIN)
+
+OBJ_MAIN=$(SRC_MAIN:.F=.$(OBJ_EXT))
+OBJS4=$(SRCS4:.F=.$(OBJ_EXT))
+OBJS5=$(SRCS5:.f=.$(OBJ_EXT))
+OBJS6=$(SRCS6:.f90=.$(OBJ_EXT))
+OBJS8=$(SRCS8:.f90=.$(OBJ_EXT))
+CONTROL_OBJS=$(CONTROL_SRCS:.f90=.$(OBJ_EXT))
 
 OBJECTS = $(CONTROL_OBJS) $(OBJS6) $(OBJS8) $(OBJS4) $(OBJS5)
 OBJECTS_MAIN = $(OBJECTS) $(OBJ_MAIN)
@@ -95,7 +100,7 @@ endif
 REV:=tmp-untagged
 
 # this is very odd--I don't understand why this is necessary.
-all: $(EXECUTABLES)
+all: $(TOOLS) $(EXECUTABLES)
 
 data: $(MODULE_DATA)
 
@@ -215,27 +220,20 @@ $(CONTROL_OBJS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
 	$(DEFINE)$(REV) $< $(OBJ_FLAG)$@
 
+# ================== BUILD TOOLS ===================
+TOOLNAMES=makedepf90
+TOOLS=$(addprefix $(MAIN_DIR)/tools/bin/, $(TOOLNAMES))
+
+$(MAIN_DIR)/tools/bin/makedepf90:
+	$(MAKE) -C $(MAIN_DIR)/tools/makedepf90-2.8.8 install
+
 # ================== TESTING RULES ===================
 include testing.mak
 
-# ==== RULES TO ATUO' CREATE DEPENDENCY FILES ====
-# Rules to create '.dep' files from sources
-# We want make to halt if $(PYTHON) is not found
-# A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation.
-MAKE_DEPS = @ $(SHELL) -ec 'which $(PYTHON) > /dev/null; \
-		$(PYTHON) finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+# ==== RULES TO AUTO-CREATE DEPENDENCY FILES ====
+makefile.depend: $(SOURCES)
+	$(MAIN_DIR)/tools/bin/makedepf90 $(SOURCES) >> makefile.depend
 
-%.dep: %.f
-	$(MAKE_DEPS)
-
-%.dep: %.F
-	$(MAKE_DEPS)
-
-%.dep: %.f90
-	$(MAKE_DEPS)
-
-# Include the '.dep' files
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJECTS_ALL:.$(OBJ_EXT)=.dep)
+include makefile.depend
 endif

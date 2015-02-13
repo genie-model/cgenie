@@ -9,49 +9,32 @@ else
 endif
 LOCINCPATH = $(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
 LIBNAME = libbiogem
-INCLUDE_FILES = 
+INCLUDE_FILES =
 OTHER_FILES=../../../genie-main/makefile.arc makefile
 
-OBJECTS = biogem_lib.$(OBJ_EXT) \
-        biogem_box.$(OBJ_EXT) biogem_data_netCDF.$(OBJ_EXT) biogem_data_ascii.$(OBJ_EXT) \
-	biogem_data.$(OBJ_EXT) initialise_biogem.$(OBJ_EXT) \
-	cpl_comp_biogem.$(OBJ_EXT) \
-	biogem.$(OBJ_EXT) end_biogem.$(OBJ_EXT)
+SRCS=biogem_lib.f90 biogem_box.f90 \
+     biogem_data_netCDF.f90 biogem_data_ascii.f90 biogem_data.f90 \
+     initialise_biogem.f90 cpl_comp_biogem.f90 biogem.f90 end_biogem.f90
+OBJECTS=$(SRCS:.f90=.$(OBJ_EXT))
 
-all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES)
+all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES) makefile.depend
 
 .PHONY: clean tags
-clean : 
-	\rm -f *.$(OBJ_EXT) *.dep *.mod
+clean :
+	\rm -f *.$(OBJ_EXT) *.mod makefile.depend
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
 		$(ETAGS) -a -o $(TAGFILE) *.F; \
 		$(ETAGS) -a -o $(TAGFILE) *.f90'
 
-# Pattern rules to make object files
-# One rule for each compilation permutation
-$(OBJS1): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F77FLAGS) \
-	$< $(OBJ_FLAG)$@
-
 $(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F90FLAGS) \
 	$(FPPFLAGS) $< $(OBJ_FLAG)$@
 
-# Rules to create '.dep' files from sources
-# We want make to halt if $(PYTHON) is not found
-# A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation. 
-MAKE_DEPS = $(SHELL) -ec 'which $(PYTHON); $(PYTHON) $(MAIN_DIR)/finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+makefile.depend: $(SRCS)
+	$(MAIN_DIR)/tools/bin/makedepf90 $(SRCS) >> makefile.depend
 
-%.dep: %.F
-	$(MAKE_DEPS)
-
-%.dep: %.f90
-	$(MAKE_DEPS)
-
-# Include the '.dep' files
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJECTS:.$(OBJ_EXT)=.dep)
+include makefile.depend
 endif

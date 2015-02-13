@@ -9,53 +9,34 @@ else
 endif
 LOCINCPATH = $(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
 LIBNAME = libsedgem
-INCLUDE_FILES = 
+INCLUDE_FILES =
 OTHER_FILES=../../../genie-main/makefile.arc makefile
 
-OBJECTS = sedgem_lib.$(OBJ_EXT) \
-        cpl_comp_sedgem.$(OBJ_EXT) cpl_flux_sedgem.$(OBJ_EXT) \
-        sedgem_box_archer1991_sedflx.$(OBJ_EXT) \
-        sedgem_box_ridgwelletal2003_sedflx.$(OBJ_EXT) \
-        sedgem_box_benthic.$(OBJ_EXT) \
-        sedgem_nnutils.$(OBJ_EXT) \
-        sedgem_box.$(OBJ_EXT) sedgem_data_netCDF.$(OBJ_EXT) \
-	sedgem_data.$(OBJ_EXT) initialise_sedgem.$(OBJ_EXT) \
-	sedgem.$(OBJ_EXT) end_sedgem.$(OBJ_EXT)
+SRCS=sedgem_lib.f90 cpl_comp_sedgem.f90 cpl_flux_sedgem.f90 \
+     sedgem_box_archer1991_sedflx.f90 sedgem_box_ridgwelletal2003_sedflx.f90 \
+     sedgem_box_benthic.f90 sedgem_nnutils.f90 sedgem_box.f90 \
+     sedgem_data_netCDF.f90 sedgem_data.f90 initialise_sedgem.f90 \
+     sedgem.f90 end_sedgem.f90
+OBJECTS=$(SRCS:.f90=.$(OBJ_EXT))
 
-all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES)
+all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES) makefile.depend
 
 .PHONY: clean tags
-clean : 
-	\rm -f *.$(OBJ_EXT) *.dep *.mod
+clean :
+	\rm -f *.$(OBJ_EXT) *.mod makefile.depend
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
 		$(ETAGS) -a -o $(TAGFILE) *.F; \
 		$(ETAGS) -a -o $(TAGFILE) *.f90'
 
-# Pattern rules to make object files
-# One rule for each compilation permutation
-$(OBJS1): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F77FLAGS) \
-	$< $(OBJ_FLAG)$@
-
 $(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F90FLAGS) \
 	$(FPPFLAGS) $< $(OBJ_FLAG)$@
 
-# Rules to create '.dep' files from sources
-# We want make to halt if $(PYTHON) is not found
-# A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation. 
-MAKE_DEPS = $(SHELL) -ec 'which $(PYTHON); $(PYTHON) $(MAIN_DIR)/finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+makefile.depend: $(SRCS)
+	$(MAIN_DIR)/tools/bin/makedepf90 $(SRCS) >> makefile.depend
 
-%.dep: %.F
-	$(MAKE_DEPS)
-
-%.dep: %.f90
-	$(MAKE_DEPS)
-
-# Include the '.dep' files
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJECTS:.$(OBJ_EXT)=.dep)
+include makefile.depend
 endif

@@ -10,45 +10,30 @@ endif
 LOCINCPATH=$(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
 
 LIBNAME=libutil1
-OBJECTS=util1.$(OBJ_EXT)
+SRCS=util1.f90
+OBJECTS=$(SRCS:.f90=.$(OBJ_EXT))
 INCLUDE_FILES=
 OTHER_FILES=../../genie-main/makefile.arc makefile
 
-$(LIBNAME).$(LIB_EXT): $(OBJECTS) $(OTHER_FILES)
+$(LIBNAME).$(LIB_EXT): $(OBJECTS) $(OTHER_FILES) makefile.depend
 	$(LIB_CMD) $(LIBNAME).$(LIB_EXT) $(OBJECTS)
 
 .PHONY: clean tags
 clean :
-	\rm -f *.$(OBJ_EXT) *.$(LIB_EXT) *.dep *.mod
+	\rm -f *.$(OBJ_EXT) *.$(LIB_EXT) *.mod makefile.depend
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
 		$(ETAGS) -a -o $(TAGFILE) *.F; \
 		$(ETAGS) -a -o $(TAGFILE) *.f90'
 
-# Pattern rules to make object files
-# One rule for each compilation permutation
-$(OBJS1): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F77FLAGS) \
-	$< $(OBJ_FLAG)$@
-
 $(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F90FLAGS) \
 	$(FPPFLAGS) $< $(OBJ_FLAG)$@
 
-# Rules to create '.dep' files from sources
-# We want make to halt if $(PYTHON) is not found
-# A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation.
-MAKE_DEPS = $(SHELL) -ec 'which $(PYTHON); $(PYTHON) $(MAIN_DIR)/finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+makefile.depend: $(SRCS)
+	$(MAIN_DIR)/tools/bin/makedepf90 $(SRCS) >> makefile.depend
 
-%.dep: %.F
-	$(MAKE_DEPS)
-
-%.dep: %.f90
-	$(MAKE_DEPS)
-
-# Include the '.dep' files
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJECTS:.$(OBJ_EXT)=.dep)
+include makefile.depend
 endif

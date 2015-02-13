@@ -13,48 +13,31 @@ else
 endif
 LOCINCPATH = $(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
 LIBNAME = libgemlite
-INCLUDE_FILES = 
+INCLUDE_FILES =
 OTHER_FILES=../../../genie-main/makefile.arc Makefile
 
-OBJECTS = gemlite_lib.$(OBJ_EXT) \
-	gemlite_box.$(OBJ_EXT) gemlite_data.$(OBJ_EXT) initialise_gemlite.$(OBJ_EXT) \
-	cpl_comp_gemlite.$(OBJ_EXT) \
-	gemlite.$(OBJ_EXT) end_gemlite.$(OBJ_EXT)
+SRCS=gemlite_lib.f90 gemlite_box.f90 gemlite_data.f90 initialise_gemlite.f90 \
+     cpl_comp_gemlite.f90 gemlite.f90 end_gemlite.f90
+OBJECTS=$(SRCS:.f90=.$(OBJ_EXT))
 
-all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES)
+all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES) makefile.depend
 
 .PHONY: clean tags
-clean : 
-	\rm -f *.$(OBJ_EXT) *.dep *.mod
+clean :
+	\rm -f *.$(OBJ_EXT) *.mod makefile.depend
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
 		$(ETAGS) -a -o $(TAGFILE) *.F; \
 		$(ETAGS) -a -o $(TAGFILE) *.f90'
 
-# Pattern rules to make object files
-# One rule for each compilation permutation
-$(OBJS1): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F77FLAGS) \
-	$< $(OBJ_FLAG)$@
-
 $(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(COMPILEONLY) $(LOCINCPATH) $(LOCALFLAGS) $(F90FLAGS) \
 	$(FPPFLAGS) $< $(OBJ_FLAG)$@
 
-# Rules to create '.dep' files from sources
-# We want make to halt if $(PYTHON) is not found
-# A failing 'which' command coupled with a -e shell invocation
-# provides the trigger to halt the compilation. 
-MAKE_DEPS = $(SHELL) -ec 'which $(PYTHON); $(PYTHON) $(MAIN_DIR)/finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+makefile.depend: $(SRCS)
+	$(MAIN_DIR)/tools/bin/makedepf90 $(SRCS) >> makefile.depend
 
-%.dep: %.F
-	$(MAKE_DEPS)
-
-%.dep: %.f90
-	$(MAKE_DEPS)
-
-# Include the '.dep' files
 ifneq ($(MAKECMDGOALS),clean)
--include $(OBJECTS:.$(OBJ_EXT)=.dep)
+include makefile.depend
 endif
