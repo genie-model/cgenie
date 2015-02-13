@@ -1,26 +1,54 @@
-#
-# $Id: makefile 7295 2012-01-05 00:13:43Z andy-ridgwell $
-#
-LOCALFLAGS=$(FFLAGS) $(F77FLAGS) $(FLAGR8)
 
-LIBNAME = libutil1
-OBJECTS = lnsig.$(OBJ_EXT) lnsig1.$(OBJ_EXT)
+LOCALFLAGS=$(FFLAGS) $(BOUNDS_FLAGS) $(FLAGR8)
+ifeq ($(MACHINE),WIN32)
+  CMNSG=..\\..\\genie-main\\src\\fortran\\cmngem\\
+  MAIN_DIR=..\\..\\genie-main\\
+else
+  CMNSG=../../genie-main/src/fortran/cmngem/
+  MAIN_DIR=../../genie-main/
+endif
+LOCINCPATH=$(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
 
-OTHER_FILES=makefile ../../genie-main/makefile.arc
+LIBNAME=libutil1
+OBJECTS=util1.$(OBJ_EXT)
+INCLUDE_FILES=
+OTHER_FILES=../../genie-main/makefile.arc makefile
 
 $(LIBNAME).$(LIB_EXT): $(OBJECTS) $(OTHER_FILES)
 	$(LIB_CMD) $(LIBNAME).$(LIB_EXT) $(OBJECTS)
 
 .PHONY: clean tags
 clean :
-	\rm -f *.$(OBJ_EXT) *.$(LIB_EXT) *__genmod.f90 *__genmod.mod
+	\rm -f *.$(OBJ_EXT) *.$(LIB_EXT) *.dep *.mod
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
-		$(ETAGS) -a -o $(TAGFILE) *.f'
+		$(ETAGS) -a -o $(TAGFILE) *.F; \
+		$(ETAGS) -a -o $(TAGFILE) *.f90'
 
-lnsig1.$(OBJ_EXT)		: lnsig1.f $(OTHER_FILES)
-	$(F77) $(COMPILEONLY) $(LOCALFLAGS) lnsig1.f
+# Pattern rules to make object files
+# One rule for each compilation permutation
+$(OBJS1): %.$(OBJ_EXT): %.F $(OTHER_FILES)
+	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F77FLAGS) \
+	$< $(OBJ_FLAG)$@
 
-lnsig.$(OBJ_EXT)		: lnsig.f $(OTHER_FILES)
-	$(F77) $(COMPILEONLY) $(LOCALFLAGS) lnsig.f
+$(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
+	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F90FLAGS) \
+	$(FPPFLAGS) $< $(OBJ_FLAG)$@
+
+# Rules to create '.dep' files from sources
+# We want make to halt if $(PYTHON) is not found
+# A failing 'which' command coupled with a -e shell invocation
+# provides the trigger to halt the compilation.
+MAKE_DEPS = $(SHELL) -ec 'which $(PYTHON); $(PYTHON) $(MAIN_DIR)/finc.py $< | sed '\''s/$*\.$(OBJ_EXT)/& $@/g'\'' > $@'
+
+%.dep: %.F
+	$(MAKE_DEPS)
+
+%.dep: %.f90
+	$(MAKE_DEPS)
+
+# Include the '.dep' files
+ifneq ($(MAKECMDGOALS),clean)
+-include $(OBJECTS:.$(OBJ_EXT)=.dep)
+endif
