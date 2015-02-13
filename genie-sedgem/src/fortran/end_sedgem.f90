@@ -98,6 +98,25 @@ SUBROUTINE end_sedgem( &
   call check_iostat(dealloc_error,__LINE__,__FILE__)
   deALLOCATE(vsedcore_store,STAT=alloc_error)
   call check_iostat(alloc_error,__LINE__,__FILE__)
+  ! ---------------------------------------------------------- ! deallocate arrays -- lookup tables
+  if (par_sed_diagen_CaCO3opt == 'ridgwell2001lookup' .OR. par_sed_diagen_CaCO3opt == 'ridgwell2001lookupvec') then
+     DEALLOCATE(lookup_sed_dis_cal,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+  end if
+  if (par_sed_diagen_CaCO3opt == 'ridgwell2001lookupvec') then
+     DEALLOCATE(lookup_vec_D,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+     DEALLOCATE(lookup_vec_dco3,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+     DEALLOCATE(lookup_vec_frac,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+     DEALLOCATE(lookup_vec_fCorg,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+  end if
+  if (par_sed_diagen_opalopt == 'ridgwelletal2003lookup') then
+     DEALLOCATE(lookup_sed_dis_opal,STAT=dealloc_error)
+     call check_iostat(dealloc_error,__LINE__,__FILE__)
+  end if
   ! ---------------------------------------------------------- !
   print*,' <<< Shutdown complete'
   print*,'======================================================='
