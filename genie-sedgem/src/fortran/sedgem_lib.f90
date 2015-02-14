@@ -1,12 +1,12 @@
 ! ******************************************************************************************************************************** !
 ! sedgem_lib.f90
-!
+! 
 ! LIBRARY MODULE
 ! ******************************************************************************************************************************** !
 
 
 MODULE sedgem_lib
-
+  
 
   use genie_control
   USE gem_cmn
@@ -24,7 +24,7 @@ MODULE sedgem_lib
   ! #### EDIT ADD AND/OR EXTEND NAME-LIST PARAMETER AND CONTROL OPTIONS ########################################################## !
   ! ------------------- RUN CONTROL ---------------------------------------------------------------------------------------------- !
   LOGICAL::ctrl_continuing                                       ! continuing run?
-  NAMELIST /ini_sedgem_nml/ctrl_continuing
+  NAMELIST /ini_sedgem_nml/ctrl_continuing  
   REAL::start_year                                               ! Simulation start year [REAL]
   REAL::par_misc_t_runtime                                       ! run length (years)
   NAMELIST /ini_sedgem_nml/start_year,par_misc_t_runtime
@@ -42,7 +42,7 @@ MODULE sedgem_lib
   NAMELIST /ini_sedgem_nml/par_n_sedcore_tot_min,par_n_sedcore_tot_perky
   integer::n_sed_tot                                             ! # sedimentary stack sub-layers
   integer::n_sed_tot_init                                        ! # initial sedimentary stack sub-layers filled
-  integer::n_sed_tot_drop                                        ! # sedimentary stack sub-layers to drop off bottom
+  integer::n_sed_tot_drop                                        ! # sedimentary stack sub-layers to drop off bottom     
   NAMELIST /ini_sedgem_nml/n_sed_tot,n_sed_tot_init,n_sed_tot_drop
   ! ------------------- DIAGENESIS SCHEME: SELECTION ----------------------------------------------------------------------------- !
   character(len=63)::par_sed_diagen_CaCO3opt                     ! CaCO3 diagenesis scheme
@@ -66,17 +66,17 @@ MODULE sedgem_lib
   NAMELIST /ini_sedgem_nml/ctrl_sed_interface
   character(len=63)::opt_sed_CaCO3dislocation                    ! Location of CaCO3 dissolution
   NAMELIST /ini_sedgem_nml/opt_sed_CaCO3dislocation
-  REAL::par_sed_CaCO3_fred                                       !
-  REAL::par_sed_CaCO3_fblue                                      !
+  REAL::par_sed_CaCO3_fred                                       ! 
+  REAL::par_sed_CaCO3_fblue                                      ! 
   NAMELIST /ini_sedgem_nml/par_sed_CaCO3_fred,par_sed_CaCO3_fblue
-  logical::ctrl_sed_dyerestart                                   !
+  logical::ctrl_sed_dyerestart                                   ! 
   NAMELIST /ini_sedgem_nml/ctrl_sed_dyerestart
-  integer::par_sed_dyerestart_n                                  !
+  integer::par_sed_dyerestart_n                                  ! 
   NAMELIST /ini_sedgem_nml/par_sed_dyerestart_n
   ! ------------------- DIAGENESIS SCHEME: ORGANIC MATTER ------------------------------------------------------------------------ !
   LOGICAL::ctrl_sed_diagen_preserve_frac2                        ! Prevent frac2 from being remineralzied?
   NAMELIST /ini_sedgem_nml/ctrl_sed_diagen_preserve_frac2
-  REAL::par_sed_diagen_fracCpres_ox                              ! Fractional POC burial -- oxic conditions
+  REAL::par_sed_diagen_fracCpres_ox                              ! Fractional POC burial -- oxic conditions 
   REAL::par_sed_diagen_fracCpres_anox                            ! Fractional POC burial -- anoxic conditions
   REAL::par_sed_diagen_fracCpres_eux                             ! Fractional POC burial -- euxinic conditions
   NAMELIST /ini_sedgem_nml/par_sed_diagen_fracCpres_ox,par_sed_diagen_fracCpres_anox,par_sed_diagen_fracCpres_eux
@@ -99,12 +99,12 @@ MODULE sedgem_lib
   REAL::par_sed_reef_CaCO3precip_sf                              ! CaCO3 precipitation scale factor (corals)
   REAL::par_sed_reef_CaCO3precip_exp                             ! CaCO3 precipitation rate law power (corals)
   NAMELIST /ini_sedgem_nml/par_sed_reef_CaCO3precip_sf,par_sed_reef_CaCO3precip_exp
-  logical::par_sed_reef_calcite                                  ! CaCO3 precipitation as calcite (otherwise aragonite)?
-  NAMELIST /ini_sedgem_nml/par_sed_reef_calcite
+  logical::par_sed_reef_calcite                                  ! CaCO3 precipitation as calcite (otherwise aragonite)? 
+  NAMELIST /ini_sedgem_nml/par_sed_reef_calcite                            
   REAL::par_sed_CaCO3_abioticohm_min                             ! Min threshold for abiotic CaCO3 precipitation
   NAMELIST /ini_sedgem_nml/par_sed_CaCO3_abioticohm_min
-  real::par_sed_poros_CaCO3_reef                                 ! reef CaCO3 porosity
-  NAMELIST /ini_sedgem_nml/par_sed_poros_CaCO3_reef
+  real::par_sed_poros_CaCO3_reef                                 ! reef CaCO3 porosity 
+  NAMELIST /ini_sedgem_nml/par_sed_poros_CaCO3_reef                 
   REAL::par_sed_CaCO3burial                                      ! prescribed CaCO3 production rate (mol cm-2 yr-1)
   NAMELIST /ini_sedgem_nml/par_sed_CaCO3burial
   ! ------------------- Corg PRODUCTION ------------------------------------------------------------------------------------------ !
@@ -129,17 +129,17 @@ MODULE sedgem_lib
   REAL::par_d44Ca_abioticarg_epsilondT                           ! T-dependence of 44/40Ca fractionation between Ca and CaCO3 (arg)
   NAMELIST /ini_sedgem_nml/par_d44Ca_abioticcal_epsilondT,par_d44Ca_abioticarg_epsilondT
   ! ------------------- HYDROTHERMAL, OCEAN CRUSTAL WEATHERING, CLAY FORMATION --------------------------------------------------- !
-  real::par_sed_hydroip_fLi                                      ! hydrothermal Li flux (mol yr-1)
-  real::par_sed_hydroip_fLi_d7Li                                 ! hydrothermal Li flux d7Li (o/oo)
+  real::par_sed_hydroip_fLi                                      ! hydrothermal Li flux (mol yr-1) 
+  real::par_sed_hydroip_fLi_d7Li                                 ! hydrothermal Li flux d7Li (o/oo)                      
   NAMELIST /ini_sedgem_nml/par_sed_hydroip_fLi,par_sed_hydroip_fLi_d7Li
   real::par_sed_lowTalt_fLi_alpha                                ! Li low temperature alteration sink (mol yr-1) (Li/Ca normalized)
   real::par_sed_lowTalt_7Li_epsilon                              ! Li low temperature alteration sink 7Li epsilon (o/oo)
   NAMELIST /ini_sedgem_nml/par_sed_lowTalt_fLi_alpha,par_sed_lowTalt_7Li_epsilon
   real::par_sed_clay_fLi_alpha                                   ! Li clay formation sink (mol yr-1) (Li/Ca norm)
-  real::par_sed_clay_7Li_epsilon                                 ! Li clay formation sink 7Li epsilon (o/oo)
+  real::par_sed_clay_7Li_epsilon                                 ! Li clay formation sink 7Li epsilon (o/oo)              
   NAMELIST /ini_sedgem_nml/par_sed_clay_fLi_alpha,par_sed_clay_7Li_epsilon
-  real::par_sed_hydroip_fCa                                      ! hydrothermal Ca flux (mol yr-1)
-  real::par_sed_hydroip_fCa_d44Ca                                ! hydrothermal Ca flux d44Ca (o/oo)
+  real::par_sed_hydroip_fCa                                      ! hydrothermal Ca flux (mol yr-1) 
+  real::par_sed_hydroip_fCa_d44Ca                                ! hydrothermal Ca flux d44Ca (o/oo)                      
   NAMELIST /ini_sedgem_nml/par_sed_hydroip_fCa,par_sed_hydroip_fCa_d44Ca
   real::par_sed_lowTalt_fCa_alpha                                ! Ca low-T alteration sink (mol yr-1) (Ca/Mg norm)
   real::par_sed_lowTalt_44Ca_epsilon                             ! Ca low-T alteration sink 44Ca epsilon (o/oo)
@@ -151,17 +151,17 @@ MODULE sedgem_lib
   real::par_sed_ohmegamin_flux                                   ! imposed sed->ocn flux (mol Ca cm-2 per time-step) for saturation
   NAMELIST /ini_sedgem_nml/par_sed_ohmegamin,par_sed_ohmegamin_flux
   ! ------------------- I/O: DIRECTORY DEFINITIONS ------------------------------------------------------------------------------- !
-  CHARACTER(len=255)::par_indir_name                             !
-  CHARACTER(len=255)::par_outdir_name                            !
-  CHARACTER(len=255)::par_rstdir_name                            !
+  CHARACTER(len=255)::par_indir_name                             ! 
+  CHARACTER(len=255)::par_outdir_name                            ! 
+  CHARACTER(len=255)::par_rstdir_name                            ! 
   NAMELIST /ini_sedgem_nml/par_indir_name,par_outdir_name,par_rstdir_name
-  CHARACTER(len=127)::par_infile_name,par_outfile_name           !
+  CHARACTER(len=127)::par_infile_name,par_outfile_name           ! 
   NAMELIST /ini_sedgem_nml/par_infile_name,par_outfile_name
   CHARACTER(len=127)::par_sed_topo_D_name                        ! Sediment water depth grid name
   CHARACTER(len=127)::par_sed_reef_mask_name                     ! Shallow water sediment (coral reef) mask name
   CHARACTER(len=127)::par_sedcore_save_mask_name                 ! Sediment core save mask name
   CHARACTER(len=127)::par_sed_mix_k_name                         ! Biodiffusion profile name
-  NAMELIST /ini_sedgem_nml/par_sed_topo_D_name,par_sed_reef_mask_name,par_sedcore_save_mask_name,par_sed_mix_k_name
+  NAMELIST /ini_sedgem_nml/par_sed_topo_D_name,par_sed_reef_mask_name,par_sedcore_save_mask_name,par_sed_mix_k_name  
   CHARACTER(len=127)::par_output_years_file_0d                   ! file containing years for 0D output (to summary file)
   CHARACTER(len=127)::par_output_years_file_2d                   ! file containing years for 2D output (to netcdf/ascii)
   NAMELIST /ini_sedgem_nml/par_output_years_file_0d,par_output_years_file_2d
@@ -169,8 +169,8 @@ MODULE sedgem_lib
   logical::ctrl_append_data                                      ! append data to output files on restart
   logical::ctrl_timeseries_output                                ! save timeseries output
   NAMELIST /ini_sedgem_nml/ctrl_append_data,ctrl_timeseries_output
-  logical::ctrl_data_save_ascii                                  ! Save (sedcore) output in ascii format?
-  logical::ctrl_data_save_sedcorenv                              ! Save sedcorenv output (ascii)?
+  logical::ctrl_data_save_ascii                                  ! Save (sedcore) output in ascii format? 
+  logical::ctrl_data_save_sedcorenv                              ! Save sedcorenv output (ascii)? 
   logical::ctrl_data_save_wtfrac                                 ! Report sediment data as a mass fraction?
   NAMELIST /ini_sedgem_nml/ctrl_data_save_ascii,ctrl_data_save_sedcorenv,ctrl_data_save_wtfrac
   logical::ctrl_misc_debug1                                      ! Debug level #1?
@@ -183,12 +183,12 @@ MODULE sedgem_lib
   integer::par_misc_debug_i                                      ! i sediment coordinate for debug reporting
   integer::par_misc_debug_j                                      ! j sediment coordinate for debug reporting
   NAMELIST /ini_sedgem_nml/par_misc_debug_i,par_misc_debug_j
-  real::par_sed_age_save_dt                                      ! threshold of accumulated time for sedcorenv save (yr)
+  real::par_sed_age_save_dt                                      ! threshold of accumulated time for sedcorenv save (yr) 
   NAMELIST /ini_sedgem_nml/par_sed_age_save_dt
   ! ------------------- DATA SAVING: MISC ---------------------------------------------------------------------------------------- !
   LOGICAL::ctrl_ncrst                                          ! restart as netCDF format?
   NAMELIST /ini_sedgem_nml/ctrl_ncrst
-  CHARACTER(len=127)::par_ncrst_name                           !
+  CHARACTER(len=127)::par_ncrst_name                           ! 
   NAMELIST /ini_sedgem_nml/par_ncrst_name
   CHARACTER(len=127)::par_ncsedcore_name
   NAMELIST /ini_sedgem_nml/par_ncsedcore_name
@@ -203,10 +203,14 @@ MODULE sedgem_lib
   ! grid dimensions
   INTEGER,PARAMETER::n_i = ilon1_sed                           ! max i dimension copied from genie_control
   INTEGER,PARAMETER::n_j = ilat1_sed                           ! max j dimension copied from genie_control
-  ! grid properties array dimensions
+!!$  ! misc arrays dimensions
+!!$  INTEGER,PARAMETER::n_sed_tot      = 100                      ! # sedimentary stack sub-layers
+!!$  INTEGER,PARAMETER::n_sed_tot_init = 099                      ! # initial sedimentary stack sub-layers filled
+!!$  INTEGER,PARAMETER::n_sed_tot_drop = 001                      ! # sedimentary stack sub-layers to drop off bottom
+  ! grid properties array dimensions 
   INTEGER,PARAMETER::n_phys_sed     = 14                       ! # grid properties descriptors
   ! options array dimensions
-  INTEGER,PARAMETER::n_opt_sed      = 26                       !
+  INTEGER,PARAMETER::n_opt_sed      = 26                       ! 
 
   ! *** array index values ***
   ! sediment grid properties array indices
@@ -227,27 +231,27 @@ MODULE sedgem_lib
   ! options - sediements
   INTEGER,PARAMETER::iopt_sed_save_diag_final             = 20 ! save final sediment data?
   INTEGER,PARAMETER::iopt_sed_save_diag                   = 21 ! save sediment diagnostics time-slice data?
-  INTEGER,PARAMETER::iopt_sed_diagen_AltoasymSi           = 23 ! asymptotic [Si] dependence on %refrac/%opal?
+  INTEGER,PARAMETER::iopt_sed_diagen_AltoasymSi           = 23 ! asymptotic [Si] dependence on %refrac/%opal? 
   INTEGER,PARAMETER::iopt_sed_diagen_AltoKSi              = 24 ! KSi dependence on %refrac/%opal?
 
   ! *** look-up table constants ***
   ! CaCO3 (calcite)
   ! NOTE: following Ridgwell [2001]
-  INTEGER,PARAMETER::lookup_i_D_min      = 0                   !
-  INTEGER,PARAMETER::lookup_i_D_max      = 10                  !
-  INTEGER,PARAMETER::lookup_i_dCO3_min   = -100                !
-  INTEGER,PARAMETER::lookup_i_dCO3_max   = 100                 !
+  INTEGER,PARAMETER::lookup_i_D_min      = 0                   ! 
+  INTEGER,PARAMETER::lookup_i_D_max      = 10                  ! 
+  INTEGER,PARAMETER::lookup_i_dCO3_min   = -100                ! 
+  INTEGER,PARAMETER::lookup_i_dCO3_max   = 100                 ! 
   INTEGER,PARAMETER::lookup_i_concO2_min = 4                   ! (equivalent to 200 umol kg-1)
   INTEGER,PARAMETER::lookup_i_concO2_max = 4                   ! (equivalent to 200 umol kg-1)
-  INTEGER,PARAMETER::lookup_i_frac_min   = 1                   !
-  INTEGER,PARAMETER::lookup_i_frac_max   = 10                  !
-  INTEGER,PARAMETER::lookup_i_fCorg_min  = 0                   !
-  INTEGER,PARAMETER::lookup_i_fCorg_max  = 50                  !
-  REAL,PARAMETER::lookup_D_max      = 10000.0                  !
-  REAL,PARAMETER::lookup_dCO3_max   = 100.0 * 1.0E-06          !
+  INTEGER,PARAMETER::lookup_i_frac_min   = 1                   ! 
+  INTEGER,PARAMETER::lookup_i_frac_max   = 10                  ! 
+  INTEGER,PARAMETER::lookup_i_fCorg_min  = 0                   ! 
+  INTEGER,PARAMETER::lookup_i_fCorg_max  = 50                  ! 
+  REAL,PARAMETER::lookup_D_max      = 10000.0                  ! 
+  REAL,PARAMETER::lookup_dCO3_max   = 100.0 * 1.0E-06          ! 
   REAL,PARAMETER::lookup_concO2_max = 200.0 * 1.0E-06          ! D(concO2) = 50 umol kg-1
-  REAL,PARAMETER::lookup_frac_max   = 1.0                      !
-  REAL,PARAMETER::lookup_fCorg_max  = 50.0 * 1.0E-06           !
+  REAL,PARAMETER::lookup_frac_max   = 1.0                      ! 
+  REAL,PARAMETER::lookup_fCorg_max  = 50.0 * 1.0E-06           ! 
   ! opal
   ! NOTE: following Ridgwell [2001]
   INTEGER,PARAMETER::lookup_i_opalpc_min       = 1             ! (2%)
@@ -258,8 +262,8 @@ MODULE sedgem_lib
   INTEGER,PARAMETER::lookup_i_T_max            = 280           ! (280 K)
   INTEGER,PARAMETER::lookup_i_KSi0_min         = 1             ! (0.010 yr-1 == 0.0 s-1)
   INTEGER,PARAMETER::lookup_i_KSi0_max         = 100           ! (1.000 yr-1 == 3.16E-08)
-  INTEGER,PARAMETER::lookup_i_opaltorefrac_min = 0             ! (0.0 [refrac%/opal%])
-  INTEGER,PARAMETER::lookup_i_opaltorefrac_max = 10            ! (10.0 [refrac%/opal%])
+  INTEGER,PARAMETER::lookup_i_opaltorefrac_min = 0             ! (0.0 [refrac%/opal%])            
+  INTEGER,PARAMETER::lookup_i_opaltorefrac_max = 10            ! (10.0 [refrac%/opal%]) 
   REAL,PARAMETER::lookup_opalpc_max       = 1.0                ! D(opalpc) = 2%
   REAL,PARAMETER::lookup_concSi_max       = 250.0 * 1.0E-06    ! D(concSi) = 10 umol kg-1
   REAL,PARAMETER::lookup_T_max            = 280.0              ! D(T)      = 1 K
@@ -295,14 +299,14 @@ MODULE sedgem_lib
   CHARACTER(len=63)::string_runid
   CHARACTER(len=127)::string_ncout2d                           ! name for netcdf output file
   ! netCDF and netCDF restart parameters
-  CHARACTER(len=31)::string_rstid                              !
-  CHARACTER(len=7) ::string_ncrunid                            !
-  CHARACTER(len=254) ::string_ncrst                            !
+  CHARACTER(len=31)::string_rstid                              ! 
+  CHARACTER(len=7) ::string_ncrunid                            ! 
+  CHARACTER(len=254) ::string_ncrst                            ! 
   integer::ncrst_ntrec                                         ! count for netcdf datasets
   integer::ncrst_iou                                           ! io for netcdf restart
   !
-  CHARACTER(len=254)::string_ncsedcorein                       !
-  CHARACTER(len=254)::string_ncsedcoreout                      !
+  CHARACTER(len=254)::string_ncsedcorein                       ! 
+  CHARACTER(len=254)::string_ncsedcoreout                      ! 
   integer::ncsedcore_ntrec                                     ! count for netcdf datasets
   integer::ncsedcore_iou                                       ! io for netcdf restart
 
@@ -318,6 +322,10 @@ MODULE sedgem_lib
   ! look-up tables
   REAL,ALLOCATABLE,DIMENSION(:,:,:,:)   :: lookup_sed_dis_cal  ! CaCO3 diagensis look-up table [Ridgwell, 2001]
   REAL,ALLOCATABLE,DIMENSION(:,:,:,:,:) :: lookup_sed_dis_opal ! opal diagenesis look-up table [Ridgwell, 2001]
+  REAL,ALLOCATABLE,DIMENSION(:)::lookup_vec_D                  ! lookup table dimension vector
+  REAL,ALLOCATABLE,DIMENSION(:)::lookup_vec_dco3               ! lookup table dimension vector
+  REAL,ALLOCATABLE,DIMENSION(:)::lookup_vec_frac               ! lookup table dimension vector
+  REAL,ALLOCATABLE,DIMENSION(:)::lookup_vec_fCorg              ! lookup table dimension vector
   ! allocatable 2-D sediment arrays
   real,ALLOCATABLE,DIMENSION(:,:,:)::phys_sed                  ! sediment 'physics' (mainly grid details)
   LOGICAL,ALLOCATABLE,DIMENSION(:,:)::sed_mask                 ! sediment mask (.TRUE. == sediment grid point exists)
@@ -330,13 +338,13 @@ MODULE sedgem_lib
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fsed                  ! rain flux to sediments (mol cm-2 yr-1)
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fdis                  ! sediment dissolution flux - solids tracers (mol cm-2 yr-1)
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sedocn_fnet               ! net sediment->ocean flux - ocean tracers (mol cm-2 yr-1)
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_carb                  ! carbonate chemistry overlying sediment surface
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_carb                  ! carbonate chemistry overlying sediment surface 
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_carbconst             ! carbonate chemistry constants
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_carbalk               ! carbonate chemistry alkalinity
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_carbisor              ! carbonate (carbon) isotopic properties array
   LOGICAL,ALLOCATABLE,DIMENSION(:,:)::sed_save_mask            ! sediment data save mask (.TRUE. == save sediment grid point)
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fsed_OLD              !
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fdis_OLD              !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fsed_OLD              ! 
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::sed_fdis_OLD              ! 
   ! allocatable sedcoe arrays
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sedcore                   ! sedcore sediment layer stack (num sedcores x layers x variables)
   ! sediments - conversion
@@ -351,7 +359,7 @@ MODULE sedgem_lib
   ! *** sedcore array definition ***
   !
   integer::nv_sedcore                                          ! number of sedcores
-  integer::n_sedcore_tracer                                    !
+  integer::n_sedcore_tracer                                    ! 
   integer::n_sedcore_tot                                       ! number of sedcore (store) layers
   !
   type fieldsedcore
@@ -363,10 +371,11 @@ MODULE sedgem_lib
      real,allocatable,DIMENSION(:,:)::lay                      ! sedcore layer (#layer, #tracer)
   end type fieldsedcore
   !
-  type(fieldsedcore),DIMENSION(:),ALLOCATABLE::vsedcore_store  !
+  type(fieldsedcore),DIMENSION(:),ALLOCATABLE::vsedcore_store  ! 
 
   ! *** MISC sediment parameters ***
   ! sediment mixing and layer configuration
+!!$  INTEGER::n_sed_mix                     ! depth of bioturbated layer below top ('well-mixed') layer (integer number of cm)
   REAL::par_sed_interf_th                ! sediment interface dissolution layer thickness (cm)
   REAL::par_sed_dporos_top               ! compaction factor (surface sediment layer porosity compared to underlying sediment stack)
   REAL::par_sed_mix_zmix                 ! depth scale for bioturbation (cm) [Archer et al., 2002]
@@ -379,7 +388,7 @@ MODULE sedgem_lib
   REAL::par_sed_diagen_fPOCmax           ! max POC rain flux in carbonate dissolution (umol cm-2 yr-1)
   ! opal diagenesis
   REAL::par_sed_opal_KSi0                ! base opal dissolution rate constant (intercept at zero opal rain rate)
-  REAL::par_sed_opal_Sitoopalmax         ! asymptotic [Si] %refrac/%opal ratio max limite sediments
+  REAL::par_sed_opal_Sitoopalmax         ! asymptotic [Si] %refrac/%opal ratio max limite sediments  
   ! ash tracing
   logical::par_sed_ashevent              ! ash event?
   real::par_sed_ashevent_fash            ! ash flux (g cm-2 kyr-1)
@@ -407,7 +416,7 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! CALCULATE TOTAL SEDIMENT VOLUME
   ! NOTE: this function calculate the total volume of sediment tracers (i.e., not taking into account sediment porosity)
-  !       -> a mask array <conv_sed_mask> is applied so that only those sediment tracers that actually have a solid volume
+  !       -> a mask array <conv_sed_mask> is applied so that only those sediment tracers that actually have a solid volume 
   !          contribute to the total silids volume
   !         (isotopic properties, and carbonate 'age', for instance, do not have any real volume and are not counted)
   FUNCTION fun_calc_sed_vol(dum_sed)
@@ -456,6 +465,21 @@ CONTAINS
   ! ****************************************************************************************************************************** !
 
 
+!!$  ! ****************************************************************************************************************************** !
+!!$  ! CALCULATE SEDIMENT POROSITY (SURFACE SEDIMENT LAYER)
+!!$  ! NOTE: assumes that the solids volume in the surface sediment is par_sed_dporos_top times that of the sediment stack
+!!$  FUNCTION fun_calc_sed_poros_top(dum_frac_CaCO3_top)
+!!$    IMPLICIT NONE
+!!$    ! result variable
+!!$    REAL::fun_calc_sed_poros_top
+!!$    ! dummy arguments
+!!$    REAL,INTENT(in)::dum_frac_CaCO3_top
+!!$    ! return value
+!!$    fun_calc_sed_poros_top = 1.0 - par_sed_dporos_top*(1.0 - fun_calc_sed_poros(dum_frac_CaCO3_top))
+!!$  END FUNCTION fun_calc_sed_poros_top
+!!$  ! ****************************************************************************************************************************** !
+
+
   ! ****************************************************************************************************************************** !
   ! CALCULATE SEDIMENT POROSITY (NEAR-SURFACE)
   ! NOTE: Archer [1996]
@@ -464,7 +488,7 @@ CONTAINS
     ! result variable
     REAL::fun_calc_sed_poros_nsur
     ! dummy arguments
-    REAL,INTENT(in)::dum_frac_CaCO3 !
+    REAL,INTENT(in)::dum_frac_CaCO3 ! 
     REAL,INTENT(in)::dum_sed_th     ! sediment thickness (cm)
     ! local variables
     real::loc_sed_poros
@@ -501,7 +525,7 @@ CONTAINS
     ! result variable
     REAL::fun_calc_r_sed_por
     ! dummy arguments
-    REAL,INTENT(in)::dum_frac_CaCO3 !
+    REAL,INTENT(in)::dum_frac_CaCO3 ! 
     REAL,INTENT(in)::dum_sed_th     ! sediment thickness (cm)
     ! return value
     fun_calc_r_sed_por = (1.0 - fun_calc_sed_poros(dum_frac_CaCO3))/(1.0 - fun_calc_sed_poros_nsur(dum_frac_CaCO3,dum_sed_th))
@@ -586,3 +610,4 @@ CONTAINS
 
 
 END MODULE sedgem_lib
+

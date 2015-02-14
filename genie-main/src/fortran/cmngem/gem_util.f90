@@ -817,15 +817,15 @@ CONTAINS
 
   ! ****************************************************************************************************************************** !
   ! LINEARILY INTERPOLATE IN 4 DIMENSIONAL SPACE
-  FUNCTION fun_interp_4D(a,b,c,d,vec_a,vec_b,vec_c,vec_d,array)
+  FUNCTION fun_interp_4Dvec(a,b,c,d,vec_a,vec_b,vec_c,vec_d,array)
     IMPLICIT NONE
     ! result variable
-    REAL::fun_interp_4D
+    REAL::fun_interp_4Dvec
     ! dummy arguments
-    REAL,INTENT(inout)::a
-    REAL,INTENT(inout)::b
-    REAL,INTENT(inout)::c
-    REAL,INTENT(inout)::d
+    REAL,INTENT(in)::a
+    REAL,INTENT(in)::b
+    REAL,INTENT(in)::c
+    REAL,INTENT(in)::d
     REAL,INTENT(in),DIMENSION(:)::vec_a
     REAL,INTENT(in),DIMENSION(:)::vec_b
     REAL,INTENT(in),DIMENSION(:)::vec_c
@@ -833,7 +833,6 @@ CONTAINS
     REAL,INTENT(in),DIMENSION(size(vec_a),size(vec_b),size(vec_c),size(vec_d))::array
     ! local variables
     integer::n,n_max
-    INTEGER::i_a,i_b,i_c,i_d
     REAL::a1,a2
     REAL::b1,b2
     REAL::c1,c2
@@ -844,64 +843,87 @@ CONTAINS
     INTEGER::i_d1,i_d2
 
     ! *** calculate grid points enclosing the passes point coordinates ***
-    ! NOTE: truncate at array bounds and do not extrapolate
     ! find dimension pair; indices and values -- a
     n_max = size(vec_a)
-    if (a < vec_a(1))     a = vec_a(1)
-    if (a > vec_a(n_max)) a = vec_a(n_max)
-    DO n = 1,n_max-1
-       if (vec_a(n) >= a) then
-          i_a1 = n
-          i_a2 = n+1
-          a1 = vec_a(n)
-          a2 = vec_a(n+1)
-          exit
-       end if
-    end do
+    if (a < vec_a(1)) then
+       i_a1 = 1
+       i_a2 = 2
+    elseif (a >= vec_a(n_max)) then
+       i_a1 = n_max-1
+       i_a2 = n_max
+    else
+       DO n = 2,n_max
+          if (vec_a(n) >= a) then
+             i_a1 = n-1
+             i_a2 = n
+             exit
+          end if
+       end do
+    end if
+    a1 = vec_a(i_a1)
+    a2 = vec_a(i_a2)
     ! find dimension pair; indices and values -- b
     n_max = size(vec_b)
-    if (b < vec_b(1))     b = vec_b(1)
-    if (b > vec_b(n_max)) b = vec_b(n_max)
-    DO n = 1,n_max-1
-       if (vec_b(n) >= b) then
-          i_b1 = n
-          i_b2 = n+1
-          b1 = vec_b(n)
-          b2 = vec_b(n+1)
-          exit
-       end if
-    end do
+    if (b < vec_b(1)) then
+       i_b1 = 1
+       i_b2 = 2
+    elseif (b >= vec_b(n_max)) then
+       i_b1 = n_max-1
+       i_b2 = n_max
+    else
+       DO n = 2,n_max
+          if (vec_b(n) >= b) then
+             i_b1 = n-1
+             i_b2 = n
+             exit
+          end if
+       end do
+    end if
+    b1 = vec_b(i_b1)
+    b2 = vec_b(i_b2)
     ! find dimension pair; indices and values -- c
     n_max = size(vec_c)
-    if (c < vec_c(1))     c = vec_c(1)
-    if (c > vec_c(n_max)) c = vec_c(n_max)
-    DO n = 1,n_max-1
-       if (vec_c(n) >= c) then
-          i_c1 = n
-          i_c2 = n+1
-          c1 = vec_c(n)
-          c2 = vec_c(n+1)
-          exit
-       end if
-    end do
+    if (c < vec_c(1)) then
+       i_c1 = 1
+       i_c2 = 2
+    elseif (c >= vec_c(n_max)) then
+       i_c1 = n_max-1
+       i_c2 = n_max
+    else
+       DO n = 2,n_max
+          if (vec_c(n) >= c) then
+             i_c1 = n-1
+             i_c2 = n
+             exit
+          end if
+       end do
+    end if
+    c1 = vec_c(i_c1)
+    c2 = vec_c(i_c2)
     ! find dimension pair; indices and values -- d
     n_max = size(vec_d)
-    if (d < vec_d(1))     d = vec_d(1)
-    if (d > vec_d(n_max)) d = vec_d(n_max)
-    DO n = 1,n_max-1
-       if (vec_d(n) >= d) then
-          i_d1 = n
-          i_d2 = n+1
-          d1 = vec_d(n)
-          d2 = vec_d(n+1)
-          exit
-       end if
-    end do
+    if (d < vec_d(1)) then
+       i_d1 = 1
+       i_d2 = 2
+    elseif (d >= vec_d(n_max)) then
+       i_d1 = n_max-1
+       i_d2 = n_max
+    else
+       DO n = 2,n_max
+          if (vec_d(n) >= d) then
+             i_d1 = n-1
+             i_d2 = n
+             exit
+          end if
+       end do
+    end if
+    d1 = vec_d(i_d1)
+    d2 = vec_d(i_d2)
 
     ! *** return function value ***
     ! interpolate
     ! NOTE: see 'Applied Numerical Methods with Software' by Nakamura for details of 1-D and 2-D interpolation
-    fun_interp_4D = (1.0 / ((a2-a1)*(b2-b1)*(c2-c1)*(d2-d1))) * &
+    fun_interp_4Dvec = (1.0 / ((a2-a1)*(b2-b1)*(c2-c1)*(d2-d1))) * &
          & ( &
          &   (a-a1)*(b-b1)*(c-c1)*(d-d1) * array(i_a2,i_b2,i_c2,i_d2) + &
          &   (a-a1)*(b-b1)*(c-c1)*(d2-d) * array(i_a2,i_b2,i_c2,i_d1) + &
@@ -921,17 +943,17 @@ CONTAINS
          &   (a2-a)*(b2-b)*(c2-c)*(d2-d) * array(i_a1,i_b1,i_c1,i_d1) &
          & )
 
-  END FUNCTION fun_interp_4D
+  END FUNCTION fun_interp_4Dvec
   ! ****************************************************************************************************************************** !
 
 
   ! ****************************************************************************************************************************** !
   ! LINEARILY INTERPOLATE IN 4 DIMENSIONAL SPACE
-  FUNCTION fun_interp_4D_OLD(array,a,b,c,d,a_max,b_max,c_max,d_max, &
+  FUNCTION fun_interp_4D(array,a,b,c,d,a_max,b_max,c_max,d_max, &
        & i_a_min,i_a_max,i_b_min,i_b_max,i_c_min,i_c_max,i_d_min,i_d_max)
     IMPLICIT NONE
     ! result variable
-    REAL::fun_interp_4D_OLD
+    REAL::fun_interp_4D
     ! dummy arguments
     INTEGER,INTENT(in)::i_a_min,i_a_max
     INTEGER,INTENT(in)::i_b_min,i_b_max
@@ -1067,7 +1089,7 @@ CONTAINS
     ! *** return function value ***
     ! interpolate
     ! NOTE: see 'Applied Numerical Methods with Software' by Nakamura for details of 1-D and 2-D interpolation
-    fun_interp_4D_OLD = (1.0 / ((a2-a1)*(b2-b1)*(c2-c1)*(d2-d1))) * &
+    fun_interp_4D = (1.0 / ((a2-a1)*(b2-b1)*(c2-c1)*(d2-d1))) * &
          & ( &
          &   (a-a1)*(b-b1)*(c-c1)*(d-d1) * array(i_a2,i_b2,i_c2,i_d2) + &
          &   (a-a1)*(b-b1)*(c-c1)*(d2-d) * array(i_a2,i_b2,i_c2,i_d1) + &
@@ -1087,7 +1109,7 @@ CONTAINS
          &   (a2-a)*(b2-b)*(c2-c)*(d2-d) * array(i_a1,i_b1,i_c1,i_d1) &
          & )
 
-  END FUNCTION fun_interp_4D_OLD
+  END FUNCTION fun_interp_4D
   ! ****************************************************************************************************************************** !
 
 

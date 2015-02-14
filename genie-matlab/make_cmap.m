@@ -62,6 +62,7 @@ function [FCMAP] = make_cmap(PCNAME,PNCOL)
 %             + substituted simple linear interpolation in place of 
 %              existing bizarre and pooor code ...
 %   15/01/11: added wt% color scale
+%   15/02/11: added missing scaling to anom and wt% color scales
 %
 % *********************************************************************** %
 
@@ -95,12 +96,14 @@ switch str_name
                     255 255 255;
                     255 255 127;
                     255   0   0];
+        loc_cmap = loc_cmap/255.0;  
     case {'wt%'}
         loc_cmap = [ 64  32  16;
                     128  64  32;
                     255 128  64;
                     255 255 255;
                     255 255 255];
+        loc_cmap = loc_cmap/255.0;  
     case {'_parula'}
         loc_cmap = [0.208100000000000   0.166300000000000   0.529200000000000;
                     0.079475000000000   0.515900000000000   0.832825000000000;
