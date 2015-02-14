@@ -700,7 +700,7 @@ c     *** GOLDSTEIN - END
 c     ==================================================================
 c     *** EMBM - END
       if (flag_ebatmos) then
-         call end_embm
+         call end_embm_wrapper
       endif
 c     ==================================================================
 c     *** GOLDSTEIN sea-ice - END

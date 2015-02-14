@@ -70,6 +70,7 @@ contains
 
   !!
   subroutine surflux_wrapper
+    use embm
     implicit none
     ! Surflux module : GOLDSTEIN-EMBM-GOLDSEAICE (parentage = c-GOLDSTEIN)
     !
@@ -151,6 +152,7 @@ contains
 
   !!
   subroutine embm_wrapper
+    use embm
     implicit none
     ! Atmosphere module : EMBM (parentage = c-GOLDSTEIN)
     !
@@ -168,7 +170,7 @@ contains
     !           surf_qstar_atm           surface specific humidity
     !           atmos_lowestlu2_atm      zonal component of wind speed
     !           atmos_lowestlv3_atm      meridional component of wind speed
-    call embm( &
+    call step_embm( &
          istep_atm, &                             !
          surf_latent_atm,surf_sensible_atm, &     ! input
          netsolar_atm,netlong_atm, &              ! input
@@ -184,15 +186,6 @@ contains
          atmos_lowestlv3_atm &                    ! in/output
          )
   end subroutine embm_wrapper
-
-  !!
-  subroutine radfor_wrapper
-    implicit none
-    !
-    call radfor(istep_atm, global_daysperyear, &
-         genie_solar_constant &
-         & )                                      ! input
-  end subroutine radfor_wrapper
 
   !!
   subroutine gold_seaice_wrapper

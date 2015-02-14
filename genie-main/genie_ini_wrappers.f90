@@ -13,6 +13,7 @@ contains
 
   !!
   subroutine initialise_embm_wrapper
+    use embm
     implicit none
     call initialise_embm( &
          alon1_atm,alat1_atm, &

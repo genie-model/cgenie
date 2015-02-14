@@ -37,6 +37,13 @@ contains
   end subroutine end_seaice_wrapper
 
   !!
+  subroutine end_embm_wrapper
+    use embm
+    implicit none
+    call end_embm()
+  end subroutine end_embm_wrapper
+
+  !!
   subroutine end_sedgem_wrapper
     implicit none
     call end_sedgem(                                    &

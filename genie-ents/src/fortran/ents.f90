@@ -401,7 +401,7 @@ CONTAINS
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
     REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, dimension(maxj), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
     REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
     REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
@@ -599,7 +599,7 @@ CONTAINS
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
     REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
     REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
 

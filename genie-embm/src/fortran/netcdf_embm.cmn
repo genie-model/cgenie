@@ -1,5 +1,0 @@
-      integer nmaxdims,nall,nfiles
-      parameter(nmaxdims=4,nall=100,nfiles=2)
-
-      integer nco(nfiles),iddimo(nall,nfiles),idvaro(nall,nfiles)
-      common/netcdfvars_embm/nco,iddimo,idvaro
