@@ -49,7 +49,7 @@ MODULE_NAMES = goldstein \
                embm \
                goldsteinseaice \
                ents \
-	       atchem \
+               atchem \
                biogem \
                sedgem \
                rokgem \
@@ -83,7 +83,8 @@ else
 endif
 
 # f90 modules included
-INCLUDE_MODULE_LIBRARIES = $(MOD_INC_FLAG)$(INC_DIR)
+MODULE_INCLUDES=$(MODULE_NAMES:%=$(MOD_INC_FLAG)$(GENIE_ROOT)/genie-%/src/fortran)
+INCLUDE_MODULE_LIBRARIES=$(MODULE_INCLUDES) $(MOD_INC_FLAG)$(INC_DIR)
 
 UTIL_LIBS_PROTO=$(UTIL_NAMES:%=$(LIB_DIR)/lib%/$(LIB_PREFIX))
 UTIL_LIBS = $(addsuffix .$(LIB_EXT),$(join $(UTIL_LIBS_PROTO),$(UTIL_NAMES)))

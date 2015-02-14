@@ -44,6 +44,7 @@ contains
 
   !!
   subroutine ini_goldsteinseaice_wrapper
+    use gold_seaice
     implicit none
     call initialise_seaice( &
          alon1_sic,alat1_sic, &

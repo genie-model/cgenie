@@ -196,6 +196,7 @@ contains
 
   !!
   subroutine gold_seaice_wrapper
+    use gold_seaice
     implicit none
     ! Sea-ice module : GOLDSTEIN sea-ice (parentage = c-GOLDSTEIN)
     !
@@ -210,7 +211,7 @@ contains
     !           waterflux_ocn            freshwater flux to ocean (melting)
     !           conductflux_ocn          heat flux to ocean (melting)
     !
-    call gold_seaice( &
+    call step_seaice( &
          istep_sic, &                            !
          dhght_sic,dfrac_sic, &                  ! input
          ustar_ocn,vstar_ocn, &                  ! input
@@ -243,7 +244,6 @@ contains
     !
     implicit none
     !
-    integer ::  thread_id
     call goldstein( &
          istep_ocn, &                              !
          latent_ocn,sensible_ocn, &                ! input
@@ -533,7 +533,6 @@ contains
   subroutine biogem_wrapper
     implicit none
     !
-    integer ::  thread_id
     call biogem(                                             &
          & real(conv_kocn_kbiogem*kocn_loop)*genie_timestep, & ! input
          & genie_clock,                                      & ! input

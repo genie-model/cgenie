@@ -30,6 +30,13 @@ contains
   end subroutine end_atchem_wrapper
 
   !!
+  subroutine end_seaice_wrapper
+    use gold_seaice
+    implicit none
+    call end_seaice()
+  end subroutine end_seaice_wrapper
+
+  !!
   subroutine end_sedgem_wrapper
     implicit none
     call end_sedgem(                                    &

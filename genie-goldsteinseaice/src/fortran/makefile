@@ -1,48 +1,35 @@
 
+LOCALFLAGS=$(FFLAGS) $(BOUNDS_FLAGS) $(FLAGR8)
 ifeq ($(MACHINE),WIN32)
-  LOC_INC_FLAGS=$(MOD_INC_FLAG)$(GENIE_ROOT_WIN)\\genie-main
+	CMNSG = ..\\..\\..\\genie-main\\src\\fortran\\cmngem\\
+	MAIN_DIR = ..\\..\\..\\genie-main\\
 else
-  LOC_INC_FLAGS=$(MOD_INC_FLAG)$(MAIN_DIR)
+	CMNSG = ../../../genie-main/src/fortran/cmngem/
+        MAIN_DIR = ../../../genie-main/
 endif
-LOCALFLAGS= $(FPPFLAGS) $(FFLAGS) $(F77FLAGS) $(FLAGS) $(LOC_INC_FLAGS) $(FLAGR8)
+LOCINCPATH = $(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
+LIBNAME = libgoldsteinseaice
+INCLUDE_FILES =
+OTHER_FILES=../../../genie-main/makefile.arc makefile
 
-.SUFFIXES: .$(OBJ_EXT) .f
+SRCS=gold_seaice.f90 gold_seaice_lib.f90 gold_seaice_netcdf.f90 \
+     gold_seaice_data.f90
+OBJECTS=$(SRCS:.f90=.$(OBJ_EXT))
 
-.F.$(OBJ_EXT):
-	$(F77) $(LOCALFLAGS) $(DOPTS) \
-	$(COMPILEONLY) $*.F
+all: $(OBJECTS) $(OTHER_FILES) $(INCLUDE_FILES) makefile.depend
 
-.f.$(OBJ_EXT):
-	$(F77) $(LOCALFLAGS) \
-	$(COMPILEONLY) $*.f
-
-.f:
-	$(F77) $(LOCALFLAGS) \
-	$(OBJ_FLAG) $<
-
-SRCS=diagend_seaice.f diagosc_sic.F diagsic.f diag4.f end_seaice.F \
-     gold_seaice.F initialise_seaice.F inm_netcdf_sic.F inm_seaice.f \
-     netcdf_sic.F outm_netcdf_sic.F outm_seaice.f tstepsic.f tstipsic.f \
-     diag_goldsteinseaice_ice_annual_av.F
-OBJS1=$(SRCS:.F=.$(OBJ_EXT))
-OBJS=$(OBJS1:.f=.$(OBJ_EXT))
-
-#FLAGS = -r8 -O -static
-FLAGS = $(FLAGR8) $(GOLDOPTIM)
-DOPTS = $(DEFINE)ebatmos
-
-CMN = seaice.cmn netcdf_sic.cmn netcdf_grid.cmn makefile ../../../genie-main/makefile.arc
-
-all : $(OBJS) $(CMN) makefile.depend
-
-.PHONY : all clean tags
-clean:
-	\rm -f *.$(OBJ_EXT) makefile.depend
+.PHONY: clean tags
+clean :
+	\rm -f *.$(OBJ_EXT) *.mod makefile.depend
 
 tags:
 	@ $(SHELL) -ec 'which $(ETAGS) > /dev/null; \
 		$(ETAGS) -a -o $(TAGFILE) *.F; \
-		$(ETAGS) -a -o $(TAGFILE) *.f'
+		$(ETAGS) -a -o $(TAGFILE) *.f90'
+
+$(OBJECTS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
+	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(LOCINCPATH) $(F90FLAGS) \
+	$(FPPFLAGS) $< $(OBJ_FLAG)$@
 
 makefile.depend: $(SRCS)
 	$(MAIN_DIR)/tools/bin/makedepf90 $(SRCS) >> makefile.depend

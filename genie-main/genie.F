@@ -711,7 +711,7 @@ c     *** EMBM - END
 c     ==================================================================
 c     *** GOLDSTEIN sea-ice - END
       if (flag_goldsteinseaice) then
-         call end_seaice
+         call end_seaice_wrapper
       endif
 c     ==================================================================
 c     *** GEM model - END
