@@ -14,12 +14,6 @@ c     ******************************************************************
 
       implicit none
 
-c     ! >>> CHECK >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> !
-c     SG.gt.This is (hopefully!) a temp measure for ENTS
-#include "../genie-ents/src/fortran/var_ents.cmn"
-c     SG <
-c     ! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< !
-
       print*
       print*,'*******************************************************'
       print '("  *** Welcome to cGENIE -- version:",I5)',genie_version

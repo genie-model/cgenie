@@ -134,6 +134,7 @@ contains
 
   !! SG Initialising ENTS module
   subroutine initialise_ents_wrapper
+    use ents
     implicit none
     call initialise_ents( &
          go_lin,go_rsc,go_syr,go_nyear, &
