@@ -84,7 +84,7 @@ CONTAINS
     ! EMBM model timestep
 
     ! EMBM update 1-layer atmosphere
-    call tstepa
+    call tstipa
 
     ! Diagnostic fields of precipitation-adjusted humidity (i.e.,
     ! humidity after precipitation)
@@ -2119,111 +2119,135 @@ CONTAINS
   END SUBROUTINE end_embm
 
 
-  ! subroutine tstepa.f for program goldstein, introduced 8/2/02
-  ! transports tair, qair meridionally and vertically
-  ! updates tair, qair in lower atmosphere
-  !
-  ! flux version fully explicit one step second order variable depth
-
-  subroutine tstepa
+  ! Atmospheric timestep: iterative implicit version
+  ! Coefficient of implicitness cimp: cimp=1 fully implicit, cimp=0
+  ! explicit.
+  ! Coeffs for iterative implicit scheme are defined at cell faces.
+  ! eg flux across east face = cie(i)*T(i+1) + ciw(i)*T(i)
+  subroutine tstipa
     implicit none
 
-    real fe(2), fw(2), fn(2), fs(2,maxi), fa(2), fb(2,maxi,maxj),fwsave(2)
-    real diffextra
+    real tv, ups, ups0, pec, diffpp, cimp, centre, dtloc
+    real cie(0:maxi,0:maxj),ciw(0:maxi,0:maxj), &
+         & cin(0:maxi,0:maxj),cis(0:maxi,0:maxj)
+    real tq2(0:maxi+1,0:maxj+1)
+    integer iits, nii         ! iterations to solve timestep
+    parameter (nii=4, ups0=999, cimp=0.5)
     integer i, j, l
+    logical correct
+    parameter(correct=.true. )
+    dtloc = dtatm
 
-    ! 2nd order explicit step
+    ! set b.c's on local variables
+    do i=0,imax
+       cin(i,0) = 0.
+       cis(i,0) = 0.
+       tq2(i,0) = 0.
+       cin(i,jmax) = 0.
+       cis(i,jmax) = 0.
+       tq2(i,jmax+1) = 0.
+    enddo
 
-    ! lower boundary fluxes
-    do j=1,jmax
-       do i=1,imax
-          do l=1,2
-             fb(l,i,j) = 0
-          end do
-       end do
-    end do
-
-    ! southern boundary fluxes
-    j = 1
-    do i=1,imax
-       do l=1,2
-          fs(l,i) = 0
-       end do
-    end do
-
-    do j=1,jmax
-       ! western boundary fluxes
-       i = 1
-       do l=1,2
-          ! western doorway
-          fw(l) = betaz(l)*uatm(1,imax,j)*rc(j)*(tq1(l,1,j) + &
-               & tq1(l,imax,j))*0.5
-          ! add zonal heat diffusion
-          diffextra = (2-l)*diffmod0*max(0.0,min(1.0, &
-               & (pptn(i,j)-ppmin)/(ppmax-ppmin)))
-          fw(l) = fw(l) - (tq1(l,1,j) - tq1(l,imax,j)) &
-               & *rc(j)*rc(j)*rdphi*(diffa(l,1,j)+diffextra)
-          fwsave(l) = fw(l)
-       end do
-
-       do i=1,imax
-          do l=1,2
+    do l=1,2
+       do j=1,jmax
+          do i=1,imax
              ! flux to east
-             if(i.eq.imax)then
-                ! eastern edge (doorway or wall)
-                fe(l) = fwsave(l)
-             else
-                fe(l) = betaz(l)*uatm(1,i,j)*rc(j)*(tq1(l,i+1,j) &
-                     & + tq1(l,i,j))*0.5
-                ! add zonal heat diffusion
-                diffextra = (2-l)*diffmod0*max(0.0,min(1.0, &
-                     & (pptn(i,j)-ppmin)/(ppmax-ppmin)))
-                fe(l) = fe(l) - (tq1(l,i+1,j) - tq1(l,i,j)) &
-                     & *rc(j)*rc(j)*rdphi*(diffa(l,1,j)+diffextra)
-             endif
+             cie(i,j) = betaz(l)*uatm(1,i,j)*rc(j)*0.5*rdphi
+             diffpp = diffa(l,1,j) + &
+                  & (2-l)*diffmod0*max(0.0,min(1.0, &
+                  & (pptn(i,j)-ppmin)/(ppmax-ppmin)))
+
+             tv = rc(j)*rc(j)*rdphi*diffpp*rdphi
+             pec = betaz(l)*uatm(1,i,j)*dphi/diffpp
+             ups = pec / (2.0 + abs(pec))
+             ciw(i,j) = cie(i,j)*(1+ups) + tv
+             cie(i,j) = cie(i,j)*(1-ups) - tv
              ! flux to north
-             if(j.ne.jmax)then
-                ! except northermost gridpoints
-
-                fn(l) = cv(j)*betam(l)*uatm(2,i,j)*(tq1(l,i,j+1) &
-                     & + tq1(l,i,j))*0.5
-                ! add meridional heat diffusion
-                diffextra = (2-l)*diffmod0*max(0.0,min(1.0, &
-                     & (pptn(i,j)-ppmin)/(ppmax-ppmin)))
-                fn(l) = fn(l) - cv(j)*cv(j)*(diffa(l,2,j) &
-                     & + diffextra) *(tq1(l,i,j+1) - tq1(l,i,j))*rdsv(j)
+             cin(i,j) = cv(j)*betam(l)*uatm(2,i,j)*0.5
+             diffpp = diffa(l,2,j) + &
+                  & (2-l)*diffmod0*max(0.0,min(1.0, &
+                  & (pptn(i,j)-ppmin)/(ppmax-ppmin)))
+             ! cv(jmax) = 0 but dsv not defined so mask needed
+             if(j.lt.jmax)then
+                tv = cv(j)*cv(j)*rdsv(j)*diffa(l,2,j)
+                pec = betam(l)*uatm(2,i,j)*dsv(j)/diffpp
+                ups = pec / (2.0 + abs(pec))
              else
-                fn(l) = 0.
+                tv = 0.
+                ups = 0.
              endif
+             cis(i,j) = cin(i,j)*(1+ups) + tv
+             cin(i,j) = cin(i,j)*(1-ups) - tv
+          enddo
+       enddo
+       do j=1,jmax
+          cie(0,j) = cie(imax,j)
+          ciw(0,j) = ciw(imax,j)
+       enddo
 
-             ! surface flux
-             fb(l,i,j) = tqa(l,i,j)
-             ! flux through interface between lower and upper atmosphere
-             fa(l) = 0
+       ! iterate to solve timestep
+       do iits=1,nii
+          do j=1,jmax
+             do i=1,imax
+                tq2(i,j) = cimp*tq(l,i,j) + (1.0 - cimp)*tq1(l,i,j)
+             enddo
+          enddo
+          do j=1,jmax
+             tq2(0,j) = tq2(imax,j)
+             tq2(imax+1,j) = tq2(1,j)
+          enddo
+          do j=1,jmax
+             do i=1,imax
+                centre = dtloc*(ciw(i,j) - cie(i-1,j) &
+                     & + (cis(i,j) - cin(i,j-1))*rds(j))
+                tq(l,i,j) = (tq1(l,i,j)*(1.0 - (1.0-cimp) &
+                     & *centre) - dtloc*(-tqa(l,i,j) &
+                     & + cie(i,j)  *tq2(i+1,j) &
+                     & - ciw(i-1,j)*tq2(i-1,j) &
+                     & + (cin(i,j)  *tq2(i,j+1) &
+                     & - cis(i,j-1)*tq2(i,j-1))*rds(j)))/ &
+                     & (1 + cimp*centre)
+             enddo
+          enddo
+       enddo
+       if(correct)then
+          do j=1,jmax
+             do i=1,imax
+                tq2(i,j) = 0.5*(tq2(i,j) + cimp*tq(l,i,j) &
+                     & + (1.0 - cimp)*tq1(l,i,j))
+             enddo
+          enddo
+          do j=1,jmax
+             tq2(0,j) = tq2(imax,j)
+             tq2(imax+1,j) = tq2(1,j)
+          enddo
+          do j=1,jmax
+             do i=1,imax
 
-             tq(l,i,j) = tq1(l,i,j) - dtatm*( &
-                  & (fe(l) - fw(l))*rdphi &
-                  & + (fn(l) - fs(l,i))*rds(j) &
-                  & + fa(l) - fb(l,i,j))
+                ! explicit and conservative corrector step
+                tq(l,i,j) =  tq1(l,i,j) - dtloc*(-tqa(l,i,j) &
+                     & + cie(i,j)  *tq2(i+1,j) &
+                     & - ciw(i-1,j)*tq2(i-1,j) &
+                     & + (cin(i,j)  *tq2(i,j+1) &
+                     & - cis(i,j-1)*tq2(i,j-1))*rds(j)) &
+                     & - dtloc*tq2(i,j)*( &
+                     & ciw(i,j) - cie(i-1,j) &
+                     & + (cis(i,j) - cin(i,j-1))*rds(j) )
+             enddo
+          enddo
+       endif
+    enddo
 
-             ! nre dimless height of atm set to 1, implies factor of h in fluxsc
-
-             fw(l) = fe(l)
-             fs(l,i) = fn(l)
-             fb(l,i,j) = fa(l)
-          end do
-       end do
-    end do
-
+    ! update tq1
     do j=1,jmax
        do i=1,imax
           do l=1,2
              tq1(l,i,j) = tq(l,i,j)
-          end do
-       end do
-    end do
+          enddo
+       enddo
+    enddo
 
-  end subroutine tstepa
+  end subroutine tstipa
 
 
   ! Subroutine to interpolate between monthly mean
