@@ -342,7 +342,7 @@ CONTAINS
     REAL,    INTENT(IN) :: temper(imax,jmax)
     REAL,    INTENT(OUT) :: temp1(imax,jmax)
 
-    WHERE (iland >= 90)
+    WHERE (iland(1:imax,1:jmax) >= 90)
        temp1 = -99999.0
     ELSEWHERE
        temp1 = temper
