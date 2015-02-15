@@ -195,7 +195,7 @@ CONTAINS
        if (debug_loop) print*,'Writing EMBM netCDF file at time',istep
        call ini_netcdf_embm(istep,1)
        qdrydum(:,:)=0.
-       call write_netcdf_embm(imax, jmax, k1, tq, qdrydum, qdrydum,&
+       call write_netcdf_embm(k1, tq, qdrydum, qdrydum,&
             & fx0flux, fwflux, work, maxi, maxj, 1)
        call end_netcdf_embm(1)
        if (debug_loop) print*
@@ -257,7 +257,7 @@ CONTAINS
     integer bmask(maxi,maxj)
 
     real z1, tv, tv1, tv2, tv3, tv4, tv5, tatm, relh0_ocean, &
-         & relh0_land, sigma, diffamp(2), diffwid, difflin, &
+         & relh0_land, diffamp(2), diffwid, difflin, &
          & diffend, zro(maxk), zw(0:maxk)
     real radfor_scl_co2,radfor_pc_co2_rise
     real radfor_scl_ch4,radfor_pc_ch4_rise
@@ -531,29 +531,9 @@ CONTAINS
        print*,'seasonality enabled =',dosc
     end if
 
-    pi = 4*atan(1.0)
-
-    ! dimensional scale values
-    usc = 0.05
-    rsc = 6.37e6
-    dsc = 5e3
-    fsc = 2*7.2921e-5
-    gsc = 9.81
-    rh0sc = 1e3
-    rhosc = rh0sc*fsc*usc*rsc/gsc/dsc
-    cpsc = 3981.1
-    tsc = rsc/usc
-
-    ! EMBM scaling for heat forcing of ocean
-    rfluxsc = rsc/(dsc*usc*rh0sc*cpsc)
-    ! EMBM reference salinity
-    saln0 = 34.9
-    ! EMBM scaling for freshwater forcing of ocean
-    rpmesco = rsc*saln0/(dsc*usc)
-
     ! parameters for setting up grid
     ! th is latitude, coords are sin(th), longitude phi, and z
-    th0 = - pi/2
+    th0 = -pi/2
     th1 = pi/2
     s0 = sin(th0)
     s1 = sin(th1)
@@ -788,28 +768,6 @@ CONTAINS
     if (debug_init) print*,'betaz(1),betam(1),betaz(2),betam(2)'
     if (debug_init) print*,betaz(1),betam(1),betaz(2),betam(2)
 
-    ! A lot of the following needs removed to surflux constants used
-    ! in SSW parameterization
-    sigma = 5.67e-8
-    emo = 0.94 * sigma
-    eml = 0.94 * sigma
-    ema = 0.85 * sigma
-    tfreez = 0.
-
-    ! constants used in OLW parameterization
-    b00 = 2.43414e2
-    b10 = -3.47968e1
-    b20 = 1.02790e1
-    b01 = 2.60065
-    b11 = -1.62064
-    b21 = 6.34856e-1
-    b02 = 4.40272e-3
-    b12 = -2.26092e-2
-    b22 = 1.12265e-2
-    b03 = -2.05237e-5
-    b13 = -9.67000e-5
-    b23 = 5.62925e-5
-
     ! climatological albedo (similar to Weaver et al. 2001)
     if (debug_init) print*,'climatological albedo, by latitude'
     do j=1,jmax
@@ -855,13 +813,6 @@ CONTAINS
     if (debug_init) &
          & print*, '=> climate sensitivity =',delf2x*log(2.0),' Wm-2'
 
-    ! Reference greenhouse gas concentrations
-    co20 = 278.0e-6
-    ch40 = 700.e-9
-    n2o0 = 275.e-9
-    ! gas equation alpha values (as per IPCC [2001])
-    alphach4 = 0.036
-    alphan2o = 0.12
     ! initialize greenhouse gas concentrations
     do j = 1,jmax
        do i = 1,imax
@@ -892,20 +843,8 @@ CONTAINS
        co2_out(:,:)=co2_vect(1)
     endif
 
-    ! more constants
-    rhoair = 1.25
-    rho0 = 1e3
-    rhoao = rhoair/rho0
     ! depth scale for atmospheric thermal b.l. used by Weaver et al. (2001)
     hatmbl(1) = 8400.
-    cpa = 1004.
-    ! latent heat of vapourization (J/kg)
-    hlv = 2.501e6
-    ! latent heat of fusion of ice (J/kg)
-    hlf = 3.34e5
-    ! latent heat of sublimation (J/kg)
-    ! for conservation of heat, require
-    hls = hlv + hlf
 
     ! scaling for heat forcing of atmosphere
     rfluxsca = rsc/(hatmbl(1)*usc*rhoair*cpa)
@@ -970,9 +909,8 @@ CONTAINS
     endif
 
     ! parameters for extra heat diffusion where pptn high
-    diffmod0 = 0.
-    ppmin = 2./(yearlen*86400.)
-    ppmax = 4./(yearlen*86400.)
+    ppmin = 2.0 / (yearlen * 86400.0)
+    ppmax = 4.0 / (yearlen * 86400.0)
 
     ! nre simpler diffusivity
     diffend = exp(-(0.5*pi/diffwid)**2)
@@ -1027,23 +965,11 @@ CONTAINS
     ! scale height for specific humidity (Peixoto and Oort 1992)
     hatmbl(2) = 1800.
 
-    ! consts for saturation specific humidity (Bolton 1980)
-    const1 = 3.80*1e-3
-    const2 = 21.87
-    const3 = 265.5
-    const4 = 17.67
-    const5 = 243.5
-
     ! scaling for P-E forcing of atmosphere
     rpmesca = rsc*rho0/(hatmbl(2)*usc*rhoair)
 
     ! reconstruct surface wind field for bulk turbulent transfer and
     ! zonally average near poles as for uatm for stability
-
-    ! LG: I thik the following is useless here
-    ! because tau hasn't been assigned yet
-    ! this piece of code is also in usurf.F after tau has been assigned
-    cd = 0.0013
 
     do j=1,jmax
        tv3 = 0.
@@ -1070,9 +996,6 @@ CONTAINS
     enddo
 
     ! sea-ice parameter definitions
-    tsic = -1.8
-    ! constant ice conductivity (W/m/K)
-    consic = 2.166
     if (debug_init) print*, 'constant ice conductivity, consic =',consic
     ! in parameterization of heat flux at base of sea ice:
     ! empirical constant
@@ -1087,8 +1010,6 @@ CONTAINS
     cpo_ice = 4044
     if (debug_init) print*, &
          & 'specific heat of seawater under ice, cpo_ice =',cpo_ice
-    ! representative ice density (kg/m**3)
-    rhoice = 913.
     if (debug_init) print*, &
          & 'representative ice density, rhoice =',rhoice
     ! useful constant proportional to inverse timscale for surface freezing
@@ -1096,40 +1017,26 @@ CONTAINS
     if (debug_init) print*,'rsictscsf = ',rsictscsf
     rsictscsf = dsc*dz(kmax)*rho0*cpo_ice/(17.5*86400.0)
     if (debug_init) print*,'rsictscsf = ',rsictscsf
-    ! minimum average sea-ice thickness over a grid cell
-    hmin = 0.01
     if (debug_init) print*, &
          & 'minimum average sea-ice thickness, hmin =',hmin
-    rhmin = 1.0/hmin
     ! density ratios
-    rhooi = rho0/rhoice
     if (debug_init) print*,'density ratios, rhooi =',rhooi
-    rhoio = rhoice/rho0
-    ! melting factor
-    rrholf = 1.0/(rhoice*hlf)
     if (debug_init) print*,'rrholf = ',rrholf
     ! FW flux conversion parameters
-    m2mm = 1000.
-    mm2m = 1.0/(m2mm)
     if (debug_init) print*,'m to mm conversion factor, m2mm =',m2mm
     if (debug_init) print*,'mm to m conversion factor, mm2m =',mm2m
-
     ! read initial atmos state
     if (debug_init) print*,'tatm relh0_ocean relh0_land'
     if (debug_init) print*,tatm,relh0_ocean,relh0_land
-
     ! read freshwater flux perturbation data
     if (debug_init) print*,'extra1a range1b nsteps_extra1c'
     if (debug_init) print*,extra1a,extra1b,extra1c
-
     ! read scaling factor for extra1a, extra1b, extra1c
     if (debug_init) print*,'scl_fwf'
     if (debug_init) print*,scl_fwf
-
     ! Read the EMBM reference height
     if (debug_init) print*,'EMBM reference height, z1 (m)'
     if (debug_init) print*,z1_embm
-
     ! apply scl_fwf
     extra1a = scl_fwf*extra1a
     extra1b = scl_fwf*extra1b
@@ -2991,7 +2898,6 @@ CONTAINS
        enddo
     enddo
 
-    cd = 0.0013
     if (unify_winds .eq. 1 .or..not.flag_ents) then
        do j=1,jmax
           tv3 = 0.
