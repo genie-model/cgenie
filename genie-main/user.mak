@@ -2,7 +2,7 @@
 #
 #          === PLEASE MAKE YOUR EDITS IN THIS FILE ===
 #
-# These edits may include the name of your Fortran or C compiler, 
+# These edits may include the name of your Fortran or C compiler,
 # the location of your version of the NetCDF libraries.
 #
 # Please note that in addition to editing this file, variables can be
@@ -14,7 +14,7 @@
 # additions, e.g.:
 #       make GENIE_LDFLAGS=-L/path/to/mylibs
 # LDFLAGS is then seeded with GENIE_LDFLAGS--this is done
-# because command line overrides are immutable. 
+# because command line overrides are immutable.
 #
 # (genie_example.job uses the command-line override machanism to
 # pass compile-time configuration options through to makefile.arc
@@ -23,9 +23,9 @@
 # ====================================================================
 
 ## === Compre the values below to those in user.sh ===
-GENIE_ROOT        = $(HOME)/cgenie.fruitcake
+GENIE_ROOT        = $(HOME)/cgenie
 OUT_DIR           = $(HOME)/cgenie_output
-RUNTIME_ROOT      = ../../cgenie.fruitcake
+RUNTIME_ROOT      = $(HOME)/cgenie
 
 # === Fortran compiler (ifc/ifort/f90/pgf90) ===
 F77=gfortran
@@ -78,11 +78,8 @@ MODEXT=mod
 ### iwan ###
 #NETCDF_DIR=/share/apps/netcdf/4.0/gnu_fc_4.4.4
 ### marble, sprout ###
-
-### almond ###
-NETCDF_DIR=/share/apps/netcdf-4.0/gcc-4.4.7
 ### VM ###
 #NETCDF_DIR=/home/mushroom/netcdf/ifort
-
+NETCDF_DIR=/usr/local/netcdf-cxx-4.1.3
 NETCDF_NAME=netcdf
-
+NETCDF_COMBINED=0
