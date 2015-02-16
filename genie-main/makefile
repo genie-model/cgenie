@@ -101,15 +101,20 @@ endif
 REV:=tmp-untagged
 
 # this is very odd--I don't understand why this is necessary.
-all: $(TOOLS) $(EXECUTABLES)
+all: include $(TOOLS) $(EXECUTABLES)
 
 data: $(MODULE_DATA)
 
-.PHONY : cleanall clean cleanutils cleanmodules \
+.PHONY : cleanall clean cleanutils cleanmodules $(DIRS) \
          $(CLEAN_UTIL_TARGETS) $(CLEAN_MODULE_TARGETS) \
 	 tags tagutils tagmodules $(CLEAN_LOCAL_TARGETS) \
          $(TAG_UTIL_TARGETS) $(TAG_MODULE_TARGETS) \
 	 FORCE
+
+# ================== BUILD DIRECTORIES ===================
+.PHONY: include
+include:
+	-mkdir include
 
 # ================= CLEANING RULES ===================
 # construct target names for cleaning rules
