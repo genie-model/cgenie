@@ -8,6 +8,7 @@ contains
 
   !!
   subroutine surf_ocn_sic_wrapper
+    use goldstein
     implicit none
     ! Surflux module : GOLDSTEIN-GOLDSEAICE (parentage = c-GOLDSTEIN)
     !
@@ -235,9 +236,10 @@ contains
     !           ustar_ocn                surface ocean velocity (u)
     !           vstar_ocn                surface ocean velocity (v)
     !
+    use goldstein
     implicit none
     !
-    call goldstein( &
+    call step_goldstein( &
          istep_ocn, &                              !
          latent_ocn,sensible_ocn, &                ! input
          netsolar_ocn,netlong_ocn, &               ! input

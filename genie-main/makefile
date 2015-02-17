@@ -98,7 +98,7 @@ endif
 
 # version of the model recorded in the code at build time
 #REV:=$(shell svn info | grep 'Last Changed Rev:' | cut -d' ' -f 4,4 | sed 's/^/REV=/')
-REV:=tmp-untagged
+REV:=REV=9999
 
 # this is very odd--I don't understand why this is necessary.
 all: include $(TOOLS) $(EXECUTABLES)

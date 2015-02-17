@@ -30,6 +30,13 @@ contains
   end subroutine end_atchem_wrapper
 
   !!
+  subroutine end_goldstein_wrapper
+    use goldstein
+    implicit none
+    call end_goldstein()
+  end subroutine end_goldstein_wrapper
+
+  !!
   subroutine end_seaice_wrapper
     use gold_seaice
     implicit none

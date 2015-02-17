@@ -62,6 +62,7 @@ contains
 
   !!
   subroutine initialise_goldocean_wrapper
+    use goldstein
     implicit none
     call initialise_goldstein( &
          alon1_ocn,alat1_ocn, &

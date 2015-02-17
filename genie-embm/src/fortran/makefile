@@ -8,7 +8,7 @@ else
         MAIN_DIR = ../../../genie-main/
 endif
 LOCINCPATH = $(MOD_INC_FLAG)$(CMNSG) $(MOD_INC_FLAG)$(MAIN_DIR)
-LIBNAME = libgoldsteinseaice
+LIBNAME = libembm
 INCLUDE_FILES =
 OTHER_FILES=../../../genie-main/makefile.arc makefile
 
