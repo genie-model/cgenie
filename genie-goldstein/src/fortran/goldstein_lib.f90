@@ -194,6 +194,8 @@ MODULE goldstein_lib
   LOGICAL :: dosc, diso, ctrl_diagend, &
        & debug_init, debug_end, debug_loop, rst_reset_T
 
+  LOGICAL :: getj(maxi,maxj)
+
 CONTAINS
 
   ! Calculate path integral around island.
