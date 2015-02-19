@@ -228,6 +228,7 @@ TOOLNAMES=makedepf90
 TOOLS=$(addprefix $(MAIN_DIR)/tools/bin/, $(TOOLNAMES))
 
 $(MAIN_DIR)/tools/bin/makedepf90: $(TOOLDIR)
+	\cd $(MAIN_DIR)/tools/makedepf90-2.8.8 ; ./configure --prefix=..
 	$(MAKE) -C $(MAIN_DIR)/tools/makedepf90-2.8.8 install
 
 $(TOOLDIR):
