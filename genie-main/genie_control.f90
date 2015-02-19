@@ -3,65 +3,27 @@
 !!
 !> This Fortran90 module contains variables which pertain
 !> to the overall GENIE configuration.  For example, the
-!> various grid sizes and logical flags specifying which
+!> various grid sizes and LOGICAL flags specifying which
 !> components are used.
 !--------------------------------------------------------
 
 MODULE genie_control
 
-! ======================================================================
-! Grid dimension variables for tracer (1), u (2) and v (3) points
-! Atmosphere
-      integer :: ilon1_atm,ilat1_atm
-      integer :: ilon2_atm,ilat2_atm
-      integer :: ilon3_atm,ilat3_atm
-      integer :: inl1_atm,inl2_atm
-! Ocean
-      integer :: ilon1_ocn,ilat1_ocn
-      integer :: ilon2_ocn,ilat2_ocn
-      integer :: ilon3_ocn,ilat3_ocn
-      integer :: inl1_ocn,inl2_ocn
-! SG intrac_ocn = Number of ocean tracers
-      integer :: intrac_ocn
-! Sea-ice
-      integer :: ilon1_sic,ilat1_sic
-      integer :: ilon2_sic,ilat2_sic
-      integer :: ilon3_sic,ilat3_sic
-! Land
-      integer :: ilon1_lnd,ilat1_lnd
-      integer :: ilon2_lnd,ilat2_lnd
-      integer :: ilon3_lnd,ilat3_lnd
-! Land ice sheets
-      integer :: ilon1_lic,ilat1_lic
-      integer :: ilon2_lic,ilat2_lic
-      integer :: ilon3_lic,ilat3_lic
-! sediments
-      integer :: ilon1_sed,ilat1_sed
-! weathering
-      integer :: ilon1_rok,ilat1_rok
-!
-! ======================================================================
-! Assigning grid sizes (add your own [commented] entries below)
-! For IGCM
+  ! ======================================================================
+  ! Assigning grid sizes (add your own [commented] entries below)
 
+  ! For IGCM
 #ifndef GENIENL
 #define GENIENL 7
 #endif
-
 #ifndef GENIENX
 #define GENIENX 64
 #endif
-
 #ifndef GENIENY
 #define GENIENY 32
 #endif
 
-      parameter(ilon1_atm=GENIENX,ilat1_atm=GENIENY)
-      parameter(ilon2_atm=GENIENX,ilat2_atm=GENIENY)
-      parameter(ilon3_atm=GENIENX,ilat3_atm=GENIENY)
-      parameter(inl1_atm=GENIENL)
-
-! For GOLDSTEIN ocean
+  ! For GOLDSTEIN ocean
 #ifndef GOLDSTEINNLONS
 #define GOLDSTEINNLONS 36
 #endif
@@ -78,28 +40,7 @@ MODULE genie_control
 #define GOLDSTEINMAXISLES 5
 #endif
 
-      parameter(ilon1_ocn=GOLDSTEINNLONS,ilat1_ocn=GOLDSTEINNLATS)
-      parameter(ilon2_ocn=GOLDSTEINNLONS,ilat2_ocn=GOLDSTEINNLATS)
-      parameter(ilon3_ocn=GOLDSTEINNLONS,ilat3_ocn=GOLDSTEINNLATS)
-      parameter(inl1_ocn=GOLDSTEINNLEVS,inl2_ocn=inl1_ocn+1)
-      parameter(intrac_ocn=GOLDSTEINNTRACS)
-
-! For c-GOLDSTEIN sea-ice
-      parameter(ilon1_sic=GOLDSTEINNLONS,ilat1_sic=GOLDSTEINNLATS)
-      parameter(ilon2_sic=GOLDSTEINNLONS,ilat2_sic=GOLDSTEINNLATS)
-      parameter(ilon3_sic=GOLDSTEINNLONS,ilat3_sic=GOLDSTEINNLATS)
-
-! For ice sheets in EMBM and ENTS
-      parameter(ilon1_lic=GOLDSTEINNLONS,ilat1_lic=GOLDSTEINNLATS)
-      parameter(ilon2_lic=GOLDSTEINNLONS,ilat2_lic=GOLDSTEINNLATS)
-      parameter(ilon3_lic=GOLDSTEINNLONS,ilat3_lic=GOLDSTEINNLATS)
-
-! For ENTS
-      parameter(ilon1_lnd=GOLDSTEINNLONS,ilat1_lnd=GOLDSTEINNLATS)
-      parameter(ilon2_lnd=GOLDSTEINNLONS,ilat2_lnd=GOLDSTEINNLATS)
-      parameter(ilon3_lnd=GOLDSTEINNLONS,ilat3_lnd=GOLDSTEINNLATS)
-
-! For sediments
+  ! For sediments
 #ifndef SEDGEMNLONS
 #define SEDGEMNLONS 36
 #endif
@@ -107,9 +48,7 @@ MODULE genie_control
 #define SEDGEMNLATS 36
 #endif
 
-      parameter(ilon1_sed=SEDGEMNLONS,ilat1_sed=SEDGEMNLATS)
-
-! For weathering
+  ! For weathering
 #ifndef ROKGEMNLONS
 #define ROKGEMNLONS 36
 #endif
@@ -117,79 +56,89 @@ MODULE genie_control
 #define ROKGEMNLATS 36
 #endif
 
-      parameter(ilon1_rok=ROKGEMNLONS,ilat1_rok=ROKGEMNLATS)
 
-!
-! ======================================================================
-! Miscellaneous control variables
+  ! ======================================================================
+  ! Grid dimension variables for tracer (1), u (2) and v (3) points
+  ! Atmosphere
+  INTEGER, PARAMETER :: ilon1_atm=GENIENX, ilat1_atm=GENIENY
+  INTEGER, PARAMETER :: ilon2_atm=GENIENX, ilat2_atm=GENIENY
+  INTEGER, PARAMETER :: ilon3_atm=GENIENX, ilat3_atm=GENIENY
+  INTEGER, PARAMETER :: inl1_atm=GENIENL
 
-      ! used in for netcdf output in various places
-      integer, parameter :: BUFSIZ = 1024  !< to hold character strings
-      integer, parameter :: nfiles=4
-      integer, parameter :: nmaxdims=4
-      integer, parameter :: nall=100
+  ! Ocean
+  INTEGER, PARAMETER :: ilon1_ocn=GOLDSTEINNLONS, ilat1_ocn=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon2_ocn=GOLDSTEINNLONS, ilat2_ocn=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon3_ocn=GOLDSTEINNLONS, ilat3_ocn=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: inl1_ocn=GOLDSTEINNLEVS, inl2_ocn=inl1_ocn+1
+  INTEGER, PARAMETER :: intrac_ocn=GOLDSTEINNTRACS
 
-      ! biogeochemistry time stepping ratios
-      integer(kind=8) :: conv_kocn_katchem  !< atchem loop modifier (relative to ocean loop)
-      integer(kind=8) :: conv_kocn_ksedgem  !< sedgem loop modifier (relative to ocean loop)
-      integer(kind=8) :: conv_kocn_kbiogem  !< biogem loop modifier (relative to ocean loop)
-      integer(kind=8) :: conv_kocn_krokgem  !< rokgem loop modifier (relative to ocean loop)
-      integer :: kgemlite
+  ! For c-GOLDSTEIN sea-ice
+  INTEGER, PARAMETER :: ilon1_sic=GOLDSTEINNLONS, ilat1_sic=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon2_sic=GOLDSTEINNLONS, ilat2_sic=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon3_sic=GOLDSTEINNLONS, ilat3_sic=GOLDSTEINNLATS
 
-      ! total defined tracer numbers
-      ! WARNING: parameter information duplicated in gem_cmn.f90
-      integer, parameter :: intrac_atm_max = 19
-      integer, parameter :: intrac_ocn_max = 95
-      integer, parameter :: intrac_sed_max = 79
+  ! For ice sheets in EMBM and ENTS
+  INTEGER, PARAMETER :: ilon1_lic=GOLDSTEINNLONS, ilat1_lic=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon2_lic=GOLDSTEINNLONS, ilat2_lic=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon3_lic=GOLDSTEINNLONS, ilat3_lic=GOLDSTEINNLATS
 
-      ! others
-      integer(kind=8) :: koverall_total
-      integer(kind=8) :: katm_loop
-      integer(kind=8) :: ksic_loop
-      integer(kind=8) :: kocn_loop
-      integer(kind=8) :: klnd_loop
-      logical :: flag_ebatmos  !< .true. indicates that EMBM is included in model 'recipe'
-      logical :: flag_igcmatmos  !< .true. indicates that IGCM is included in model 'recipe'
-      logical :: flag_fixedocean  !< .true. indicates that prescribed ocean is included in model 'recipe'
-      logical :: flag_slabocean  !< .true. indicates that slab ocean is included in model 'recipe'
-      logical :: flag_goldsteinocean  !< .true. indicates that GOLDSTEIN ocean is included in model 'recipe'
-      logical :: flag_fixedseaice
-      logical :: flag_slabseaice
-      logical :: flag_goldsteinseaice
-      logical :: flag_icesheet
-      logical :: flag_fixedatmos
-      logical :: flag_fakeatmos
-      logical :: flag_land
-      logical :: flag_ents
-      logical :: flag_fixedland
-      logical :: flag_fixedicesheet
-      logical :: flag_fixedchem
-      logical :: flag_atchem
-      logical :: flag_biogem
-      logical :: flag_sedgem
-      logical :: flag_rokgem
-      logical :: flag_gemlite
-      logical :: flag_checkfluxes_sic
-      logical :: flag_checkfluxes_ocn
-      logical :: flag_checkfluxes_surf
-      logical :: flag_checkfluxes_atlantic
-      logical :: flag_ichem
-      logical :: flag_glim_pforce = .false.
-      ! Set true to force glimmer with precip only, not P-E
-      logical :: flag_wind
-! debug
-integer :: debug_init,debug_end,debug_loop
+  ! For ENTS
+  INTEGER, PARAMETER :: ilon1_lnd=GOLDSTEINNLONS, ilat1_lnd=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon2_lnd=GOLDSTEINNLONS, ilat2_lnd=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: ilon3_lnd=GOLDSTEINNLONS, ilat3_lnd=GOLDSTEINNLATS
 
-      logical :: write_flag_atm,write_flag_ocn,write_flag_sic
-      character(len=BUFSIZ) :: outputdir_name
-      character(len=BUFSIZ) :: fname_restart_main
-      character(len=BUFSIZ) :: fname_fluxrestart
+  ! For sediments
+  INTEGER, PARAMETER :: ilon1_sed=SEDGEMNLONS, ilat1_sed=SEDGEMNLATS
 
-      character(len=6) :: fname_topo
+  ! For weathering
+  INTEGER, PARAMETER :: ilon1_rok=ROKGEMNLONS, ilat1_rok=ROKGEMNLATS
 
-      integer(kind=8) :: dt_write
+  ! ======================================================================
+  ! Miscellaneous control variables
 
-      ! Days per year.
-      real, parameter :: global_daysperyear = 365.25
+  ! Used for NetCDF output in various places
+  INTEGER, PARAMETER :: BUFSIZ = 1024  !< to hold CHARACTER strings
+  INTEGER, PARAMETER :: nfiles=4, nmaxdims=4, nall=100
+
+  ! Biogeochemistry time stepping ratios -- loop modifiers (relative
+  ! to ocean loop)
+  INTEGER(KIND=8) :: conv_kocn_katchem  !< atchem
+  INTEGER(KIND=8) :: conv_kocn_ksedgem  !< sedgem
+  INTEGER(KIND=8) :: conv_kocn_kbiogem  !< biogem
+  INTEGER(KIND=8) :: conv_kocn_krokgem  !< rokgem
+  INTEGER :: kgemlite
+
+  ! Total defined tracer numbers
+  ! WARNING: parameter information duplicated in gem_cmn.f90
+  INTEGER, PARAMETER :: intrac_atm_max=19, intrac_ocn_max=95, intrac_sed_max=79
+
+  ! Others
+  INTEGER(KIND=8) :: koverall_total
+  INTEGER(KIND=8) :: katm_loop, ksic_loop, kocn_loop, klnd_loop
+
+  ! .TRUE. indicates that component is included in model 'recipe'
+  LOGICAL :: flag_ebatmos          !< EMBM
+  LOGICAL :: flag_igcmatmos        !< IGCM
+  LOGICAL :: flag_fixedocean       !< prescribed ocean
+  LOGICAL :: flag_slabocean        !< slab ocean
+  LOGICAL :: flag_goldsteinocean   !< GOLDSTEIN ocean
+
+  LOGICAL :: flag_fixedseaice, flag_slabseaice, flag_goldsteinseaice
+  LOGICAL :: flag_icesheet, flag_fixedicesheet
+  LOGICAL :: flag_fixedatmos, flag_fakeatmos
+  LOGICAL :: flag_land, flag_ents, flag_fixedland
+  LOGICAL :: flag_fixedchem, flag_atchem
+  LOGICAL :: flag_biogem, flag_sedgem, flag_rokgem, flag_gemlite
+  LOGICAL :: flag_checkfluxes_sic, flag_checkfluxes_ocn, flag_checkfluxes_surf
+  LOGICAL :: flag_checkfluxes_atlantic, flag_ichem, flag_wind
+  INTEGER :: debug_init, debug_end, debug_loop
+
+  LOGICAL :: write_flag_atm, write_flag_ocn, write_flag_sic
+  CHARACTER(LEN=BUFSIZ) :: outputdir_name, fname_restart_main, fname_fluxrestart
+  CHARACTER(LEN=6) :: fname_topo
+  INTEGER(KIND=8) :: dt_write
+
+  ! Days per year.
+  REAL, PARAMETER :: global_daysperyear = 365.25
 
 END MODULE genie_control

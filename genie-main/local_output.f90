@@ -1,4 +1,3 @@
- 
 !----------------------------------------------------------------------
 !>
 !> Module: local_output
@@ -6,155 +5,141 @@
 !> Output routines: The routines are generally stateless (access via
 !> filename of the output file. These routines use the NetCDF routines
 !> provided by the module "local_netcdf".
-!> 
+!>
 !----------------------------------------------------------------------
-module local_output
+MODULE local_output
 
-  use genie_util, only: message,die
-
-  use local_netcdf
+  USE genie_util, ONLY: message, die
+  USE local_netcdf
 
   PRIVATE
 
-  PUBLIC :: resetOutput,defineDimension,defineRecordDimension
-  PUBLIC :: writeReal2dVariable,writeInteger2dVariable,writeReal2dRecordVariable
-  PUBLIC :: writeReal3dVariable,writeReal3dRecordVariable
+  PUBLIC :: resetOutput
+  PUBLIC :: defineDimension
+  PUBLIC :: defineRecordDimension
+  PUBLIC :: writeReal2dVariable
+  PUBLIC :: writeInteger2dVariable
+  PUBLIC :: writeReal2dRecordVariable
+  PUBLIC :: writeReal3dVariable
+  PUBLIC :: writeReal3dRecordVariable
 
-contains
-
-  !----------------------------------------------------------------------
-  !>
-  !> Internal subroutine: openInput
-  !>
-  !> opens output file, returns handle to output file
-  !> 
-  !----------------------------------------------------------------------
-  subroutine openInput(filename,ID)
-
-    character(len=*),intent(in) :: filename
-
-    integer :: ID
-
-    call message("Opening input file in read-only mode!",3)
-    call openNetCDFRead(filename,ID)
-
-  end subroutine openInput
+CONTAINS
 
   !----------------------------------------------------------------------
   !>
-  !> Internal subroutine: openOutput
+  !> Internal SUBROUTINE: openInput
   !>
   !> opens output file, returns handle to output file
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine openOutput(filename,ID,readonly,reset)
+  SUBROUTINE openInput(filename, ID)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename
+    INTEGER, INTENT(OUT) :: ID
 
-    character(len=*),intent(in) :: filename
-
-    integer :: ID
-
-    logical,optional,intent(in) :: readonly
-    logical,optional,intent(in) :: reset
-
-    logical :: exists
-
-    if (present(readonly).and.(readonly)) then
-       call message("Opening existing output file in read-only mode!",3)
-       call openNetCDFRead(filename,ID)
-    else
-       inquire(file=filename,exist=exists)
-       if (.not.exists) then
-          call message("Creating new output file: "//filename,3)
-          call createNetCDF(filename,ID)
-          call endDef(ID)
-       else
-          if (present(reset).and.(reset)) then
-             call message("Resetting existing output file: "//filename,3)
-             call createNetCDF(filename,ID,.true.)
-          else
-             call message("Opening existing output file: "//filename,3)
-             call openNetCDFWrite(filename,ID)
-          endif
-       endif
-    endif
-
-  end subroutine openOutput
+    CALL message("Opening input file in read-only mode!",3)
+    CALL openNetCDFRead(filename,ID)
+  END SUBROUTINE openInput
 
   !----------------------------------------------------------------------
   !>
-  !> Internal subroutine: closeInOutput
+  !> Internal SUBROUTINE: openOutput
+  !>
+  !> opens output file, returns handle to output file
+  !>
+  !----------------------------------------------------------------------
+  SUBROUTINE openOutput(filename, ID, readonly, reset)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename
+    INTEGER, INTENT(OUT) :: ID
+    LOGICAL, OPTIONAL, INTENT(IN) :: readonly, reset
+
+    LOGICAL :: exists
+
+    IF (PRESENT(readonly) .AND. readonly) THEN
+       CALL message("Opening existing output file in read-only mode!", 3)
+       CALL openNetCDFRead(filename, ID)
+    ELSE
+       INQUIRE(FILE=filename,EXIST=exists)
+       IF (.NOT. exists) THEN
+          CALL message("Creating new output file: "//filename, 3)
+          CALL createNetCDF(filename, ID)
+          CALL endDef(ID)
+       ELSE
+          IF (PRESENT(reset) .AND. reset) THEN
+             CALL message("Resetting existing output file: "//filename, 3)
+             CALL createNetCDF(filename, ID, .TRUE.)
+          ELSE
+             CALL message("Opening existing output file: "//filename, 3)
+             CALL openNetCDFWrite(filename, ID)
+          END IF
+       END IF
+    END IF
+  END SUBROUTINE openOutput
+
+  !----------------------------------------------------------------------
+  !>
+  !> Internal SUBROUTINE: closeInOutput
   !>
   !> closes input/output file
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine closeInOutput(ID)
+  SUBROUTINE closeInOutput(ID)
+    INTEGER, INTENT(IN) :: ID
 
-    integer :: ID
-
-    call closeNetCDF(ID)
-
-  end subroutine closeInOutput
+    CALL closeNetCDF(ID)
+  END SUBROUTINE closeInOutput
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: resetOutput
+  !> SUBROUTINE: resetOutput
   !>
   !> resets (or creates) output file
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine resetOutput(filename)
+  SUBROUTINE resetOutput(filename)
+    CHARACTER(LEN=*), INTENT(IN) :: filename
 
-    character(len=*),intent(in) :: filename
+    INTEGER :: ID
 
-    integer ID
-
-    call openOutput(filename,ID,.false.,.true.)
-    call closeInOutput(ID)
-
-  end subroutine resetOutput
+    CALL openOutput(filename, ID, .FALSE., .TRUE.)
+    CALL closeInOutput(ID)
+  END SUBROUTINE resetOutput
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: defineDimension
+  !> SUBROUTINE: defineDimension
   !>
   !> defines Dimension
-  !> 
+  !>
   !----------------------------------------------------------------------
 
-  subroutine defineDimension(filename,dimName,dimValues,dimBoundariesLower,dimBoundariesUpper,dimLongname,dimStandardname,dimUnits)
+  SUBROUTINE defineDimension(filename, dimName, dimValues, dimBoundariesLower, &
+       & dimBoundariesUpper, dimLongname, dimStandardname, dimUnits)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, dimName
+    REAL, DIMENSION(:), INTENT(IN) :: &
+         & dimValues, dimBoundariesLower, dimBoundariesUpper
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & dimLongname, dimStandardname, dimUnits
 
-    character(len=*),intent(in) :: filename,dimName
+    INTEGER :: ID, status, dimlen
+    TYPE(realDimInfo), POINTER, DIMENSION(:) :: dimNetCDF
 
-    real,dimension(:),intent(in) :: dimValues,dimBoundariesLower,dimBoundariesUpper
+    dimLen = SIZE(dimValues)
 
-    character(len=*),intent(in),optional :: dimLongname,dimStandardname,dimUnits
+    CALL openOutput(filename, ID)
 
-    integer :: ID,status,dimlen
+    ALLOCATE(dimNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not allocate storage")
+    ALLOCATE(dimNetCDF(1)%coords(1:dimlen), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    ALLOCATE(dimNetCDF(1)%boundsLower(dimlen), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    ALLOCATE(dimNetCDF(1)%boundsUpper(dimlen), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
 
-    type(realDimInfo),pointer,dimension(:) :: dimNetCDF
-
-    dimLen = size(dimValues)
-
-    call openOutput(filename,ID)
-
-    allocate(dimNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    allocate(dimNetCDF(1)%coords(1:dimlen),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    allocate(dimNetCDF(1)%boundsLower(dimlen),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    allocate(dimNetCDF(1)%boundsUpper(dimlen),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-
-    dimNetCDF(1)%boundsDefine = .true.
+    dimNetCDF(1)%boundsDefine = .TRUE.
     dimNetCDF(1)%name = dimName
     dimNetCDF(1)%len = dimLen
     dimNetCDF(1)%basicAtts%long_name = dimLongname
@@ -164,97 +149,85 @@ contains
     dimNetCDF(1)%boundsLower(:) = dimBoundariesLower(:)
     dimNetCDF(1)%boundsUpper(:) = dimBoundariesUpper(:)
 
-    print *, filename
-    call defineDims(ID,dimNetCDF)
-    print *, filename
+    PRINT *, filename
+    CALL defineDims(ID, dimNetCDF)
+    PRINT *, filename
 
-    call closeInOutput(ID)
+    CALL closeInOutput(ID)
 
-    deallocate(dimNetCDF(1)%coords)
-    deallocate(dimNetCDF(1)%boundsLower)
-    deallocate(dimNetCDF(1)%boundsUpper)
-    deallocate(dimNetCDF)
-
-  end subroutine defineDimension
+    DEALLOCATE(dimNetCDF(1)%coords)
+    DEALLOCATE(dimNetCDF(1)%boundsLower)
+    DEALLOCATE(dimNetCDF(1)%boundsUpper)
+    DEALLOCATE(dimNetCDF)
+  END SUBROUTINE defineDimension
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: defineRecordDimension
+  !> SUBROUTINE: defineRecordDimension
   !>
   !> defines record Dimension
-  !> 
+  !>
   !----------------------------------------------------------------------
 
-  subroutine defineRecordDimension(filename,dimName,dimLongname,dimStandardname,dimUnits)
+  SUBROUTINE defineRecordDimension(filename, dimName, dimLongname, &
+       & dimStandardname, dimUnits)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, dimName
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & dimLongname, dimStandardname, dimUnits
 
-    character(len=*),intent(in) :: filename,dimName
+    INTEGER :: ID, status
+    TYPE(realRecordDimInfo), POINTER, DIMENSION(:) :: dimNetCDF
 
-    character(len=*),intent(in),optional :: dimLongname,dimStandardname,dimUnits
+    CALL openOutput(filename, ID)
 
-    integer :: ID,status
+    ALLOCATE(dimNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
 
-    type(realRecordDimInfo),pointer,dimension(:) :: dimNetCDF
-
-    call openOutput(filename,ID)
-
-    allocate(dimNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-
-    dimNetCDF(1)%coordsDefine = .true.
-    dimNetCDF(1)%boundsDefine = .true.
+    dimNetCDF(1)%coordsDefine = .TRUE.
+    dimNetCDF(1)%boundsDefine = .TRUE.
     dimNetCDF(1)%name = dimName
     dimNetCDF(1)%basicAtts%long_name = dimLongname
     dimNetCDF(1)%basicAtts%standard_name = dimStandardname
     dimNetCDF(1)%basicAtts%units = dimUnits
 
-    call defineDims(ID,dimNetCDF)
+    CALL defineDims(ID, dimNetCDF)
 
-    call closeInOutput(ID)
+    CALL closeInOutput(ID)
 
-    deallocate(dimNetCDF)
-
-  end subroutine defineRecordDimension
+    DEALLOCATE(dimNetCDF)
+  END SUBROUTINE defineRecordDimension
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: writeReal2dVariable
+  !> SUBROUTINE: writeReal2dVariable
   !>
   !> defines Variable, if non-existing
   !> writes Variable
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine writeReal2dVariable(filename,varName,varDimName1,varDimName2,varValues,varLongname,varStandardname,varUnits,varMissingValue)
+  SUBROUTINE writeReal2dVariable(filename, varName, varDimName1, varDimName2, &
+       & varValues, varLongname, varStandardname, varUnits, varMissingValue)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, varName
+    CHARACTER(LEN=*), INTENT(IN) :: varDimName1, varDimName2
+    REAL, DIMENSION(:,:), INTENT(IN) :: varValues
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & varLongname, varStandardname, varUnits
+    REAL, INTENT(IN), OPTIONAL :: varMissingValue
 
-    character(len=*),intent(in) :: filename,varName
+    CHARACTER(LEN=NF90_MAX_NAME), DIMENSION(2) :: varDimNames
+    TYPE(real2dVar), POINTER, DIMENSION(:) :: varNetCDF
+    INTEGER :: ID, status
+    INTEGER, DIMENSION(2) :: arraySize
 
-    character(len=*),intent(in) :: varDimName1,varDimName2
-    character(len=nf90_max_name),dimension(2) :: varDimNames
+    CALL openOutput(filename, ID)
 
-    real,dimension(:,:),intent(in) :: varValues
-
-    character(len=*),intent(in),optional :: varLongname,varStandardname,varUnits
-
-    real,intent(in),optional :: varMissingValue
-
-    type(real2dVar),pointer,dimension(:) :: varNetCDF
-
-    integer :: ID,status
-
-    integer,dimension(2) :: arraySize
-
-    call openOutput(filename,ID)
-
-    allocate(varNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    arraySize=shape(varValues)
-    allocate(varNetCDF(1)%data(arraySize(1),arraySize(2)),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
+    ALLOCATE(varNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    arraySize = SHAPE(varValues)
+    ALLOCATE(varNetCDF(1)%data(arraySize(1),arraySize(2)), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
     varNetCDF(1)%name = varName
     varNetCDF(1)%basicAtts%long_name = varLongname
     varNetCDF(1)%basicAtts%standard_name = varStandardname
@@ -262,64 +235,54 @@ contains
     varNetCDF(1)%basicAtts%missing_value = varMissingValue
     varNetCDF(1)%data(:,:) = varValues(:,:)
 
-    call lookupVars(ID,varNetCDF)
+    CALL lookupVars(ID, varNetCDF)
 
-    if (varNetCDF(1)%id < 0) then
+    IF (varNetCDF(1)%id < 0) THEN
+       varDimNames(1) = varDimName1
+       varDimNames(2) = varDimName2
+       CALL dimVars(ID, varNetCDF, varDimNames)
 
-       varDimNames(1)=varDimName1
-       varDimNames(2)=varDimName2
-       call dimVars(ID,varNetCDF,varDimNames)
+       CALL defineVars(ID,varNetCDF)
+    END IF
 
-       call defineVars(ID,varNetCDF)
+    CALL writeVars(ID,varNetCDF)
 
-    endif
+    CALL closeInOutput(ID)
 
-    call writeVars(ID,varNetCDF)
-
-    call closeInOutput(ID)
-
-    deallocate(varNetCDF(1)%data)
-    deallocate(varNetCDF)
-
-  end subroutine writeReal2dVariable
+    DEALLOCATE(varNetCDF(1)%data)
+    DEALLOCATE(varNetCDF)
+  END SUBROUTINE writeReal2dVariable
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: writeInteger2dVariable
+  !> SUBROUTINE: writeInteger2dVariable
   !>
   !> defines Variable, if non-existing
   !> writes Variable
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine writeInteger2dVariable(filename,varName,varDimName1,varDimName2,varValues,varLongname,varStandardname,varUnits,varMissingValue)
+  SUBROUTINE writeInteger2dVariable(filename, varName, &
+       & varDimName1, varDimName2, varValues, varLongname, &
+       & varStandardname, varUnits, varMissingValue)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, varName
+    CHARACTER(LEN=*), INTENT(IN) :: varDimName1, varDimName2
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: varValues
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & varLongname, varStandardname, varUnits
+    INTEGER, INTENT(IN), OPTIONAL :: varMissingValue
 
-    character(len=*),intent(in) :: filename,varName
+    TYPE(integer2dVar), POINTER, DIMENSION(:) :: varNetCDF
+    INTEGER :: ID, status
+    INTEGER, DIMENSION(2) :: arraySize
 
-    character(len=*),intent(in) :: varDimName1,varDimName2
+    CALL openOutput(filename, ID)
 
-    integer,dimension(:,:),intent(in) :: varValues
-
-    character(len=*),intent(in),optional :: varLongname,varStandardname,varUnits
-
-    integer,intent(in),optional :: varMissingValue
-
-    type(integer2dVar),pointer,dimension(:) :: varNetCDF
-
-    integer :: ID,status
-
-    integer,dimension(2) :: arraySize
-
-    call openOutput(filename,ID)
-
-    allocate(varNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    arraySize=shape(varValues)
-    allocate(varNetCDF(1)%data(arraySize(1),arraySize(2)),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
+    ALLOCATE(varNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    arraySize = SHAPE(varValues)
+    ALLOCATE(varNetCDF(1)%data(arraySize(1),arraySize(2)), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
     varNetCDF(1)%name = varName
     varNetCDF(1)%basicAtts%long_name = varLongname
     varNetCDF(1)%basicAtts%standard_name = varStandardname
@@ -327,68 +290,56 @@ contains
     varNetCDF(1)%basicAtts%missing_value = varMissingValue
     varNetCDF(1)%data(:,:) = varValues(:,:)
 
-    call lookupInteger2dVars(ID,varNetCDF)
+    CALL lookupINTEGER2dVars(ID, varNetCDF)
 
-    if (varNetCDF(1)%id < 0) then
+    IF (varNetCDF(1)%id < 0) THEN
+       CALL dimINTEGER2dVars(ID,varNetCDF,(/varDimName1,varDimName2/))
+       CALL defineINTEGER2dVars(ID,varNetCDF)
+    END IF
 
-       call dimInteger2dVars(ID,varNetCDF,(/varDimName1,varDimName2/))
+    CALL writeINTEGER2dVars(ID,varNetCDF)
 
-       call defineInteger2dVars(ID,varNetCDF)
+    CALL closeInOutput(ID)
 
-    endif
-
-    call writeInteger2dVars(ID,varNetCDF)
-
-    call closeInOutput(ID)
-
-    deallocate(varNetCDF(1)%data)
-    deallocate(varNetCDF)
-
-  end subroutine writeInteger2dVariable
+    DEALLOCATE(varNetCDF(1)%data)
+    DEALLOCATE(varNetCDF)
+  END SUBROUTINE writeINTEGER2dVariable
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: writeReal2dRecordVariable
+  !> SUBROUTINE: writeReal2dRecordVariable
   !>
   !> defines Variable, if non-existing
   !> writes Variable
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine writeReal2dRecordVariable(filename,varName,varDimName1,varDimName2,varDimName3,varValues,recordCoord,recordCoordBounds,varLongname,varStandardname,varUnits,varMissingValue,offset)
+  SUBROUTINE writeReal2dRecordVariable(filename, varName, &
+       & varDimName1, varDimName2, varDimName3, varValues, &
+       & recordCoord, recordCoordBounds, &
+       & varLongname, varStandardname, varUnits, varMissingValue, offset)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, varName
+    CHARACTER(LEN=*), INTENT(IN) :: varDimName1,varDimName2, varDimName3
+    REAL, DIMENSION(:,:), INTENT(IN) :: varValues
+    REAL, INTENT(IN) :: recordCoord
+    REAL, INTENT(IN), DIMENSION(2) :: recordCoordBounds
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & varLongname, varStandardname, varUnits
+    REAL, INTENT(IN), OPTIONAL :: varMissingValue
+    INTEGER, INTENT(IN), OPTIONAL :: offset
 
-    character(len=*),intent(in) :: filename,varName
+    CHARACTER(LEN=NF90_MAX_NAME), DIMENSION(3) :: varDimNames
+    TYPE(real2dRecordVar), POINTER, DIMENSION(:) :: varNetCDF
+    INTEGER :: ID, status
+    INTEGER, DIMENSION(2) :: arraySize
 
-    character(len=*),intent(in) :: varDimName1,varDimName2,varDimName3
-    character(len=nf90_max_name),dimension(3) :: varDimNames
+    CALL openOutput(filename, ID)
 
-    real,dimension(:,:),intent(in) :: varValues
-
-    real,intent(in) :: recordCoord
-    real,intent(in),dimension(2) :: recordCoordBounds
-
-    character(len=*),intent(in),optional :: varLongname,varStandardname,varUnits
-
-    real,intent(in),optional :: varMissingValue
-
-    integer,intent(in),optional                    :: offset
-
-    type(real2dRecordVar),pointer,dimension(:) :: varNetCDF
-
-    integer :: ID,status
-
-    integer,dimension(2) :: arraySize
-
-    call openOutput(filename,ID)
-
-    allocate(varNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    arraySize=shape(varValues)
-    allocate(varNetCDF(1)%data(arraySize(1),arraySize(2)),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
+    ALLOCATE(varNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    arraySize = SHAPE(varValues)
+    ALLOCATE(varNetCDF(1)%data(arraySize(1),arraySize(2)), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
     varNetCDF(1)%name = varName
     varNetCDF(1)%basicAtts%long_name = varLongname
     varNetCDF(1)%basicAtts%standard_name = varStandardname
@@ -396,68 +347,60 @@ contains
     varNetCDF(1)%basicAtts%missing_value = varMissingValue
     varNetCDF(1)%data(:,:) = varValues(:,:)
 
-    call lookupVars(ID,varNetCDF)
-    if (varNetCDF(1)%id < 0) then
-
+    CALL lookupVars(ID,varNetCDF)
+    IF (varNetCDF(1)%id < 0) THEN
        varDimNames(1)=varDimName1
        varDimNames(2)=varDimName2
        varDimNames(3)=varDimName3
-       call dimVars(ID,varNetCDF,varDimNames)
+       CALL dimVars(ID, varNetCDF, varDimNames)
 
-       call defineVars(ID,varNetCDF)
+       CALL defineVars(ID, varNetCDF)
+    END IF
 
-    endif
+    IF (PRESENT(offset)) THEN
+       CALL appendVars(ID, varNetCDF, recordCoord, recordCoordBounds, &
+            & offset=offset)
+    ELSE
+       CALL appendVars(ID, varNetCDF, recordCoord, recordCoordBounds)
+    END IF
+    CALL closeInOutput(ID)
 
-    if (present(offset)) then
-       call appendVars(ID,varNetCDF,recordCoord,recordCoordBounds,offset=offset)
-    else
-       call appendVars(ID,varNetCDF,recordCoord,recordCoordBounds)
-    endif
-    call closeInOutput(ID)
-
-    deallocate(varNetCDF(1)%data)
-    deallocate(varNetCDF)
-
-  end subroutine writeReal2dRecordVariable
+    DEALLOCATE(varNetCDF(1)%data)
+    DEALLOCATE(varNetCDF)
+  END SUBROUTINE writeReal2dRecordVariable
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: writeReal3dVariable
+  !> SUBROUTINE: writeReal3dVariable
   !>
   !> defines Variable, if non-existing
   !> writes Variable
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine writeReal3dVariable(filename,varName,varDimName1,varDimName2,varDimName3,varValues,varLongname,varStandardname,varUnits,varMissingValue)
+  SUBROUTINE writeReal3dVariable(filename, varName, &
+       & varDimName1, varDimName2, varDimName3, varValues, &
+       & varLongname, varStandardname, varUnits, varMissingValue)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, varName
+    CHARACTER(LEN=*), INTENT(IN) :: varDimName1, varDimName2, varDimName3
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: varValues
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & varLongname, varStandardname, varUnits
+    REAL, INTENT(IN), OPTIONAL :: varMissingValue
 
-    character(len=*),intent(in) :: filename,varName
+    CHARACTER(LEN=NF90_MAX_NAME), DIMENSION(3) :: varDimNames
+    TYPE(real3dVar), POINTER, DIMENSION(:) :: varNetCDF
+    INTEGER :: ID, status
+    INTEGER, DIMENSION(3) :: arraySize
 
-    character(len=*),intent(in) :: varDimName1,varDimName2,varDimName3
-    character(len=nf90_max_name),dimension(3) :: varDimNames
+    CALL openOutput(filename, ID)
 
-    real,dimension(:,:,:),intent(in) :: varValues
-
-    character(len=*),intent(in),optional :: varLongname,varStandardname,varUnits
-
-    real,intent(in),optional :: varMissingValue
-
-    type(real3dVar),pointer,dimension(:) :: varNetCDF
-
-    integer :: ID,status
-
-    integer,dimension(3) :: arraySize
-
-    call openOutput(filename,ID)
-
-    allocate(varNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    arraySize=shape(varValues)
-    allocate(varNetCDF(1)%data(arraySize(1),arraySize(2),arraySize(3)),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
+    ALLOCATE(varNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    arraySize = SHAPE(varValues)
+    ALLOCATE(varNetCDF(1)%data(arraySize(1),arraySize(2),arraySize(3)), &
+         & STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
     varNetCDF(1)%name = varName
     varNetCDF(1)%basicAtts%long_name = varLongname
     varNetCDF(1)%basicAtts%standard_name = varStandardname
@@ -465,71 +408,62 @@ contains
     varNetCDF(1)%basicAtts%missing_value = varMissingValue
     varNetCDF(1)%data(:,:,:) = varValues(:,:,:)
 
-    call lookupVars(ID,varNetCDF)
+    CALL lookupVars(ID, varNetCDF)
 
-    if (varNetCDF(1)%id < 0) then
+    IF (varNetCDF(1)%id < 0) THEN
+       varDimNames(1) = varDimName1
+       varDimNames(2) = varDimName2
+       varDimNames(3) = varDimName3
+       CALL dimVars(ID, varNetCDF, varDimNames)
 
-       varDimNames(1)=varDimName1
-       varDimNames(2)=varDimName2
-       varDimNames(3)=varDimName3
-       call dimVars(ID,varNetCDF,varDimNames)
+       CALL defineVars(ID, varNetCDF)
+    END IF
 
-       call defineVars(ID,varNetCDF)
+    CALL writeVars(ID, varNetCDF)
 
-    endif
+    CALL closeInOutput(ID)
 
-    call writeVars(ID,varNetCDF)
-
-    call closeInOutput(ID)
-
-    deallocate(varNetCDF(1)%data)
-    deallocate(varNetCDF)
-
-  end subroutine writeReal3dVariable
+    DEALLOCATE(varNetCDF(1)%data)
+    DEALLOCATE(varNetCDF)
+  END SUBROUTINE writeReal3dVariable
 
   !----------------------------------------------------------------------
   !>
-  !> Subroutine: writeReal3dRecordVariable
+  !> SUBROUTINE: writeReal3dRecordVariable
   !>
   !> defines Variable, if non-existing
   !> writes Variable
-  !> 
+  !>
   !----------------------------------------------------------------------
-  subroutine writeReal3dRecordVariable(filename,varName,varDimName1,varDimName2,varDimName3,varDimName4,varValues,recordCoord,recordCoordBounds,varLongname,varStandardname,varUnits,varMissingValue,offset)
+  SUBROUTINE writeReal3dRecordVariable(filename, varName, &
+       & varDimName1, varDimName2, varDimName3, varDimName4, varValues, &
+       & recordCoord, recordCoordBounds, &
+       & varLongname, varStandardname, varUnits, varMissingValue, offset)
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: filename, varName
+    CHARACTER(LEN=*), INTENT(IN) :: &
+         & varDimName1, varDimName2, varDimName3, varDimName4
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: varValues
+    REAL, INTENT(IN) :: recordCoord
+    REAL, INTENT(IN), DIMENSION(2) :: recordCoordBounds
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: &
+         & varLongname, varStandardname, varUnits
+    REAL, INTENT(IN), OPTIONAL :: varMissingValue
+    INTEGER, INTENT(IN), OPTIONAL :: offset
 
-    character(len=*),intent(in) :: filename,varName
+    CHARACTER(LEN=NF90_MAX_NAME), DIMENSION(4) :: varDimNames
+    TYPE(real3dRecordVar), POINTER, DIMENSION(:) :: varNetCDF
+    INTEGER :: ID, status
+    INTEGER, DIMENSION(3) :: arraySize
 
-    character(len=*),intent(in) :: varDimName1,varDimName2,varDimName3,varDimName4
-    character(len=nf90_max_name),dimension(4) :: varDimNames
+    CALL openOutput(filename, ID)
 
-    real,dimension(:,:,:),intent(in) :: varValues
-
-    real,intent(in) :: recordCoord
-    real,intent(in),dimension(2) :: recordCoordBounds
-
-    character(len=*),intent(in),optional :: varLongname,varStandardname,varUnits
-
-    real,intent(in),optional :: varMissingValue
-
-    integer,intent(in),optional                    :: offset
-
-    type(real3dRecordVar),pointer,dimension(:) :: varNetCDF
-
-    integer :: ID,status
-
-    integer,dimension(3) :: arraySize
-
-    call openOutput(filename,ID)
-
-    allocate(varNetCDF(1),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
-    arraySize=shape(varValues)
-    allocate(varNetCDF(1)%data(arraySize(1),arraySize(2),arraySize(3)),stat=status)
-    if (status /= 0) then
-       call die("Could not allocate storage")
-    endif
+    ALLOCATE(varNetCDF(1), STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
+    arraySize = SHAPE(varValues)
+    ALLOCATE(varNetCDF(1)%data(arraySize(1),arraySize(2),arraySize(3)), &
+         & STAT=status)
+    IF (status /= 0) CALL die("Could not ALLOCATE storage")
     varNetCDF(1)%name = varName
     varNetCDF(1)%basicAtts%long_name = varLongname
     varNetCDF(1)%basicAtts%standard_name = varStandardname
@@ -537,29 +471,27 @@ contains
     varNetCDF(1)%basicAtts%missing_value = varMissingValue
     varNetCDF(1)%data(:,:,:) = varValues(:,:,:)
 
-    call lookupVars(ID,varNetCDF)
-    if (varNetCDF(1)%id < 0) then
+    CALL lookupVars(ID, varNetCDF)
+    IF (varNetCDF(1)%id < 0) THEN
+       varDimNames(1) = varDimName1
+       varDimNames(2) = varDimName2
+       varDimNames(3) = varDimName3
+       varDimNames(4) = varDimName4
+       CALL dimVars(ID, varNetCDF, varDimNames)
 
-       varDimNames(1)=varDimName1
-       varDimNames(2)=varDimName2
-       varDimNames(3)=varDimName3
-       varDimNames(4)=varDimName4
-       call dimVars(ID,varNetCDF,varDimNames)
+       CALL defineVars(ID, varNetCDF)
+    END IF
 
-       call defineVars(ID,varNetCDF)
+    IF (PRESENT(offset)) THEN
+       CALL appendVars(ID, varNetCDF, recordCoord, recordCoordBounds, &
+            & offset=offset)
+    ELSE
+       CALL appendVars(ID, varNetCDF, recordCoord, recordCoordBounds)
+    END IF
+    CALL closeInOutput(ID)
 
-    endif
+    DEALLOCATE(varNetCDF(1)%data)
+    DEALLOCATE(varNetCDF)
+  END SUBROUTINE writeReal3dRecordVariable
 
-    if (present(offset)) then
-       call appendVars(ID,varNetCDF,recordCoord,recordCoordBounds,offset=offset)
-    else
-       call appendVars(ID,varNetCDF,recordCoord,recordCoordBounds)
-    endif
-    call closeInOutput(ID)
-
-    deallocate(varNetCDF(1)%data)
-    deallocate(varNetCDF)
-
-  end subroutine writeReal3dRecordVariable
-
-end module local_output
+END MODULE local_output

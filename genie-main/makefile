@@ -1,3 +1,4 @@
+
 #
 # top-level makefile for the GENIE build
 #
@@ -20,9 +21,9 @@ OTHER_FILES = makefile makefile.arc testing.mak user.mak
 EXE_MAIN = genie.exe
 EXECUTABLES = $(EXE_MAIN) nccompare
 
-SRC_MAIN=genie.F
-SRCS4=initialise_genie.F
-SRCS5=end_genie.f extrap.f
+SRC_MAIN=genie.f90
+SRCS4=initialise_genie.f90
+SRCS5=end_genie.f90
 SRCS6=write_netcdf_genie.f90
 SRCS8=genie_ini_wrappers.f90 genie_loop_wrappers.f90 genie_end_wrappers.f90
 CONTROL_SRCS=genie_control.f90 genie_global.f90 local_netcdf.f90 \
@@ -32,9 +33,9 @@ SOURCES = $(CONTROL_SRCS) $(SRCS6) $(SRCS8) $(SRCS4) $(SRCS5)
 SOURCES_MAIN = $(SOURCES) $(SRC_MAIN)
 SOURCES_ALL = $(SOURCES) $(SRC_MAIN)
 
-OBJ_MAIN=$(SRC_MAIN:.F=.$(OBJ_EXT))
-OBJS4=$(SRCS4:.F=.$(OBJ_EXT))
-OBJS5=$(SRCS5:.f=.$(OBJ_EXT))
+OBJ_MAIN=$(SRC_MAIN:.f90=.$(OBJ_EXT))
+OBJS4=$(SRCS4:.f90=.$(OBJ_EXT))
+OBJS5=$(SRCS5:.f90=.$(OBJ_EXT))
 OBJS6=$(SRCS6:.f90=.$(OBJ_EXT))
 OBJS8=$(SRCS8:.f90=.$(OBJ_EXT))
 CONTROL_OBJS=$(CONTROL_SRCS:.f90=.$(OBJ_EXT))
@@ -126,7 +127,7 @@ CLEAN_UTIL_TARGETS = $(UTIL_NAMES:%=clean_%)
 # Note that an individual module or util can be cleaned
 # with an appropriate target, e.g. 'make clean_igcm3'
 cleanall : clean cleanutils cleanmodules
-	\rm -f include/*.mod
+	\rm -f include/*.mod makefile.depend
 
 # clean  - just local files
 clean : $(CLEAN_LOCAL_TARGETS)
@@ -194,28 +195,23 @@ FORCE:
 
 # pattern rules to make object files
 # one rule for compilation permutation
-$(OBJ_MAIN): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F77FLAGS) \
+$(OBJ_MAIN): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
+	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
 	$(INCLUDE_MODULE_LIBRARIES) $(DOPTS) $(NETCDF_INC) \
 	$< $(OBJ_FLAG)$@
 
-$(OBJS4): %.$(OBJ_EXT): %.F $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F77FLAGS) \
+$(OBJS4): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
+	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
 	$(LIBUTIL1PRECISIONOPTS) $(INCLUDE_MODULE_LIBRARIES) \
 	$< $(OBJ_FLAG)$@
 
-$(OBJS5): %.$(OBJ_EXT): %.f $(OTHER_FILES)
-	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(F77FLAGS) $< $(OBJ_FLAG)$@
+$(OBJS5): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
+	$(F77) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) $< $(OBJ_FLAG)$@
 
 $(OBJS6): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
 	$(LIBUTIL1PRECISIONOPTS) $(INCLUDE_MODULE_LIBRARIES) \
 	$(IGCMHRLATSOPTS) $< $(OBJ_FLAG)$@
-
-$(OBJS7): %.$(OBJ_EXT): %.F90 $(OTHER_FILES)
-	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
-	$(INCLUDE_MODULE_LIBRARIES) \
-	$< $(OBJ_FLAG)$@
 
 $(OBJS8): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(F77) $(FPPFLAGS) $(COMPILEONLY) $(LOCALFLAGS) $(F90FLAGS) \
