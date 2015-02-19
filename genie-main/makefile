@@ -223,17 +223,21 @@ $(CONTROL_OBJS): %.$(OBJ_EXT): %.f90 $(OTHER_FILES)
 	$(DEFINE)$(REV) $< $(OBJ_FLAG)$@
 
 # ================== BUILD TOOLS ===================
+TOOLDIR=$(MAIN_DIR)/tools/bin/
 TOOLNAMES=makedepf90
 TOOLS=$(addprefix $(MAIN_DIR)/tools/bin/, $(TOOLNAMES))
 
-$(MAIN_DIR)/tools/bin/makedepf90:
+$(MAIN_DIR)/tools/bin/makedepf90: $(TOOLDIR)
 	$(MAKE) -C $(MAIN_DIR)/tools/makedepf90-2.8.8 install
+
+$(TOOLDIR):
+	mkdir -p $(TOOLDIR)
 
 # ================== TESTING RULES ===================
 include testing.mak
 
 # ==== RULES TO AUTO-CREATE DEPENDENCY FILES ====
-makefile.depend: $(SOURCES)
+makefile.depend: $(SOURCES) $(TOOLS)
 	$(MAIN_DIR)/tools/bin/makedepf90 $(SOURCES) >> makefile.depend
 
 ifneq ($(MAKECMDGOALS),clean)
