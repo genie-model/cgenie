@@ -1,0 +1,5 @@
+Import('env')
+sources = Glob('*.f90') + Glob('*.f')
+objs = env.Object(sources)
+Return('objs')
+

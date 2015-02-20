@@ -66,3 +66,6 @@ makefile.depend
 /DEFUNCT/tools/makedepf90-2.8.8/config.status
 /DEFUNCT/tools/makedepf90-2.8.8/makedepf90
 /DEFUNCT/tools/man/
+/.sconsign.dblite
+/build/
+.sconsign.dblite

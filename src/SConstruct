@@ -1,0 +1,62 @@
+import os
+
+#----------------------------------------------------------------------
+
+netcdf = '/usr/local/netcdf-cxx-4.1.3/'
+netcdflibs = ['netcdf', 'netcdff']
+
+f90 = 'gfortran'
+f90flags = ['-O2', '-O3', '-funroll-loops', '-msse', '-fno-automatic',
+            '-x', 'f95-cpp-input', '-ffree-line-length-none',
+            '-fdefault-real-8', '-fimplicit-none']
+f90moddir = '-J'
+
+nlons = 36
+nlats = 36
+ntracers = 14
+
+#----------------------------------------------------------------------
+
+netcdfinc = os.path.join(netcdf, 'include')
+netcdflib = os.path.join(netcdf, 'lib')
+
+modules = Split("""atchem
+                   biogem
+                   embm
+                   ents
+                   gemlite
+                   goldstein
+                   goldsteinseaice
+                   rokgem
+                   sedgem""")
+utils = Split('common utils wrappers')
+
+subdirs = modules + utils
+modpath = map(lambda d: os.path.join('#/../build', d), subdirs)
+
+coordvars = { 'GENIENX':          nlons,
+              'GENIENY':          nlats,
+              'GOLDSTEINNTRACS' : ntracers }
+coorddefs = [ ]
+for d in coordvars:
+    coorddefs.append('-D' + d + '=' + str(coordvars[d]))
+
+env = Environment(FORTRAN = f90,
+                  LINK = f90,
+                  F90FLAGS=f90flags + coorddefs,
+                  F90PATH = [netcdfinc] + modpath,
+                  FORTRANMODDIRPREFIX = f90moddir,
+                  FORTRANMODDIR = '${TARGET.dir}',
+                  LIBPATH = [netcdflib],
+                  LIBS = netcdflibs)
+
+allobjs = []
+for sd in subdirs:
+    buildDir = os.path.join('../build', sd)
+    consFile = os.path.join(buildDir, 'SConscript')
+    env.VariantDir(buildDir, sd)
+    allobjs = allobjs + env.SConscript(consFile, exports = ['env'])
+
+objs = filter(lambda o: str(o)[-4:] != '.mod', allobjs)
+
+env.Program('genie', ['genie.f90'] + objs)

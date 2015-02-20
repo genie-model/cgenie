@@ -80,6 +80,6 @@ MODEXT=mod
 ### marble, sprout ###
 ### VM ###
 #NETCDF_DIR=/home/mushroom/netcdf/ifort
-NETCDF_DIR=/share/apps/netcdf-4.0/gcc-4.4.7
+NETCDF_DIR=/usr/local/netcdf-cxx-4.1.3
 NETCDF_NAME=netcdf
-#NETCDF_COMBINED=0
+NETCDF_COMBINED=0
