@@ -96,7 +96,7 @@ CONTAINS
     CALL writedim(nco(imode), iddimo(1,imode), xcoord)
     xcoord(1:mg) = alon2
     CALL writedim(nco(imode), iddimo(2,imode), xcoord)
-    xcoord(1:mg) = alon3(i)
+    xcoord(1:mg) = alon3
     CALL writedim(nco(imode), iddimo(3,imode), xcoord)
 
     ! Latitude coordinates (tracer, u-point, v-point)
