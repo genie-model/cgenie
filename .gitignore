@@ -69,3 +69,4 @@ makefile.depend
 /.sconsign.dblite
 /build/
 .sconsign.dblite
+/genie.exe
