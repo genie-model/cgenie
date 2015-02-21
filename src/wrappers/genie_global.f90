@@ -10,9 +10,9 @@
 
 MODULE genie_global
 
-  use genie_control
+  USE genie_control
 
-  implicit none
+  IMPLICIT NONE
 
   ! STANDARD VARAIBLE NAMES
   ! surf_*_??? = surface propoerties defined over the entire global surface
