@@ -1,6 +1,8 @@
-import os
+import os, os.path
 
 #----------------------------------------------------------------------
+
+srcdir = 'src'
 
 netcdf = '/usr/local/netcdf-cxx-4.1.3/'
 netcdflibs = ['netcdf', 'netcdff']
@@ -13,6 +15,7 @@ f90moddir = '-J'
 
 nlons = 36
 nlats = 36
+nlevs = 16
 ntracers = 14
 
 #----------------------------------------------------------------------
@@ -32,10 +35,13 @@ modules = Split("""atchem
 utils = Split('common utils wrappers')
 
 subdirs = modules + utils
-modpath = map(lambda d: os.path.join('#/../build', d), subdirs)
+modpath = map(lambda d: os.path.join('#/build', d), subdirs)
 
 coordvars = { 'GENIENX':          nlons,
               'GENIENY':          nlats,
+              'GOLDSTEINNLONS':   nlons,
+              'GOLDSTEINNLATS':   nlats,
+              'GOLDSTEINNLEVS':   nlevs,
               'GOLDSTEINNTRACS' : ntracers }
 coorddefs = [ ]
 for d in coordvars:
@@ -50,13 +56,7 @@ env = Environment(FORTRAN = f90,
                   LIBPATH = [netcdflib],
                   LIBS = netcdflibs)
 
-allobjs = []
-for sd in subdirs:
-    buildDir = os.path.join('../build', sd)
-    consFile = os.path.join(buildDir, 'SConscript')
-    env.VariantDir(buildDir, sd)
-    allobjs = allobjs + env.SConscript(consFile, exports = ['env'])
-
-objs = filter(lambda o: str(o)[-4:] != '.mod', allobjs)
-
-env.Program('genie', ['genie.f90'] + objs)
+Export('env', 'subdirs')
+SConscript(os.path.join(srcdir, 'SConscript'),
+           variant_dir='#build', duplicate=0)
+Install('.', 'build/genie.exe')

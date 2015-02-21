@@ -1,0 +1,15 @@
+import os, os.path
+
+Import('env', 'subdirs')
+Export('env')
+
+allobjs = []
+for sd in subdirs:
+    consFile = os.path.join(sd, 'SConscript')
+    allobjs = allobjs + env.SConscript(consFile)
+
+Execute(Mkdir(subdirs))
+
+objs = filter(lambda o: str(o)[-4:] != '.mod', allobjs)
+
+env.Program('genie.exe', ['genie.f90'] + objs)
