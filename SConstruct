@@ -45,7 +45,8 @@ coordvars = { 'GENIENX':          nlons,
               'GOLDSTEINNTRACS' : ntracers }
 coorddefs = [ ]
 for d in coordvars:
-    coorddefs.append('-D' + d + '=' + str(coordvars[d]))
+    if coordvars[d]:
+        coorddefs.append('-D' + d + '=' + str(coordvars[d]))
 
 env = Environment(FORTRAN = f90,
                   LINK = f90,
