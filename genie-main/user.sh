@@ -28,10 +28,10 @@
 #
 # ---------------------------------------------------------------------
 
-CODEDIR=~/cgenie.fruitcake
+CODEDIR=~/cgenie
 OUTROOT=~/cgenie_output
 ARCHIVEDIR=~/cgenie_archive
 LOGDIR=~/cgenie_log
 
-RUNTIME_ROOT=${RUNTIME_ROOT:=../../cgenie.fruitcake}
+RUNTIME_ROOT=${RUNTIME_ROOT:=../../cgenie}
 RUNTIME_OUTDIR=${RUNTIME_OUTDIR:=.}
