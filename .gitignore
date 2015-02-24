@@ -70,3 +70,4 @@ makefile.depend
 /build/
 .sconsign.dblite
 /genie.exe
+*.pyc

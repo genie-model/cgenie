@@ -1,0 +1,4 @@
+&INI_GEMLITE_NML
+ctrl_update_pCO2=.TRUE.,
+par_DpCO2_thresh=0.01E-6,
+&END
