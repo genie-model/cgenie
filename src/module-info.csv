@@ -1,0 +1,12 @@
+# module_name,   flag_name,       prefix, nml_file, nml_name
+embm,            ebatmos,         ea,     EMBM,     INI_EMBM_NML
+goldstein,       goldsteinocean,  go,     GOLD,     INI_GOLD_NML
+goldsteinseaice, goldsteinseaice, gs,     goldSIC,  INI_SIC_NML
+ents,            ents,            ents,   ENTS,     INI_ENTS_NML
+biogem,          biogem,          bg,     BIOGEM,   INI_BIOGEM_NML
+atchem,          atchem,          ac,     ATCHEM,   INI_ATCHEM_NML
+sedgem,          sedgem,          sg,     SEDGEM,   INI_SEDGEM_NML
+rokgem,          rokgem,          rg,     ROKGEM,   INI_ROKGEM_NML
+gemlite,         gemlite,         gl,     GEMLITE,  INI_GEMLITE_NML
+main,            NONE,            ma,     genie,    GENIE_CONTROL_NML
+gem,             NONE,            gm,     GEM,      INI_GEM_NML
