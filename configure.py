@@ -27,16 +27,20 @@ parser.add_argument('-b', '--base-config', required=True,
                     help='Base configuration name')
 parser.add_argument('-u', '--user-config', required=True,
                     help='User configuration name')
+parser.add_argument('-r', '--restart',
+                    help='Restart name')
 parser.add_argument('-j', '--job-dir', default=cgenie_jobs,
                     help='Specify alternative destination directory for jobs')
 parser.add_argument('-l', '--run-length', type=int, required=True,
                     help='Job run length (years)')
 args = parser.parse_args()
 job_name = args.job_name
+overwrite = args.overwrite
 base_config = args.base_config
 user_config = args.user_config
+restart = args.restart
+job_dir_base = args.job_dir
 run_length = args.run_length
-overwrite = args.overwrite
 print("   Job name: ", job_name)
 print("Base config: ", base_config)
 print("User config: ", user_config)
@@ -71,7 +75,7 @@ modules = map(utils.module_from_flagname, mod_flags)
 
 # Set up job directory and per-module sub-directories.
 
-job_dir = os.path.join(cgenie_jobs, job_name)
+job_dir = os.path.join(job_dir_base, job_name)
 if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
 try: os.mkdir(job_dir)
 except OSError as e: sys.exit("Can't create job directory: " + job_dir)
@@ -96,6 +100,26 @@ with open(os.path.join(job_cfg_dir, 'config'), 'w') as fp:
 shutil.copy(os.path.join('config', 'platform.py'), job_cfg_dir)
 
 
+# Extract coordinate definitions from configuration.
+
+defines = utils.extract_defines(base, user)
+maxdeflen = max(map(len, defines.keys()))
+deflines = map(lambda d: ("'" + d + "':").ljust(maxdeflen + 4) +
+               str(defines[d]), defines.keys())
+deflines[0] = 'coordvars = { ' + deflines[0]
+for i in range(1, len(deflines)):
+    deflines[i] = '              ' + deflines[i]
+for i in range(len(deflines)-1):
+    deflines[i] += ','
+deflines[-1] += ' }'
+
+
+# Set up timestepping and restart options.
+
+tsopts = utils.timestepping_options(run_length, defines, t100=False)
+rstopts = utils.restart_options(restart)
+
+
 # Create job.py SCons file for job.
 
 ###===> CURRENTLY ONLY "DEVELOPMENT": NEED TO DO SOMETHING ABOUT
@@ -106,20 +130,8 @@ scons_srcdir = os.path.join(cgenie_root, 'src')
 with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
     print('# Model source directory', file=fp)
     print("srcdir = '" + scons_srcdir + "'\n", file=fp)
-    ###===> ALL BODGED: NEED TO GET COORDINATE DEFINITIONS FROM
-    ###     NAMELISTS
-    print("# Dimension sizes.", file=fp)
-    print("nlons = 36", file=fp)
-    print("nlats = 36", file=fp)
-    print("nlevs = 16", file=fp)
-    print("ntracers = 14\n", file=fp)
     print("# Coordinate definitions.", file=fp)
-    print("coordvars = { 'GENIENX':          nlons,", file=fp)
-    print("              'GENIENY':          nlats,", file=fp)
-    print("              'GOLDSTEINNLONS':   nlons,", file=fp)
-    print("              'GOLDSTEINNLATS':   nlats,", file=fp)
-    print("              'GOLDSTEINNLEVS':   nlevs,", file=fp)
-    print("              'GOLDSTEINNTRACS' : ntracers }", file=fp)
+    for l in deflines: print(l, file=fp)
 
 
 # Create SConstruct file for job.
@@ -138,5 +150,5 @@ for m in modules + ['main', 'gem']:
     nmlout = os.path.join(job_dir, 'data_' + minfo['nml_file'])
     with open(nmlin) as fp:
         nml = utils.Namelist(fp)
-        nml.merge(minfo['prefix'], minfo['exceptions'], base, user)
+        nml.merge(minfo['prefix'], minfo['exceptions'], base, tsopts, user)
         with open(nmlout, 'w') as ofp: nml.write(ofp)

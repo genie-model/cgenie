@@ -97,6 +97,124 @@ def lookup_module(modname):
     return module_info[modname]
 
 
+def extract_defines(*maps):
+    res = { }
+    for m in maps:
+        for k, v in m.iteritems():
+            if v.startswith('$(DEFINE)'):
+                ckv = v[9:].split('=')
+                res[ckv[0]] = int(ckv[1])
+    return res
+
+
+def timestepping_options(runlen, coords, t100):
+    lons = coords['GOLDSTEINNLONS']
+    lats = coords['GOLDSTEINNLATS']
+    levs = coords['GOLDSTEINNLEVS']
+
+    # Define relative biogeochem time-stepping.
+
+    dbiotbl = [
+    #                 t96            t100
+    #    lons levs   ntstp dbiostp   ntstp dbiostp
+        [ 36,  16,     96,    2,      100,    2 ],
+        [ 36,   8,     96,    4,      100,    5 ],
+        [ 18,  16,     48,    1,       50,    2 ],
+        [ 18,   8,     48,    2,       50,    5 ],
+        [ 36,  32,     96,    1,      100,    1 ] ]
+    #    ANY-OTHER     96     1       100     1
+    nsteps = 100 if t100 else 96
+    dbio = 1
+    for chk in dbiotbl:
+        if lons == chk[0] and levs == chk[1]:
+            nsteps = chk[4] if t100 else chk[2]
+            dbio = chk[5] if t100 else chk[3]
+    print("Setting time-stepping [GOLDSTEIN, BIOGEM:GOLDSTEIN]: ",
+          nsteps, dbio)
+
+    # Define primary model time step.
+    dstp = 3600.0 * 24.0 * 365.25 / 5.0 / nsteps
+
+    res = { }
+    # Primary model time step.
+    res['ma_genie_timestep'] = dstp
+
+    # Relative time-stepping.
+    for k in ['ma_ksic_loop', 'ma_kocn_loop', 'ma_klnd_loop']: res[k] = 5
+    for k in ['ma_conv_kocn_katchem', 'ma_conv_kocn_kbiogem',
+              'ma_conv_kocn_krokgem']: res[k] = dbio
+    for k in ['ma_conv_kocn_ksedgem', 'ma_kgemlite']: res[k] = nsteps
+
+    # BIOGEM run length and SEDGEM sediment age.
+    for k in ['bg_par_misc_t_runtime', 'sg_par_misc_t_runtime']: res[k] = runlen
+
+    # Overall GENIE run length.
+    for k in ['ma_koverall_total', 'ma_dt_write']: res[k] = runlen * 5 * nsteps
+
+    # 3: 'Health check' frequency (*)
+    # 4: Climate model component restart frequency.
+    # 5: 'Time series' frequency (*)
+    # 6: 'Average' frequency (*)
+    # 9: Climate components time-steps per year.
+    #     (*) A '+1' in effect disables this feature
+    ###===> WHAT DOES "a '+1' in effect disables this feature" MEAN?
+    ps = ['ea', 'go', 'gs', 'ents']
+    for p in ps: res[p + '_3'] = runlen * nsteps
+    for p in ps: res[p + '_4'] = runlen * nsteps
+    for p in ps: res[p + '_5'] = runlen * nsteps + 1
+    for p in ps: res[p + '_6'] = runlen * nsteps + 1
+    for k in ['ea_9', 'go_9', 'gs_9']: res[k] = nsteps
+
+    return res
+
+
+def restart_options(restart):
+    res = { }
+
+    # Set climate model re-start file details.
+
+    # Set default flags.
+    # Set NetCDF restart saving flag.
+    for k in ['ea_31', 'go_19', 'gs_14']: res[k] = 'n'
+    # Set ASCII restart output flag.
+    for k in ['ea_32', 'go_20', 'gs_15']: res[k] = 'y'
+    # Set ASCII restart number (i.e., output file string).
+    for k in ['ea_29', 'go_17', 'gs_12', 'ents_17']: res[k] = 'rst'
+    res['ents_24'] = 'rst.sland'
+
+    # Configure use of restart.
+    # -----------------------------
+    # Set continuing/new run flags
+    # => set restart input flags
+    # => disable netCDF restart input flag
+    # => set restart input number
+    # => copy restart files to data directory
+    if restart:
+        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'c'
+        for p in ['ac', 'bg', 'sg', 'rg']: res[p + '_ctrl_continuing'] = 't'
+        for k in ['ea_30', 'go_18', 'gs_13', 'ents_18']: res[k] = 'n'
+        for k in ['ea_35', 'go_23', 'gs_18']: res[k] = restart
+        res['ea_rstdir_name'] = 'restart/embm'
+        res['go_rstdir_name'] = 'restart/goldstein'
+        res['gs_rstdir_name'] = 'restart/goldsteinseaice'
+        res['ents_2'] = 'ents'
+        res['ents_22'] = 'restart/ents'
+        res['ents_rstdir_name'] = 'restart/ents'
+        res['ac_par_rstdir_name'] = 'restart/atchem'
+        res['bg_par_rstdir_name'] = 'restart/biogem'
+        res['sg_par_rstdir_name'] = 'restart/sedgem'
+        res['rg_par_rstdir_name'] = 'restart/rokgem'
+    else:
+        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'n'
+        for p in ['ac', 'bg', 'sg', 'rg']: res[p + '_ctrl_continuing'] = 'f'
+
+    # Set NetCDF format biogeochem restart files.
+    for p in ['ac', 'bg', 'sg']: res[p + '_ctrl_ncrst'] = '.TRUE.'
+
+    # Over-ride defaults.
+    res['bg_ctrl_force_oldformat'] = '.FALSE.'
+
+
 
 class Namelist:
     """Fortran namelists"""
@@ -126,7 +244,7 @@ class Namelist:
     def write(self, fp):
         print('&' + self.name, file=fp)
         for k, v in self.entries.iteritems():
-            print(k + '=' + self.formatValue(v) + ',', file=fp)
+            print(k + '=' + self.formatValue(str(v)) + ',', file=fp)
         print('&END', file=fp)
 
     def merge(self, prefix, excs, *maps):
