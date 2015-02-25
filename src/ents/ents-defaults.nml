@@ -1,7 +1,7 @@
 &ENTS_CONTROL
-indir_name="${RUNTIME_ROOT}/genie-ents/data"
-outdir_name="${RUNTIME_OUTDIR}/ents"
-condir_name="${RUNTIME_ROOT}/genie-ents/config"
+indir_name="data/ents"
+outdir_name="ents"
+condir_name="data/ents"
 ents_igrid=0
 ents_npstp=1000
 ents_iwstp=50000
@@ -35,8 +35,8 @@ ents_netin="n"
 ents_netout="y"
 ents_ascout="y"
 ents_filenetin="/genie_output/someEXPID/ents/restart_1999_12_30.nc"
-ents_dirnetout="${RUNTIME_OUTDIR}/ents"
-rstdir_name="${RUNTIME_ROOT}/genie-ents/data/input"
+ents_dirnetout="ents"
+rstdir_name="data/ents"
 ents_restart_file="spn.sland"
 dosc=.TRUE.
 atchem_update=.FALSE.
