@@ -1,4 +1,13 @@
 &GENIE_CONTROL_NML
+flag_ebatmos=.true.,
+flag_goldsteinocean=.true.,
+flag_goldsteinseaice=.true.,
+flag_ents=.false.,
+flag_biogem=.true.,
+flag_atchem=.true.,
+flag_sedgem=.false.,
+flag_rokgem=.false.,
+flag_gemlite=.false.,
 koverall_total=720,
 katm_loop=1,
 ksic_loop=6,

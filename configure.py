@@ -84,6 +84,9 @@ for m in modules:
     os.makedirs(os.path.join(job_dir, 'input', m))
     os.makedirs(os.path.join(job_dir, 'output', m))
     if restart: os.makedirs(os.path.join(job_dir, 'restart', m))
+os.makedirs(os.path.join(job_dir, 'input', 'main'))
+os.makedirs(os.path.join(job_dir, 'output', 'main'))
+if restart: os.makedirs(os.path.join(job_dir, 'restart', 'main'))
 
 
 # Write configuration information to job directory.
@@ -156,3 +159,12 @@ for m in modules + ['main', 'gem']:
         nml.merge(minfo['prefix'], minfo['exceptions'], base, tsopts, user)
         with open(nmlout, 'w') as ofp: nml.write(ofp)
         utils.copy_data_files(m, nml, os.path.join(job_dir, 'input', m))
+
+
+# Extra data files for main program.
+
+jobmaindatadir = os.path.join(job_dir, 'input', 'main')
+srcmaindatadir = os.path.join(cgenie_root, 'data', 'main')
+for s in ['atm', 'ocn', 'sed']:
+    shutil.copy(os.path.join(srcmaindatadir, 'tracer_define.' + s),
+                jobmaindatadir)

@@ -38,6 +38,7 @@ def read_config(f, msg):
         res = { }
         with (open(f)) as fp:
             for line in fp:
+                if re.match('^\s*#' ,line): continue
                 m = re.search('([a-zA-Z0-9_]+)=(.*)', line)
                 if m:
                     k = m.group(1)
@@ -354,7 +355,6 @@ def copy_data_files(m, nml, outdir):
         ret = False
         try:
             for match in glob.iglob(os.path.join(checkdir, '*' + f + '*')):
-                print('partial: ', f, ' -> ', match)
                 shutil.copy(match, outdir)
                 ret = True
             return ret

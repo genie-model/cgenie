@@ -30,6 +30,6 @@ par_outdir_name="output/atchem",
 par_rstdir_name="restart/atchem",
 par_infile_name="atchem",
 par_outfile_name="atchem",
-ctrl_ncrst=.FALSE.,
+ctrl_ncrst=.TRUE.,
 par_ncrst_name="_restart.nc",
 &END
