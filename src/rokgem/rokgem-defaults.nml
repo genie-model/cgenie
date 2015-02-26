@@ -1,9 +1,9 @@
 &INI_ROKGEM_NML
 ctrl_continuing=.FALSE.,
 start_year=0.0,
-par_indir_name="data/rokgem",
-par_outdir_name="rokgem",
-par_rstdir_name="rokgem",
+par_indir_name="input/rokgem",
+par_outdir_name="output/rokgem",
+par_rstdir_name="restart/rokgem",
 par_infile_name="rokgem",
 par_outfile_name="rokgem",
 opt_screen_output=.FALSE.,

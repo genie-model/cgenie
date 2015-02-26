@@ -2,8 +2,13 @@
 
 from __future__ import print_function
 import json, csv
-import errno, os, sys
+import errno, os, sys, shutil, glob
 import re
+
+
+# Regex for matching floating point values.
+
+fp_re = '[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
 
 
 # Read cGENIE configuration.
@@ -11,8 +16,15 @@ import re
 genie_cfgfile = os.path.expanduser("~/.cgenierc")
 
 def read_cgenie_config():
+    global cgenie_root, cgenie_data, cgenie_jobs, cgenie_version
     try:
-        with open(genie_cfgfile) as fp: return json.load(fp)
+        with open(genie_cfgfile) as fp:
+            config = json.load(fp)
+            cgenie_root = config['cgenie_root']
+            cgenie_data = config['cgenie_data']
+            cgenie_jobs = config['cgenie_jobs']
+            cgenie_version = config['cgenie_version']
+            return config
     except IOError as e:
         if e.errno == errno.ENOENT: return None
         raise
@@ -56,10 +68,12 @@ def merge_flags(*dicts):
 # namelist names.
 
 srcdir = None
+datadir = None
 
-def set_src_dir(d):
-    global srcdir
-    srcdir = d
+def set_dirs(src, data):
+    global srcdir, datadir
+    srcdir = src
+    datadir = data
 
 module_info = { }
 flagname_to_mod = { }
@@ -215,6 +229,9 @@ def restart_options(restart):
     res['bg_ctrl_force_oldformat'] = '.FALSE.'
 
 
+def is_bool(x):
+    return str(x).lower() == '.true.' or str(x).lower() == '.false.'
+
 
 class Namelist:
     """Fortran namelists"""
@@ -238,27 +255,108 @@ class Namelist:
     def formatValue(self, v):
         if v == '.true.' or v == '.TRUE.': return '.TRUE.'
         if v == '.false.' or v == '.FALSE.': return '.FALSE.'
-        if re.match('[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?', v): return v
+        if re.match(fp_re, v): return v
         return '"' + v + '"'
 
     def write(self, fp):
         print('&' + self.name, file=fp)
-        for k, v in self.entries.iteritems():
-            print(k + '=' + self.formatValue(str(v)) + ',', file=fp)
+        for k in sorted(self.entries.keys()):
+            v = self.entries[k]
+            print(' ' + k + '=' + self.formatValue(str(v)) + ',', file=fp)
         print('&END', file=fp)
 
     def merge(self, prefix, excs, *maps):
         """Merge configuration data into default namelist.  Deals with
            stripping model-dependent prefix, exceptions to common naming
            conventions and parameter arrays."""
-        plen = len(prefix) + 1
+        plen = len(prefix)
         for m in maps:
             for k in m.keys():
-                rk = k[plen:]
+                if k[0:plen] != prefix: continue
+                rk = k[plen+1:]
                 if (k in excs):
                     rk = excs[k]
                 else:
                     s = re.search('_(\d+)$', rk)
                     if s:
                         rk = rk.rstrip('_0123456789') + '(' + s.group(1) + ')'
-                if (rk in self.entries): self.entries[rk] = m[k]
+                if (rk in self.entries):
+                    current = self.entries[rk]
+                    new = m[k]
+                    # Make sure that boolean values from default
+                    # namelists don't get overwritten by integer flag
+                    # values.
+                    self.entries[rk] = new
+                    # if (is_bool(current) and not is_bool(new)):
+                    #     if re.match('\d+', new):
+                    #         if int(new) == 0: self.entries[rk] = '.FALSE.'
+                    #         else: self.entries[rk] = '.TRUE.'
+                    #     else: self.entries[rk] = '.FALSE.'
+                    # else: self.entries[rk] = new
+
+
+# Model data file setup.  This is kind of horrible.  We really want to
+# pick up all the data files used in a job to put them into the job
+# directory so that jobs can be self-contained and reproducible.
+# However, it's often the case that what appears in the namelists and
+# configuration files *isn't* the complete filename of whatever data
+# files are used, but just a *part* of the filename.  In order to make
+# sure that we get all the data files that we need (plus possibly some
+# extra unused ones, but that's pretty unavoidable), for each namelist
+# we do the following:
+#
+# 1. Extract all non-numeric, non-boolean parameters (i.e. all the
+#    character string parameters).
+# 2. Filter out some obvious non-file values ("n", "y", the module
+#    name).
+# 3. For each remaining parameter value, look in the module data
+#    directory for a file with that name.  If there's an exact match,
+#    copy that file to the relevant job data directory.
+# 4. For parameters for which there is exact file match, copy all
+#    files whose names contain the parameter value to the relevant job
+#    data directory.  Doing this means that we'll almost certainly
+#    pick up some unused files, but we should get everything that we
+#    need.
+
+def copy_data_files(m, nml, outdir):
+    # Extract and filter parameter values.
+    def check_data_item(s):
+        if not isinstance(s, str): return False
+        if s.lower() in ['.true.', '.false.', 'n', 'y', m]: return False
+        if re.match(fp_re, s): return False
+        if s == 'input/' + m: return False
+        for t in ['output/', 'restart/', '/']:
+            if s.startswith(t): return False
+        return True
+    cands = map(os.path.basename, filter(check_data_item, nml.entries.values()))
+
+    # Look for exact file matches in module data directory.
+    checkdir = os.path.join(cgenie_root, 'data', m)
+    def exact(f):
+        try:
+            shutil.copy(os.path.join(checkdir, f), outdir)
+            return True
+        except: return False
+    cands = filter(lambda f: not exact(f), cands)
+
+    # Look for exact file matches in forcings directory.
+    checkdir = os.path.join(cgenie_data, 'forcings')
+    def forcing(f):
+        try:
+            shutil.copytree(os.path.join(checkdir, f), os.path.join(outdir, f))
+            return True
+        except: return False
+    cands = filter(lambda f: not forcing(f), cands)
+
+    # Look for partial matches.
+    checkdir = os.path.join(cgenie_root, 'data', m)
+    def partial(f):
+        ret = False
+        try:
+            for match in glob.iglob(os.path.join(checkdir, '*' + f + '*')):
+                print('partial: ', f, ' -> ', match)
+                shutil.copy(match, outdir)
+                ret = True
+            return ret
+        except: return ret
+    cands = filter(lambda f: not partial(f), cands)

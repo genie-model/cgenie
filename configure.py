@@ -56,10 +56,11 @@ user_config = os.path.join(cgenie_data, 'user-configs', user_config)
 user = utils.read_config(user_config, 'User configuration')
 
 
-# Set up source directory.
+# Set up source and per-module input data directories.
 
 srcdir = 'src'
-utils.set_src_dir(srcdir)
+datadir = 'data'
+utils.set_dirs(srcdir, datadir)
 
 
 # Determine modules used in job.
@@ -80,7 +81,9 @@ if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
 try: os.mkdir(job_dir)
 except OSError as e: sys.exit("Can't create job directory: " + job_dir)
 for m in modules:
-    os.mkdir(os.path.join(job_dir, m))
+    os.makedirs(os.path.join(job_dir, 'input', m))
+    os.makedirs(os.path.join(job_dir, 'output', m))
+    if restart: os.makedirs(os.path.join(job_dir, 'restart', m))
 
 
 # Write configuration information to job directory.
@@ -139,7 +142,7 @@ with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
 shutil.copy('SConstruct', job_dir)
 
 
-# Namelist construction.
+# Construct namelists and copy data files.
 
 for m in modules + ['main', 'gem']:
     minfo = utils.lookup_module(m)
@@ -152,3 +155,4 @@ for m in modules + ['main', 'gem']:
         nml = utils.Namelist(fp)
         nml.merge(minfo['prefix'], minfo['exceptions'], base, tsopts, user)
         with open(nmlout, 'w') as ofp: nml.write(ofp)
+        utils.copy_data_files(m, nml, os.path.join(job_dir, 'input', m))
