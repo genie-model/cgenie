@@ -34,19 +34,18 @@ def read_cgenie_config():
 # Read and parse a GENIE configuration file.
 
 def read_config(f, msg):
+    # Clean string quotes and comments from parameter value.
+    def clean(s):
+        if   (s[0] == '"'): return s[1:].partition('"')[0]
+        elif (s[0] == "'"): return s[1:].partition("'")[0]
+        else:               return s.partition('#')[0].strip()
     try:
         res = { }
         with (open(f)) as fp:
             for line in fp:
                 if re.match('^\s*#' ,line): continue
                 m = re.search('([a-zA-Z0-9_]+)=(.*)', line)
-                if m:
-                    k = m.group(1)
-                    v = m.group(2)
-                    if (v[0] == '"' and v[-1] == '"' or
-                        v[0] == "'" and v[-1] == "'"):
-                        v = v[1:-1]
-                    res[k] = v
+                if m: res[m.group(1)] = clean(m.group(2).strip())
             return res
     except IOError as e:
         if e.errno == errno.ENOENT: sys.exit(msg + ' not found: ' + f)
@@ -55,7 +54,7 @@ def read_config(f, msg):
 
 # Merge module flags from base and user configurations.
 
-def merge_flags(*dicts):
+def merge_flags(dicts):
     res = { }
     for d in dicts:
         for k in d.keys():
@@ -112,7 +111,7 @@ def lookup_module(modname):
     return module_info[modname]
 
 
-def extract_defines(*maps):
+def extract_defines(maps):
     res = { }
     for m in maps:
         for k, v in m.iteritems():
@@ -256,7 +255,7 @@ class Namelist:
     def formatValue(self, v):
         if v == '.true.' or v == '.TRUE.': return '.TRUE.'
         if v == '.false.' or v == '.FALSE.': return '.FALSE.'
-        if re.match(fp_re, v): return v
+        if re.match('^' + fp_re + '$', v): return v
         return '"' + v + '"'
 
     def write(self, fp):
@@ -266,7 +265,7 @@ class Namelist:
             print(' ' + k + '=' + self.formatValue(str(v)) + ',', file=fp)
         print('&END', file=fp)
 
-    def merge(self, prefix, excs, *maps):
+    def merge(self, prefix, excs, maps):
         """Merge configuration data into default namelist.  Deals with
            stripping model-dependent prefix, exceptions to common naming
            conventions and parameter arrays."""
