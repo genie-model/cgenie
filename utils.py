@@ -318,7 +318,7 @@ class Namelist:
 #    pick up some unused files, but we should get everything that we
 #    need.
 
-def copy_data_files(m, nml, outdir):
+def copy_data_files(m, nml, outdir, extras):
     # Extract and filter parameter values.
     def check_data_item(s):
         if not isinstance(s, str): return False
@@ -329,6 +329,9 @@ def copy_data_files(m, nml, outdir):
             if s.startswith(t): return False
         return True
     cands = map(os.path.basename, filter(check_data_item, nml.entries.values()))
+
+    # Add per-module 'specials'.
+    if extras: cands += extras
 
     # Look for exact file matches in module data directory.
     checkdir = os.path.join(cgenie_root, 'data', m)

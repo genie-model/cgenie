@@ -172,9 +172,27 @@ with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
     for l in deflines: print(l, file=fp)
 
 
-# Create SConstruct file for job.
+# Create SConstruct file and "go" script for job.
 
 shutil.copy('SConstruct', job_dir)
+shutil.copy('go.py', job_dir)
+
+
+# Set up per-module extra data files (these are files that don't
+# appear in any configuration information...).
+
+extra_data_files = { }
+if 'embm' in modules and 'ents' in modules:
+    extra_data_files['embm'] = ['inv_linterp_matrix.dat',
+                                'NCEP_airt_monthly.dat',
+                                'NCEP_pptn_monthly.dat',
+                                'NCEP_RH_monthly.dat',
+                                'atm_albedo_monthly.dat',
+                                'uvic_windx.silo',
+                                'uvic_windy.silo',
+                                'monthly_windspd.silo']
+if 'ents' in modules:
+    extra_data_files['ents'] = ['ents_config.par', 'sealevel_config.par']
 
 
 # Construct namelists and copy data files.
@@ -190,7 +208,8 @@ for m in modules + ['main', 'gem']:
         nml = utils.Namelist(fp)
         nml.merge(minfo['prefix'], minfo['exceptions'], configs)
         with open(nmlout, 'w') as ofp: nml.write(ofp)
-        utils.copy_data_files(m, nml, os.path.join(job_dir, 'input', m))
+        utils.copy_data_files(m, nml, os.path.join(job_dir, 'input', m),
+                              extra_data_files.get(m))
 
 
 # Extra data files for main program.
