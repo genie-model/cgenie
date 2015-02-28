@@ -44,6 +44,24 @@ restart = args.restart
 job_dir_base = args.job_dir
 run_length = args.run_length
 model_version = args.model_version
+
+
+# If a specific model version is requested, set up a repository clone
+# on the appropriate branch and run the configuration script at that
+# version.
+
+repo_version = 'DEVELOPMENT'
+if (os.path.exists('repo-version')):
+    with open('repo-version') as fp:
+        repo_version = fp.readline().strip()
+if model_version != repo_version:
+    repodir = U.setup_version_repo(model_version)
+    os.chdir(repodir)
+    os.execv(os.path.join(os.curdir, 'configure.py'), sys.argv[1:])
+
+
+# All set up.  Off we go...
+
 print("   Job name: ", job_name)
 print("Base config: ", base_config)
 print("User config: ", user_config)
@@ -102,7 +120,7 @@ modules = map(C.module_from_flagname, mod_flags)
 
 job_dir = os.path.join(job_dir_base, job_name)
 if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
-try: os.mkdir(job_dir)
+try: os.makedirs(job_dir)
 except OSError as e: sys.exit("Can't create job directory: " + job_dir)
 for m in modules:
     os.makedirs(os.path.join(job_dir, 'input', m))

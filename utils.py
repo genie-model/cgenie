@@ -3,6 +3,7 @@
 from __future__ import print_function
 import json, errno, os, sys, shutil, platform, string
 import re, hashlib, glob
+import subprocess as sp
 
 
 # Read cGENIE configuration.
@@ -91,12 +92,6 @@ class ModelConfig:
             shutil.rmtree(d)
         os.removedirs(hashd)
 
-    # Set up repository clone for building model at explicitly
-    # selected version tags.
-    def setup_repo(self):
-        if self.model_version != 'DEVELOPMENT':
-            sys.exit("Not set up for using specific model versions yet!")
-
     # Set up model build directory.
     def setup(self):
         d = self.directory()
@@ -106,7 +101,8 @@ class ModelConfig:
             if self.model_version == 'DEVELOPMENT':
                 scons_dir = cgenie_root
             else:
-                sys.exit('NOT YET IMPLEMENTED!!!')
+                scons_dir = os.path.join(cgenie_jobs, 'MODELS', 'REPOS',
+                                         self.model_version)
             scons_srcdir = os.path.join(scons_dir, 'src')
             with open(vfile, 'w') as fp:
                 print('# Model source directory', file=fp)
@@ -119,3 +115,28 @@ class ModelConfig:
         sfile = os.path.join(d, 'SConstruct')
         if not os.path.exists(sfile):
             shutil.copy(os.path.join(scons_dir, 'SConstruct'), sfile)
+
+
+# Determine list of available model versions.
+
+available_versions = ['DEVELOPMENT']
+available_versions += sp.check_output(['git', 'tag', '-l']).splitlines()
+
+
+# Set up repository clone for building model at explicitly
+# selected version tags.
+
+def setup_version_repo(ver):
+    if ver == 'DEVELOPMENT': return
+    if ver not in available_versions:
+        sys.exit('Invalid model version "' + ver + '"')
+    dst = os.path.join(cgenie_jobs, 'MODELS', 'REPOS', ver)
+    if os.path.exists(dst): return dst
+    with open(os.devnull, 'w') as sink:
+        if sp.call(['git', 'clone', '-l', '--single-branch', '--branch', ver,
+                    os.curdir, dst], stdout=sink, stderr=sink) != 0:
+            sys.exit('Failed to set up repository clone for version "' +
+                     ver + '"')
+    with open(os.path.join(dst, 'repo-version'), 'w') as ofp:
+        print(ver, file=ofp)
+    return dst

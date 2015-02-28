@@ -28,14 +28,9 @@ def yesno(prompt, default):
     return raw_input(prompt + " [" + opts + "]: ") or default
 
 
-# Determine list of available model versions.
-
-versions = ['DEVELOPMENT'] + sp.check_output(['git', 'tag', '-l']).splitlines()
-default_version = versions[-1]
-
-
 # Get options from user.
 
+default_version = utils.available_versions[-1]
 config = utils.read_cgenie_config()
 if config:
     print("Already set up...")
@@ -44,7 +39,7 @@ else:
     data = ask("Data directory", os.path.expanduser("~/cgenie-data"))
     test = ask("Test directory", os.path.expanduser("~/cgenie-test"))
     jobs = ask("Jobs directory", os.path.expanduser("~/cgenie-jobs"))
-    vers = ask("Default version", default_version, versions)
+    vers = ask("Default version", default_version, utils.available_versions)
     config = { 'cgenie_root': root, 'cgenie_data': data,
                'cgenie_test': test, 'cgenie_jobs': jobs,
                'cgenie_version': vers }
