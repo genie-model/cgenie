@@ -32,6 +32,8 @@ parser.add_argument('-j', '--job-dir', default=U.cgenie_jobs,
                     help='Specify alternative destination directory for jobs')
 parser.add_argument('-l', '--run-length', type=int, required=True,
                     help='Job run length (years)')
+parser.add_argument('-v', '--model-version', help='Model version to use',
+                    default = U.cgenie_version)
 args = parser.parse_args()
 job_name = args.job_name
 overwrite = args.overwrite
@@ -41,12 +43,14 @@ full_config = args.config
 restart = args.restart
 job_dir_base = args.job_dir
 run_length = args.run_length
+model_version = args.model_version
 print("   Job name: ", job_name)
 print("Base config: ", base_config)
 print("User config: ", user_config)
 print("Full config: ", full_config)
 print(" Run length: ", run_length)
 print("  Overwrite: ", overwrite)
+print("      Model: ", model_version)
 
 
 # Check configuration file options.
@@ -151,16 +155,15 @@ if not full_config:
 
 # Create job.py SCons file for job.
 
-###===> CURRENTLY ONLY "DEVELOPMENT": NEED TO DO SOMETHING ABOUT
-###     GETTING SPECIFIED MODEL VERSION FOR JOB
-if U.cgenie_version != 'DEVELOPMENT':
-    sys.exit("Not set up for using specific model versions yet!")
-scons_srcdir = os.path.join(U.cgenie_root, 'src')
 with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
-    print('# Model source directory', file=fp)
-    print("srcdir = '" + scons_srcdir + "'\n", file=fp)
     print("# Coordinate definitions.", file=fp)
     for l in deflines: print(l, file=fp)
+
+
+# Create model version file for build.
+
+with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
+    print(model_version, file=fp)
 
 
 # Create SConstruct file, "go" script for job and utilities.

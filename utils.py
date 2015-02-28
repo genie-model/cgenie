@@ -1,7 +1,8 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import json, errno, os, sys, platform
+import json, errno, os, sys, shutil, platform, string
+import re, hashlib, glob
 
 
 # Read cGENIE configuration.
@@ -46,3 +47,67 @@ def discover_platform():
         p = discover()
     if exists(p): return p
     else: sys.exit('Build platform "' + p + '" not known!')
+
+
+# Model configuration information: model configuration is based on
+# model version, build platform, build type (debug, optimised, etc.)
+# and a hash derived from the job configuration (basically ensuring
+# that model builds for different coordinate definitions, tracer
+# counts, etc. are correctly segregated).
+
+class ModelConfig:
+    # Assumes current working directory is the job directory.
+    def __init__(self):
+        with open(os.path.join('config', 'model-version')) as fp:
+            self.model_version = fp.readline().strip()
+        self.platform = discover_platform()
+        self.build_type = 'to-be-done'
+        with open(os.path.join('config', 'job.py')) as fp:
+            cs = re.search('coordvars\s*=\s*{([^}]+)}', fp.read()).group(1)
+            cs = filter(lambda c: not str.isspace(c), cs).split(',')
+            cs = ','.join(sorted(cs))
+            self.job_hash = hashlib.sha1(cs).hexdigest()
+
+    # Determine the model directory for this configuration: these all
+    # live under cgenie_jobs/MODELS.
+    def directory(self):
+        return os.path.join(cgenie_jobs, 'MODELS',
+                            self.model_version, self.platform,
+                            self.job_hash, self.build_type)
+
+    # Clean out model builds for a given model configuration -- this
+    # removes all build types for this model configuration, just to
+    # avoid surprises.
+    def clean(self):
+        # Go up one level to catch all build type directories.
+        hashd = os.path.abspath(os.path.join(self.directory(), os.pardir))
+        for d in glob.iglob(os.path.join(hashd, '*')):
+            shutil.rmtree(d)
+        os.removedirs(hashd)
+
+    # Set up repository clone for building model at explicitly
+    # selected version tags.
+    def setup_repo(self):
+        if self.model_version != 'DEVELOPMENT':
+            sys.exit("Not set up for using specific model versions yet!")
+
+    # Set up model build directory.
+    def setup(self):
+        d = self.directory()
+        if not os.path.exists(d): os.makedirs(d)
+        vfile = os.path.join(d, 'version.py')
+        if not os.path.exists(vfile):
+            if self.model_version == 'DEVELOPMENT':
+                scons_dir = cgenie_root
+            else:
+                sys.exit('NOT YET IMPLEMENTED!!!')
+            scons_srcdir = os.path.join(scons_dir, 'src')
+            with open(vfile, 'w') as fp:
+                print('# Model source directory', file=fp)
+                print("srcdir = '" + scons_srcdir + "'\n", file=fp)
+        jfile = os.path.join(d, 'job.py')
+        if not os.path.exists(jfile):
+            shutil.copy(os.path.join('config', 'job.py'), jfile)
+        sfile = os.path.join(d, 'SConstruct')
+        if not os.path.exists(sfile):
+            shutil.copy(os.path.join(scons_dir, 'SConstruct'), sfile)

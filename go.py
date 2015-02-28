@@ -1,9 +1,16 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, sys, shutil
+import os, os.path, sys, shutil, argparse
 import subprocess as sp
-import argparse
+
+import utils as U
+
+
+# GENIE configuration.
+
+if not U.read_cgenie_config():
+    sys.exit("GENIE not set up: run the setup.py script!")
 
 
 # Command line arguments.
@@ -13,7 +20,7 @@ def usage():
 Usage: go.py <command>
 
 Commands:
-  clean                     Clean build and model results
+  clean                     Clean results and model build
   build                     Build model
   run                       Build and run model
   set-platform <platform>   Set explicit build platform
@@ -42,12 +49,18 @@ def message(s):
     print('')
 
 
-# Clean up build and output directories.
+# Model configuration for job.
+
+model_config = U.ModelConfig()
+model_dir = model_config.directory()
+
+
+# Clean up output directories for this job and build directories for
+# model setup for this job.
 
 def clean():
     message('CLEANING...')
-    if os.path.exists('build'): shutil.rmtree('build')
-    if os.path.exists('build.log'): os.remove('build.log')
+    model_config.clean()
     if os.path.exists('run.log'): os.remove('run.log')
     for d, ds, fs in os.walk('output'):
         for f in fs: os.remove(os.path.join(d, f))
@@ -56,14 +69,19 @@ def clean():
 # Build model.
 
 def build():
+    if model_config.model_version != 'DEVELOPMENT': model_config.setup_repo()
+    model_config.setup()
+    model_dir = model_config.directory()
     with open(os.devnull, 'w') as sink:
-        need_build = sp.call(['scons', '-q'], stdout=sink, stderr=sink)
+        need_build = sp.call(['scons', '-q', '-C', model_dir],
+                             stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
         return True
     message('BUILDING...')
     with open('build.log', 'w') as logfp:
-        result = sp.call('scons', stdout=logfp, stderr=sp.STDOUT)
+        result = sp.call(['scons', '-C', model_dir],
+                         stdout=logfp, stderr=sp.STDOUT)
         if result == 0:
             message('Build OK')
             return True
@@ -76,8 +94,9 @@ def build():
 
 def run():
     message('RUNNING...')
+    model_dir = model_config.directory()
     with open('run.log', 'w') as logfp:
-        genie = sp.Popen(os.path.join('.', 'genie.exe'),
+        genie = sp.Popen(os.path.join(model_dir, 'genie.exe'),
                          stdout=sp.PIPE, stderr=sp.STDOUT)
         while True:
             line = genie.stdout.readline()
