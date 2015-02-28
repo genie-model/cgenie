@@ -119,8 +119,8 @@ class ModelConfig:
 
 # Determine list of available model versions.
 
-available_versions = ['DEVELOPMENT']
-available_versions += sp.check_output(['git', 'tag', '-l']).splitlines()
+def available_versions():
+    return ['DEVELOPMENT'] + sp.check_output(['git', 'tag', '-l']).splitlines()
 
 
 # Set up repository clone for building model at explicitly
@@ -128,7 +128,7 @@ available_versions += sp.check_output(['git', 'tag', '-l']).splitlines()
 
 def setup_version_repo(ver):
     if ver == 'DEVELOPMENT': return
-    if ver not in available_versions:
+    if ver not in available_versions():
         sys.exit('Invalid model version "' + ver + '"')
     dst = os.path.join(cgenie_jobs, 'MODELS', 'REPOS', ver)
     if os.path.exists(dst): return dst

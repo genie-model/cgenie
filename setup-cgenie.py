@@ -30,7 +30,8 @@ def yesno(prompt, default):
 
 # Get options from user.
 
-default_version = utils.available_versions[-1]
+versions = utils.available_versions()
+default_version = versions[-1]
 config = utils.read_cgenie_config()
 if config:
     print("Already set up...")
@@ -39,7 +40,7 @@ else:
     data = ask("Data directory", os.path.expanduser("~/cgenie-data"))
     test = ask("Test directory", os.path.expanduser("~/cgenie-test"))
     jobs = ask("Jobs directory", os.path.expanduser("~/cgenie-jobs"))
-    vers = ask("Default version", default_version, utils.available_versions)
+    vers = ask("Default version", default_version, versions)
     config = { 'cgenie_root': root, 'cgenie_data': data,
                'cgenie_test': test, 'cgenie_jobs': jobs,
                'cgenie_version': vers }

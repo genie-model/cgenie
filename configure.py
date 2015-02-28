@@ -57,7 +57,7 @@ if (os.path.exists('repo-version')):
 if model_version != repo_version:
     repodir = U.setup_version_repo(model_version)
     os.chdir(repodir)
-    os.execv(os.path.join(os.curdir, 'configure.py'), sys.argv[1:])
+    os.execv(os.path.join(os.curdir, 'configure.py'), sys.argv)
 
 
 # All set up.  Off we go...

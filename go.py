@@ -75,7 +75,6 @@ def clean():
 
 
 def build():
-    if model_config.model_version != 'DEVELOPMENT': model_config.setup_repo()
     model_config.setup()
     model_dir = model_config.directory()
     with open(os.devnull, 'w') as sink:
