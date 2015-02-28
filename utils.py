@@ -49,6 +49,11 @@ def discover_platform():
     else: sys.exit('Build platform "' + p + '" not known!')
 
 
+# Recognised build types.
+
+build_types = ['normal', 'debug', 'ship', 'profile', 'bounds']
+
+
 # Model configuration information: model configuration is based on
 # model version, build platform, build type (debug, optimised, etc.)
 # and a hash derived from the job configuration (basically ensuring
@@ -57,11 +62,12 @@ def discover_platform():
 
 class ModelConfig:
     # Assumes current working directory is the job directory.
-    def __init__(self):
+    def __init__(self, build_type):
+        if not build_type: build_type = 'normal'
         with open(os.path.join('config', 'model-version')) as fp:
             self.model_version = fp.readline().strip()
         self.platform = discover_platform()
-        self.build_type = 'to-be-done'
+        self.build_type = build_type
         with open(os.path.join('config', 'job.py')) as fp:
             cs = re.search('coordvars\s*=\s*{([^}]+)}', fp.read()).group(1)
             cs = filter(lambda c: not str.isspace(c), cs).split(',')
@@ -105,6 +111,8 @@ class ModelConfig:
             with open(vfile, 'w') as fp:
                 print('# Model source directory', file=fp)
                 print("srcdir = '" + scons_srcdir + "'\n", file=fp)
+                print('# Build type', file=fp)
+                print("build_type = '" + self.build_type + "'\n", file=fp)
         jfile = os.path.join(d, 'job.py')
         if not os.path.exists(jfile):
             shutil.copy(os.path.join('config', 'job.py'), jfile)

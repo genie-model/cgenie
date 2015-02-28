@@ -5,14 +5,21 @@ f90 = {
 
     # Default flags.
     'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
-                  '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-msse' ],
+                  '-fimplicit-none', '-fdefault-real-8', '-Wall' ],
 
-    # Debug flags.
-    'debug': ['-g'],
+    # Debug flags ("debug" build type).
+    'debug': ['-g', '-ffpe-trap=zero,overflow,invalid', '-O0', '-fbounds-check',
+              '-fbacktrace', '-fno-automatic'],
 
-    # Optimisation flags.
-    'optimise': ['-O3', '-funroll-loops'],
+    # Optimisation flags ("ship" build type).
+    'ship': ['-O3', '-funroll-loops', '-msse', '-fno-automatic'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-pg'],
+    'profile_link': ['-pg'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-fbounds-check'],
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.

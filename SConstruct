@@ -1,4 +1,6 @@
+from __future__ import print_function
 import os, os.path, sys
+import platform as P
 import utils as U
 
 
@@ -25,6 +27,7 @@ if os.path.exists('version.py'):
     execfile('version.py')
 else:
     srcdir = 'src'
+    build_type = 'normal'
 if os.path.exists('job.py'):
     execfile('job.py')
 else:
@@ -72,14 +75,33 @@ for d in coordvars:
 # Set up SCons environment: Fortran compiler definitions take from
 # platform configuration.
 
+extraf90flags = []
+extralinkflags = []
+if build_type in f90: extraf90flags = f90[build_type]
+if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
+
 env = Environment(FORTRAN = f90['compiler'],
                   LINK = f90['compiler'],
-                  F90FLAGS=f90['baseflags'] + coorddefs,
+                  F90FLAGS = f90['baseflags'] + extraf90flags + coorddefs,
+                  LINKFLAGS = extralinkflags,
                   F90PATH = [netcdfinc] + modpath,
                   FORTRANMODDIRPREFIX = f90['module_dir'],
                   FORTRANMODDIR = '${TARGET.dir}',
                   LIBPATH = [netcdflib],
                   LIBS = netcdf['libs'])
+
+
+# Set up prompt progress reporting.
+
+if P.system == 'Windows':
+    screen = open('CON:', 'w')
+else:
+    screen = open('/dev/tty', 'w')
+def progress_function(node):
+    node = str(node)
+    if node.endswith('.f90'):
+        print(os.path.relpath(node, srcdir), file=screen)
+Progress(progress_function)
 
 
 # Build!

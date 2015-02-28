@@ -21,22 +21,26 @@ Usage: go.py <command>
 
 Commands:
   clean                     Clean results and model build
-  build                     Build model
-  run                       Build and run model
+  build [<build-type>]      Build model
+  run [<build-type>]        Build and run model
   set-platform <platform>   Set explicit build platform
   clear-platform            Clear explicit build platform
 """)
     sys.exit()
 
-if len(sys.argv) == 2:
-    if sys.argv[1] in ['clean', 'build', 'run', 'clear-platform']:
-        action = sys.argv[1]
-    else: usage()
-elif len(sys.argv) == 3:
-    if sys.argv[1] == 'set-platform':
-        action = sys.argv[1]
-        platform = sys.argv[2]
-    else: usage()
+build_type = 'ship'
+if len(sys.argv) < 2: usage()
+action = sys.argv[1]
+if action in ['clean', 'clear-platform']:
+    if len(sys.argv) != 2: usage()
+elif action == 'set-platform':
+    if len(sys.argv) != 3: usage()
+    platform = sys.argv[2]
+elif action in ['build', 'run']:
+    if   len(sys.argv) == 3: build_type = sys.argv[2]
+    elif len(sys.argv) != 2: usage()
+    if build_type and build_type not in U.build_types:
+        sys.exit('Unrecognised build type: "', build_type, '"')
 else: usage()
 
 
@@ -51,8 +55,9 @@ def message(s):
 
 # Model configuration for job.
 
-model_config = U.ModelConfig()
+model_config = U.ModelConfig(build_type)
 model_dir = model_config.directory()
+exe_name = 'genie-' + build_type + '.exe' if build_type else 'genie.exe'
 
 
 # Clean up output directories for this job and build directories for
@@ -68,6 +73,7 @@ def clean():
 
 # Build model.
 
+
 def build():
     if model_config.model_version != 'DEVELOPMENT': model_config.setup_repo()
     model_config.setup()
@@ -77,26 +83,30 @@ def build():
                              stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
+        shutil.copy(os.path.join(model_dir, 'genie.exe'),
+                    os.path.join(os.curdir, exe_name))
         return True
     message('BUILDING...')
-    with open('build.log', 'w') as logfp:
+    with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
         result = sp.call(['scons', '-C', model_dir],
                          stdout=logfp, stderr=sp.STDOUT)
-        if result == 0:
-            message('Build OK')
-            return True
-        else:
-            message('BUILD FAILED: see build.log for details')
-            return False
+    shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
+    if result == 0:
+        message('Build OK')
+        shutil.copy(os.path.join(model_dir, 'genie.exe'),
+                    os.path.join(os.curdir, exe_name))
+        return True
+    else:
+        message('BUILD FAILED: see build.log for details')
+        return False
 
 
 # Build model.
 
 def run():
     message('RUNNING...')
-    model_dir = model_config.directory()
     with open('run.log', 'w') as logfp:
-        genie = sp.Popen(os.path.join(model_dir, 'genie.exe'),
+        genie = sp.Popen(os.path.join('.', exe_name),
                          stdout=sp.PIPE, stderr=sp.STDOUT)
         while True:
             line = genie.stdout.readline()
@@ -122,9 +132,7 @@ elif action == 'clean':
 elif action == 'build':
     build()
 elif action == 'run':
-    if build():
-        run()
-    else:
-        message('RUN CANCELLED')
+    if build(): run()
+    else:       message('RUN CANCELLED')
 else:
-    sys.exit("Action must be one of clean, build or run")
+    usage()
