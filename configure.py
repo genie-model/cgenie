@@ -4,17 +4,14 @@ from __future__ import print_function
 import os, os.path, sys, errno, shutil
 import argparse
 
-import utils
+import utils as U
+import config_utils as C
+
 
 # GENIE configuration
 
-config = utils.read_cgenie_config()
-if not config: sys.exit("GENIE not set up: run the setup.py script!")
-
-cgenie_root = config['cgenie_root']
-cgenie_data = config['cgenie_data']
-cgenie_jobs = config['cgenie_jobs']
-cgenie_version = config['cgenie_version']
+if not U.read_cgenie_config():
+    sys.exit("GENIE not set up: run the setup.py script!")
 
 
 # Command line arguments.
@@ -31,7 +28,7 @@ parser.add_argument('-c', '--config',
                     help='Consolidated configuration name')
 parser.add_argument('-r', '--restart',
                     help='Restart name')
-parser.add_argument('-j', '--job-dir', default=cgenie_jobs,
+parser.add_argument('-j', '--job-dir', default=U.cgenie_jobs,
                     help='Specify alternative destination directory for jobs')
 parser.add_argument('-l', '--run-length', type=int, required=True,
                     help='Job run length (years)')
@@ -64,16 +61,16 @@ if base_and_user_config and full_config:
 # Read and parse configuration files.
 
 if (base_and_user_config):
-    base_config = os.path.join(cgenie_data, 'base-configs',
+    base_config = os.path.join(U.cgenie_data, 'base-configs',
                                base_config + '.config')
-    base = utils.read_config(base_config, 'Base configuration')
-    user_config = os.path.join(cgenie_data, 'user-configs', user_config)
-    user = utils.read_config(user_config, 'User configuration')
+    base = C.read_config(base_config, 'Base configuration')
+    user_config = os.path.join(U.cgenie_data, 'user-configs', user_config)
+    user = C.read_config(user_config, 'User configuration')
     configs = [base, user]
 else:
-    full_config = os.path.join(cgenie_data, 'full-configs',
+    full_config = os.path.join(U.cgenie_data, 'full-configs',
                                full_config + '.config')
-    full = utils.read_config(full_config, 'Full configuration')
+    full = C.read_config(full_config, 'Full configuration')
     configs = [full]
 
 
@@ -81,7 +78,7 @@ else:
 
 srcdir = 'src'
 datadir = 'data'
-utils.set_dirs(srcdir, datadir)
+C.set_dirs(srcdir, datadir)
 
 
 # Determine modules used in job.
@@ -92,9 +89,9 @@ mod_opts = map(extract_mod_opts, configs)
 def extract_mod_flags(c, os):
     return { k: c[k] for k in os }
 mod_flags = map(extract_mod_flags, configs, mod_opts)
-merged_mod_flags = utils.merge_flags(mod_flags)
+merged_mod_flags = C.merge_flags(mod_flags)
 mod_flags = filter(lambda k: merged_mod_flags[k], merged_mod_flags.keys())
-modules = map(utils.module_from_flagname, mod_flags)
+modules = map(C.module_from_flagname, mod_flags)
 
 
 # Set up job directory and per-module sub-directories.
@@ -128,15 +125,9 @@ with open(os.path.join(job_cfg_dir, 'config'), 'w') as fp:
         print('full_config: ' + full_config, file=fp)
 
 
-# Create platform.py SCons file for job.
-###===> DO PLATFORM-SPECIFIC SETUP HERE.
-
-shutil.copy(os.path.join('config', 'platform.py'), job_cfg_dir)
-
-
 # Extract coordinate definitions from configuration.
 
-defines = utils.extract_defines(configs)
+defines = C.extract_defines(configs)
 maxdeflen = max(map(len, defines.keys()))
 deflines = map(lambda d: ("'" + d + "':").ljust(maxdeflen + 4) +
                str(defines[d]), defines.keys())
@@ -153,8 +144,8 @@ deflines[-1] += ' }'
 # configurations already include timestepping options.
 
 if not full_config:
-    tsopts = utils.timestepping_options(run_length, defines, t100=False)
-    rstopts = utils.restart_options(restart)
+    tsopts = C.timestepping_options(run_length, defines, t100=False)
+    rstopts = C.restart_options(restart)
     configs = [base, tsopts, user]
 
 
@@ -162,9 +153,9 @@ if not full_config:
 
 ###===> CURRENTLY ONLY "DEVELOPMENT": NEED TO DO SOMETHING ABOUT
 ###     GETTING SPECIFIED MODEL VERSION FOR JOB
-if cgenie_version != 'DEVELOPMENT':
+if U.cgenie_version != 'DEVELOPMENT':
     sys.exit("Not set up for using specific model versions yet!")
-scons_srcdir = os.path.join(cgenie_root, 'src')
+scons_srcdir = os.path.join(U.cgenie_root, 'src')
 with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
     print('# Model source directory', file=fp)
     print("srcdir = '" + scons_srcdir + "'\n", file=fp)
@@ -172,10 +163,11 @@ with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
     for l in deflines: print(l, file=fp)
 
 
-# Create SConstruct file and "go" script for job.
+# Create SConstruct file, "go" script for job and utilities.
 
 shutil.copy('SConstruct', job_dir)
 shutil.copy('go.py', job_dir)
+shutil.copy('utils.py', job_dir)
 
 
 # Set up per-module extra data files (these are files that don't
@@ -198,24 +190,24 @@ if 'ents' in modules:
 # Construct namelists and copy data files.
 
 for m in modules + ['main', 'gem']:
-    minfo = utils.lookup_module(m)
+    minfo = C.lookup_module(m)
     if minfo['flag_name'] == 'NONE':
         nmlin = os.path.join(srcdir, m + '-defaults.nml')
     else:
         nmlin = os.path.join(srcdir, m, m + '-defaults.nml')
     nmlout = os.path.join(job_dir, 'data_' + minfo['nml_file'])
     with open(nmlin) as fp:
-        nml = utils.Namelist(fp)
+        nml = C.Namelist(fp)
         nml.merge(minfo['prefix'], minfo['exceptions'], configs)
         with open(nmlout, 'w') as ofp: nml.write(ofp)
-        utils.copy_data_files(m, nml, os.path.join(job_dir, 'input', m),
-                              extra_data_files.get(m))
+        C.copy_data_files(m, nml, os.path.join(job_dir, 'input', m),
+                          extra_data_files.get(m))
 
 
 # Extra data files for main program.
 
 jobmaindatadir = os.path.join(job_dir, 'input', 'main')
-srcmaindatadir = os.path.join(cgenie_root, 'data', 'main')
+srcmaindatadir = os.path.join(U.cgenie_root, 'data', 'main')
 for s in ['atm', 'ocn', 'sed']:
     shutil.copy(os.path.join(srcmaindatadir, 'tracer_define.' + s),
                 jobmaindatadir)

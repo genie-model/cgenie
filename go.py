@@ -8,14 +8,30 @@ import argparse
 
 # Command line arguments.
 
-parser = argparse.ArgumentParser(description='Build and run GENIE jobs')
-parser.add_argument('action', help='Command action (required)',
-                    choices=['clean', 'build', 'run'])
-parser.add_argument('-q', '--quiet', action='store_true',
-                    help='Suppress output')
-args = parser.parse_args()
-action = args.action
-quiet = args.quiet
+def usage():
+    print("""
+Usage: go.py <command>
+
+Commands:
+  clean                     Clean build and model results
+  build                     Build model
+  run                       Build and run model
+  set-platform <platform>   Set explicit build platform
+  clear-platform            Clear explicit build platform
+""")
+    sys.exit()
+
+if len(sys.argv) == 2:
+    if sys.argv[1] in ['clean', 'build', 'run', 'clear-platform']:
+        action = sys.argv[1]
+    else: usage()
+elif len(sys.argv) == 3:
+    if sys.argv[1] == 'set-platform':
+        action = sys.argv[1]
+        platform = sys.argv[2]
+    else: usage()
+else: usage()
+
 
 def message(s):
     print(79 * '*')
@@ -75,9 +91,14 @@ def run():
             message('RUN FAILED: see run.log for details')
 
 
-# Actions: clean, build or run.
+# Actions: platform management, clean, build or run.
 
-if   action == 'clean':
+pfile = os.path.join('config', 'platform-name')
+if   action == 'clear-platform':
+    if os.path.exists(pfile): os.remove(pfile)
+elif action == 'set-platform':
+    with open(pfile, 'w') as ofp: print(platform, file=ofp)
+elif action == 'clean':
     clean()
 elif action == 'build':
     build()
