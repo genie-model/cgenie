@@ -95,7 +95,7 @@ ctrl_misc_report_err=.FALSE.,
 par_misc_debug_i=1,
 par_misc_debug_j=1,
 par_sed_age_save_dt=1000.0,
-ctrl_ncrst=.FALSE.,
+ctrl_ncrst=.TRUE.,
 par_ncrst_name="_restart.nc",
 par_ncsedcore_name="sedcore.nc",
 &END

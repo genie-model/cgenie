@@ -28,6 +28,8 @@ parser.add_argument('-c', '--config',
                     help='Consolidated configuration name')
 parser.add_argument('-r', '--restart',
                     help='Restart name')
+parser.add_argument('--old-restart', action='store_true',
+                    help='Restart from old cGENIE job')
 parser.add_argument('-j', '--job-dir', default=U.cgenie_jobs,
                     help='Specify alternative destination directory for jobs')
 parser.add_argument('-l', '--run-length', type=int, required=True,
@@ -41,6 +43,7 @@ base_config = args.base_config
 user_config = args.user_config
 full_config = args.config
 restart = args.restart
+old_restart = args.old_restart
 job_dir_base = args.job_dir
 run_length = args.run_length
 model_version = args.model_version
@@ -78,6 +81,21 @@ if not base_and_user_config and not full_config:
     sys.exit("Either base and user or full configuration must be specified")
 if base_and_user_config and full_config:
     sys.exit("Only one of base and user or full configuration may be specified")
+
+
+# Check for existence of any restart job.
+
+if restart:
+    if old_restart:
+        restart_path = os.path.join(os.path.expanduser('~/cgenie_output'),
+                                    restart)
+    else:
+        restart_path = os.path.join(job_dir_base, restart)
+    if not os.path.exists(restart_path):
+        if old_restart:
+            sys.exit('Old cGENIE restart job "' + restart + '" does not exist')
+        else:
+            sys.exit('Restart job "' + restart + '" does not exist')
 
 
 # Read and parse configuration files.
@@ -168,7 +186,7 @@ deflines[-1] += ' }'
 if not full_config:
     tsopts = C.timestepping_options(run_length, defines, t100=False)
     rstopts = C.restart_options(restart)
-    configs = [base, tsopts, user]
+    configs = [base, tsopts, rstopts, user]
 
 
 # Create job.py SCons file for job.
@@ -223,6 +241,10 @@ for m in modules + ['main', 'gem']:
         with open(nmlout, 'w') as ofp: nml.write(ofp)
         C.copy_data_files(m, nml, os.path.join(job_dir, 'input', m),
                           extra_data_files.get(m))
+        if restart:
+            C.copy_restart_files(m, nml, os.path.join(job_dir, 'restart', m),
+                                 restart, old_restart)
+
 
 
 # Extra data files for main program.

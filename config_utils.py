@@ -187,13 +187,14 @@ def restart_options(restart):
     # => copy restart files to data directory
     if restart:
         for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'c'
-        for p in ['ac', 'bg', 'sg', 'rg']: res[p + '_ctrl_continuing'] = 't'
+        for p in ['ac', 'bg', 'sg', 'rg']:
+            res[p + '_ctrl_continuing'] = '.TRUE.'
         for k in ['ea_30', 'go_18', 'gs_13', 'ents_18']: res[k] = 'n'
-        for k in ['ea_35', 'go_23', 'gs_18']: res[k] = restart
+        for k in ['ea_35', 'go_23', 'gs_18']: res[k] = 'rst.1'
         res['ea_rstdir_name'] = 'restart/embm'
         res['go_rstdir_name'] = 'restart/goldstein'
         res['gs_rstdir_name'] = 'restart/goldsteinseaice'
-        res['ents_2'] = 'ents'
+        res['ents_2'] = 'output/ents'
         res['ents_22'] = 'restart/ents'
         res['ents_rstdir_name'] = 'restart/ents'
         res['ac_par_rstdir_name'] = 'restart/atchem'
@@ -202,13 +203,16 @@ def restart_options(restart):
         res['rg_par_rstdir_name'] = 'restart/rokgem'
     else:
         for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'n'
-        for p in ['ac', 'bg', 'sg', 'rg']: res[p + '_ctrl_continuing'] = 'f'
+        for p in ['ac', 'bg', 'sg', 'rg']:
+            res[p + '_ctrl_continuing'] = '.FALSE.'
 
     # Set NetCDF format biogeochem restart files.
     for p in ['ac', 'bg', 'sg']: res[p + '_ctrl_ncrst'] = '.TRUE.'
 
     # Over-ride defaults.
     res['bg_ctrl_force_oldformat'] = '.FALSE.'
+
+    return res
 
 
 def is_bool(x):
@@ -344,3 +348,16 @@ def copy_data_files(m, nml, outdir, extras):
             return ret
         except: return ret
     cands = filter(lambda f: not partial(f), cands)
+
+
+# Copy restart files: if restarting from an old cGENIE job, assume
+# that the job is in ~/cgenie_output.
+
+def copy_restart_files(m, nml, outdir, restart, old_restart):
+    if old_restart:
+        indir = os.path.join(os.path.expanduser('~/cgenie_output'), restart, m)
+    else:
+        indir = os.path.join(U.cgenie_jobs, restart, 'output', m)
+    for f in ['rst.1', '_restart.nc']:
+        r = os.path.join(indir, f)
+        if os.path.exists(r): shutil.copy(r, outdir)
