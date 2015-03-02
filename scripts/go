@@ -1,0 +1,4 @@
+#!/bin/bash
+cgenie_root=`grep ^cgenie_root ~/.cgenierc | cut -d' ' -f2-`
+source $cgenie_root/scripts/find_python
+exec $PYTHON $cgenie_root/scripts/go.py $*

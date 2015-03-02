@@ -199,11 +199,9 @@ with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
     print(model_version, file=fp)
 
 
-# Create SConstruct file, "go" script for job and utilities.
+# Create "go" script for job.
 
-shutil.copy(os.path.join(U.cgenie_root, 'SConstruct'), job_dir)
-shutil.copy(os.path.join(U.cgenie_root, 'scripts', 'go.py'), job_dir)
-shutil.copy(os.path.join(U.cgenie_root, 'scripts', 'utils.py'), job_dir)
+shutil.copy(os.path.join(U.cgenie_root, 'scripts', 'go'), job_dir)
 
 
 # Set up per-module extra data files (these are files that don't

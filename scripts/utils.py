@@ -106,9 +106,12 @@ class ModelConfig:
                 scons_dir = os.path.join(cgenie_jobs, 'MODELS', 'REPOS',
                                          self.model_version)
             scons_srcdir = os.path.join(scons_dir, 'src')
+            scriptdir = os.path.join(cgenie_root, 'scripts')
             with open(vfile, 'w') as fp:
                 print('# Model source directory', file=fp)
                 print("srcdir = '" + scons_srcdir + "'\n", file=fp)
+                print('# Model script directory', file=fp)
+                print("scriptdir = '" + scriptdir + "'\n", file=fp)
                 print('# Build type', file=fp)
                 print("build_type = '" + self.build_type + "'\n", file=fp)
         jfile = os.path.join(d, 'job.py')

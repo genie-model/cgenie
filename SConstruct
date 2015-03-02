@@ -1,7 +1,21 @@
 from __future__ import print_function
 import os, os.path, sys
 import platform as P
-sys.path.append('scripts')
+
+# Set up model source and scripts directory (the "srcdir='src'" thing
+# is there to allow us to run SCons in the root cgenie directory for
+# development purposes -- normal job builds will pick up an explicit
+# job configuration and model source directory file in their build
+# directory).
+
+if os.path.exists('version.py'):
+    execfile('version.py')
+    sys.path.append(scriptdir)
+else:
+    srcdir = 'src'
+    build_type = 'normal'
+    sys.path.append('scripts')
+
 import utils as U
 
 
@@ -18,17 +32,12 @@ print('Using platform "' + platform + '"')
 execfile(os.path.join(U.cgenie_root, 'platforms', platform))
 
 
-# Set up model source directory and job configuration (the
-# "srcdir='src'" and "dummy-job.py" things are there to allow us to
-# run SCons in the root cgenie directory for development purposes --
-# normal job builds will pick up an explicit job configuration and
-# model source directory file in their build directory).
+# Set up model job configuration (the "dummy-job.py" thing is there to
+# allow us to run SCons in the root cgenie directory for development
+# purposes -- normal job builds will pick up an explicit job
+# configuration and model source directory file in their build
+# directory).
 
-if os.path.exists('version.py'):
-    execfile('version.py')
-else:
-    srcdir = 'src'
-    build_type = 'normal'
 if os.path.exists('job.py'):
     execfile('job.py')
 else:
