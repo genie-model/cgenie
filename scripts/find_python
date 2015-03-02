@@ -58,6 +58,7 @@ if [ -z $PYTHON ]; then
                 echo '  Cleaning up...'
                 cd ..
                 /bin/rm -fr $PYTHONDIR
+                PYTHON=$LOCALPYTHON
             else
                 echo 'FATAL ERROR: FAILED TO BUILD PYTHON'
                 exit 1
