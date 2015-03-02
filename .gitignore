@@ -71,3 +71,4 @@ makefile.depend
 .sconsign.dblite
 /genie.exe
 *.pyc
+/scripts/python-local-2.7.9/

@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -f ~/.cgenierc ]; then
+    echo 'GENIE already set up -- if you want to start over, remove ~/.cgenierc'
+    exit 0
+fi
+cgenie_root=`pwd`
+source scripts/find_python
+exec $PYTHON scripts/setup-cgenie.py

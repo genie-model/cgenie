@@ -1,0 +1,4 @@
+#!/bin/bash
+cgenie_root=`pwd`
+source $cgenie_root/scripts/find_python
+exec $PYTHON scripts/configure.py $*
