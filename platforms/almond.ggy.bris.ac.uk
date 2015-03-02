@@ -23,7 +23,7 @@ f90 = {
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.
-    'base': '/share/apps/netcdf/4.0/fnu_fc_4.4.4/',
+    'base': '/share/apps/netcdf-4.0/gcc-4.4.7',
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).
