@@ -3,6 +3,7 @@
 from __future__ import print_function
 import os, os.path, sys, errno, shutil
 import optparse
+import subprocess as sp
 
 import utils as U
 import config_utils as C
@@ -196,7 +197,11 @@ with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
 # Create model version file for build.
 
 with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
-    print(model_version, file=fp)
+    if model_version == 'DEVELOPMENT':
+        rev = sp.check_output(['git', 'describe', '--tags', 'HEAD']).strip()
+        print('DEVELOPMENT:' + rev, file=fp)
+    else:
+        print(model_version, file=fp)
 
 
 # Create "go" script for job.

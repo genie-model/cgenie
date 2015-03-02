@@ -395,11 +395,14 @@ MODULE genie_global
   LOGICAL :: lrestart_genie
 
 #ifndef REV
-#define REV 0
+#define REV UNKNOWN
 #endif
 
-  ! Version number for the model
-  INTEGER, PARAMETER :: genie_version=REV
+  ! Version number for the model (nastiness is because of dealing with
+  ! string preprocessor defines...)
+  CHARACTER(LEN=*), PARAMETER :: genie_version='&
+&REV&
+&'
 
 CONTAINS
 
@@ -421,8 +424,9 @@ CONTAINS
 
   ! getversion()
   ! Return the version of the model
-  INTEGER FUNCTION getversion()
+  FUNCTION getversion()
     IMPLICIT NONE
+    CHARACTER(LEN=256) :: getversion
     getversion = genie_version
   END FUNCTION getversion
 

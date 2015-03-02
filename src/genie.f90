@@ -15,7 +15,7 @@ PROGRAM GENIE
 
   PRINT *
   PRINT *, '*******************************************************'
-  PRINT    '("  *** Welcome to cGENIE -- version:",I5)', genie_version
+  PRINT *, '  *** Welcome to cGENIE -- version: ', TRIM(genie_version)
   PRINT *, '*******************************************************'
   PRINT *
 

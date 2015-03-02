@@ -69,6 +69,10 @@ class ModelConfig:
         if not build_type: build_type = 'normal'
         with open(os.path.join('config', 'model-version')) as fp:
             self.model_version = fp.readline().strip()
+            self.display_model_version = self.model_version
+            if self.model_version.startswith('DEVELOPMENT:'):
+                self.display_model_version = self.model_version.split(':')[1]
+                self.model_version = 'DEVELOPMENT'
         self.platform = discover_platform()
         self.build_type = build_type
         with open(os.path.join('config', 'job.py')) as fp:

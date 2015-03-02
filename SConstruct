@@ -76,10 +76,15 @@ modpath = map(lambda d: os.path.join('#/build', d), subdirs)
 
 # Set up coordinate definitions.
 
-coorddefs = [ ]
+defs = [ ]
 for d in coordvars:
     if coordvars[d]:
-        coorddefs.append(f90['define'] + d + '=' + str(coordvars[d]))
+        defs.append(f90['define'] + d + '=' + str(coordvars[d]))
+
+
+# Set up model version marker.
+
+defs.append(f90['define'] + "REV=" + ARGUMENTS['rev'])
 
 
 # Set up SCons environment: Fortran compiler definitions take from
@@ -92,7 +97,7 @@ if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
 
 env = Environment(FORTRAN = f90['compiler'], F90 = f90['compiler'],
                   LINK = f90['compiler'],
-                  F90FLAGS = f90['baseflags'] + extraf90flags + coorddefs,
+                  F90FLAGS = f90['baseflags'] + extraf90flags + defs,
                   LINKFLAGS = extralinkflags,
                   F90PATH = [netcdfinc] + modpath,
                   FORTRANMODDIRPREFIX = f90['module_dir'],

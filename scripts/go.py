@@ -85,9 +85,10 @@ def build():
         shutil.copy(os.path.join(model_dir, 'genie.exe'),
                     os.path.join(os.curdir, exe_name))
         return True
-    message('BUILDING...')
+    message('BUILDING: ' + model_config.display_model_version)
     with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
-        result = sp.call([scons, '-C', model_dir],
+        rev = 'rev=' + model_config.display_model_version
+        result = sp.call([scons, '-C', model_dir, rev],
                          stdout=logfp, stderr=sp.STDOUT)
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
     if result == 0:
@@ -103,7 +104,7 @@ def build():
 # Run model.
 
 def run():
-    message('RUNNING...')
+    message('RUNNING: ' + model_config.display_model_version)
     with open('run.log', 'w') as logfp:
         genie = sp.Popen(os.path.join('.', exe_name),
                          stdout=sp.PIPE, stderr=sp.STDOUT)
