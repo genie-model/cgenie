@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import json, errno, os, sys, shutil, platform, string
+import errno, os, sys, shutil, platform, string
 import re, hashlib, glob
 import subprocess as sp
 
@@ -14,11 +14,13 @@ def read_cgenie_config():
     global cgenie_root, cgenie_data, cgenie_jobs, cgenie_version
     try:
         with open(genie_cfgfile) as fp:
-            config = json.load(fp)
-            cgenie_root = config['cgenie_root']
-            cgenie_data = config['cgenie_data']
-            cgenie_jobs = config['cgenie_jobs']
-            cgenie_version = config['cgenie_version']
+            for line in fp:
+                k, v = line.strip().split(':')
+                v = v.strip()
+                if   k == 'cgenie_root':    cgenie_root = v
+                elif k == 'cgenie_data':    cgenie_data = v
+                elif k == 'cgenie_jobs':    cgenie_jobs = v
+                elif k == 'cgenie_version': cgenie_version = v
             return True
     except IOError as e:
         if e.errno == errno.ENOENT: return False
@@ -90,7 +92,7 @@ class ModelConfig:
         hashd = os.path.abspath(os.path.join(self.directory(), os.pardir))
         for d in glob.iglob(os.path.join(hashd, '*')):
             shutil.rmtree(d)
-        os.removedirs(hashd)
+        if os.path.exists(hashd): os.removedirs(hashd)
 
     # Set up model build directory.
     def setup(self):

@@ -11,6 +11,7 @@ import utils as U
 
 if not U.read_cgenie_config():
     sys.exit("GENIE not set up: run the setup.py script!")
+scons = os.path.join(U.cgenie_root, 'scons', 'scons.py')
 
 
 # Command line arguments.
@@ -73,12 +74,11 @@ def clean():
 
 # Build model.
 
-
 def build():
     model_config.setup()
     model_dir = model_config.directory()
     with open(os.devnull, 'w') as sink:
-        need_build = sp.call(['scons', '-q', '-C', model_dir],
+        need_build = sp.call([scons, '-q', '-C', model_dir],
                              stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
@@ -87,7 +87,7 @@ def build():
         return True
     message('BUILDING...')
     with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
-        result = sp.call(['scons', '-C', model_dir],
+        result = sp.call([scons, '-C', model_dir],
                          stdout=logfp, stderr=sp.STDOUT)
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
     if result == 0:
@@ -100,7 +100,7 @@ def build():
         return False
 
 
-# Build model.
+# Run model.
 
 def run():
     message('RUNNING...')

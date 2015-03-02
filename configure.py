@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 import os, os.path, sys, errno, shutil
-import argparse
+import optparse
 
 import utils as U
 import config_utils as C
@@ -16,37 +16,34 @@ if not U.read_cgenie_config():
 
 # Command line arguments.
 
-parser = argparse.ArgumentParser(description='Configure GENIE jobs')
-parser.add_argument('job_name', help='Job name')
-parser.add_argument('-O', '--overwrite', action='store_true',
-                    help='Overwrite existing job of given name')
-parser.add_argument('-b', '--base-config',
-                    help='Base configuration name')
-parser.add_argument('-u', '--user-config',
-                    help='User configuration name')
-parser.add_argument('-c', '--config',
-                    help='Consolidated configuration name')
-parser.add_argument('-r', '--restart',
-                    help='Restart name')
-parser.add_argument('--old-restart', action='store_true',
-                    help='Restart from old cGENIE job')
-parser.add_argument('-j', '--job-dir', default=U.cgenie_jobs,
-                    help='Specify alternative destination directory for jobs')
-parser.add_argument('-l', '--run-length', type=int, required=True,
-                    help='Job run length (years)')
-parser.add_argument('-v', '--model-version', help='Model version to use',
-                    default = U.cgenie_version)
-args = parser.parse_args()
-job_name = args.job_name
-overwrite = args.overwrite
-base_config = args.base_config
-user_config = args.user_config
-full_config = args.config
-restart = args.restart
-old_restart = args.old_restart
-job_dir_base = args.job_dir
-run_length = args.run_length
-model_version = args.model_version
+parser = optparse.OptionParser(usage='%prog [options] job-name run-length',
+                               description='Configure GENIE jobs')
+parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
+                  action='store_true')
+parser.add_option('-b', '--base-config',   help='Base configuration name')
+parser.add_option('-u', '--user-config',   help='User configuration name')
+parser.add_option('-c', '--config',        help='Full configuration name')
+parser.add_option('-r', '--restart',       help='Restart name')
+parser.add_option('--old-restart',         help='Restart from old cGENIE job',
+                  action='store_true')
+parser.add_option('-j', '--job-dir',       help='Alternative job directory',
+                  default=U.cgenie_jobs)
+parser.add_option('-v', '--model-version', help='Model version to use',
+                  default = U.cgenie_version)
+opts, args = parser.parse_args()
+if len(args) != 2:
+    parser.print_help()
+    sys.exit()
+job_name = args[0]
+run_length = args[1]
+overwrite = opts.overwrite
+base_config = opts.base_config
+user_config = opts.user_config
+full_config = opts.config
+restart = opts.restart
+old_restart = opts.old_restart
+job_dir_base = opts.job_dir
+model_version = opts.model_version
 
 
 # If a specific model version is requested, set up a repository clone

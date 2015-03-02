@@ -41,11 +41,12 @@ else:
     test = ask("Test directory", os.path.expanduser("~/cgenie-test"))
     jobs = ask("Jobs directory", os.path.expanduser("~/cgenie-jobs"))
     vers = ask("Default version", default_version, versions)
-    config = { 'cgenie_root': root, 'cgenie_data': data,
-               'cgenie_test': test, 'cgenie_jobs': jobs,
-               'cgenie_version': vers }
-    with open(utils.genie_cfgfile, 'w') as f:
-        json.dump(config, f)
+    with open(utils.genie_cfgfile, 'w') as fp:
+        print('cgenie_root: ' + root, file=fp)
+        print('cgenie_data: ' + data, file=fp)
+        print('cgenie_test: ' + test, file=fp)
+        print('cgenie_jobs: ' + jobs, file=fp)
+        print('cgenie_version: ' + vers, file=fp)
 
 
 # Download data and test repositories if required.
