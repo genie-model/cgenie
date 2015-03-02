@@ -1,10 +1,10 @@
 # Fortran 90 platform definitions.
 f90 = {
     # Compiler name.
-    'compiler': 'ifort',
+    'compiler': '/opt/bridge/intel/10.1.015/fce/bin/ifort',
 
     # Default flags.
-    'baseflags': ['-fpp', '-noautomatic', '-implicitnone', '-r8'],
+    'baseflags': ['-cpp', '-noautomatic', '-implicitnone', '-r8'],
 
     # Debug flags.
     'debug': ['-g', '-traceback', '-fpe0', '-CU'],
@@ -20,15 +20,15 @@ f90 = {
     'bounds': ['-CB'],
 
     # Miscellaneous flags.
-    'include': '-I',         # Include files.
-    'module_dir': '-J',      # Module file output directory.
-    'define': '-D'           # Preprocessor definitions.
+    'include': '-I',          # Include files.
+    'module_dir': '-module ', # Module file output directory.
+    'define': '-D'            # Preprocessor definitions.
 }
 
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.
-    'base': '/opt/local/CentOS-64/netcdf/4.1.3/gnu_fc_4.1.2',
+    'base': '/opt/local/CentOS-64/netcdf/4.1.3/intel_fc_10.1',
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).
