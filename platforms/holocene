@@ -1,18 +1,23 @@
 # Fortran 90 platform definitions.
 f90 = {
     # Compiler name.
-    'compiler': 'gfortran',
+    'compiler': 'ifort',
 
     # Default flags.
-    'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
-                  '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-msse' ],
+    'baseflags': ['-fpp', '-noautomatic', '-implicitnone', '-r8'],
 
     # Debug flags.
-    'debug': ['-g'],
+    'debug': ['-g', '-traceback', '-fpe0', '-CU'],
 
     # Optimisation flags.
-    'optimise': ['-O3', '-funroll-loops'],
+    'ship': ['-O3', '-static'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-O3', '-static', '-p'],
+    'profile_link': ['-p'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-CB'],
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.
