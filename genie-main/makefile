@@ -132,7 +132,6 @@ cleanall : clean cleanutils cleanmodules
 # clean  - just local files
 clean : $(CLEAN_LOCAL_TARGETS)
 	\rm -f *.$(OBJ_EXT) $(EXECUTABLES) *.dep *.mod
-	cd $(C_DIR); $(MAKE) clean
 	cd $(F_DIR); $(MAKE) -I ../../ clean
 
 $(CLEAN_LOCAL_TARGETS) : clean_% :
@@ -164,7 +163,7 @@ $(EXE_COSTFN) : $(EXE) $(CONTROL_OBJS) $(UTIL_LIBS) $(LOCAL_LIBS) $(MODULE_LIBS)
 
 # Rule to make custom netcdf comparison program
 nccompare :
-	\cd $(C_DIR); $(MAKE)
+	$(MAKE) -C $(F_DIR) -I $(CURDIR) nccompare.exe
 
 # Rule to make custom netcdf comparison program
 errfn_ea_go_gs :

@@ -1,4 +1,4 @@
-include ../../makefile.arc
+include makefile.arc
 
 ifeq ($(MACHINE),WIN32)
   LOC_INC_FLAGS=$(MOD_INC_FLAG)$(GENIE_ROOT_WIN)\\genie-main
@@ -11,7 +11,7 @@ LOCALFLAGS = $(FFLAGS) $(GENIEPREC) $(BOUNDS_FLAGS) $(LOC_INC_FLAGS)
 MODULE_NAMES=embm goldstein goldsteinseaice
 
 # Construct the linking params
-ifeq ($(MACHINE),WIN32) 
+ifeq ($(MACHINE),WIN32)
 
   # construct lib names for linking
   LINK_LIBRARIES = $(MODULE_NAMES:%=/LIBPATH:$(GENIE_ROOT_WIN)\\genie-%\\lib)
@@ -22,7 +22,7 @@ ifeq ($(MACHINE),WIN32)
 
   # include the util library
   LINK_LIBRARIES += /LIBPATH:$(GENIE_ROOT_WIN)\\genie-lib\\libutil1 libutil1.lib
-  
+
 else
   # construct lib names for linking
   LINK_LIBRARIES = $(MODULE_NAMES:%=-L$(GENIE_ROOT)/genie-%/lib)
@@ -59,6 +59,9 @@ $(EA_GO_GS_AC_BG_OBJS): %.$(OBJ_EXT) : %.f90
 $(IG_FI_FI_OBJS): %.$(OBJ_EXT) : %.f90
 	$(F77) $(F90FLAGS) $(FPPFLAGS) $(LOCALFLAGS) $(COMPILEONLY) $(DOPTS) $< $(OBJ_FLAG)$@
 
+nccompare.exe: nccompare.f90
+	$(F77_LD) $(OUT_FLAG) $@ nccompare.f90 $(LOCALFLAGS) $(F90FLAGS) $(LDFLAGS) $(NETCDF)
+
 costfn.exe: $(EA_GO_GS_OBJS)
 	$(F77_LD) $(OUT_FLAG)$@ $(EA_GO_GS_OBJS) $(LDFLAGS) $(LINK_LIBRARIES) $(NETCDF) ../../genie_util.$(OBJ_EXT) ../../genie_global.$(OBJ_EXT) ../../genie_control.$(OBJ_EXT) ../../local_netcdf.$(OBJ_EXT)
 
@@ -73,7 +76,7 @@ errfn_ig_fi_fi_ml.exe: $(IG_FI_FI_OBJS)
 
 .PHONY: clean clean_exe
 clean:
-	rm -rf $(EA_GO_GS_OBJS) $(EA_GO_GS_AC_BG_OBJS) $(IG_FI_FI_OBJS) $(EXES) 
+	rm -rf $(EA_GO_GS_OBJS) $(EA_GO_GS_AC_BG_OBJS) $(IG_FI_FI_OBJS) $(EXES)
 
 clean_exe:
-	rm -rf $(EXES) 
+	rm -rf $(EXES)
