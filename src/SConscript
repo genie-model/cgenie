@@ -13,3 +13,4 @@ Execute(Mkdir(subdirs))
 objs = filter(lambda o: str(o)[-4:] != '.mod', allobjs)
 
 env.Program('genie.exe', ['genie.f90'] + objs)
+env.Program('nccompare.exe', ['nccompare.f90'])

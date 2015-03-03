@@ -17,7 +17,7 @@ if not U.read_cgenie_config():
 
 # Command line arguments.
 
-parser = optparse.OptionParser(usage='%prog [options] job-name run-length',
+parser = optparse.OptionParser(usage='new-job [options] job-name run-length',
                                description='Configure GENIE jobs')
 parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
                   action='store_true')
@@ -26,6 +26,8 @@ parser.add_option('-u', '--user-config',   help='User configuration name')
 parser.add_option('-c', '--config',        help='Full configuration name')
 parser.add_option('-r', '--restart',       help='Restart name')
 parser.add_option('--old-restart',         help='Restart from old cGENIE job',
+                  action='store_true')
+parser.add_option('--t100',                help='Use "T100" timestepping',
                   action='store_true')
 parser.add_option('-j', '--job-dir',       help='Alternative job directory',
                   default=U.cgenie_jobs)
@@ -42,7 +44,8 @@ base_config = opts.base_config
 user_config = opts.user_config
 full_config = opts.config
 restart = opts.restart
-old_restart = opts.old_restart
+old_restart = True if opts.old_restart else False
+t100 = True if opts.t100 else False
 job_dir_base = opts.job_dir
 model_version = opts.model_version
 
@@ -58,7 +61,7 @@ if (os.path.exists('repo-version')):
 if model_version != repo_version:
     repodir = U.setup_version_repo(model_version)
     os.chdir(repodir)
-    os.execv(os.path.join(os.curdir, 'scripts/configure-job.py'), sys.argv)
+    os.execv(os.path.join(os.curdir, 'scripts/new-job.py'), sys.argv)
 
 
 # All set up.  Off we go...
@@ -99,15 +102,18 @@ if restart:
 # Read and parse configuration files.
 
 if (base_and_user_config):
-    base_config = os.path.join(U.cgenie_data, 'base-configs',
-                               base_config + '.config')
+    if not os.path.exists(base_config):
+        base_config = os.path.join(U.cgenie_data, 'base-configs',
+                                   base_config + '.config')
     base = C.read_config(base_config, 'Base configuration')
-    user_config = os.path.join(U.cgenie_data, 'user-configs', user_config)
+    if not os.path.exists(user_config):
+        user_config = os.path.join(U.cgenie_data, 'user-configs', user_config)
     user = C.read_config(user_config, 'User configuration')
     configs = [base, user]
 else:
-    full_config = os.path.join(U.cgenie_data, 'full-configs',
-                               full_config + '.config')
+    if not os.path.exists(full_config):
+        full_config = os.path.join(U.cgenie_data, 'full-configs',
+                                   full_config + '.config')
     full = C.read_config(full_config, 'Full configuration')
     configs = [full]
 
@@ -161,6 +167,8 @@ with open(os.path.join(job_cfg_dir, 'config'), 'w') as fp:
     if full_config:
         shutil.copyfile(full_config, os.path.join(job_cfg_dir, 'full_config'))
         print('full_config: ' + full_config, file=fp)
+    print('run_length:', run_length, file=fp)
+    print('t100:', t100, file=fp)
 
 
 # Extract coordinate definitions from configuration.
@@ -182,7 +190,7 @@ deflines[-1] += ' }'
 # configurations already include timestepping options.
 
 if not full_config:
-    tsopts = C.timestepping_options(run_length, defines, t100=False)
+    tsopts = C.timestepping_options(run_length, defines, t100=t100)
     rstopts = C.restart_options(restart)
     configs = [base, tsopts, rstopts, user]
 
@@ -198,8 +206,13 @@ with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
 
 with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
     if model_version == 'DEVELOPMENT':
-        rev = sp.check_output(['git', 'describe', '--tags', 'HEAD']).strip()
-        print('DEVELOPMENT:' + rev, file=fp)
+        try:
+            with open(os.devnull, 'w') as sink:
+                rev = sp.check_output(['git', 'describe',
+                                       '--tags', 'HEAD'], stdout=sink).strip()
+            print('DEVELOPMENT:' + rev, file=fp)
+        except:
+            print('DEVELOPMENT:UNKNOWN', file=fp)
     else:
         print(model_version, file=fp)
 

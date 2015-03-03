@@ -84,7 +84,8 @@ for d in coordvars:
 
 # Set up model version marker.
 
-defs.append(f90['define'] + "REV=" + ARGUMENTS['rev'])
+rev = ARGUMENTS['rev'] if 'rev' in ARGUMENTS else 'UNKNOWN'
+defs.append(f90['define'] + "REV=" + rev)
 
 
 # Set up SCons environment: Fortran compiler definitions take from
@@ -108,15 +109,16 @@ env = Environment(FORTRAN = f90['compiler'], F90 = f90['compiler'],
 
 # Set up prompt progress reporting.
 
-if P.system == 'Windows':
-    screen = open('CON:', 'w')
-else:
-    screen = open('/dev/tty', 'w')
-def progress_function(node):
-    node = str(node)
-    if node.endswith('.f90'):
-        print(os.path.relpath(node, srcdir), file=screen)
-Progress(progress_function)
+if 'progress' not in ARGUMENTS or ARGUMENTS['progress'] == '1':
+    if P.system == 'Windows':
+        screen = open('CON:', 'w')
+    else:
+        screen = open('/dev/tty', 'w')
+    def progress_function(node):
+        node = str(node)
+        if node.endswith('.f90'):
+            print(os.path.relpath(node, srcdir), file=screen)
+    Progress(progress_function)
 
 
 # Build!

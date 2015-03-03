@@ -11,7 +11,7 @@ import subprocess as sp
 genie_cfgfile = os.path.expanduser("~/.cgenierc")
 
 def read_cgenie_config():
-    global cgenie_root, cgenie_data, cgenie_jobs, cgenie_version
+    global cgenie_root, cgenie_data, cgenie_test, cgenie_jobs, cgenie_version
     try:
         with open(genie_cfgfile) as fp:
             for line in fp:
@@ -19,6 +19,7 @@ def read_cgenie_config():
                 v = v.strip()
                 if   k == 'cgenie_root':    cgenie_root = v
                 elif k == 'cgenie_data':    cgenie_data = v
+                elif k == 'cgenie_test':    cgenie_test = v
                 elif k == 'cgenie_jobs':    cgenie_jobs = v
                 elif k == 'cgenie_version': cgenie_version = v
             return True

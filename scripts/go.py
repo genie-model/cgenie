@@ -18,18 +18,19 @@ scons = os.path.join(U.cgenie_root, 'scripts', 'scons', 'scons.py')
 
 def usage():
     print("""
-Usage: go.py <command>
+Usage: go <command>
 
 Commands:
-  clean                     Clean results and model build
-  build [<build-type>]      Build model
-  run [<build-type>]        Build and run model
-  set-platform <platform>   Set explicit build platform
-  clear-platform            Clear explicit build platform
+  clean                                 Clean results and model build
+  build [<build-type>] [--no-progress]  Build model
+  run [<build-type>] [--no-progress]    Build and run model
+  set-platform <platform>               Set explicit build platform
+  clear-platform                        Clear explicit build platform
 """)
     sys.exit()
 
 build_type = 'ship'
+progress = True
 if len(sys.argv) < 2: usage()
 action = sys.argv[1]
 if action in ['clean', 'clear-platform']:
@@ -38,8 +39,14 @@ elif action == 'set-platform':
     if len(sys.argv) != 3: usage()
     platform = sys.argv[2]
 elif action in ['build', 'run']:
-    if   len(sys.argv) == 3: build_type = sys.argv[2]
-    elif len(sys.argv) != 2: usage()
+    if len(sys.argv) == 3:
+        if sys.argv[2] == '--no-progress': progress = False
+        else:                              build_type = sys.argv[2]
+    elif len(sys.argv) == 4:
+        build_type = sys.argv[2]
+        if sys.argv[3] == '--no-progress': progress = False
+        else:                              usage()
+    else: usage()
     if build_type and build_type not in U.build_types:
         sys.exit('Unrecognised build type: "', build_type, '"')
 else: usage()
@@ -88,8 +95,10 @@ def build():
     message('BUILDING: ' + model_config.display_model_version)
     with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
         rev = 'rev=' + model_config.display_model_version
-        result = sp.call([scons, '-C', model_dir, rev],
-                         stdout=logfp, stderr=sp.STDOUT)
+        cmd = [scons, '-C', model_dir, rev]
+        cmd.append('progress=' + ('1' if progress else '0'))
+        print(cmd)
+        result = sp.call(cmd, stdout=logfp, stderr=sp.STDOUT)
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
     if result == 0:
         message('Build OK')
