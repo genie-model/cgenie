@@ -28,6 +28,10 @@ def list():
 
 # Add a test.
 
+def yesno(prompt, default):
+    opts = 'Yn' if default else 'yN'
+    return raw_input(prompt + " [" + opts + "]: ") or default
+
 def add_test(test_job, test_name):
     def has_job_output(jdir):
         for d, ds, fs in os.walk(os.path.join(jdir, 'output')):
@@ -47,8 +51,22 @@ def add_test(test_job, test_name):
     for c in ['full_config', 'base_config', 'user_config']:
         if os.path.exists(os.path.join(job_dir, 'config', c)):
             shutil.copy(os.path.join(job_dir, 'config', c), test_dir)
-    shutil.copytree(os.path.join(job_dir, 'output'),
-                    os.path.join(test_dir, 'knowngood'))
+    test_files = [ ]
+    odir = os.path.join(job_dir, 'output')
+    print('Select output files for test comparison:')
+    for d, ds, fs in os.walk(odir):
+        for f in fs:
+            if f != '_restart.nc' and os.path.splitext(f)[1].lower() == '.nc':
+                chkf = os.path.relpath(os.path.join(d, f), odir)
+                if yesno('  ' + chkf, False):
+                    src = os.path.join(job_dir, 'output', chkf)
+                    dst = os.path.join(test_dir, 'knowngood', chkf)
+                    if not os.path.exists(os.path.dirname(dst)):
+                        os.makedirs(os.path.dirname(dst))
+                    shutil.copyfile(src, dst)
+    if os.path.exists(os.path.join(job_dir, 'restart')):
+        shutil.copytree(os.path.join(job_dir, 'restart'),
+                        os.path.join(test_dir, 'restart'))
 
 
 # Run tests.
@@ -100,6 +118,9 @@ def do_run(t, rdir, logfp):
     logfp.flush()
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to configure test job')
+    if os.path.exists(os.path.join(test_dir, 'restart')):
+        shutil.copytree(os.path.join(test_dir, 'restart'),
+                        os.path.join(rdir, t, 'restart'))
 
     os.chdir(os.path.join(rdir, t))
     print('  Building and running job...')

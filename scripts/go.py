@@ -97,7 +97,6 @@ def build():
         rev = 'rev=' + model_config.display_model_version
         cmd = [scons, '-C', model_dir, rev]
         cmd.append('progress=' + ('1' if progress else '0'))
-        print(cmd)
         result = sp.call(cmd, stdout=logfp, stderr=sp.STDOUT)
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
     if result == 0:
