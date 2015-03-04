@@ -31,7 +31,6 @@ PROGRAM nccompare
   max_ulps = 0
   min_abs = TINY(0.0)
   CALL parse_options()
-  print *, max_ulps, min_abs
 
   ! Verify the threshold options, if supplied
   IF (max_ulps < 0) THEN

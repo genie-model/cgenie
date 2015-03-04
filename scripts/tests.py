@@ -14,7 +14,6 @@ import config_utils as C
 
 if not U.read_cgenie_config():
     sys.exit("GENIE not set up: run the setup.py script!")
-testbase = os.path.join(U.cgenie_test, 'tests')
 scons = os.path.join(U.cgenie_root, 'scripts', 'scons', 'scons.py')
 nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
 
@@ -22,9 +21,9 @@ nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
 # List all existing tests.
 
 def list():
-    for d, ds, fs in os.walk(testbase):
+    for d, ds, fs in os.walk(U.cgenie_test):
         if os.path.exists(os.path.join(d, 'test_info')):
-            print(os.path.relpath(d, testbase))
+            print(os.path.relpath(d, U.cgenie_test))
 
 
 # Add a test.
@@ -38,7 +37,7 @@ def add_test(test_job, test_name):
     if not has_job_output(job_dir):
         sys.exit('Need to run job "' + test_job +
                  '" before adding it as a test')
-    test_dir = os.path.join(U.cgenie_test, 'tests', test_name)
+    test_dir = os.path.join(U.cgenie_test, test_name)
     if not os.path.exists(job_dir):
         sys.exit('Job "' + test_job + '" does not exist')
     if os.path.exists(test_dir): sys.exit('Test already exists!')
@@ -67,7 +66,7 @@ def do_run(t, rdir, logfp):
     print('Running test "' + t + '"')
     print('Running test "' + t + '"', file=logfp)
 
-    test_dir = os.path.join(U.cgenie_test, 'tests', t)
+    test_dir = os.path.join(U.cgenie_test, t)
     cmd = [os.path.join(os.curdir, 'new-job')]
 
     config = { }
@@ -140,13 +139,13 @@ def run_tests(tests):
     os.makedirs(rdir)
     summ = { }
     if tests == ['ALL']:
-        tests = glob.glob(os.path.join(testbase, '*'))
-        tests = map(lambda p: os.path.relpath(p, testbase), tests)
+        tests = glob.glob(os.path.join(U.cgenie_test, '*'))
+        tests = map(lambda p: os.path.relpath(p, U.cgenie_test), tests)
     with open(os.path.join(rdir, 'test.log'), 'w') as logfp:
         for tin in tests:
-            for d, ds, fs in os.walk(os.path.join(U.cgenie_test, 'tests', tin)):
+            for d, ds, fs in os.walk(os.path.join(U.cgenie_test, tin)):
                 if os.path.exists(os.path.join(d, 'test_info')):
-                    t = os.path.relpath(d, testbase)
+                    t = os.path.relpath(d, U.cgenie_test)
                     summ[t] = do_run(t, rdir, logfp)
 
     if len(summ.keys()) == 0:
