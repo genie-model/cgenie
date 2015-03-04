@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, sys, errno, shutil
+import os, os.path, sys, errno, shutil, glob
 import optparse
 import subprocess as sp
 import datetime as dt
@@ -41,8 +41,6 @@ def add_test(test_job, test_name):
     test_dir = os.path.join(U.cgenie_test, 'tests', test_name)
     if not os.path.exists(job_dir):
         sys.exit('Job "' + test_job + '" does not exist')
-    print('job_dir: ', job_dir)
-    print('test_dir: ', test_dir)
     if os.path.exists(test_dir): sys.exit('Test already exists!')
     os.makedirs(test_dir)
     shutil.copy(os.path.join(job_dir, 'config', 'config'),
@@ -121,13 +119,17 @@ def do_run(t, rdir, logfp):
         for f in fs:
             fullf = os.path.join(d, f)
             relname = os.path.relpath(fullf, kg)
-            print('    ' + relname)
-            print('    ' + relname, file=logfp)
             testf = os.path.join(rdir, t, 'output', relname)
             cmd = [nccompare, '-v', '-a', '6.0E-15', '-r', '35']
             cmd.append(fullf)
             cmd.append(testf)
-            if sp.call(cmd, stdout=logfp, stderr=logfp): passed = False
+            if sp.call(cmd, stdout=logfp, stderr=logfp):
+                passed = False
+                print('    FAILED: ' + relname)
+                print('    FAILED: ' + relname, file=logfp)
+            else:
+                print('    OK: ' + relname)
+                print('    OK: ' + relname, file=logfp)
     return passed
 
 def run_tests(tests):
@@ -137,6 +139,9 @@ def run_tests(tests):
     print('Test output in ' + rdir + '\n')
     os.makedirs(rdir)
     summ = { }
+    if tests == ['ALL']:
+        tests = glob.glob(os.path.join(testbase, '*'))
+        tests = map(lambda p: os.path.relpath(p, testbase), tests)
     with open(os.path.join(rdir, 'test.log'), 'w') as logfp:
         for tin in tests:
             for d, ds, fs in os.walk(os.path.join(U.cgenie_test, 'tests', tin)):
@@ -151,8 +156,8 @@ def run_tests(tests):
         print('\nSUMMARY:\n')
         with open(os.path.join(rdir, 'summary.txt'), 'w') as sumfp:
             for t, r in summ.iteritems():
-                print(t.ljust(fmtlen) + 'OK' if r else 'FAILED')
-                print(t.ljust(fmtlen) + 'OK' if r else 'FAILED', file=sumfp)
+                print(t.ljust(fmtlen) + ('OK' if r else 'FAILED'))
+                print(t.ljust(fmtlen) + ('OK' if r else 'FAILED'), file=sumfp)
 
 
 # Command line arguments.
@@ -181,5 +186,7 @@ elif action == 'add':
     else: usage()
 elif action == 'run':
     if len(sys.argv) < 3: usage()
+    if 'ALL' in sys.argv[2:] and len(sys.argv) > 3:
+        sys.exit('Must specify either "ALL" or a list of tests, not both')
     run_tests(sys.argv[2:])
 else: usage()
