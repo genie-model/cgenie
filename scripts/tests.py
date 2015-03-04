@@ -205,23 +205,18 @@ def do_run(t, rdir, logfp):
 
     # Set up configuration file options for "new-job".
     if have_full:
-        cmd.append('-c')
-        cmd.append(os.path.join(test_dir, 'full_config'))
+        cmd += ['-c', os.path.join(test_dir, 'full_config')]
     elif have_base and have_user:
-        cmd.append('-b')
-        cmd.append(os.path.join(test_dir, 'base_config'))
-        cmd.append('-u')
-        cmd.append(os.path.join(test_dir, 'user_config'))
+        cmd += ['-b', os.path.join(test_dir, 'base_config')]
+        cmd += ['-u', os.path.join(test_dir, 'user_config')]
     else:
         sys.exit('Test "' + t + '" configured incorrectly!')
 
     # Set up other options for "new-job".
-    cmd.append('-j')
-    cmd.append(rdir)
+    cmd += ['-j', rdir]
     if 't100' in config and config['t100'] == 'True':
-        cmd.append('--t100')
-    cmd.append(t)
-    cmd.append(config['run_length'])
+        cmd += ['--t100']
+    cmd += [t, config['run_length']]
 
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')

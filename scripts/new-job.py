@@ -38,7 +38,7 @@ if len(args) != 2:
     parser.print_help()
     sys.exit()
 job_name = args[0]
-run_length = args[1]
+run_length = int(args[1])
 overwrite = opts.overwrite
 base_config = opts.base_config
 user_config = opts.user_config
