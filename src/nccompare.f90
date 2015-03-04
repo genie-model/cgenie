@@ -31,6 +31,7 @@ PROGRAM nccompare
   max_ulps = 0
   min_abs = TINY(0.0)
   CALL parse_options()
+  print *, max_ulps, min_abs
 
   ! Verify the threshold options, if supplied
   IF (max_ulps < 0) THEN
@@ -255,8 +256,12 @@ CONTAINS
     INTEGER :: float_compare
     REAL, INTENT(IN) :: x, y
 
-    float_compare = ABS((TRANSFER(z'80000000', 1) - TRANSFER(x, 1)) - &
-                      & (TRANSFER(z'80000000', 1) - TRANSFER(y, 1)))
+    REAL(KIND=4) :: x4, y4
+
+    x4 = REAL(x, KIND=4)
+    y4 = REAL(y, KIND=4)
+    float_compare = ABS((TRANSFER(z'80000000', 1) - TRANSFER(x4, 1)) - &
+                      & (TRANSFER(z'80000000', 1) - TRANSFER(y4, 1)))
   END FUNCTION float_compare
 
   SUBROUTINE usage()

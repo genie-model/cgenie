@@ -46,7 +46,7 @@ elif action in ['build', 'run']:
         build_type = sys.argv[2]
         if sys.argv[3] == '--no-progress': progress = False
         else:                              usage()
-    else: usage()
+    elif len(sys.argv) != 2: usage()
     if build_type and build_type not in U.build_types:
         sys.exit('Unrecognised build type: "', build_type, '"')
 else: usage()
