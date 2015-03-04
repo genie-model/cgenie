@@ -1,10 +1,11 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, sys, errno, shutil, glob
+import os, os.path, sys, errno, shutil, glob, re
 import optparse
 import subprocess as sp
 import datetime as dt
+import ctypes as ct
 
 import utils as U
 import config_utils as C
@@ -35,9 +36,8 @@ def list():
 #
 
 def add_test(test_job, test_name, restart):
-    def yesno(prompt, default):
-        opts = 'Yn' if default else 'yN'
-        return raw_input(prompt + " [" + opts + "]: ") or default
+    def yesno(prompt):
+        return raw_input(prompt + " [yN]: ")
 
     def has_job_output(jdir):
         for d, ds, fs in os.walk(os.path.join(jdir, 'output')):
@@ -69,21 +69,26 @@ def add_test(test_job, test_name, restart):
         if os.path.exists(os.path.join(job_dir, 'config', c)):
             shutil.copy(os.path.join(job_dir, 'config', c), test_dir)
 
-    # Ask user which output NetCDF files to use for comparison and
-    # copy them to the test "knowngood" directory.
+    # Ask user which output files to use for comparison and copy them
+    # to the test "knowngood" directory.
     test_files = [ ]
     odir = os.path.join(job_dir, 'output')
-    print('Select output files for test comparison:')
+    print('Select output files for test comparison (Y for yes to all):')
+    yessing = False
     for d, ds, fs in os.walk(odir):
         for f in fs:
-            if f != '_restart.nc' and os.path.splitext(f)[1].lower() == '.nc':
-                chkf = os.path.relpath(os.path.join(d, f), odir)
-                if yesno('  ' + chkf, False):
-                    src = os.path.join(job_dir, 'output', chkf)
-                    dst = os.path.join(test_dir, 'knowngood', chkf)
-                    if not os.path.exists(os.path.dirname(dst)):
-                        os.makedirs(os.path.dirname(dst))
-                    shutil.copyfile(src, dst)
+            chkf = os.path.relpath(os.path.join(d, f), odir)
+            if yessing:
+                print('  ' + chkf + ' [yN]: y')
+                yn = 'y'
+            else:       yn = yesno('  ' + chkf)
+            if yn == 'Y': yessing = True
+            if yn.lower() == 'y':
+                src = os.path.join(job_dir, 'output', chkf)
+                dst = os.path.join(test_dir, 'knowngood', chkf)
+                if not os.path.exists(os.path.dirname(dst)):
+                    os.makedirs(os.path.dirname(dst))
+                shutil.copyfile(src, dst)
 
     # Copy restart files if they exist and we aren't restarting from
     # another test.
@@ -97,6 +102,12 @@ def add_test(test_job, test_name, restart):
 #   RUN TESTS
 #
 
+# Comparison tolerances used for comparing floating point numbers.
+
+abstol = 6.0E-15
+reltol = 35
+
+
 # Make sure that the nccompare tool is available.
 
 def ensure_nccompare():
@@ -106,6 +117,68 @@ def ensure_nccompare():
         status = sp.call(cmd, stdout=sink, stderr=sink)
     if status != 0:
         sys.exit('Couldn not build nccompare.exe program')
+
+
+# Compare NetCDF files.
+
+def compare_nc(f1, f2, logfp):
+    cmd = [nccompare, '-v', '-a', str(abstol), '-r', str(reltol), f1, f2]
+    return sp.call(cmd, stdout=logfp, stderr=logfp)
+
+
+# "Dawson" float comparison.
+
+def float_compare(x, y):
+    def transfer(x):
+        cx = ct.cast(ct.pointer(ct.c_float(x)), ct.POINTER(ct.c_int32))
+        return cx.contents.value
+    return abs((0x80000000 - transfer(x)) - (0x80000000 - transfer(y)))
+
+
+# Compare ASCII files.
+
+fp_re_str = '[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+fpline_re_str = '^(' + fp_re_str + ')(\s*,?\s*' + fp_re_str + ')*$'
+fpline_re = re.compile(fpline_re_str)
+
+def compare_ascii(f1, f2, logfp):
+    with open(f1) as fp1, open(f2) as fp2:
+        l1 = 'dummy'
+        l2 = 'dummy'
+        while l1 != '' and l2 != '':
+            l1 = fp1.readline().strip()
+            l2 = fp2.readline().strip()
+            # If the lines match, carry on.
+            if l1 == l2: continue
+            # If both lines are comma or space seperated strings of
+            # floating point numbers, then extac the numbers for
+            # comparison.
+            if fpline_re.match(l1) and fpline_re.match(l2):
+                xs1 = map(float, l1.replace(',', ' ').split())
+                xs2 = map(float, l2.replace(',', ' ').split())
+                if len(xs1) != len(xs2): break
+                max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
+                max_reldiff = max(map(float_compare, xs1, xs2))
+                if max_absdiff > abstol:
+                    if max_reldiff < reltol:
+                        print('Max abs. diff. = ' + str(max_absdiff) +
+                              ' but max. rel. diff. = ' + str(max_reldiff) +
+                              ' < ' + str(reltol))
+                    else: break
+        if l1 != l2:
+            print('Files ' + fp1 + ' and ' + fp2 + ' differ in length')
+            return True
+        return False
+
+
+# Compare files: might be NetCDF, might be ASCII.
+
+def file_compare(f1, f2, logfp):
+    with open(f1) as tstfp: chk = tstfp.read(4)
+    if chk == 'CDF\x01':
+        return compare_nc(f1, f2, logfp)
+    else:
+        return compare_ascii(f1, f2, logfp)
 
 
 # Run a single test job and do results comparison: note that this uses
@@ -185,10 +258,7 @@ def do_run(t, rdir, logfp):
             fullf = os.path.join(d, f)
             relname = os.path.relpath(fullf, kg)
             testf = os.path.join(rdir, t, 'output', relname)
-            cmd = [nccompare, '-v', '-a', '6.0E-15', '-r', '35']
-            cmd.append(fullf)
-            cmd.append(testf)
-            if sp.call(cmd, stdout=logfp, stderr=logfp):
+            if file_compare(fullf, testf, logfp):
                 passed = False
                 print('    FAILED: ' + relname)
                 print('    FAILED: ' + relname, file=logfp)

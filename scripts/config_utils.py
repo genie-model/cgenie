@@ -358,6 +358,4 @@ def copy_restart_files(m, nml, outdir, restart, old_restart):
         indir = os.path.join(os.path.expanduser('~/cgenie_output'), restart, m)
     else:
         indir = os.path.join(U.cgenie_jobs, restart, 'output', m)
-    for f in ['rst.1', '_restart.nc']:
-        r = os.path.join(indir, f)
-        if os.path.exists(r): shutil.copy(r, outdir)
+    for f in glob.iglob(os.path.join(indir, '*.nc')): shutil.copy(f, outdir)
