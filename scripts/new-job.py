@@ -90,8 +90,10 @@ if restart:
     if old_restart:
         restart_path = os.path.join(os.path.expanduser('~/cgenie_output'),
                                     restart)
+    elif os.path.exists(restart):
+        restart_path = restart
     else:
-        restart_path = os.path.join(job_dir_base, restart)
+        restart_path = os.path.join(job_dir_base, restart, 'output')
     if not os.path.exists(restart_path):
         if old_restart:
             sys.exit('Old cGENIE restart job "' + restart + '" does not exist')
@@ -256,7 +258,7 @@ for m in modules + ['main', 'gem']:
                           extra_data_files.get(m))
         if restart:
             C.copy_restart_files(m, nml, os.path.join(job_dir, 'restart', m),
-                                 restart, old_restart)
+                                 restart_path)
 
 
 

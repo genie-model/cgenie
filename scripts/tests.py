@@ -165,8 +165,11 @@ def compare_ascii(f1, f2, logfp):
                               ' but max. rel. diff. = ' + str(max_reldiff) +
                               ' < ' + str(reltol))
                     else: break
-        if l1 != l2:
+        if l1 == '' and l2 != '' or l1 != '' and l2 == '':
             print('Files ' + f1 + ' and ' + f2 + ' differ in length')
+            return True
+        elif l1 != l2:
+            print('Files ' + f1 + ' and ' + f2 + ' are different')
             return True
         return False
 
@@ -217,6 +220,8 @@ def do_run(t, rdir, logfp):
     if 't100' in config and config['t100'] == 'True':
         cmd += ['--t100']
     cmd += [t, config['run_length']]
+    if os.path.exists(os.path.join(test_dir, 'restart')):
+        cmd += ['-r', os.path.join(test_dir, 'restart')]
 
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')
@@ -227,9 +232,6 @@ def do_run(t, rdir, logfp):
     if 'restart_from' in config:
         rjob = config['restart_from']
         shutil.copytree(os.path.join(rdir, rjob, 'output'),
-                        os.path.join(rdir, t, 'restart'))
-    elif os.path.exists(os.path.join(test_dir, 'restart')):
-        shutil.copytree(os.path.join(test_dir, 'restart'),
                         os.path.join(rdir, t, 'restart'))
 
     # Build and run job.

@@ -353,11 +353,8 @@ def copy_data_files(m, nml, outdir, extras):
 # Copy restart files: if restarting from an old cGENIE job, assume
 # that the job is in ~/cgenie_output.
 
-def copy_restart_files(m, nml, outdir, restart, old_restart):
-    if old_restart:
-        indir = os.path.join(os.path.expanduser('~/cgenie_output'), restart, m)
-    else:
-        indir = os.path.join(U.cgenie_jobs, restart, 'output', m)
+def copy_restart_files(m, nml, outdir, restart_path):
+    indir = os.path.join(restart_path, m)
     fs = glob.glob(os.path.join(indir, '*rst*'))
     fs += glob.glob(os.path.join(indir, '*restart*'))
     for f in fs: shutil.copy(f, outdir)
