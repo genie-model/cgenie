@@ -166,7 +166,7 @@ def compare_ascii(f1, f2, logfp):
                               ' < ' + str(reltol))
                     else: break
         if l1 != l2:
-            print('Files ' + fp1 + ' and ' + fp2 + ' differ in length')
+            print('Files ' + f1 + ' and ' + f2 + ' differ in length')
             return True
         return False
 
