@@ -35,10 +35,19 @@ def list():
 #   ADD A TEST
 #
 
-def add_test(test_job, test_name, restart):
-    def yesno(prompt):
-        return raw_input(prompt + " [yN]: ")
+def biogem_defaults(subd):
+    ncs = glob.glob(os.path.join(subd, '*.nc'))
+    ncs = filter(lambda f: f.find('restart') < 0, ncs)
+    ress = glob.glob(os.path.join(subd, '*.res'))
+    return ncs + ress
 
+def nc_defaults(subd):
+    ncs = glob.glob(os.path.join(subd, '*.nc'))
+    return filter(lambda f: f.find('restart') < 0, ncs)
+
+select_defaults = { 'biogem': biogem_defaults }
+
+def add_test(test_job, test_name, restart):
     def has_job_output(jdir):
         for d, ds, fs in os.walk(os.path.join(jdir, 'output')):
             if fs != []: return True
@@ -71,24 +80,31 @@ def add_test(test_job, test_name, restart):
 
     # Ask user which output files to use for comparison and copy them
     # to the test "knowngood" directory.
-    test_files = [ ]
-    odir = os.path.join(job_dir, 'output')
-    print('Select output files for test comparison (Y for yes to all):')
-    yessing = False
-    for d, ds, fs in os.walk(odir):
+    print('Selecting output files for test comparison:')
+    srcdir = os.path.join(job_dir, 'output')
+    dstdir = os.path.join(test_dir, 'knowngood')
+    os.chdir(srcdir)
+    for subd in glob.iglob('*'):
+        fs = []
+        if subd in select_defaults:
+            fs = select_defaults[subd](subd)
+        else:
+            fs = nc_defaults(subd)
+        print('  ' + subd + ' defaults: ' +
+              ('NONE' if fs == [] else ' '.join(map(os.path.basename, fs))))
+        accept_defaults = raw_input('    Accept defaults? [Yn]: ').strip()
+        if accept_defaults != '' and accept_defaults.lower() != 'y':
+            fs = []
+            for f in glob.iglob(os.path.join(subd, '*')):
+                yn = raw_input('    ' + f + ' [yN]: ').strip()
+                if yn.lower() == 'y': fs.append(f)
         for f in fs:
-            chkf = os.path.relpath(os.path.join(d, f), odir)
-            if yessing:
-                print('  ' + chkf + ' [yN]: y')
-                yn = 'y'
-            else:       yn = yesno('  ' + chkf)
-            if yn == 'Y': yessing = True
-            if yn.lower() == 'y':
-                src = os.path.join(job_dir, 'output', chkf)
-                dst = os.path.join(test_dir, 'knowngood', chkf)
-                if not os.path.exists(os.path.dirname(dst)):
-                    os.makedirs(os.path.dirname(dst))
-                shutil.copyfile(src, dst)
+            src = os.path.join(srcdir, f)
+            dst = os.path.join(dstdir, f)
+            if not os.path.exists(os.path.dirname(dst)):
+                os.makedirs(os.path.dirname(dst))
+            shutil.copyfile(src, dst)
+
 
     # Copy restart files if they exist and we aren't restarting from
     # another test.
