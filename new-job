@@ -1,4 +1,8 @@
 #!/bin/bash
-cgenie_root=`pwd`
+if [ ! -f ~/.cgenierc ]; then
+    echo 'GENIE not set up: run the setup-cgenie script!'
+    exit 0
+fi
+cgenie_root=`grep cgenie_root ~/.cgenierc | cut -d: -f2`
 source $cgenie_root/scripts/find_python
-exec $PYTHON scripts/new-job.py $*
+exec $PYTHON $cgenie_root/scripts/new-job.py $*

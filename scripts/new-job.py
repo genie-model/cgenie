@@ -12,7 +12,7 @@ import config_utils as C
 # GENIE configuration
 
 if not U.read_cgenie_config():
-    sys.exit("GENIE not set up: run the setup.py script!")
+    sys.exit('GENIE not set up: run the setup-cgenie script!')
 
 
 # Command line arguments.
