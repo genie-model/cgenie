@@ -25,10 +25,14 @@ test_version = U.cgenie_version
 #   LIST ALL EXISTING TESTS
 #
 
-def list():
+def list(list_base):
+    tests = []
     for d, ds, fs in os.walk(U.cgenie_test):
         if os.path.exists(os.path.join(d, 'test_info')):
-            print(os.path.relpath(d, U.cgenie_test))
+            tests.append(os.path.relpath(d, U.cgenie_test))
+    for t in sorted(tests):
+        if not list_base or list_base and t.startswith(list_base):
+            print(t)
 
 
 #----------------------------------------------------------------------
@@ -369,7 +373,7 @@ def usage():
 Usage: tests <command>
 
 Commands:
-  list                               List available tests
+  list [<base>]                      List available tests
   run [-v <version>] <test-name>...  Run test or group of tests
   add <job>                          Add pre-existing job as test
   add <test-name>=<job>              Add job as test with given name
@@ -380,8 +384,10 @@ Commands:
 if len(sys.argv) < 2: usage()
 action = sys.argv[1]
 if action == 'list':
-    if len(sys.argv) != 2: usage()
-    list()
+    list_base = None
+    if len(sys.argv) == 3: list_base = sys.argv[2]
+    elif len(sys.argv) != 2: usage()
+    list(list_base)
 elif action == 'add':
     if len(sys.argv) < 3: usage()
     job = sys.argv[2]
