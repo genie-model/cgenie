@@ -21,11 +21,37 @@ f90 = {
 }
 
 # NetCDF platform definitions.
+
+poss_netcdf = ['/usr', '/usr/local', '/opt']
+netcdf_base = None
+for poss in poss_netcdf:
+    if (os.path.exists(os.path.join(poss, 'include', 'netcdf.mod')) and
+        glob.glob(os.path.join(poss, 'lib', 'libnetcdf.*'))):
+        netcdf_base = poss
+        break
+if not netcdf_base:
+    for poss in poss_netcdf:
+        for cand in glob.iglob(os.path.join(poss, 'netcdf*')):
+            if (os.path.exists(os.path.join(cand, 'include')) and
+                os.path.exists(os.path.join(cand, 'lib'))):
+                netcdf_base = cand
+                break
+        if netcdf_base: break
+
+if not netcdf_base:
+    sys.exit('Could not find a valid NetCDF installation')
+
+if (glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdff*')) and
+    glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdf*'))):
+    netcdf_libs = ['netcdf', 'netcdff']
+else:
+    netcdf_libs = ['netcdf']
+
 netcdf = {
     # NetCDF base directory.
-    'base': '/usr/local/netcdf/',
+    'base': netcdf_base,
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).
-    'libs': ['netcdf', 'netcdff']
+    'libs': netcdf_libs
 }

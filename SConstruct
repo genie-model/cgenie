@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, os.path, sys
+import os, os.path, sys, glob
 import platform as P
 
 # Set up model source and scripts directory (the "srcdir='src'" thing
