@@ -21,7 +21,8 @@ def usage():
 Usage: go <command>
 
 Commands:
-  clean                                 Clean results and model build
+  clean                                 Clean results
+  cleaner                               Clean results and model build
   build [<build-type>] [--no-progress]  Build model
   run [<build-type>] [--no-progress]    Build and run model
   set-platform <platform>               Set explicit build platform
@@ -33,7 +34,7 @@ build_type = 'ship'
 progress = True
 if len(sys.argv) < 2: usage()
 action = sys.argv[1]
-if action in ['clean', 'clear-platform']:
+if action in ['clean', 'cleaner', 'clear-platform']:
     if len(sys.argv) != 2: usage()
 elif action == 'set-platform':
     if len(sys.argv) != 3: usage()
@@ -68,12 +69,12 @@ model_dir = model_config.directory()
 exe_name = 'genie-' + build_type + '.exe' if build_type else 'genie.exe'
 
 
-# Clean up output directories for this job and build directories for
-# model setup for this job.
+# Clean up output directories for this job and (optionally) build
+# directories for model setup for this job.
 
-def clean():
+def clean(clean_model):
     message('CLEANING...')
-    model_config.clean()
+    if clean_model: model_config.clean()
     if os.path.exists('run.log'): os.remove('run.log')
     for d, ds, fs in os.walk('output'):
         for f in fs: os.remove(os.path.join(d, f))
@@ -136,7 +137,9 @@ if   action == 'clear-platform':
 elif action == 'set-platform':
     with open(pfile, 'w') as ofp: print(platform, file=ofp)
 elif action == 'clean':
-    clean()
+    clean(False)
+elif action == 'cleaner':
+    clean(True)
 elif action == 'build':
     build()
 elif action == 'run':
