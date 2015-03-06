@@ -58,17 +58,23 @@ system infrastructure.
 %----------------------------------------------------------------------
 \section{Quick start}
 
-Open a shell in your home directory and do this:
+Open a shell in your home directory and do this (this is based on the
+current repository setup, which will probably change a little soon):
 \begin{verbatim}
-  git clone https://github.com/genie-model/cgenie.git
+  git clone git@github.com:derpycode/cgenie.git
   cd ~/cgenie
+  git checkout cgenie.cupcake
   ./setup-cgenie
 \end{verbatim}
 Once the setup script has installed Python (if it needs to), accept
 the defaults for all the questions it asks (just hit return at each
 prompt to accept the default).
 
-Once everything is done, configure and run jobs as:
+Once everything is done, you can run some basic tests with:
+\begin{verbatim}
+  ./tests run basic
+\end{verbatim}
+and you can configure and run jobs as:
 \begin{verbatim}
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
             ... -u LABS/LAB_0.snowball snowball 10
