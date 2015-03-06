@@ -17,6 +17,7 @@ if not U.read_cgenie_config():
     sys.exit('GENIE not set up: run the setup-cgenie script!')
 scons = os.path.join(U.cgenie_root, 'scripts', 'scons', 'scons.py')
 nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
+test_version = U.cgenie_version
 
 
 #----------------------------------------------------------------------
@@ -235,9 +236,11 @@ def do_run(t, rdir, logfp):
     cmd += ['-j', rdir]
     if 't100' in config and config['t100'] == 'True':
         cmd += ['--t100']
-    cmd += [t, config['run_length']]
+    if test_version != U.cgenie_version:
+        cmd += ['-v', test_version]
     if os.path.exists(os.path.join(test_dir, 'restart')):
         cmd += ['-r', os.path.join(test_dir, 'restart')]
+    cmd += [t, config['run_length']]
 
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')
@@ -366,11 +369,11 @@ def usage():
 Usage: tests <command>
 
 Commands:
-  list                   List available tests
-  run <test-name>...     Build test or group of tests
-  add <job>              Add pre-existing job as test
-  add <test-name>=<job>  Add pre-existing job as test with given name
-        [-r <test>]      Restart from a pre-existing test
+  list                               List available tests
+  run [-v <version>] <test-name>...  Run test or group of tests
+  add <job>                          Add pre-existing job as test
+  add <test-name>=<job>              Add job as test with given name
+        [-r <test>]                  Restart from a pre-existing test
 """)
     sys.exit()
 
@@ -393,7 +396,15 @@ elif action == 'add':
     add_test(job, name, restart)
 elif action == 'run':
     if len(sys.argv) < 3: usage()
-    if 'ALL' in sys.argv[2:] and len(sys.argv) > 3:
+    if sys.argv[2] == '-v':
+        if len(sys.argv) < 4: usage()
+        test_version = sys.argv[3]
+        if test_version not in U.available_versions():
+            sys.exit('Model version "' + test_version + '" does not exist')
+        tests = sys.argv[4:]
+    else:
+        tests = sys.argv[2:]
+    if 'ALL' in tests and len(tests) > 1:
         sys.exit('Must specify either "ALL" or a list of tests, not both')
-    run_tests(sys.argv[2:])
+    run_tests(tests)
 else: usage()
