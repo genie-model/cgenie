@@ -49,3 +49,5 @@ Temporary Items
 genie.exe
 *.pyc
 /scripts/python-local-2.7.9/
+*.aux
+*.log
