@@ -314,7 +314,8 @@ def copy_data_files(m, nml, outdir, extras):
         for t in ['output/', 'restart/', '/']:
             if s.startswith(t): return False
         return True
-    cands = map(os.path.basename, filter(check_data_item, nml.entries.values()))
+    cands = [os.path.basename(f)
+             for f in nml.entries.values() if check_data_item(f)]
 
     # Add per-module 'specials'.
     if extras: cands += extras
@@ -326,7 +327,7 @@ def copy_data_files(m, nml, outdir, extras):
             shutil.copy(os.path.join(checkdir, f), outdir)
             return True
         except: return False
-    cands = filter(lambda f: not exact(f), cands)
+    cands = [f for f in cands if not exact(f)]
 
     # Look for exact file matches in forcings directory.
     checkdir = os.path.join(U.cgenie_data, 'forcings')
@@ -335,7 +336,7 @@ def copy_data_files(m, nml, outdir, extras):
             shutil.copytree(os.path.join(checkdir, f), os.path.join(outdir, f))
             return True
         except: return False
-    cands = filter(lambda f: not forcing(f), cands)
+    cands = [f for f in cands if not forcing(f)]
 
     # Look for partial matches.
     checkdir = os.path.join(U.cgenie_root, 'data', m)
@@ -347,7 +348,7 @@ def copy_data_files(m, nml, outdir, extras):
                 ret = True
             return ret
         except: return ret
-    cands = filter(lambda f: not partial(f), cands)
+    cands = [f for f in cands if not partial(f)]
 
 
 # Copy restart files: if restarting from an old cGENIE job, assume

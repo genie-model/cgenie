@@ -37,13 +37,13 @@ def list():
 
 def biogem_defaults(subd):
     ncs = glob.glob(os.path.join(subd, '*.nc'))
-    ncs = filter(lambda f: f.find('restart') < 0, ncs)
+    ncs = [f for f in ncs if f.find('restart') < 0]
     ress = glob.glob(os.path.join(subd, '*.res'))
     return ncs + ress
 
 def nc_defaults(subd):
     ncs = glob.glob(os.path.join(subd, '*.nc'))
-    return filter(lambda f: f.find('restart') < 0, ncs)
+    return [f for f in ncs if f.find('restart') < 0]
 
 select_defaults = { 'biogem': biogem_defaults }
 
@@ -306,7 +306,7 @@ def restart_map(tests):
 def topological_sort(g):
     res = []
     while len(g) > 0:
-        tails = filter(lambda k: not g[k], g.keys())
+        tails = [k for k in g.keys() if not g[k]]
         res = res + tails
         for t in tails: g.pop(t)
         for k in g.keys():
@@ -327,9 +327,9 @@ def run_tests(tests):
 
     # Deal with "ALL" case.
     if tests == ['ALL']:
-        tests = glob.glob(os.path.join(U.cgenie_test, '*'))
-        tests = map(lambda p: os.path.relpath(p, U.cgenie_test),
-                    filter(os.path.isdir, tests))
+        tests = [os.path.relpath(p, U.cgenie_test)
+                 for p in glob.glob(os.path.join(U.cgenie_test, '*'))
+                 if os.path.isdir(p)]
 
     # Determine leaf tests.
     ltests = []
@@ -353,9 +353,10 @@ def run_tests(tests):
         fmtlen = max(map(len, summ.keys())) + 3
         print('\nSUMMARY:\n')
         with open(os.path.join(rdir, 'summary.txt'), 'w') as sumfp:
-            for t, r in summ.iteritems():
-                print(t.ljust(fmtlen) + ('OK' if r else 'FAILED'))
-                print(t.ljust(fmtlen) + ('OK' if r else 'FAILED'), file=sumfp)
+            for t in sorted(summ.keys()):
+                msg = t.ljust(fmtlen) + ('OK' if summ[t] else 'FAILED')
+                print(msg)
+                print(msg, file=sumfp)
 
 
 # Command line arguments.

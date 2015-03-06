@@ -48,6 +48,8 @@ old_restart = True if opts.old_restart else False
 t100 = True if opts.t100 else False
 job_dir_base = opts.job_dir
 model_version = opts.model_version
+if model_version not in U.available_versions():
+    sys.exit('Model version "' + model_version + '" does not exist')
 
 
 # If a specific model version is requested, set up a repository clone
@@ -130,13 +132,13 @@ C.set_dirs(srcdir, datadir)
 # Determine modules used in job.
 
 def extract_mod_opts(c):
-    return filter(lambda x: x[0:8] == 'ma_flag_', c.keys())
+    return [x for x in c.keys() if x.startswith('ma_flag_')]
 mod_opts = map(extract_mod_opts, configs)
 def extract_mod_flags(c, os):
     return { k: c[k] for k in os }
 mod_flags = map(extract_mod_flags, configs, mod_opts)
 merged_mod_flags = C.merge_flags(mod_flags)
-mod_flags = filter(lambda k: merged_mod_flags[k], merged_mod_flags.keys())
+mod_flags = [k for k in merged_mod_flags.keys() if merged_mod_flags[k]]
 modules = map(C.module_from_flagname, mod_flags)
 
 
@@ -177,8 +179,8 @@ with open(os.path.join(job_cfg_dir, 'config'), 'w') as fp:
 
 defines = C.extract_defines(configs)
 maxdeflen = max(map(len, defines.keys()))
-deflines = map(lambda d: ("'" + d + "':").ljust(maxdeflen + 4) +
-               str(defines[d]), defines.keys())
+deflines = [("'" + d + "':").ljust(maxdeflen + 4) + str(defines[d])
+            for d in defines.keys()]
 deflines[0] = 'coordvars = { ' + deflines[0]
 for i in range(1, len(deflines)):
     deflines[i] = '              ' + deflines[i]
