@@ -17,7 +17,7 @@ testrepo = 'git@github.com:ian-ross/cgenie-test'
 
 def ask(prompt, default, options=None):
     while True:
-        res = raw_input(prompt + " [" + default + "]: ") or default
+        res = raw_input(prompt + ' [' + default + ']: ') or default
         if not options or res in options:
             return res
         else:
@@ -25,7 +25,7 @@ def ask(prompt, default, options=None):
 
 def yesno(prompt, default):
     opts = 'Yn' if default else 'yN'
-    return raw_input(prompt + " [" + opts + "]: ") or default
+    return raw_input(prompt + ' [' + opts + ']: ') or default
 
 
 # Get options from user.
@@ -34,13 +34,14 @@ versions = utils.available_versions()
 default_version = versions[-1]
 config = utils.read_cgenie_config()
 if config:
-    print("Already set up...")
+    print('Already set up...')
 else:
-    root = ask("Root directory", os.path.expanduser("~/cgenie"))
-    data = ask("Data directory", os.path.expanduser("~/cgenie-data"))
-    test = ask("Test directory", os.path.expanduser("~/cgenie-test"))
-    jobs = ask("Jobs directory", os.path.expanduser("~/cgenie-jobs"))
-    vers = ask("Default version", default_version, versions)
+    root = ask('Root directory', os.path.expanduser('~/cgenie'))
+    base = os.path.abspath(os.path.join(root, os.pardir))
+    data = ask('Data directory', os.path.join(base, 'cgenie-data'))
+    test = ask('Test directory', os.path.join(base, 'cgenie-test'))
+    jobs = ask('Jobs directory', os.path.join(base, 'cgenie-jobs'))
+    vers = ask('Default version', default_version, versions)
     with open(utils.genie_cfgfile, 'w') as fp:
         print('cgenie_root: ' + root, file=fp)
         print('cgenie_data: ' + data, file=fp)
