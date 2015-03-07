@@ -4,7 +4,7 @@ f90 = {
     'compiler': 'ifort',
 
     # Default flags.
-    'baseflags': ['/fpp', '/noauto', '/warn', 'declarations', '/r8' ],
+    'baseflags': ['/fpp', '/noauto', '/warn:declarations', '/real-size:64' ],
 
     # Debug flags.
     'debug': ['/debug'],
@@ -21,7 +21,7 @@ f90 = {
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.
-    'base': 'C:\\netcdf',
+    'base': 'C:\\netcdf-4.1.1-win32',
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).

@@ -47,7 +47,9 @@ else:
 # NetCDF paths.
 
 netcdfinc = os.path.join(netcdf['base'], 'include')
+if not os.path.exists(netcdfinc): netcdfinc = netcdf['base']
 netcdflib = os.path.join(netcdf['base'], 'lib')
+if not os.path.exists(netcdflib): netcdflib = netcdf['base']
 
 
 # GENIE modules to build.
