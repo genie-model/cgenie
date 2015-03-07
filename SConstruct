@@ -110,7 +110,7 @@ env = Environment(FORTRAN = f90['compiler'], F90 = f90['compiler'],
 # Set up prompt progress reporting.
 
 if 'progress' not in ARGUMENTS or ARGUMENTS['progress'] == '1':
-    if P.system == 'Windows':
+    if P.system() == 'Windows':
         screen = open('CON:', 'w')
     else:
         screen = open('/dev/tty', 'w')
