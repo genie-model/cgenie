@@ -1,0 +1,29 @@
+# Fortran 90 platform definitions.
+f90 = {
+    # Compiler name.
+    'compiler': 'ifort',
+
+    # Default flags.
+    'baseflags': ['/fpp', '/noauto', '/warn', 'declarations', '/r8' ],
+
+    # Debug flags.
+    'debug': ['/debug'],
+
+    # Optimisation flags.
+    'optimise': ['/O3', '/Qunroll'],
+
+    # Miscellaneous flags.
+    'include': '/I',          # Include files.
+    'module_dir': '/module:', # Module file output directory.
+    'define': '/D'            # Preprocessor definitions.
+}
+
+# NetCDF platform definitions.
+netcdf = {
+    # NetCDF base directory.
+    'base': 'C:\\netcdf',
+
+    # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
+    # 'netcdff' if the F90 library is split).
+    'libs': ['netcdf', 'netcdff']
+}

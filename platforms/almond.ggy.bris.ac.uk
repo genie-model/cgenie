@@ -12,7 +12,14 @@ f90 = {
     'debug': ['-g'],
 
     # Optimisation flags.
-    'optimise': ['-O3', '-funroll-loops'],
+    'ship': ['-O3', '-funroll-loops'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-O3', '-pg'],
+    'profile_link': ['-pg'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-fbounds-check'],
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.
