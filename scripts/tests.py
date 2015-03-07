@@ -19,7 +19,7 @@ scons = os.path.join(U.cgenie_root, 'scripts', 'scons', 'scons.py')
 nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
 test_version = U.cgenie_version
 
-
+print(U.cgenie_test)
 #----------------------------------------------------------------------
 #
 #   LIST ALL EXISTING TESTS

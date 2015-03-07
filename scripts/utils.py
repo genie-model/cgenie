@@ -8,15 +8,16 @@ import subprocess as sp
 
 # Read cGENIE configuration.
 
-genie_cfgfile = os.path.expanduser("~/.cgenierc")
+genie_cfgfile = os.path.expanduser(os.path.join('~', '.cgenierc'))
 
 def read_cgenie_config():
     global cgenie_root, cgenie_data, cgenie_test, cgenie_jobs, cgenie_version
     try:
         with open(genie_cfgfile) as fp:
             for line in fp:
-                k, v = line.strip().split(':')
-                v = v.strip()
+                fs = line.strip().split(':')
+                k = fs[0]
+                v = ':'.join(fs[1:]).strip()
                 if   k == 'cgenie_root':    cgenie_root = v
                 elif k == 'cgenie_data':    cgenie_data = v
                 elif k == 'cgenie_test':    cgenie_test = v
