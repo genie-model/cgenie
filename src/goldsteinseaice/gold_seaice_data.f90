@@ -49,7 +49,6 @@ CONTAINS
   ! Read in netCDF restart files for GOLDSTEIN sea-ice
   SUBROUTINE inm_netcdf_sic
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
 
     REAL, DIMENSION(maxi,maxj) :: hght_read, frac_read, temp_read, albd_read
 
@@ -173,8 +172,8 @@ CONTAINS
 
 
   SUBROUTINE outm_netcdf_sic(istep)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
 
     INTEGER istep
 
@@ -182,7 +181,7 @@ CONTAINS
     REAL :: lons1(maxi), lats1(maxj)
     INTEGER :: landmask(maxi,maxj)
     INTEGER :: i, j, nhghtid, nfracid, ntempid, nalbdid
-    INTEGER :: nlon1id, nlongit1id, nlat1id, nlatit1id, nrecsid, ioffsetid
+    INTEGER :: nlon1id, nlongit1id, nlat1id, nlatit1id, nrecsid(1), ioffsetid
     INTEGER :: dim1pass(2)
     CHARACTER(LEN=200) :: fname
 
@@ -232,53 +231,46 @@ CONTAINS
             & TRIM(ADJUSTL(yearstring)) // '_' // monthstring // '_' // &
             & daystring // '.nc'
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
-       status = NF_CREATE(TRIM(fname), NF_CLOBBER, ncid)
-       CALL check_err(status)
-       status = NF_DEF_DIM(ncid, 'nrecs', 1, nrecsid)
-       CALL check_err(status)
-       status = NF_DEF_DIM(ncid, 'longitude', maxi, nlon1id)
-       CALL check_err(status)
-       status = NF_DEF_DIM(ncid, 'latitude', maxj, nlat1id)
-       CALL check_err(status)
+       CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
+       CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
+       CALL check_err(NF90_DEF_DIM(ncid, 'longitude', maxi, nlon1id))
+       CALL check_err(NF90_DEF_DIM(ncid, 'latitude', maxj, nlat1id))
 
-       status = NF_DEF_VAR(ncid, 'longitude', NF_REAL, 1, nlon1id, nlongit1id)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'latitude', NF_REAL, 1, nlat1id, nlatit1id)
-       CALL check_err(status)
+       CALL check_err(NF90_DEF_VAR(ncid, 'longitude', NF90_REAL, &
+            & (/ nlon1id /), nlongit1id))
+       CALL check_err(NF90_DEF_VAR(ncid, 'latitude', NF90_REAL, &
+            & (/ nlat1id /), nlatit1id))
        dim1pass(1) = nlon1id
        dim1pass(2) = nlat1id
-       status = NF_DEF_VAR(ncid, 'ioffset', NF_INT, 1, nrecsid, ioffsetid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'iyear', NF_INT, 1, nrecsid, iyearid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'imonth', NF_INT, 1, nrecsid, imonthid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'iday', NF_INT, 1, nrecsid, idayid)
-       CALL check_err(status)
+       CALL check_err(NF90_DEF_VAR(ncid, 'ioffset', NF90_INT, &
+            & nrecsid, ioffsetid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'iyear', NF90_INT, nrecsid, iyearid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'imonth', NF90_INT, nrecsid, imonthid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'iday', NF90_INT, nrecsid, idayid))
 
-       status = NF_DEF_VAR(ncid, 'sic_height', NF_DOUBLE, 2, dim1pass, nhghtid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'sic_cover', NF_DOUBLE, 2, dim1pass, nfracid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'sic_temp', NF_DOUBLE, 2, dim1pass, ntempid)
-       CALL check_err(status)
-       status = NF_DEF_VAR(ncid, 'sic_albedo', NF_DOUBLE, 2, dim1pass, nalbdid)
-       CALL check_err(status)
-       CALL check_err(NF_ENDDEF(ncid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'sic_height', NF90_DOUBLE, &
+            & dim1pass, nhghtid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'sic_cover', NF90_DOUBLE, &
+            & dim1pass, nfracid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'sic_temp', NF90_DOUBLE, &
+            & dim1pass, ntempid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'sic_albedo', NF90_DOUBLE, &
+            & dim1pass, nalbdid))
+       CALL check_err(NF90_ENDDEF(ncid))
 
-       CALL check_err(NF_PUT_VAR_INT(ncid, iyearid, iyear_rest))
-       CALL check_err(NF_PUT_VAR_INT(ncid, imonthid, imonth_rest))
-       CALL check_err(NF_PUT_VAR_INT(ncid, idayid, iday))
-       CALL check_err(NF_PUT_VAR_INT(ncid, ioffsetid, ioffset_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, iyearid, iyear_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, imonthid, imonth_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, idayid, iday))
+       CALL check_err(NF90_PUT_VAR(ncid, ioffsetid, ioffset_rest))
 
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nlongit1id, lons1))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nlatit1id, lats1))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nhghtid, hght_write))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nfracid, frac_write))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, ntempid, temp_write))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nalbdid, albd_write))
+       CALL check_err(NF90_PUT_VAR(ncid, nlongit1id, lons1))
+       CALL check_err(NF90_PUT_VAR(ncid, nlatit1id, lats1))
+       CALL check_err(NF90_PUT_VAR(ncid, nhghtid, hght_write))
+       CALL check_err(NF90_PUT_VAR(ncid, nfracid, frac_write))
+       CALL check_err(NF90_PUT_VAR(ncid, ntempid, temp_write))
+       CALL check_err(NF90_PUT_VAR(ncid, nalbdid, albd_write))
 
-       status = NF_CLOSE(ncid)
+       CALL check_err(NF90_CLOSE(ncid))
 
        WRITE (*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
        tmp_val = 0

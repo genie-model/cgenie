@@ -1,11 +1,11 @@
 SUBROUTINE check_err(iret)
+  USE netcdf
   IMPLICIT NONE
-  INCLUDE 'netcdf.inc'
   INTEGER, INTENT(IN) :: iret
 
   IF (iret /= 0) THEN
      PRINT *, ' error in netcdf ', iret
-     PRINT *, nf_strerror(iret)
+     PRINT *, NF90_STRERROR(iret)
      STOP 1
   END IF
 END SUBROUTINE check_err

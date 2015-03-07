@@ -10,8 +10,9 @@ CONTAINS
   ! written every ianav timesteps.
   SUBROUTINE annav_diags(istep, iout, dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, &
        & dum_evap, dum_pptn, dum_relh, albs_lnd, land_snow_lnd)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
+
     INTEGER, INTENT(IN) :: istep, iout
     REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, &
@@ -249,16 +250,15 @@ CONTAINS
              END DO
 
              ! Adding final restart value (single)
-             CALL check_err(NF_OPEN(refname, NF_WRITE, ncid))
-             CALL check_err(NF_REDEF(ncid))
-             CALL check_err(NF_INQ_DIMID(ncid, 'time', timedim_id))
-             CALL check_err(NF_DEF_VAR(ncid, 'yearosc', &
-                  & NF_FLOAT, 1, timedim_id, var_id))
-             CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-                  & 'long_name', 7, 'yearosc'))
-             CALL check_err(NF_ENDDEF(ncid))
-             CALL check_err(NF_PUT_VAR_DOUBLE(ncid, var_id, REAL(yearosc)))
-             CALL check_err(NF_CLOSE(ncid))
+             CALL check_err(NF90_OPEN(refname, NF90_WRITE, ncid))
+             CALL check_err(NF90_REDEF(ncid))
+             CALL check_err(NF90_INQ_DIMID(ncid, 'time', timedim_id))
+             CALL check_err(NF90_DEF_VAR(ncid, 'yearosc', &
+                  & NF90_FLOAT, (/ timedim_id /), var_id))
+             CALL check_err(NF90_PUT_ATT(ncid, var_id, 'long_name', 'yearosc'))
+             CALL check_err(NF90_ENDDEF(ncid))
+             CALL check_err(NF90_PUT_VAR(ncid, var_id, REAL(yearosc)))
+             CALL check_err(NF90_CLOSE(ncid))
           END IF
 
           ! Zero arrays ready for next average
@@ -280,7 +280,6 @@ CONTAINS
   ! Write out reservoir sizes every itstp timesteps
   SUBROUTINE carbt_diags(istep)
     IMPLICIT NONE
-    include 'netcdf.inc'
     INTEGER, INTENT(IN) :: istep
 
     INTEGER :: i, j
@@ -539,7 +538,6 @@ CONTAINS
   ! calculate average over nyear timesteps.
   SUBROUTINE entsdiagosc(nyear, istep, iout, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     INTEGER, INTENT(IN) :: nyear, istep, iout
     REAL, DIMENSION(maxi,maxj), INTENT(IN) :: albs_lnd, land_snow_lnd
 

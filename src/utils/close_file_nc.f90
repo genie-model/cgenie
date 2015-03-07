@@ -1,28 +1,15 @@
-!========================================
-! Marc 1/4/03
-! This file just closes a netcdf file and is the partner to open_file.f
-!========================================
-subroutine close_file_nc(filein, ncid)
-  implicit none
-!----------------------------------------
-! Define variable in the subroutine header
-!----------------------------------------
-  character(len=*), intent(in) :: filein    ! Name of file to open
-  integer, intent(in)          :: ncid      ! netCDF dataset ID
-!----------------------------------------
-! Define the other netcdf variable
-!----------------------------------------
-  integer :: status                      ! return code
-!----------------------------------------
-! Include files
-!----------------------------------------
-  include 'netcdf.inc'
-!----------------------------------------
-! close file
-!----------------------------------------
-  status = nf_close(ncid)
-  if (status /= nf_noerr) then
-     write(6, *) 'ERROR: closing ', filein
-     stop
-  endif
-end subroutine close_file_nc
+SUBROUTINE close_file_nc(filein, ncid)
+  USE netcdf
+  IMPLICIT NONE
+
+  CHARACTER(LEN=*), INTENT(IN) :: filein    ! Name of file to open
+  INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
+
+  INTEGER :: status
+
+  status = NF90_CLOSE(ncid)
+  IF (status /= NF90_NOERR) then
+     WRITE (6, *) 'ERROR: closing ', filein
+     STOP
+  END IF
+END SUBROUTINE close_file_nc

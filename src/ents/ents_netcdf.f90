@@ -7,8 +7,8 @@ CONTAINS
 
   ! Write ENTS NetCDF with 2D fields
   SUBROUTINE netcdf_ents(fname, var_data, label, myday)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     CHARACTER(LEN=*) :: fname, label
     REAL, DIMENSION(:,:,:), INTENT(IN) :: var_data
     INTEGER, INTENT(IN) :: myday
@@ -28,54 +28,55 @@ CONTAINS
     INQUIRE(FILE=fname,EXIST=fexist)
 
     IF (fexist) THEN
-       CALL check_err(NF_OPEN(fname, NF_WRITE, ncid))
-       CALL check_err(NF_REDEF(ncid))
-       CALL check_err(NF_INQ_DIMID(ncid, dim1_name, vardim_id1))
-       CALL check_err(NF_INQ_DIMID(ncid, dim2_name, vardim_id2))
-       CALL check_err(NF_INQ_DIMID(ncid, dim3_name, vardim_id3))
+       CALL check_err(NF90_OPEN(fname, NF90_WRITE, ncid))
+       CALL check_err(NF90_REDEF(ncid))
+       CALL check_err(NF90_INQ_DIMID(ncid, dim1_name, vardim_id1))
+       CALL check_err(NF90_INQ_DIMID(ncid, dim2_name, vardim_id2))
+       CALL check_err(NF90_INQ_DIMID(ncid, dim3_name, vardim_id3))
        dims(1) = vardim_id1
        dims(2) = vardim_id2
        dims(3) = vardim_id3
     ELSE
-       CALL check_err(NF_CREATE(fname, NF_CLOBBER, ncid))
-       CALL check_err(NF_DEF_DIM(ncid, dim1_name, 1, vardim_id1))
-       CALL check_err(NF_DEF_DIM(ncid, dim2_name, jmax, vardim_id2))
-       CALL check_err(NF_DEF_DIM(ncid, dim3_name, imax, vardim_id3))
+       CALL check_err(NF90_CREATE(fname, NF90_CLOBBER, ncid))
+       CALL check_err(NF90_DEF_DIM(ncid, dim1_name, 1, vardim_id1))
+       CALL check_err(NF90_DEF_DIM(ncid, dim2_name, jmax, vardim_id2))
+       CALL check_err(NF90_DEF_DIM(ncid, dim3_name, imax, vardim_id3))
        dims(1) = vardim_id1
        dims(2) = vardim_id2
        dims(3) = vardim_id3
-       CALL check_err(NF_DEF_VAR(ncid, dim1_name, NF_INT, 1, dims(1), time_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, time_id, &
-            & 'units', 29, 'day from the start of the run'))
-       CALL check_err(NF_DEF_VAR(ncid, dim2_name, NF_FLOAT, 1, dims(2), lat_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, lat_id, &
-            & 'units', 13, 'degrees_north'))
-       CALL check_err(NF_DEF_VAR(ncid, dim3_name, NF_FLOAT, 1, dims(3), lon_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, lon_id, &
-            & 'units', 12, 'degrees_east'))
+       CALL check_err(NF90_DEF_VAR(ncid, dim1_name, NF90_INT, &
+            & (/ dims(1) /), time_id))
+       CALL check_err(NF90_PUT_ATT(ncid, time_id, &
+            & 'units', 'day from the start of the run'))
+       CALL check_err(NF90_DEF_VAR(ncid, dim2_name, NF90_FLOAT, &
+            & (/ dims(2) /), lat_id))
+       CALL check_err(NF90_PUT_ATT(ncid, lat_id, 'units', 'degrees_north'))
+       CALL check_err(NF90_DEF_VAR(ncid, dim3_name, NF90_FLOAT, &
+            & (/ dims(3) /), lon_id))
+       CALL check_err(NF90_PUT_ATT(ncid, lon_id, 'units', 'degrees_east'))
     END IF
 
-    status = NF_INQ_VARID(ncid, var_name, var_id)
-    IF (status /= NF_NOERR) THEN
-       CALL check_err(NF_DEF_VAR(ncid, var_name, NF_DOUBLE, 3, dims, var_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-            & TRIM(var_att(1,1)), LEN(TRIM(var_att(1,2))), TRIM(var_att(1,2))))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-            & TRIM(var_att(2,1)), LEN(TRIM(var_att(2,2))), TRIM(var_att(2,2))))
+    status = NF90_INQ_VARID(ncid, var_name, var_id)
+    IF (status /= NF90_NOERR) THEN
+       CALL check_err(NF90_DEF_VAR(ncid, var_name, NF90_DOUBLE, dims, var_id))
+       CALL check_err(NF90_PUT_ATT(ncid, var_id, &
+            & TRIM(var_att(1,1)), TRIM(var_att(1,2))))
+       CALL check_err(NF90_PUT_ATT(ncid, var_id, &
+            & TRIM(var_att(2,1)), TRIM(var_att(2,2))))
     END IF
 
-    CALL check_err(NF_ENDDEF(ncid))
-    CALL check_err(NF_INQ_VARID(ncid, dim1_name, time_id))
-    CALL check_err(NF_PUT_VAR_INT(ncid, time_id, myday))
-    CALL check_err(NF_INQ_VARID(ncid,dim2_name,lat_id))
-    CALL check_err(NF_PUT_VAR_DOUBLE(ncid, lat_id, ents_lat))
-    CALL check_err(NF_INQ_VARID(ncid,dim3_name,lon_id))
+    CALL check_err(NF90_ENDDEF(ncid))
+    CALL check_err(NF90_INQ_VARID(ncid, dim1_name, time_id))
+    CALL check_err(NF90_PUT_VAR(ncid, time_id, myday))
+    CALL check_err(NF90_INQ_VARID(ncid,dim2_name,lat_id))
+    CALL check_err(NF90_PUT_VAR(ncid, lat_id, ents_lat))
+    CALL check_err(NF90_INQ_VARID(ncid,dim3_name,lon_id))
     DO jj = 1, jmax
        londata(jj) = -255 + (jj - 1) * (360 / jmax)
     END DO
-    CALL check_err(NF_PUT_VAR_DOUBLE(ncid, lon_id, londata))
-    CALL check_err(NF_PUT_VAR_DOUBLE(ncid, var_id, var_data))
-    CALL check_err(NF_CLOSE(ncid))
+    CALL check_err(NF90_PUT_VAR(ncid, lon_id, londata))
+    CALL check_err(NF90_PUT_VAR(ncid, var_id, var_data))
+    CALL check_err(NF90_CLOSE(ncid))
   END SUBROUTINE netcdf_ents
 
 
@@ -590,8 +591,8 @@ CONTAINS
 
   ! Write ENTS NetCDF with 1D fields (time series).
   SUBROUTINE netcdf_ts_ents(fname, var_value, label, myday)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     CHARACTER(LEN=*), INTENT(IN) :: fname, label
     REAL, INTENT(IN) :: var_value
     INTEGER, INTENT(IN) :: myday
@@ -607,35 +608,36 @@ CONTAINS
 
     INQUIRE(FILE=fname,EXIST=fexist)
     IF (fexist) THEN
-       CALL check_err(NF_OPEN(fname, nf_write, ncid))
-       CALL check_err(NF_REDEF(ncid))
-       CALL check_err(NF_INQ_DIMID(ncid, 'time', time_dim))
+       CALL check_err(NF90_OPEN(fname, NF90_WRITE, ncid))
+       CALL check_err(NF90_REDEF(ncid))
+       CALL check_err(NF90_INQ_DIMID(ncid, 'time', time_dim))
     ELSE
-       CALL check_err(NF_CREATE(fname, NF_CLOBBER, ncid))
-       CALL check_err(NF_DEF_DIM(ncid, 'time', NF_UNLIMITED, time_dim))
-       CALL check_err(NF_DEF_VAR(ncid, 'time', NF_INT, 1, time_dim, time_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, time_id, &
-            & 'long_name', 30, 'day from the start of the run'))
+       CALL check_err(NF90_CREATE(fname, NF90_CLOBBER, ncid))
+       CALL check_err(NF90_DEF_DIM(ncid, 'time', NF90_UNLIMITED, time_dim))
+       CALL check_err(NF90_DEF_VAR(ncid, 'time', NF90_INT, &
+            & (/ time_dim /), time_id))
+       CALL check_err(NF90_PUT_ATT(ncid, time_id, &
+            & 'long_name', 'day from the start of the run'))
     END IF
 
-    status = NF_INQ_VARID(ncid, var_name, var_id)
-    IF (status /= NF_NOERR) THEN
-       CALL check_err(NF_DEF_VAR(ncid, var_name, &
-            & NF_DOUBLE, 1, time_dim, var_id))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-            & TRIM(var_att(1,1)), LEN(TRIM(var_att(1,2))), TRIM(var_att(1,2))))
-       CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-            & TRIM(var_att(2,1)), LEN(TRIM(var_att(2,2))), TRIM(var_att(2,2))))
+    status = NF90_INQ_VARID(ncid, var_name, var_id)
+    IF (status /= NF90_NOERR) THEN
+       CALL check_err(NF90_DEF_VAR(ncid, var_name, &
+            & NF90_DOUBLE, (/ time_dim /), var_id))
+       CALL check_err(NF90_PUT_ATT(ncid, var_id, &
+            & TRIM(var_att(1,1)), TRIM(var_att(1,2))))
+       CALL check_err(NF90_PUT_ATT(ncid, var_id, &
+            & TRIM(var_att(2,1)), TRIM(var_att(2,2))))
     END IF
 
-    CALL check_err(NF_ENDDEF(ncid))
-    CALL check_err(NF_INQ_VARID(ncid, var_name, var_id))
-    CALL check_err(NF_INQ_VARID(ncid, 'time', time_id))
-    CALL check_err(NF_INQ_DIMID(ncid, 'time', timedim_id))
-    CALL check_err(NF_INQ_DIMLEN(ncid, timedim_id, timedim_len))
+    CALL check_err(NF90_ENDDEF(ncid))
+    CALL check_err(NF90_INQ_VARID(ncid, var_name, var_id))
+    CALL check_err(NF90_INQ_VARID(ncid, 'time', time_id))
+    CALL check_err(NF90_INQ_DIMID(ncid, 'time', timedim_id))
+    CALL check_err(NF90_INQUIRE_DIMENSION(ncid, timedim_id, len=timedim_len))
 
     ALLOCATE(temptime(timedim_len))
-    CALL check_err(NF_GET_VAR_INT(ncid, time_id, temptime))
+    CALL check_err(NF90_GET_VAR(ncid, time_id, temptime))
 
     IF (timedim_len /= 0 .AND. myday == temptime(timedim_len)) THEN
        mystart = timedim_len
@@ -644,9 +646,9 @@ CONTAINS
     END IF
     DEALLOCATE(temptime)
 
-    CALL check_err(NF_PUT_VAR1_INT(ncid, time_id, mystart, myday))
-    CALL check_err(NF_PUT_VAR1_DOUBLE(ncid, var_id, mystart, var_value))
-    CALL check_err(NF_CLOSE(ncid))
+    CALL check_err(NF90_PUT_VAR(ncid, time_id, myday, start=(/ mystart /)))
+    CALL check_err(NF90_PUT_VAR(ncid, var_id, var_value, start=(/ mystart /)))
+    CALL check_err(NF90_CLOSE(ncid))
   END SUBROUTINE netcdf_ts_ents
 
 END MODULE ents_netcdf

@@ -16,10 +16,10 @@ CONTAINS
   SUBROUTINE write_netcdf_genie(filename, data1_in, invarnames, &
        & alon1_in, alat1_in)
     USE genie_control
+    USE writenc6
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     CHARACTER(LEN=*), INTENT(IN)               :: filename
-    real, INTENT(IN), DIMENSION(:,:,:)         :: data1_in
+    REAL, INTENT(IN), DIMENSION(:,:,:)         :: data1_in
     CHARACTER(LEN=*), INTENT(IN), DIMENSION(:) :: invarnames
     REAL, INTENT(IN), DIMENSION(:)             :: alon1_in
     REAL, INTENT(IN), DIMENSION(:)             :: alat1_in

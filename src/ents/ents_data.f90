@@ -37,8 +37,8 @@ CONTAINS
 
   ! Reads restarts from NetCDF
   SUBROUTINE in_ents_netcdf(fname, myday, land_snow_lnd)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     CHARACTER(LEN=*), INTENT(IN) :: fname
     INTEGER, INTENT(IN) :: myday
     REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
@@ -55,16 +55,14 @@ CONTAINS
 
     DO kk = 1, 11
        var_name = labels(kk)
-       CALL check_err(NF_OPEN(fname, NF_NOWRITE, ncid))
-       CALL check_err(NF_INQ_VARID(ncid, var_name, var_id))
+       CALL check_err(NF90_OPEN(fname, NF90_NOWRITE, ncid))
+       CALL check_err(NF90_INQ_VARID(ncid, var_name, var_id))
        IF (kk /= 11) THEN
-          CALL check_err(NF_GET_VAR_DOUBLE(ncid, var_id, tempdata))
+          CALL check_err(NF90_GET_VAR(ncid, var_id, tempdata))
        ELSE
-          CALL check_err(NF_GET_VAR_DOUBLE(ncid, var_id, tempdata1))
+          CALL check_err(NF90_GET_VAR(ncid, var_id, tempdata1))
        END IF
-       CALL check_err(NF_INQ_VARID(ncid, 'time', time_id))
-       CALL check_err(NF_GET_VAR_INT(ncid, time_id, myday))
-       CALL check_err(NF_CLOSE(ncid))
+       CALL check_err(NF90_CLOSE(ncid))
        DO j = 1, maxj
           DO i = 1, maxi
              SELECT CASE (kk)

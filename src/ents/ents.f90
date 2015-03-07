@@ -171,7 +171,6 @@ CONTAINS
        & dum_tq, dum_rmax, dum_rdtdim, dum_co2_out, gn_daysperyear, &
        & landice_slicemask_lic, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     REAL, INTENT(IN) :: dum_rsc, dum_syr, dum_dphi
     REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
     REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: dum_ca
@@ -393,8 +392,8 @@ CONTAINS
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, ntrac_atm, sfcatm_lnd, sfxatm_lnd)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     INTEGER, INTENT(IN) :: istep, nyear
     REAL, DIMENSION(maxi,maxj), INTENT(IN) :: torog_atm
     REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
@@ -542,16 +541,15 @@ CONTAINS
           END DO
 
           ! Adding final restart value (single)
-          CALL check_err(NF_OPEN(fname, nf_write, ncid))
-          CALL check_err(NF_REDEF(ncid))
-          CALL check_err(NF_DEF_DIM(ncid, 'pco2ld', 1, vardim_id))
-          CALL check_err(NF_DEF_VAR(ncid, 'pco2ld', &
-               & NF_FLOAT, 1, vardim_id, var_id))
-          CALL check_err(NF_PUT_ATT_TEXT(ncid, var_id, &
-               & 'long_name', 6, 'pco2ld'))
-          CALL check_err(NF_ENDDEF(ncid))
-          CALL check_err(NF_PUT_VAR_DOUBLE(ncid, var_id, pco2ld))
-          CALL check_err(NF_CLOSE(ncid))
+          CALL check_err(NF90_OPEN(fname, NF90_WRITE, ncid))
+          CALL check_err(NF90_REDEF(ncid))
+          CALL check_err(NF90_DEF_DIM(ncid, 'pco2ld', 1, vardim_id))
+          CALL check_err(NF90_DEF_VAR(ncid, 'pco2ld', &
+               & NF90_FLOAT, (/ vardim_id /), var_id))
+          CALL check_err(NF90_PUT_ATT(ncid, var_id, 'long_name', 'pco2ld'))
+          CALL check_err(NF90_ENDDEF(ncid))
+          CALL check_err(NF90_PUT_VAR(ncid, var_id, pco2ld))
+          CALL check_err(NF90_CLOSE(ncid))
        END IF
     END IF
 

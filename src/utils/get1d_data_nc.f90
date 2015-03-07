@@ -1,180 +1,119 @@
-!========================================
-! Marc 20/5/03
-! Given the netcdf ID, ncid, this file will read variable from it
-! File must first be opened using subroutine open_file
-!========================================
-subroutine get1d_data_nc(ncid, varname, dim1, arrayout,ifail)
-  implicit none
+SUBROUTINE get1d_data_nc(ncid, varname, dim1, arrayout,ifail)
+  USE netcdf
+  IMPLICIT NONE
+  INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
+  CHARACTER(LEN=*), INTENT(IN) :: varname   ! name of variable to collect
+  INTEGER, INTENT(IN)          :: dim1      ! Size of array in 1st dimension
+  REAL, INTENT(OUT)       :: arrayout(dim1) ! the output array
+  INTEGER, INTENT(OUT)         :: ifail
 
-  !----------------------------------------
-  ! For precision
-  !----------------------------------------
-  integer :: realkind
-  !----------------------------------------
-  ! Define variables in the subroutine header
-  !----------------------------------------
-  integer, intent(in)      :: ncid      ! netCDF dataset ID
-  character(*), intent(in) :: varname   ! name of variable to collect
-  integer, intent(in)      :: dim1      ! Size of array in 1st dimension
-  real, intent(out) :: arrayout(dim1) ! the output array
-  !----------------------------------------
-  ! Define other netcdf variables
-  !----------------------------------------
-  integer :: status &                   ! return code
-       & , varid                      ! ID of variable
-  !----------------------------------------
-  ! local variables
-  !----------------------------------------
-  integer :: ndims &                    ! dims. for netcdf variable
-       & , dimid &                    ! dimension IDs
-       & , dim1nc                     ! 1st dim. of netcdf var.
-  !----------------------------------------
-  ! Include files
-  !----------------------------------------
-  include 'netcdf.inc'
-  integer ifail
+  INTEGER :: status, varid, ndims, dim1nc, dimid(1)
 
-  realkind=kind(arrayout)
-
-  !----------------------------------------
   ! Find the variable ID
-  !----------------------------------------
-  ifail=0
-  status=nf_inq_varid(ncid, varname, varid)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find ', varname
-     ifail=1
-     return
-  endif
-  !----------------------------------------
-  ! get information on variable
-  !----------------------------------------
-  status=nf_inq_varndims(ncid, varid, ndims)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find dims. of variable'
-     stop
-  endif
-  if (ndims.ne.1) then
-     write(6, *) 'ERROR: variable has ', ndims, &
-          & ' dimensions and we expect 1'
-  endif
-  status=nf_inq_vardimid(ncid, varid, dimid)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find dimension ID'
-     stop
-  endif
-  !----------------------------------------
-  ! check that dimensions match
-  !----------------------------------------
-  status=nf_inq_dimlen(ncid, dimid, dim1nc)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: Could not get 1st dimension from ' &
-          & //'netcdf file'
-     stop
-  endif
-  if (dim1nc.ne.dim1) then
-     write(6, *) 'ERROR: 1st dimension of variable in model ' &
-          & //'and netcdf file do not match'
-     write(6, *) 'model and netcdf dims are ', dim1, ' and ' &
-          & , dim1nc
-     stop
-  endif
-  !----------------------------------------
-  ! get variable
-  !----------------------------------------
-  if (realkind.eq.4) then
-     status=nf_get_var_real(ncid, varid, arrayout)
-  else if (realkind.eq.8) then
-     status=nf_get_var_double(ncid, varid, arrayout)
-  else
-     print*,'precision problem in get1d_data_nc'
-     stop
-  endif
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: getting variable'
-     stop
-  endif
+  ifail = 0
+  status = NF90_INQ_VARID(ncid, varname, varid)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: could not find ', varname
+     ifail = 1
+     RETURN
+  END IF
 
-end subroutine get1d_data_nc
-!
-!     Integer version of above code. Any changes in above should
-!     also be reflected here
-!
-subroutine get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
-  implicit none
-  !----------------------------------------
-  ! Define variables in the subroutine header
-  !----------------------------------------
-  integer, intent(in)      :: ncid      ! netCDF dataset ID
-  character(*), intent(in) :: varname   ! name of variable to collect
-  integer, intent(in)      :: dim1      ! Size of array in 1st dimension
-  integer, intent(out) :: arrayout(dim1) ! the output array
-  !----------------------------------------
-  ! Define other netcdf variables
-  !----------------------------------------
-  integer :: status &                   ! return code
-       & , varid                      ! ID of variable
-  !----------------------------------------
-  ! local variables
-  !----------------------------------------
-  integer :: ndims &                    ! dims. for netcdf variable
-       & , dimid &                    ! dimension IDs
-       & , dim1nc                     ! 1st dim. of netcdf var.
-  !----------------------------------------
-  ! Include files
-  !----------------------------------------
-  include 'netcdf.inc'
-  integer ifail
-  !----------------------------------------
+  ! get information on variable
+  status = NF90_INQUIRE_VARIABLE(ncid, varid, ndims=ndims)
+  IF (status /= NF90_NOERR) then
+     WRITE (6, *) 'ERROR: could not find dims. of variable'
+     STOP
+  END IF
+  IF (ndims /= 1) THEN
+     WRITE (6, *) 'ERROR: variable has ', ndims, &
+          & ' dimensions and we expect 1'
+  END IF
+  status = NF90_INQUIRE_VARIABLE(ncid, varid, dimids=dimid)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: could not find dimension ID'
+     STOP
+  END IF
+
+  ! check that dimensions match
+  status = NF90_INQUIRE_DIMENSION(ncid, dimid(1), len=dim1nc)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: Could not get 1st dimension from ' &
+          & //'netcdf file'
+     STOP
+  END IF
+  IF (dim1nc /= dim1) THEN
+     WRITE (6, *) 'ERROR: 1st dimension of variable in model ' &
+          & //'and netcdf file do not match'
+     WRITE (6, *) 'model and netcdf dims are ', dim1, ' and ' &
+          & , dim1nc
+     STOP
+  END IF
+
+  ! get variable
+  status = NF90_GET_VAR(ncid, varid, arrayout)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: getting variable'
+     STOP
+  END IF
+END SUBROUTINE get1d_data_nc
+
+! Integer version of above code. Any changes in above should also be
+! reflected here
+SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
+  USE NETCDF
+  IMPLICIT NONE
+  INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
+  CHARACTER(LEN=*), INTENT(IN) :: varname   ! name of variable to collect
+  INTEGER, INTENT(IN)          :: dim1      ! Size of array in 1st dimension
+  INTEGER, INTENT(OUT)    :: arrayout(dim1) ! the output array
+  INTEGER, INTENT(OUT)         :: ifail
+
+  INTEGER :: status, varid, ndims, dim1nc, dimid(1)
+
   ! Find the variable ID
-  !----------------------------------------
-  ifail=0
-  status=nf_inq_varid(ncid, varname, varid)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find ', varname
-     ifail=1
-     return
-  endif
-  !----------------------------------------
-  ! get information on variable
-  !----------------------------------------
-  status=nf_inq_varndims(ncid, varid, ndims)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find dims. of variable'
-     stop
-  endif
-  if (ndims.ne.1) then
-     write(6, *) 'ERROR: variable has ', ndims, &
-          & ' dimensions and we expect 1'
-  endif
-  status=nf_inq_vardimid(ncid, varid, dimid)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: could not find dimension ID'
-     stop
-  endif
-  !----------------------------------------
-  ! check that dimensions match
-  !----------------------------------------
-  status=nf_inq_dimlen(ncid, dimid, dim1nc)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: Could not get 1st dimension from ' &
-          & //'netcdf file'
-     stop
-  endif
-  if (dim1nc.ne.dim1) then
-     write(6, *) 'ERROR: 1st dimension of variable in model ' &
-          & //'and netcdf file do not match'
-     write(6, *) 'model and netcdf dims are ', dim1, ' and ' &
-          & , dim1nc
-     stop
-  endif
-  !----------------------------------------
-  ! get variable
-  !----------------------------------------
-  status=nf_get_var_int(ncid, varid, arrayout)
-  if (status .ne. nf_noerr) then
-     write(6, *) 'ERROR: getting variable'
-     stop
-  endif
+  ifail = 0
+  status = NF90_INQ_VARID(ncid, varname, varid)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: could not find ', varname
+     ifail = 1
+     RETURN
+  END IF
 
-end subroutine get1di_data_nc
+  ! get information on variable
+  status = NF90_INQUIRE_VARIABLE(ncid, varid, ndims=ndims)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: could not find dims. of variable'
+     STOP
+  END IF
+  IF (ndims /= 1) THEN
+     WRITE (6, *) 'ERROR: variable has ', ndims, &
+          & ' dimensions and we expect 1'
+  END IF
+  status = NF90_INQUIRE_VARIABLE(ncid, varid, dimids=dimid)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: could not find dimension ID'
+     STOP
+  END IF
+
+  ! check that dimensions match
+  status = NF90_INQUIRE_DIMENSION(ncid, dimid(1), len=dim1nc)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: Could not get 1st dimension from ' &
+          & //'netcdf file'
+     STOP
+  END IF
+  IF (dim1nc /= dim1) THEN
+     WRITE (6, *) 'ERROR: 1st dimension of variable in model ' &
+          & //'and netcdf file do not match'
+     WRITE (6, *) 'model and netcdf dims are ', dim1, ' and ' &
+          & , dim1nc
+     STOP
+  END IF
+
+  ! get variable
+  status = NF90_GET_VAR(ncid, varid, arrayout)
+  IF (status /= NF90_NOERR) THEN
+     WRITE (6, *) 'ERROR: getting variable'
+     STOP
+  END IF
+END SUBROUTINE get1di_data_nc

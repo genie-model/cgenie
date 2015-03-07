@@ -140,14 +140,14 @@ CONTAINS
 
   ! This module writes netcdf restarts for embm
   SUBROUTINE outm_netcdf_embm(istep)
+    USE netcdf
     IMPLICIT NONE
-    INCLUDE 'netcdf.inc'
     INTEGER, INTENT(IN) :: istep
 
     REAL, DIMENSION(maxi,maxj) :: temp_write, shum_write
     REAL :: lons1(maxi), lats1(maxj)
     INTEGER :: i, j, ntempid, nshumid
-    INTEGER :: nlon1id, nlongit1id, nlat1id, nlatit1id, nrecsid, ioffid
+    INTEGER :: nlon1id, nlongit1id, nlat1id, nlatit1id, nrecsid(1), ioffid
     INTEGER :: dim1pass(2)
     CHARACTER(LEN=200) :: fname
 
@@ -188,38 +188,38 @@ CONTAINS
             & TRIM(ADJUSTL(yearstring)) // '_' // &
             & monthstring // '_' // daystring // '.nc'
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
-       CALL check_err(NF_CREATE(TRIM(fname), NF_CLOBBER, ncid))
-       CALL check_err(NF_DEF_DIM(ncid, 'nrecs', 1, nrecsid))
-       CALL check_err(NF_DEF_DIM(ncid, 'longitude', maxi, nlon1id))
-       CALL check_err(NF_DEF_DIM(ncid, 'latitude', maxj, nlat1id))
+       CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
+       CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
+       CALL check_err(NF90_DEF_DIM(ncid, 'longitude', maxi, nlon1id))
+       CALL check_err(NF90_DEF_DIM(ncid, 'latitude', maxj, nlat1id))
 
-       CALL check_err(NF_DEF_VAR(ncid, 'longitude', &
-            & NF_REAL, 1, nlon1id, nlongit1id))
-       CALL check_err(NF_DEF_VAR(ncid, 'latitude', &
-            & NF_REAL, 1, nlat1id, nlatit1id))
+       CALL check_err(NF90_DEF_VAR(ncid, 'longitude', &
+            & NF90_REAL, (/ nlon1id /), nlongit1id))
+       CALL check_err(NF90_DEF_VAR(ncid, 'latitude', &
+            & NF90_REAL, (/ nlat1id /), nlatit1id))
        dim1pass = (/ nlon1id, nlat1id /)
-       CALL check_err(NF_DEF_VAR(ncid, 'ioffset', NF_INT, 1, nrecsid, ioffid))
-       CALL check_err(NF_DEF_VAR(ncid, 'iyear', NF_INT, 1, nrecsid, iyearid))
-       CALL check_err(NF_DEF_VAR(ncid, 'imonth', NF_INT, 1, nrecsid, imonthid))
-       CALL check_err(NF_DEF_VAR(ncid, 'iday', NF_INT, 1, nrecsid, idayid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'ioffset', NF90_INT, nrecsid, ioffid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'iyear', NF90_INT, nrecsid, iyearid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'imonth', NF90_INT, nrecsid, imonthid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'iday', NF90_INT, nrecsid, idayid))
 
-       CALL check_err(NF_DEF_VAR(ncid, 'air_temp', &
-            & NF_DOUBLE, 2, dim1pass, ntempid))
-       CALL check_err(NF_DEF_VAR(ncid, 'humidity', &
-            & NF_DOUBLE, 2, dim1pass, nshumid))
-       CALL check_err(NF_ENDDEF(ncid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'air_temp', &
+            & NF90_DOUBLE, dim1pass, ntempid))
+       CALL check_err(NF90_DEF_VAR(ncid, 'humidity', &
+            & NF90_DOUBLE, dim1pass, nshumid))
+       CALL check_err(NF90_ENDDEF(ncid))
 
-       CALL check_err(NF_PUT_VAR_INT(ncid, iyearid, iyear_rest))
-       CALL check_err(NF_PUT_VAR_INT(ncid, imonthid, imonth_rest))
-       CALL check_err(NF_PUT_VAR_INT(ncid, idayid, iday))
-       CALL check_err(NF_PUT_VAR_INT(ncid, ioffid, ioffset_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, iyearid, iyear_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, imonthid, imonth_rest))
+       CALL check_err(NF90_PUT_VAR(ncid, idayid, iday))
+       CALL check_err(NF90_PUT_VAR(ncid, ioffid, ioffset_rest))
 
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nlongit1id, lons1))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nlatit1id, lats1))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, ntempid, temp_write))
-       CALL check_err(NF_PUT_VAR_DOUBLE(ncid, nshumid, shum_write))
+       CALL check_err(NF90_PUT_VAR(ncid, nlongit1id, lons1))
+       CALL check_err(NF90_PUT_VAR(ncid, nlatit1id, lats1))
+       CALL check_err(NF90_PUT_VAR(ncid, ntempid, temp_write))
+       CALL check_err(NF90_PUT_VAR(ncid, nshumid, shum_write))
 
-       CALL check_err(nf_close(ncid))
+       CALL check_err(NF90_CLOSE(ncid))
 
        WRITE (*,220) 'Avg T','Avg Q'
        tmp_val = 0.0

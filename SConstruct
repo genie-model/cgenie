@@ -100,8 +100,6 @@ if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
 
 env = Environment(ENV = { 'PATH': os.environ['PATH'] },
                   TOOLS = ['default', f90['compiler']],
-#                  FORTRAN = f90['compiler'], F90 = f90['compiler'],
-#                  LINK = f90['compiler'],
                   F90FLAGS = f90['baseflags'] + extraf90flags + defs,
                   LINKFLAGS = extralinkflags,
                   F90PATH = [netcdfinc] + modpath,

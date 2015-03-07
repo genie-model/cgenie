@@ -42,6 +42,7 @@ CONTAINS
   ! Continue netCDF initialisation process
   SUBROUTINE ini_netcdf_embm1(dir_name, ilen, runid, imonth, rtime, &
        & alon1, alat1, alon2, alat2, alon3, alat3, mg, jgg, imode)
+    USE writenc6
     IMPLICIT NONE
 
     CHARACTER(LEN=100), INTENT(IN) :: dir_name
@@ -61,7 +62,6 @@ CONTAINS
     CHARACTER(LEN=200), DIMENSION(2,nmaxdims,nall) :: attdimname, attvarname
 
     INTEGER, PARAMETER :: imax=100, jmax=100, kmax=100, lmax=10000
-    REAL :: xcoord(imax), ycoord(jmax), tcoord(lmax)
     INTEGER :: itime, ifname1
     CHARACTER(LEN=200) :: fname1
     CHARACTER(LEN=10) :: cyear
@@ -91,24 +91,17 @@ CONTAINS
          & nco(imode), iddimo(1,imode), idvaro(1,imode))
 
     ! Longitude coordinates (tracer, u-point, v-point)
-    xcoord(1:mg) = alon1(1:mg)
-    CALL writedim(nco(imode), iddimo(1,imode), xcoord)
-    xcoord(1:mg) = alon2(1:mg)
-    CALL writedim(nco(imode), iddimo(2,imode), xcoord)
-    xcoord(1:mg) = alon3(1:mg)
-    CALL writedim(nco(imode), iddimo(3,imode), xcoord)
+    CALL writedim(nco(imode), iddimo(1,imode), alon1)
+    CALL writedim(nco(imode), iddimo(2,imode), alon2)
+    CALL writedim(nco(imode), iddimo(3,imode), alon3)
 
     ! Latitude coordinates (tracer, u-point, v-point)
-    ycoord(1:jgg) = alat1(1:jgg)
-    CALL writedim(nco(imode), iddimo(4,imode), ycoord)
-    ycoord(1:jgg) = alat2(1:jgg)
-    CALL writedim(nco(imode), iddimo(5,imode), ycoord)
-    ycoord(1:jgg) = alat3(1:jgg)
-    CALL writedim(nco(imode), iddimo(6,imode), ycoord)
+    CALL writedim(nco(imode), iddimo(4,imode), alat1)
+    CALL writedim(nco(imode), iddimo(5,imode), alat2)
+    CALL writedim(nco(imode), iddimo(6,imode), alat3)
 
     ! Time
-    tcoord(1) = REAL(rtime)
-    CALL writedim(nco(imode), iddimo(7,imode), tcoord)
+    CALL writedim(nco(imode), iddimo(7,imode), (/ REAL(rtime) /))
   END SUBROUTINE ini_netcdf_embm1
 
 
@@ -330,12 +323,13 @@ CONTAINS
   ! Write data to netCDF file
   SUBROUTINE write_netcdf_embm(k1, tq, q_pa, rq_pa, fx0flux, fwflux, &
        & work, maxi, maxj, imode)
+    USE writenc6
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: maxi, maxj, imode, k1(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: tq(2,maxi,maxj), q_pa(maxi,maxj), rq_pa(maxi,maxj), &
          & fx0flux(4,maxi,maxj), fwflux(2,maxi,maxj)
 
-    REAL :: work((maxi+1) * (maxj+1))
+    REAL :: work(maxi, maxj)
 
     ! Temperature (i.e. final argument = 1)
     CALL prep_netcdf_embm(tq(1,:,:), work, 1.0)
@@ -408,6 +402,7 @@ CONTAINS
 
   ! End netCDF-writing process and closes netCDF file
   SUBROUTINE end_netcdf_embm(imode)
+    USE writenc6
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: imode
 

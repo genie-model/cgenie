@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, sys, shutil, argparse
+import os, os.path, sys, shutil, argparse, glob
 import subprocess as sp
 
 import utils as U
@@ -74,7 +74,10 @@ exe_name = 'genie-' + build_type + '.exe' if build_type else 'genie.exe'
 
 def clean(clean_model):
     message('CLEANING...')
-    if clean_model: model_config.clean()
+    if clean_model:
+        model_config.clean()
+        for exe in glob.iglob('genie-*.exe'): os.remove(exe)
+        if os.path.exists('build.log'): os.remove('build.log')
     if os.path.exists('run.log'): os.remove('run.log')
     for d, ds, fs in os.walk('output'):
         for f in fs: os.remove(os.path.join(d, f))
