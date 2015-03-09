@@ -506,7 +506,7 @@ CONTAINS
 
     ! Ocean velocity (component 1)
     CALL flip_both2(u(1,:,:,:), work(1:imax,1:jmax,1:kmax), &
-         & imax, jmax, kmax, imax, jmax, kmax, k1, 1.0)
+         & imax, jmax, kmax, imax, jmax, kmax, k1, usc)
     CALL writevar(nco(imode), idvaro(7,imode), work(1:imax,1:jmax,1:kmax))
 
     ! Ocean velocity (component 2)
@@ -515,8 +515,9 @@ CONTAINS
     CALL writevar(nco(imode), idvaro(8,imode), work(1:imax,1:jmax+1,1:kmax))
 
     ! Ocean velocity (component 3)
-    CALL prep_netcdf_ocn_w(imax, jmax, kmax, u, work, k1, usc * dsc / rsc)
-    CALL writevar(nco(imode), idvaro(9,imode), work(1:imax,0:jmax-1,0:kmax))
+    CALL prep_netcdf_ocn_w(imax, jmax, kmax, u, work(1:imax,1:jmax,0:kmax), &
+         & k1, usc * dsc / rsc)
+    CALL writevar(nco(imode), idvaro(9,imode), work(1:imax,1:jmax,0:kmax))
 
     ! Latent heat flux
     CALL twodee_tracer2(fx0flux(4,:,:), work(1:imax,1:jmax,1), &
@@ -574,7 +575,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) ::imax, jmax, kmax
     REAL, INTENT(IN) :: data_i(3,0:imax,0:jmax,1:kmax)
-    REAL, INTENT(OUT) :: data_o(imax+1, jmax+1, kmax+1)
+    REAL, INTENT(OUT) :: data_o(imax, jmax, kmax+1)
     INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
     REAL, INTENT(IN) :: scale
 
@@ -584,14 +585,14 @@ CONTAINS
        DO j = 1, jmax
           DO i = 1, imax
              IF (iland(i,j) >= 90 .OR. iland(i,j) > (kmax+1-k)) THEN
-                data_o(i,j-1,k-1) = -99999.0
+                data_o(i,j,k) = -99999.0
              ELSE
-                data_o(i,j-1,k-1) = REAL(scale * data_i(3,i,j,kmax+1-k))
+                data_o(i,j,k) = REAL(scale * data_i(3,i,j,kmax+1-k))
              END IF
           END DO
        END DO
     END DO
-    data_o(1:imax,0:jmax-1,kmax) = -99999.0
+    data_o(1:imax,1:jmax,kmax+1) = -99999.0
   END SUBROUTINE prep_netcdf_ocn_w
 
 
@@ -625,7 +626,7 @@ CONTAINS
     INTEGER :: k
 
     DO k = 1, kmax
-       WHERE (iland >= 90 .OR. iland > k)
+       WHERE (iland(1:imax,1:jmax) >= 90 .OR. iland(1:imax,1:jmax) > k)
           temp1(:,:,kmax+1-k) = -99999.0
        ELSEWHERE
           temp1(:,:,kmax+1-k) = REAL(scale * temper(1:imax,1:jmax,k))
