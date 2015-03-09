@@ -672,7 +672,8 @@ CONTAINS
     LOGICAL, INTENT(IN) :: interpolate
     CHARACTER(LEN=25), INTENT(IN) :: varname
     REAL, INTENT(IN) :: missing
-    REAL, INTENT(OUT) :: lon(imax), lat(jmax), z(kmax)
+    REAL, INTENT(INOUT) :: lon(imax)
+    REAL, INTENT(IN) :: lat(jmax), z(kmax)
     REAL, INTENT(OUT) :: obsdata(imax,jmax,kmax)
 
 
