@@ -227,8 +227,8 @@ CONTAINS
          & ilandmask1, ilandmask2, ilandmask3
     INTEGER, DIMENSION(maxj), INTENT(IN) :: ias, iaf, ips, ipf
     INTEGER, INTENT(IN) :: jsf
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
-         & tstar_ocn, co2_out, ch4_out, n2o_out
+    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: tstar_ocn
+    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: co2_out, ch4_out, n2o_out
     INTEGER(KIND=8), INTENT(IN) :: totsteps
     REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
@@ -2328,8 +2328,9 @@ CONTAINS
     INTEGER, INTENT(IN) :: dum_n_atm
     REAL, INTENT(IN), DIMENSION(dum_n_atm,imax,jmax) :: dum_sfcatm
     REAL, INTENT(IN) :: gn_daysperyear
+    REAL, DIMENSION(imax,jmax), INTENT(IN) :: eb_ca
     REAL, DIMENSION(imax,jmax), INTENT(OUT) :: &
-         & eb_ca, eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
+         & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
          & eb_evap, eb_pptn, eb_relh, eb_usurf
     REAL, INTENT(OUT) :: eb_uv(2,imax,jmax)
     REAL, INTENT(IN) :: solconst
