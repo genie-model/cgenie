@@ -63,7 +63,7 @@ CONTAINS
     CHARACTER(LEN=200), DIMENSION(2,nmaxdims,nall) :: attdimname, attvarname
     INTEGER, PARAMETER :: imax=100, jmax=100, kmax=100, lmax=10000
     REAL :: ycoord(jmax)
-    INTEGER :: i, itime, ifname1
+    INTEGER :: itime, ifname1
     CHARACTER(LEN=200) :: fname1
     CHARACTER(LEN=10) :: cyear
     CHARACTER(LEN=2), PARAMETER, DIMENSION(13) :: cmon = &
@@ -469,7 +469,6 @@ CONTAINS
     INTEGER, INTENT(IN) :: maxi, maxj, maxk, maxl
     INTEGER, INTENT(IN) :: imode
 
-    INTEGER :: i
 
     work = 0.0
 
@@ -662,22 +661,6 @@ CONTAINS
     END DO
   END SUBROUTINE flip_both2
 
-
-  ! Organise a two-dimensional array that's on the tracer grid
-  SUBROUTINE twodee_tracer(temper,  temp1, imax, jmax, ix, iy, iland, scale)
-    IMPLICIT NONE
-    REAL, INTENT(IN) :: temper(imax,jmax)
-    REAL, INTENT(OUT) :: temp1(ix,iy)
-    INTEGER, INTENT(IN) :: imax, jmax, ix, iy
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
-    REAL, INTENT(IN) :: scale
-
-    WHERE (iland(1:imax,1:jmax) >= 90)
-       temp1 = -99999.0
-    ELSEWHERE
-       temp1 = REAL(scale * temper)
-    END WHERE
-  END SUBROUTINE twodee_tracer
 
   ! Organise a two-dimensional array that's on the tracer grid
   SUBROUTINE twodee_tracer2(temper, temp1, imax, jmax, iland, scale)

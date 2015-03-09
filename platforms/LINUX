@@ -6,7 +6,7 @@ f90 = {
     # Default flags.
     'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
                   '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-msse' ],
+                  '-msse', '-Wall' ],
 
     # Debug flags.
     'debug': ['-g'],

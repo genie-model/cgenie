@@ -3379,10 +3379,11 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, intent(in) :: istep
-    REAL, DIMENSION(imax,jmax), INTENT(OUT) :: &
+    REAL, DIMENSION(imax,jmax), INTENT(IN) :: &
          & otemp, osaln, oalbd, atemp, ashum, apres, ahght, sich, sica, &
-         & tice, albice, windspdxu_atm, windspdyu_atm, windspdxv_atm, &
+         & windspdxu_atm, windspdyu_atm, windspdxv_atm, &
          & windspdyv_atm, net_sw, net_lw, alb_net
+    REAL, DIMENSION(imax,jmax), INTENT(INOUT) :: tice, albice
     REAL, DIMENSION(imax,jmax), INTENT(OUT) :: &
          & rough_net, stressxu_ocn, stressyu_ocn, stressxv_ocn, &
          & stressyv_ocn, fxlho, fxsho, fxswo, fxlwo, evap_net, &

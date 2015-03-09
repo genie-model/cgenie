@@ -37,7 +37,7 @@ CONTAINS
   !     - update sediment stack height
   ! (e) mix the sediment stack if this is required
   ! (f) check the thickness of sediment stack:
-  !     if it is within 1.0 cm of the maximum thickness, then remove the bottom n_sedcor_tot cm 
+  !     if it is within 1.0 cm of the maximum thickness, then remove the bottom n_sedcor_tot cm
   !     entirely, and move the remaining sedimentary layers down to start at the bottom of the stack
   ! (g) calculate sedimment fluxes to ocean
   ! (h) sort out consumption of O2/NO3/SO4 resulting from organic matter remineralization
@@ -57,7 +57,7 @@ CONTAINS
     real,DIMENSION(n_ocn),intent(in)::dum_sfcsumocn            ! ocean composition interface array
     ! local variables
     INTEGER::l,is,io                                           ! tracer index counters
-    INTEGER::n                                                 ! 
+    INTEGER::n                                                 !
     integer::loc_i,loc_tot_i                                   ! array index conversion variables
     INTEGER::loc_n_sed_stack_top                               ! sediment stack top (incomplete) layer number
     INTEGER::loc_n_sedcore_stack_top                           ! sediment core stack top (complete layers only)
@@ -69,12 +69,12 @@ CONTAINS
     real::loc_sed_dis_frac                                     ! (organic matter) fraction remineralized (<-> dissolution)
     real::loc_sed_dis_frac_P                                   ! (organic matter P) fraction remineralized (<-> dissolution)
     real::loc_sed_diagen_fracC                                 ! fraction of organic matter available for (CaCO3) diagenesis
-    real::loc_sed_poros                                        ! 
-    real::loc_sed_poros_top                                    ! 
+    real::loc_sed_poros                                        !
+    real::loc_sed_poros_top                                    !
     real::loc_r_sed_por                                        ! thickness ratio due to porosity differences (stack / surface layer)
-    real::loc_frac_CaCO3                                       ! 
-    real::loc_frac_CaCO3_top                                   ! 
-    real::loc_fPOC,loc_sed_pres_fracC                          ! 
+    real::loc_frac_CaCO3                                       !
+    real::loc_frac_CaCO3_top                                   !
+    real::loc_fPOC,loc_sed_pres_fracC                          !
     real::loc_sed_dis_frac_max                                 ! maximum fraction that can be remineralized
     REAL,DIMENSION(n_sed)::loc_new_sed                         ! new (sedimenting) top layer material
     REAL,DIMENSION(n_sed)::loc_dis_sed                         ! remineralized top layer material
@@ -153,7 +153,7 @@ CONTAINS
     case ('archer2002muds')
        ! MUDS
        ! ### <INSERT CODE> ####################################################################################################### !
-       ! 
+       !
        ! ######################################################################################################################### !
     case ('simple')
        ! a VERY crude way of estimating preservation of organic matter depending on the occurrence of anoxic/euxinic conditions
@@ -161,7 +161,7 @@ CONTAINS
        if (ctrl_sed_diagen_preserve_frac2) then
           loc_sed_dis_frac_max = 1.0 - loc_new_sed(is_POC_frac2)
        else
-          loc_sed_dis_frac_max = 1.0 
+          loc_sed_dis_frac_max = 1.0
        end if
        ! test for oxic vs. euxinic conditions
        If (ocn_select(io_O2) .AND. ocn_select(io_H2S)) then
@@ -242,7 +242,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
                 ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
                 ! ### <INSERT CODE> ############################################################################################## !
-                ! 
+                !
                 ! ################################################################################################################ !
              else
                 loc_dis_sed(is) = loc_new_sed(is)
@@ -313,7 +313,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
                 ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
                 ! ### <INSERT CODE> ############################################################################################## !
-                ! 
+                !
                 ! ################################################################################################################ !
              else
                 loc_dis_sed(is) = loc_new_sed(is)
@@ -349,7 +349,7 @@ CONTAINS
          & 'ridgwelletal2003lookup' &
          & )
        CALL calc_sed_dis_opal(        &
-            & dum_dtyr,               &           
+            & dum_dtyr,               &
             & dum_sfcsumocn(io_T),    &
             & dum_sfcsumocn(io_SiO2), &
             & loc_dis_sed(:),         &
@@ -368,7 +368,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
                 ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
                 ! ### <INSERT CODE> ############################################################################################## !
-                ! 
+                !
                 ! ################################################################################################################ !
              else
                 If (ocn_select(io_SiO2)) then
@@ -427,7 +427,7 @@ CONTAINS
     ! and test if the net (rain - dis) thickness of sedimentating material is > 1.0 cm yr-1, or
     ! net (dis - rain) > 1.0 cm yr-1 (i.e., not about to try and remove too much)
     ! if so - take the simplest response - reject all sediment input and set dissolution = rain
-    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material 
+    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material
     !        is removed from the top layer and added to the sediment stack, which has layers of thickness 1.0 cm
     loc_sed_top_dth = (loc_new_sed_vol - loc_dis_sed_vol)/(1.0 - max(par_sed_poros_det,par_sed_poros_CaCO3))
     IF ((loc_sed_top_dth > 1.0) .OR. (loc_sed_top_dth < -1.0)) THEN
@@ -460,7 +460,7 @@ CONTAINS
        ! ADD material to the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be added;
        !   => if exchange th < remaining (unfilled) thickness of top sub-layer of sediment stack, then
-       !      add required material to top sub-layer only 
+       !      add required material to top sub-layer only
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
@@ -488,7 +488,7 @@ CONTAINS
        ! REMOVE material from the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be removed;
        ! - if exchange vol <= thickness of top sub-layer of sediment stack, then
-       !   remove required material from the top stack sub-layer only 
+       !   remove required material from the top stack sub-layer only
        ! - if exchange vol > thickness of top sub-layer of sediment stack, then
        !   remove all material in the top stack sub-layer, plus additional material from next layer down
        ! NOTE: the porosity of the sediment stack must be taken into account
@@ -559,8 +559,8 @@ CONTAINS
 
     IF (ctrl_misc_debug3) print*,'(f) check the thickness of sediment stack'
     ! *** (f) check the thickness of sediment stack
-    !         NOTE: if the sediment stack has reached the last available sub-layer, 
-    !               then remove a number of sub-layers equal to 'n_sed_tot_drop' from the bottom, 
+    !         NOTE: if the sediment stack has reached the last available sub-layer,
+    !               then remove a number of sub-layers equal to 'n_sed_tot_drop' from the bottom,
     !               and re-index the remaining sublayers starting from the bottom
     IF (loc_n_sed_stack_top == n_sed_tot) THEN
        ! first save sediment layers to be moved to store if the locaion is a sedcore (and update top of sedcore)
@@ -756,7 +756,7 @@ CONTAINS
     real,DIMENSION(n_ocn),intent(in)::dum_sfcsumocn              ! ocean composition interface array
     ! local variables
     INTEGER::l,is,io                                         ! tracer index counters
-    INTEGER::n                                                 ! 
+    INTEGER::n                                                 !
     integer::loc_i,loc_tot_i                                 ! array index conversion variables
     INTEGER::loc_n_sed_stack_top                             ! sediment stack top (incomplete) layer number
     INTEGER::loc_n_sedcore_stack_top                         ! sediment core stack top (complete layers only)
@@ -764,18 +764,18 @@ CONTAINS
     REAL::loc_dis_sed_vol                                    ! dis sediment volume (as SOLID material)
     REAL::loc_sed_top_dth                                    ! potential change in sediment surface ('top' layer) thickness
     REAL::loc_exe_sed_th                                     ! exchanged sediment thickness (w.r.t. surface sediment porosity)
-    REAL::loc_sed_stack_top_th                               ! sediment stack top thickness (i.e., of the incomplete sub-layer) 
-    real::loc_sed_poros_top                                  ! 
+    REAL::loc_sed_stack_top_th                               ! sediment stack top thickness (i.e., of the incomplete sub-layer)
+    real::loc_sed_poros_top                                  !
     real::loc_r_sed_por                                      ! thickness ratio due to porosity differences (stack / surface layer)
-    real::loc_frac_CaCO3                                     ! 
-    real::loc_frac_CaCO3_top                                 ! 
+    real::loc_frac_CaCO3                                     !
+    real::loc_frac_CaCO3_top                                 !
     REAL,DIMENSION(n_sed)::loc_new_sed                       ! new (sedimenting) top layer material
     REAL,DIMENSION(n_sed)::loc_dis_sed                       ! remineralized top layer material
     REAL,DIMENSION(n_sed)::loc_exe_sed                       ! top layer material to be exchanged with stack
     real::loc_delta_CaCO3,loc_delta_Corg
-    real::loc_alpha                                          ! 
+    real::loc_alpha                                          !
     real::loc_R,loc_r7Li,loc_r44Ca                           ! local isotope R, local (isotope specific) r's
-    real::loc_ohm,loc_TC                                     ! 
+    real::loc_ohm,loc_TC                                     !
 
     ! *** INITIALIZE VARIABLES ****************************************************************************************************
     ! zero local sediment arrays
@@ -811,7 +811,7 @@ CONTAINS
     loc_dis_sed_vol = 0.0
 
     ! *** CALCULATE SEDIMENT PRODUCTION *******************************************************************************************
-    ! 
+    !
     ! select for calcite vs. aragonite precipitation
     if (par_sed_reef_calcite) then
        loc_ohm = sed_carb(ic_ohm_cal,dum_i,dum_j)
@@ -857,7 +857,7 @@ CONTAINS
        sed_fsed(is_CaCO3_13C,dum_i,dum_j) = sed_fsed(is_CaCO3,dum_i,dum_j)* &
             & (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))
     end if
-    ! calculate d44Ca (if selected)	
+    ! calculate d44Ca (if selected)
     if (sed_select(is_CaCO3_44Ca)) then
        if (dum_sfcsumocn(io_Ca) > const_real_nullsmall) then
           loc_r44Ca = dum_sfcsumocn(io_Ca_44Ca)/dum_sfcsumocn(io_Ca)
@@ -876,7 +876,7 @@ CONTAINS
     else
        loc_r44Ca = 0.0
     end if
-    ! calculate Li incorporation and isotopes (if selected)	
+    ! calculate Li incorporation and isotopes (if selected)
     if (ocn_select(io_Li) .AND. ocn_select(io_Ca) .AND. sed_select(is_LiCO3)) then
        sed_fsed(is_LiCO3,dum_i,dum_j) = sed_fsed(is_CaCO3_13C,dum_i,dum_j)* &
             & (par_bio_red_CaCO3_LiCO3 + par_bio_red_CaCO3_LiCO3_alpha*dum_sfcsumocn(io_Li)/dum_sfcsumocn(io_Ca))
@@ -908,7 +908,7 @@ CONTAINS
     end if
 
     ! *** CALCULATE OCEAN-SEDIMENT EXCHANGE ***************************************************************************************
-    ! 
+    !
     ! calculate volume of produced material
     DO l=1,n_l_sed
        is = conv_iselected_is(l)
@@ -957,7 +957,7 @@ CONTAINS
     ! and test if the net (rain - dis) thickness of sedimentating material is > 1.0 cm per time-step, or
     ! net (dis - rain) > 1.0 cm per time-step (i.e., not about to try and remove too much)
     ! if so - take the simplest response - reject all sediment input and set dissolution = rain
-    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material 
+    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material
     !        is removed from the top layer and added to the sediment stack, which has layers of thickness 1.0 cm
     loc_sed_top_dth = (loc_new_sed_vol - loc_dis_sed_vol)/(1.0 - par_sed_poros_CaCO3_reef)
     IF (loc_sed_top_dth > 1.0) THEN
@@ -995,7 +995,7 @@ CONTAINS
        ! ADD material to the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be added;
        !   => if exchange th < remaining (unfilled) thickness of top sub-layer of sediment stack, then
-       !      add required material to top sub-layer only 
+       !      add required material to top sub-layer only
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
@@ -1022,7 +1022,7 @@ CONTAINS
        ! REMOVE material from the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be removed;
        ! - if exchange vol <= thickness of top sub-layer of sediment stack, then
-       !   remove required material from the top stack sub-layer only 
+       !   remove required material from the top stack sub-layer only
        ! - if exchange vol > thickness of top sub-layer of sediment stack, then
        !   remove all material in the top stack sub-layer, plus additional material from next layer down
        ! NOTE: the porosity of the sediment stack must be taken into account
@@ -1171,7 +1171,7 @@ CONTAINS
     real,DIMENSION(n_ocn),intent(in)::dum_sfcsumocn            ! ocean composition interface array
     ! local variables
     INTEGER::l,is,io                                             ! tracer index counters
-    INTEGER::n                                                 ! 
+    INTEGER::n                                                 !
     integer::loc_i,loc_tot_i                                     ! array index conversion variables
     INTEGER::loc_n_sed_stack_top                                 ! sediment stack top (incomplete) layer number
     INTEGER::loc_n_sedcore_stack_top                             ! sediment core stack top (complete layers only)
@@ -1182,13 +1182,13 @@ CONTAINS
     real::loc_sed_dis_frac_P                                   ! (organic matter P) fraction remineralized (<-> dissolution)
     !real::loc_sed_diagen_fracC                                ! fraction of organic matter available for (CaCO3) diagenesis
     REAL::loc_exe_sed_th                                         ! exchanged sediment thickness (w.r.t. surface sediment porosity)
-    REAL::loc_sed_stack_top_th                                   ! sediment stack top thickness (i.e., of the incomplete sub-layer) 
-    real::loc_sed_poros_top                                      ! 
+    REAL::loc_sed_stack_top_th                                   ! sediment stack top thickness (i.e., of the incomplete sub-layer)
+    real::loc_sed_poros_top                                      !
     real::loc_r_sed_por                                          ! thickness ratio due to porosity differences
     ! (sediment stack / surface layer)
-    real::loc_frac_CaCO3                                       ! 
-    real::loc_frac_CaCO3_top                                   ! 
-    real::loc_fPOC,loc_sed_pres_fracC                          ! 
+    real::loc_frac_CaCO3                                       !
+    real::loc_frac_CaCO3_top                                   !
+    real::loc_fPOC,loc_sed_pres_fracC                          !
     real::loc_sed_dis_frac_max                                 ! maximum fraction that can be remineralized
     REAL,DIMENSION(n_sed)::loc_new_sed                         ! new (sedimenting) top layer material
     REAL,DIMENSION(n_sed)::loc_dis_sed                         ! remineralized top layer material
@@ -1230,7 +1230,7 @@ CONTAINS
             & /),.TRUE. &
             & )
     END IF
-    
+
     ! *** CALCULATE DISSOLUTION FLUXES ********************************************************************************************
     ! *** diagenesis - organic matter remineralization ***
     !     NOTE: particulate fluxes have been converted to units of (cm3 cm-2)
@@ -1238,7 +1238,7 @@ CONTAINS
     case ('archer2002muds')
        ! MUDS
        ! ### <INSERT CODE> ####################################################################################################### !
-       ! 
+       !
        ! ######################################################################################################################### !
     case ('simple')
        ! a VERY crude way of estimating preservation of organic matter depending on the occurrence of anoxic/euxinic conditions
@@ -1246,7 +1246,7 @@ CONTAINS
        if (ctrl_sed_diagen_preserve_frac2) then
           loc_sed_dis_frac_max = 1.0 - loc_new_sed(is_POC_frac2)
        else
-          loc_sed_dis_frac_max = 1.0 
+          loc_sed_dis_frac_max = 1.0
        end if
        ! test for oxic vs. euxinic conditions
        If (ocn_select(io_O2) .AND. ocn_select(io_H2S)) then
@@ -1317,7 +1317,7 @@ CONTAINS
     case ('arndtetal2013')
        ! Following Arndt et al. [2013]
        ! NOTE:
-       loc_sed_pres_fracC = fun_arndtetal2013_sedflx(0.0)
+       loc_sed_pres_fracC = fun_arndtetal2013_sedflx()
 
 
 
@@ -1335,7 +1335,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
                 ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
                 ! ### <INSERT CODE> ############################################################################################## !
-                ! 
+                !
                 ! ################################################################################################################ !
              else
                 loc_dis_sed(is) = loc_new_sed(is)
@@ -1355,7 +1355,7 @@ CONTAINS
              loc_dis_sed(is) = 0.0
              ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
              ! ### <INSERT CODE> ############################################################################################## !
-             ! 
+             !
              ! ################################################################################################################ !
           else
              loc_dis_sed(is) = loc_new_sed(is)
@@ -1374,7 +1374,7 @@ CONTAINS
              loc_dis_sed(is) = 0.0
              ! deal with how particle-reactive elements are left in the sediments (i.e., what do they stick on?) ...
              ! ### <INSERT CODE> ############################################################################################## !
-             ! 
+             !
              ! ################################################################################################################ !
           else
              loc_dis_sed(is) = loc_new_sed(is)
@@ -1406,7 +1406,7 @@ CONTAINS
     ! and test if the net (rain - dis) thickness of sedimentating material is > 1.0 cm per time-step, or
     ! net (dis - rain) > 1.0 cm per time-step (i.e., not about to try and remove too much)
     ! if so - take the simplest response - reject all sediment input and set dissolution = rain
-    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material 
+    ! NOTE: the 1 cm limit arises because of the way in which excess sedimentary material
     !        is removed from the top layer and added to the sediment stack, which has layers of thickness 1.0 cm
     loc_sed_top_dth = (loc_new_sed_vol - loc_dis_sed_vol)/(1.0 - par_sed_poros_det)
     IF (loc_sed_top_dth > 1.0) THEN
@@ -1444,7 +1444,7 @@ CONTAINS
        ! ADD material to the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be added;
        !   => if exchange th < remaining (unfilled) thickness of top sub-layer of sediment stack, then
-       !      add required material to top sub-layer only 
+       !      add required material to top sub-layer only
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
@@ -1471,7 +1471,7 @@ CONTAINS
        ! REMOVE material from the sediment stack
        ! test thickness of top (incomplete) sub-layer compared with thickness of material to be removed;
        ! - if exchange vol <= thickness of top sub-layer of sediment stack, then
-       !   remove required material from the top stack sub-layer only 
+       !   remove required material from the top stack sub-layer only
        ! - if exchange vol > thickness of top sub-layer of sediment stack, then
        !   remove all material in the top stack sub-layer, plus additional material from next layer down
        ! NOTE: the porosity of the sediment stack must be taken into account
@@ -1729,7 +1729,7 @@ CONTAINS
        ! NOTE: there are TWO possible end-member models for where the carbonate dissolution takes place
        !       (see Ridgwell [2001]; www.seao2.org/publications/ridgwell_thesis.pdf )
        !       the code for both is provided - simply comment out the one that is not wanted (and re-compile) to change over
-       ! loc_sed_dis_new       - is the amount of newly arrived carbonate that is dissolved 
+       ! loc_sed_dis_new       - is the amount of newly arrived carbonate that is dissolved
        ! loc_sed_dis_top       - is the amount of pre-existing carbonate dissolved from the surface ('top') layer
        ! dum_sed_dis(is_CaCO3) - is the total amount of carbonate that needs to be dissolved
        if (ctrl_sed_interface) then
@@ -1745,7 +1745,7 @@ CONTAINS
           !!!print*,'homogenous'
           ! What it is saying is determine proportion of carbonate that has newly arrived at the sediments (dum_sed_new(is_CaCO3))
           ! compared to the total amount of carbonate available for dissolution (dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3)).
-          ! Dissolve carbonate in this proportion - this should have the same effect as if the 'new' carbonate had been 
+          ! Dissolve carbonate in this proportion - this should have the same effect as if the 'new' carbonate had been
           ! mixed into the surface layer and then dissolution calculated.
           loc_sed_new_frac = dum_sed_new(is_CaCO3)/(dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3))
           loc_sed_dis_new = loc_sed_new_frac*dum_sed_dis(is_CaCO3)
@@ -1893,7 +1893,7 @@ CONTAINS
     !       IF the estimated dissolution flux < 0.0, reset to 0.0
     !           (this is possible in the case of the look-up table,
     !           becuase of the use of extrapolation for values falling outside of the look-up table bounds)
-    !       ELSEIF the estimated dissolution flux is greater than or equal to the combined inventories of 
+    !       ELSEIF the estimated dissolution flux is greater than or equal to the combined inventories of
     !           new material and top material,
     !           => cap the dissolution flux at this total
     !       ELSE, dissolution flux is unchanged
@@ -1966,10 +1966,10 @@ CONTAINS
     REAL,INTENT(in)::dum_fPOC
     REAL,INTENT(inout),DIMENSION(0:par_n_sed_mix)::dum_sed_mix_k
     ! local variables
-    integer::d                 ! 
+    integer::d                 !
     REAL::loc_fPOC             ! POC rain rate driving diagenesis (and CaCO3 dissolution) (umol cm-2 yr-1)
-    real::loc_kO2              ! 
-    real::loc_mix_k_sur        ! 
+    real::loc_kO2              !
+    real::loc_mix_k_sur        !
 
     ! #### USER-DEFINABLE OPTIONS ################################################################################################ !
     ! NOTE: settings not included in the run-time configuration files for clarity
@@ -2015,22 +2015,22 @@ CONTAINS
     ! local variables
     INTEGER::l,is,d                                              !
     REAL::loc_r_sed_por                                          ! porosity ratio
-    REAL::loc_frac_CaCO3                                         ! 
-    REAL,DIMENSION(n_l_sed,0:par_n_sed_mix)::loc_sed             ! 
-    REAL,DIMENSION(n_l_sed)::loc_sed_top                         ! 
+    REAL::loc_frac_CaCO3                                         !
+    REAL,DIMENSION(n_l_sed,0:par_n_sed_mix)::loc_sed             !
+    REAL,DIMENSION(n_l_sed)::loc_sed_top                         !
     REAL,DIMENSION(0:par_n_sed_mix)::loc_mix                     ! adapted sediment mixing rate profile
     REAL,DIMENSION(n_l_sed)::loc_exe                             ! exchange sedimentary material
     REAL,DIMENSION(n_l_sed,0:par_n_sed_mix)::loc_dsed            ! sediment composition change
     REAL,DIMENSION(n_l_sed)::loc_dsed_top                        ! sediment top composition change
 
     ! *** mix the sediment stack ***
-    ! NOTE: restrictions on the dimensioning of arrays in f90 requires that 
-    !       the partial sediment stack passed into this procedure has 
+    ! NOTE: restrictions on the dimensioning of arrays in f90 requires that
+    !       the partial sediment stack passed into this procedure has
     !       an index of 'n_sed_mix' for the top (incomplete) sub-layer, and '0' for the bottom
-    ! NOTE: the sediment mixing rate profile has a corresponing ordering, with the maximum mixing rate 
+    ! NOTE: the sediment mixing rate profile has a corresponing ordering, with the maximum mixing rate
     !       (measured at the uppermost surface of the incomplete stack layer) having the highest ('n_sed_mix') index
     ! NOTE: sedimentary layers are sequentially mixed upwardswards in pairs
-    ! NOTE: the sediment stack must be mixed in with the top layer, in addition to the sediment stack 
+    ! NOTE: the sediment stack must be mixed in with the top layer, in addition to the sediment stack
     !       being mixed internally
     ! NOTE: mix only selected tracers
     ! NOTE: mixing exchange (and the sediment exe(:) array) is measured UPWARDS
@@ -2046,7 +2046,7 @@ CONTAINS
     !       (C) loc_mix(d) therefore defines the mixing between stack layers (d + 1) and d
     !           NOTE: a special case has to be made for d = (n_sed_mix - 1) because the biodiffusion distance is < 1 cm
     !           NOTE: a special case also has to be made for mixing between the d = n_sed_mix stack layer and surface layer
-    !         
+    !
     !       ------------------------------------------                                                                             !
     !       ******************************************                                                                             !
     !       *** SURFACE SEDIMENT ('TOP') LAYER *******                                                                             !

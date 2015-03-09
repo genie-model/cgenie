@@ -190,7 +190,7 @@ CONTAINS
     CHARACTER(LEN=2) :: monthstring, daystring
     CHARACTER(LEN=7) :: datestring
 
-    INTEGER :: status, ncid
+    INTEGER :: ncid
     REAL :: timestep
 
     INTEGER :: icell

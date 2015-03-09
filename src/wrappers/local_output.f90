@@ -27,22 +27,6 @@ CONTAINS
 
   !----------------------------------------------------------------------
   !>
-  !> Internal SUBROUTINE: openInput
-  !>
-  !> opens output file, returns handle to output file
-  !>
-  !----------------------------------------------------------------------
-  SUBROUTINE openInput(filename, ID)
-    IMPLICIT NONE
-    CHARACTER(LEN=*), INTENT(IN) :: filename
-    INTEGER, INTENT(OUT) :: ID
-
-    CALL message("Opening input file in read-only mode!",3)
-    CALL openNetCDFRead(filename,ID)
-  END SUBROUTINE openInput
-
-  !----------------------------------------------------------------------
-  !>
   !> Internal SUBROUTINE: openOutput
   !>
   !> opens output file, returns handle to output file

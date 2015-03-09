@@ -21,8 +21,7 @@
      & dum_nr_maxi,dum_nr_maxj, &
      & dum_n_maxi,dum_n_maxj,   &
      & dum_sfxrok,              &
-     & dum_sfxsumrok1,          &
-     & dum_gem                  &
+     & dum_sfxsumrok1           &
      & )
   IMPLICIT NONE
   ! dummy arguments
@@ -32,7 +31,6 @@
   integer,intent(in)::dum_n_maxi,dum_n_maxj
   real,dimension(dum_n_maxocn,dum_nr_maxi,dum_nr_maxj),intent(in)::dum_sfxrok
   real,dimension(dum_n_maxocn,dum_n_maxi,dum_n_maxj),intent(out)::dum_sfxsumrok1
-  logical,intent(in)::dum_gem
   ! local variables
   integer::i,j
   integer::i1,j1

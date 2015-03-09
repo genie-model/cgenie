@@ -28,7 +28,7 @@ CONTAINS
     INTEGER, DIMENSION(1:ndim), INTENT(OUT) :: iddim
     INTEGER, DIMENSION(1:nvar), INTENT(OUT) :: idvar
 
-    INTEGER :: iflen, lnsig, ii, itlen, iii, itlen1, itlen2
+    INTEGER :: iflen, lnsig, ii, iii
 
     INTEGER :: iret, idebug
     INTEGER :: tempdims(200), dimdim(200)

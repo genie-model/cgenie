@@ -36,11 +36,10 @@ CONTAINS
 
 
   ! Reads restarts from NetCDF
-  SUBROUTINE in_ents_netcdf(fname, myday, land_snow_lnd)
+  SUBROUTINE in_ents_netcdf(fname, land_snow_lnd)
     USE netcdf
     IMPLICIT NONE
     CHARACTER(LEN=*), INTENT(IN) :: fname
-    INTEGER, INTENT(IN) :: myday
     REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
 
     INTEGER :: i, j
@@ -49,7 +48,7 @@ CONTAINS
          &    'soil_resp     ', 'vegC          ', 'soilC         ', &
          &    'fv            ', 'land_temp     ', 'land_water    ', &
          &    'snow          ', 'pco2ld        ' /)
-    INTEGER :: kk, var_id, ncid, time_id
+    INTEGER :: kk, var_id, ncid
     CHARACTER(LEN=200) :: var_name
     REAL :: tempdata1, tempdata(maxi,maxj)
 

@@ -16,13 +16,10 @@ MODULE sedgem_box_benthic
 CONTAINS
 
 
-  function fun_arndtetal2013_sedflx(dum_frac_POC)
+  function fun_arndtetal2013_sedflx()
 
     ! result variable
     real::fun_arndtetal2013_sedflx
-
-    ! dummy variables
-    REAL,INTENT(IN)::dum_frac_POC
 
     ! local variables
 real*8 wdepth, oc1_0, oc2_0

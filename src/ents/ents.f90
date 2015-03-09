@@ -330,7 +330,7 @@ CONTAINS
     ! Continue run
     IF (ents_restart == 'c' .OR. ents_restart == 'C') THEN
        IF (ents_netin == 'y' .OR. ents_netin == 'Y') THEN
-          CALL in_ents_netcdf(ents_filenetin, iniday, land_snow_lnd)
+          CALL in_ents_netcdf(ents_filenetin, land_snow_lnd)
        ELSE
           filename = indir_name(1:lenin) // TRIM(ents_restart_file)
           OPEN(1,FILE=TRIM(filename))

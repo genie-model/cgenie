@@ -1741,7 +1741,6 @@ subroutine biogem_climate_sol( &
 
   ! LOCAL VARIABLES
   INTEGER::i,j
-  integer::loc_k1                                                ! local topography
 
   ! *** UPDATE CLIMATE PROPERTIES ***
   ! (i.e., just the physical properties of the ocean and ocean-atmosphere interface that BIOGEM needs to know about)
