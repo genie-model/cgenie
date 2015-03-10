@@ -225,6 +225,7 @@ with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
 # Create "go" script for job.
 
 shutil.copy(os.path.join(U.cgenie_root, 'tools', 'go'), job_dir)
+shutil.copy(os.path.join(U.cgenie_root, 'tools', 'go.bat'), job_dir)
 
 
 # Set up per-module extra data files (these are files that don't

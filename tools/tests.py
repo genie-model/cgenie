@@ -6,6 +6,7 @@ import optparse
 import subprocess as sp
 import datetime as dt
 import ctypes as ct
+import platform as plat
 
 import utils as U
 import config_utils as C
@@ -213,9 +214,13 @@ def do_run(t, rdir, logfp):
     os.chdir(U.cgenie_root)
     print('Running test "' + t + '"')
     print('Running test "' + t + '"', file=logfp)
+    t = t.replace('\\', '\\\\')
 
     test_dir = os.path.join(U.cgenie_test, t)
-    cmd = [os.path.join(os.curdir, 'new-job')]
+    if plat.system() == 'Windows':
+        cmd = ['cmd', '/c', os.path.join(os.curdir, 'new-job.bat')]
+    else:
+        cmd = [os.path.join(os.curdir, 'new-job')]
 
     # Read test information file.
     config = { }
@@ -262,7 +267,11 @@ def do_run(t, rdir, logfp):
     print('  Building and running job...')
     print('  Building and running job...', file=logfp)
     logfp.flush()
-    cmd = [os.path.join(os.curdir, 'go'), 'run', '--no-progress']
+    if plat.system() == 'Windows':
+        go = ['cmd', '/c', os.path.join(os.curdir, 'go.bat')]
+    else:
+        go = [os.path.join(os.curdir, 'go')]
+    cmd = go + ['run', '--no-progress']
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to build and run test job')
 

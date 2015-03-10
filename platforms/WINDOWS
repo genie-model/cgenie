@@ -21,7 +21,9 @@ f90 = {
     'baselinkflags': ['/SUBSYSTEM:CONSOLE'],
 
     # Debug flags.
-    'debug': ['/debug'],
+    'debug': ['/debug:full', '/Od', '/Fdgenie.pdb',
+              '/check:bounds', '/check:stack'],
+    'debug_link': ['/debug', '/pdb:genie.pdb'],
 
     # Optimisation flags.
     'optimise': ['/O3', '/Qunroll'],

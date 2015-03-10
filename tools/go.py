@@ -3,6 +3,7 @@
 from __future__ import print_function
 import os, os.path, sys, shutil, argparse, glob
 import subprocess as sp
+import platform as plat
 
 import utils as U
 
@@ -89,8 +90,9 @@ def build():
     model_config.setup()
     model_dir = model_config.directory()
     with open(os.devnull, 'w') as sink:
-        need_build = sp.call([scons, '-q', '-C', model_dir],
-                             stdout=sink, stderr=sink)
+        cmd = [scons, '-q', '-C', model_dir]
+        if plat.system() == 'Windows': cmd = ['python'] + cmd
+        need_build = sp.call(cmd, stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
         shutil.copy(os.path.join(model_dir, 'genie.exe'),
@@ -100,6 +102,7 @@ def build():
     with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
         rev = 'rev=' + model_config.display_model_version
         cmd = [scons, '-C', model_dir, rev]
+        if plat.system() == 'Windows': cmd = ['python'] + cmd
         cmd.append('progress=' + ('1' if progress else '0'))
         result = sp.call(cmd, stdout=logfp, stderr=sp.STDOUT)
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
