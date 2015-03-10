@@ -90,22 +90,40 @@ rev = ARGUMENTS['rev'] if 'rev' in ARGUMENTS else 'UNKNOWN'
 defs.append(f90['define'] + "REV=" + rev)
 
 
-# Set up SCons environment: Fortran compiler definitions take from
-# platform configuration.
+# Set up SCons environment: Fortran compiler definitions taken from
+# platform configuration.  Some of these things are Windows-specific:
+# the Microsoft linker uses the directory given in the TMP environment
+# variable for temporary files, and if that's not defined, tries to
+# put them in a read-only system directory; SCons uses the HOST_ARCH
+# environment setting to decide whether to use 32- or 64-bit tools
+# from Visual Studio.
 
+envcopy = { }
+envcopy['PATH'] = os.environ['PATH']
+if 'TMP' in os.environ: envcopy['TMP'] = os.environ['TMP']
+baselinkflags = []
+if 'baselinkflags' in f90:
+    baselinkflags = f90['baselinkflags']
 extraf90flags = []
-extralinkflags = []
 if build_type in f90: extraf90flags = f90[build_type]
+extralinkflags = []
 if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
+extraf90libpaths = []
+if 'libpath' in f90: extraf90libpaths = f90['libpath']
 
-env = Environment(ENV = { 'PATH': os.environ['PATH'] },
+target_vs_arch = 'linux'
+if 'TARGET_VS_ARCH' in os.environ:
+    target_vs_arch = os.environ['TARGET_VS_ARCH']
+
+env = Environment(ENV = envcopy,
                   TOOLS = ['default', f90['compiler']],
+                  HOST_ARCH = target_vs_arch,
                   F90FLAGS = f90['baseflags'] + extraf90flags + defs,
-                  LINKFLAGS = extralinkflags,
+                  LINKFLAGS = baselinkflags + extralinkflags,
                   F90PATH = [netcdfinc] + modpath,
                   FORTRANMODDIRPREFIX = f90['module_dir'],
                   FORTRANMODDIR = '${TARGET.dir}',
-                  LIBPATH = [netcdflib],
+                  LIBPATH = [netcdflib] + extraf90libpaths,
                   LIBS = netcdf['libs'])
 
 

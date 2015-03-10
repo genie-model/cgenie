@@ -241,7 +241,7 @@ CONTAINS
     IF (min_abs > TINY(0.0) .AND. max_absdiff > min_abs) THEN
        IF (max_ulps > 0 .AND. max_reldiff < max_ulps) THEN
           PRINT 100, max_absdiff, max_reldiff, max_ulps
-100       FORMAT ('Max. abs. diff. = ', G12.6, ' but max. rel. diff. = ', &
+100       FORMAT ('Max. abs. diff. = ', G13.6, ' but max. rel. diff. = ', &
                & I0, ' < ', I0)
        ELSE
           do_comparison = 'ERRVALS'

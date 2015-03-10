@@ -51,3 +51,6 @@ genie.exe
 /scripts/python-local-2.7.9/
 *.aux
 *.log
+*.dll
+*.lib
+*.exp

@@ -1,3 +1,16 @@
+if 'TARGET_VS_ARCH' not in os.environ:
+    print("######################################################")
+    print("")
+    print("  INTEL FORTRAN COMPILER ENVIRONMENT NOT CONFIGURED!")
+    print("")
+    print("  BUILD CANCELLED")
+    print("")
+    print("######################################################")
+    sys.exit(1)
+
+ifort_lib = os.path.join(os.environ['ROOT'], 'compiler', 'lib',
+                         os.environ['TARGET_ARCH'])
+
 # Fortran 90 platform definitions.
 f90 = {
     # Compiler name.
@@ -5,6 +18,7 @@ f90 = {
 
     # Default flags.
     'baseflags': ['/fpp', '/noauto', '/warn:declarations', '/real-size:64' ],
+    'baselinkflags': ['/SUBSYSTEM:CONSOLE'],
 
     # Debug flags.
     'debug': ['/debug'],
@@ -15,15 +29,18 @@ f90 = {
     # Miscellaneous flags.
     'include': '/I',          # Include files.
     'module_dir': '/module:', # Module file output directory.
-    'define': '/D'            # Preprocessor definitions.
+    'define': '/D',           # Preprocessor definitions.
+
+    'libpath': [ifort_lib]
 }
 
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.
-    'base': 'C:\\netcdf-4.1.1-win32',
+    'base': os.path.join(U.cgenie_root, 'tools', 'netcdf',
+                         os.environ['TARGET_ARCH']),
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).
-    'libs': ['netcdf', 'netcdff']
+    'libs': ['netcdf_f90']
 }
