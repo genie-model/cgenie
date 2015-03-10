@@ -28,7 +28,7 @@ PYTHONVER='2.7.9'
 PYTHONDIR=Python-$PYTHONVER
 PYTHONTGZ=$PYTHONDIR.tgz
 PYTHONURL=https://www.python.org/ftp/python/$PYTHONVER/$PYTHONTGZ
-PYTHONROOT=$cgenie_root/scripts/python-local-$PYTHONVER
+PYTHONROOT=$cgenie_root/tools/python-local-$PYTHONVER
 LOCALPYTHON=$PYTHONROOT/bin/python
 
 # Check for local 'python' executable.

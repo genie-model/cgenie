@@ -11,7 +11,7 @@ import utils as U
 
 if not U.read_cgenie_config():
     sys.exit('GENIE not set up: run the setup-cgenie script!')
-scons = os.path.join(U.cgenie_root, 'scripts', 'scons', 'scons.py')
+scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
 
 
 # Command line arguments.

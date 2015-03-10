@@ -64,7 +64,7 @@ if model_version != repo_version:
     repodir = U.setup_version_repo(model_version)
     os.chdir(repodir)
     os.execv(sys.executable,
-             [os.path.join(os.curdir, 'scripts', 'new-job.py')] + sys.argv)
+             [os.path.join(os.curdir, 'tools', 'new-job.py')] + sys.argv)
 
 
 # All set up.  Off we go...
@@ -224,7 +224,7 @@ with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
 
 # Create "go" script for job.
 
-shutil.copy(os.path.join(U.cgenie_root, 'scripts', 'go'), job_dir)
+shutil.copy(os.path.join(U.cgenie_root, 'tools', 'go'), job_dir)
 
 
 # Set up per-module extra data files (these are files that don't

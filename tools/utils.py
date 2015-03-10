@@ -112,7 +112,7 @@ class ModelConfig:
                 scons_dir = os.path.join(cgenie_jobs, 'MODELS', 'REPOS',
                                          self.model_version)
             scons_srcdir = os.path.join(scons_dir, 'src')
-            scriptdir = os.path.join(cgenie_root, 'scripts')
+            scriptdir = os.path.join(cgenie_root, 'tools')
             with open(vfile, 'w') as fp:
                 print('# Model source directory', file=fp)
                 print("srcdir = '" + scons_srcdir + "'\n", file=fp)

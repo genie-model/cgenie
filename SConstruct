@@ -2,8 +2,8 @@ from __future__ import print_function
 import os, os.path, sys, glob
 import platform as P
 
-# Set up model source and scripts directory (the "srcdir='src'" thing
-# is there to allow us to run SCons in the root cgenie directory for
+# Set up model source and tools directory (the "srcdir='src'" thing is
+# there to allow us to run SCons in the root cgenie directory for
 # development purposes -- normal job builds will pick up an explicit
 # job configuration and model source directory file in their build
 # directory).
@@ -14,7 +14,7 @@ if os.path.exists('version.py'):
 else:
     srcdir = 'src'
     build_type = 'normal'
-    sys.path.append('scripts')
+    sys.path.append('tools')
 
 import utils as U
 

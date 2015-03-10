@@ -4,5 +4,5 @@ if [ -f ~/.cgenierc ]; then
     exit 0
 fi
 cgenie_root=`pwd`
-source scripts/find_python
-exec $PYTHON scripts/setup-cgenie.py
+source tools/find_python
+exec $PYTHON tools/setup-cgenie.py

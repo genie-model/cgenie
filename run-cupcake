@@ -4,5 +4,5 @@ if [ ! -f ~/.cgenierc ]; then
     exit 0
 fi
 cgenie_root=`grep cgenie_root ~/.cgenierc | cut -d: -f2`
-source $cgenie_root/scripts/find_python
-exec $PYTHON $cgenie_root/scripts/run-cupcake.py $*
+source $cgenie_root/tools/find_python
+exec $PYTHON $cgenie_root/tools/run-cupcake.py $*
