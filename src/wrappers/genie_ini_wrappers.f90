@@ -65,13 +65,8 @@ CONTAINS
     IMPLICIT NONE
     CALL initialise_biogem(go_saln0, go_rhoair, go_cd, go_ds, go_dphi, go_usc, &
          & go_dsc, go_fsc, go_rh0sc, go_rhosc, go_cpsc, genie_solar_constant, &
-         & go_scf, go_ips(1:ilat1_ocn), go_ipf(1:ilat1_ocn), &
-         & go_ias(1:ilat1_ocn), go_iaf(1:ilat1_ocn), go_jsf, &
-         & go_k1(1:ilon1_ocn, 1:ilat1_ocn), go_dz(1:inl1_ocn), &
-         & go_dza(1:inl1_ocn), go_c(0:ilat1_ocn), go_cv(0:ilat1_ocn), &
-         & go_s(0:ilat1_ocn), go_sv(0:ilat1_ocn), &
-         & go_ts(1:intrac_ocn, 1:ilon1_ocn, 1:ilat1_ocn, 1:inl1_ocn), &
-         & go_ts1(1:intrac_ocn, 1:ilon1_ocn, 1:ilat1_ocn, 1:inl1_ocn), &
+         & go_scf, go_ips, go_ipf, go_ias, go_iaf, go_jsf, &
+         & go_k1, go_dz, go_dza, go_c, go_cv, go_s, go_sv, go_ts, go_ts1, &
          & genie_sfcatm1, genie_sfxatm1, genie_sfcocn1, genie_sfxocn1, &
          & genie_sfcsed1, genie_sfxsed1)
   END SUBROUTINE initialise_biogem_wrapper
@@ -106,8 +101,7 @@ CONTAINS
 
   SUBROUTINE initialise_gemlite_wrapper
     IMPLICIT NONE
-    CALL initialise_gemlite(go_dsc, go_k1(1:ilon1_ocn, 1:ilat1_ocn), &
-         & go_dz(1:inl1_ocn), go_dza(1:inl1_ocn), go_sv(0:ilat1_ocn), &
+    CALL initialise_gemlite(go_dsc, go_k1, go_dz, go_dza, go_sv, &
          & genie_sfxsumsed, genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)
   END SUBROUTINE initialise_gemlite_wrapper
 
