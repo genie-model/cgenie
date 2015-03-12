@@ -102,10 +102,10 @@ MODULE genie_control
 
   ! Biogeochemistry time stepping ratios -- loop modifiers (relative
   ! to ocean loop)
-  INTEGER(KIND=8) :: conv_kocn_katchem  !< atchem
-  INTEGER(KIND=8) :: conv_kocn_ksedgem  !< sedgem
-  INTEGER(KIND=8) :: conv_kocn_kbiogem  !< biogem
-  INTEGER(KIND=8) :: conv_kocn_krokgem  !< rokgem
+  INTEGER :: conv_kocn_katchem  !< atchem
+  INTEGER :: conv_kocn_ksedgem  !< sedgem
+  INTEGER :: conv_kocn_kbiogem  !< biogem
+  INTEGER :: conv_kocn_krokgem  !< rokgem
   INTEGER :: kgemlite
 
   ! Total defined tracer numbers

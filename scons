@@ -1,0 +1,3 @@
+#!/bin/bash
+source tools/find_python
+exec $PYTHON tools/scons/scons.py $*

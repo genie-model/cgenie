@@ -294,14 +294,14 @@ CONTAINS
     IMPLICIT NONE
     CALL cpl_flux_rokocn(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & intrac_ocn_max, ilon1_rok, ilat1_rok, ilon1_ocn, ilat1_ocn, &
-         & genie_sfxrok, genie_sfxsumrok1, .FALSE.)
+         & genie_sfxrok, genie_sfxsumrok1)
   END SUBROUTINE cpl_flux_rokocn_wrapper
 
   SUBROUTINE cpl_flux_rokocn_gem_wrapper
     IMPLICIT NONE
     CALL cpl_flux_rokocn(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & intrac_ocn_max, ilon1_rok, ilat1_rok, ilon1_ocn, ilat1_ocn, &
-         & genie_sfxrok, genie_sfxsumrok1_gem, .TRUE.)
+         & genie_sfxrok, genie_sfxsumrok1_gem)
   END SUBROUTINE cpl_flux_rokocn_gem_wrapper
 
   SUBROUTINE reinit_flux_rokocn_wrapper

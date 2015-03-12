@@ -43,6 +43,7 @@ Temporary Items
 .apdisk
 
 *.o
+*.obj
 *.mod
 /build/
 .sconsign.dblite
@@ -57,4 +58,9 @@ genie.exe
 cgenie-scons.sln
 cgenie-scons.vcxproj
 cgenie-scons.vcxproj.filters
-genie.pdb
+cgenie-msvs.vfproj.*.user
+cgenie-msvs.*.suo
+cgenie-msvs.u2d
+*.pdb
+cgenie-msvs/Debug
+cgenie-msvs/Release

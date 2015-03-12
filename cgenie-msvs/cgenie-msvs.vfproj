@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{DCDEDB21-2F73-4FB7-8136-122223803492}">
+	<Platforms>
+		<Platform Name="Win32"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" HeapArrays="0" Preprocess="preprocessYes" AdditionalIncludeDirectories="C:\cgenie\tools\netcdf\ia32\include" PreprocessorDefinitions="GENIENX=36;GENIENY=36;GOLDSTEINNTRACS=14" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\cgenie\tools\netcdf\ia32\lib" GenerateDebugInformation="true" SubSystem="subSystemConsole" StackReserveSize="16777216" AdditionalDependencies="netcdf_f90.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|Win32">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<Filter Name="atchem">
+		<File RelativePath="..\src\atchem\atchem.f90"/>
+		<File RelativePath="..\src\atchem\atchem_box.f90"/>
+		<File RelativePath="..\src\atchem\atchem_data.f90"/>
+		<File RelativePath="..\src\atchem\atchem_data_netCDF.f90"/>
+		<File RelativePath="..\src\atchem\atchem_lib.f90"/>
+		<File RelativePath="..\src\atchem\cpl_comp_atchem.f90"/>
+		<File RelativePath="..\src\atchem\cpl_flux_atchem.f90"/>
+		<File RelativePath="..\src\atchem\end_atchem.f90"/>
+		<File RelativePath="..\src\atchem\initialise_atchem.f90"/></Filter>
+		<Filter Name="biogem">
+		<File RelativePath="..\src\biogem\biogem.f90"/>
+		<File RelativePath="..\src\biogem\biogem_box.f90"/>
+		<File RelativePath="..\src\biogem\biogem_data.f90"/>
+		<File RelativePath="..\src\biogem\biogem_data_ascii.f90"/>
+		<File RelativePath="..\src\biogem\biogem_data_netCDF.f90"/>
+		<File RelativePath="..\src\biogem\biogem_lib.f90"/>
+		<File RelativePath="..\src\biogem\cpl_comp_biogem.f90"/>
+		<File RelativePath="..\src\biogem\end_biogem.f90"/>
+		<File RelativePath="..\src\biogem\initialise_biogem.f90"/></Filter>
+		<Filter Name="common">
+		<File RelativePath="..\src\common\end_gem.f90"/>
+		<File RelativePath="..\src\common\gem_carbchem.f90"/>
+		<File RelativePath="..\src\common\gem_cmn.f90"/>
+		<File RelativePath="..\src\common\gem_data.f90"/>
+		<File RelativePath="..\src\common\gem_geochem.f90"/>
+		<File RelativePath="..\src\common\gem_netcdf.f90"/>
+		<File RelativePath="..\src\common\gem_util.f90"/>
+		<File RelativePath="..\src\common\initialise_gem.f90"/></Filter>
+		<Filter Name="embm">
+		<File RelativePath="..\src\embm\embm.f90"/>
+		<File RelativePath="..\src\embm\embm_data.f90"/>
+		<File RelativePath="..\src\embm\embm_diag.f90"/>
+		<File RelativePath="..\src\embm\embm_lib.f90"/>
+		<File RelativePath="..\src\embm\embm_netcdf.f90"/></Filter>
+		<Filter Name="ents">
+		<File RelativePath="..\src\ents\ents.f90"/>
+		<File RelativePath="..\src\ents\ents_data.f90"/>
+		<File RelativePath="..\src\ents\ents_diag.f90"/>
+		<File RelativePath="..\src\ents\ents_lib.f90"/>
+		<File RelativePath="..\src\ents\ents_netcdf.f90"/></Filter>
+		<Filter Name="gemlite">
+		<File RelativePath="..\src\gemlite\cpl_comp_gemlite.f90"/>
+		<File RelativePath="..\src\gemlite\end_gemlite.f90"/>
+		<File RelativePath="..\src\gemlite\gemlite.f90"/>
+		<File RelativePath="..\src\gemlite\gemlite_box.f90"/>
+		<File RelativePath="..\src\gemlite\gemlite_data.f90"/>
+		<File RelativePath="..\src\gemlite\gemlite_lib.f90"/>
+		<File RelativePath="..\src\gemlite\initialise_gemlite.f90"/></Filter>
+		<Filter Name="goldstein">
+		<File RelativePath="..\src\goldstein\goldstein.f90"/>
+		<File RelativePath="..\src\goldstein\goldstein_data.f90"/>
+		<File RelativePath="..\src\goldstein\goldstein_diag.f90"/>
+		<File RelativePath="..\src\goldstein\goldstein_lib.f90"/>
+		<File RelativePath="..\src\goldstein\goldstein_netcdf.f90"/></Filter>
+		<Filter Name="goldsteinseaice">
+		<File RelativePath="..\src\goldsteinseaice\gold_seaice.f90"/>
+		<File RelativePath="..\src\goldsteinseaice\gold_seaice_data.f90"/>
+		<File RelativePath="..\src\goldsteinseaice\gold_seaice_lib.f90"/>
+		<File RelativePath="..\src\goldsteinseaice\gold_seaice_netcdf.f90"/></Filter>
+		<Filter Name="wrappers">
+		<File RelativePath="..\src\wrappers\end_genie.f90"/>
+		<File RelativePath="..\src\wrappers\genie_control.f90"/>
+		<File RelativePath="..\src\wrappers\genie_end_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_global.f90"/>
+		<File RelativePath="..\src\wrappers\genie_ini_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_loop_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_util.f90"/>
+		<File RelativePath="..\src\wrappers\initialise_genie.f90"/>
+		<File RelativePath="..\src\wrappers\local_netcdf.f90"/>
+		<File RelativePath="..\src\wrappers\local_output.f90"/>
+		<File RelativePath="..\src\wrappers\write_netcdf_genie.f90"/></Filter>
+		<Filter Name="utils">
+		<File RelativePath="..\src\utils\close_file_nc.f90"/>
+		<File RelativePath="..\src\utils\extras.f90"/>
+		<File RelativePath="..\src\utils\get1d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\get2d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\get3d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\length_of_char_nc.f90"/>
+		<File RelativePath="..\src\utils\open_file_nc.f90"/>
+		<File RelativePath="..\src\utils\util1.f90"/>
+		<File RelativePath="..\src\utils\writenc6.f90"/></Filter>
+		<Filter Name="sedgem">
+		<File RelativePath="..\src\sedgem\cpl_comp_sedgem.f90"/>
+		<File RelativePath="..\src\sedgem\cpl_flux_sedgem.f90"/>
+		<File RelativePath="..\src\sedgem\end_sedgem.f90"/>
+		<File RelativePath="..\src\sedgem\initialise_sedgem.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_box.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_box_archer1991_sedflx.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_box_benthic.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_box_ridgwell2001_sedflx.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_box_ridgwelletal2003_sedflx.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_data.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_data_netCDF.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_lib.f90"/>
+		<File RelativePath="..\src\sedgem\sedgem_nnutils.f90"/></Filter>
+		<Filter Name="rokgem">
+		<File RelativePath="..\src\rokgem\cpl_comp_rokocn.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_ocnrok.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_rokatm.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_rokocn.f90"/>
+		<File RelativePath="..\src\rokgem\end_rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\initialise_rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_box.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_data.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_data_netCDF.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_lib.f90"/></Filter>
+		<File RelativePath="..\src\genie.f90"/></Filter></Files>
+	<Globals/></VisualStudioProject>
