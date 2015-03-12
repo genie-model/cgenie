@@ -358,4 +358,6 @@ def copy_restart_files(m, nml, outdir, restart_path):
     indir = os.path.join(restart_path, m)
     fs = glob.glob(os.path.join(indir, '*rst*'))
     fs += glob.glob(os.path.join(indir, '*restart*'))
+    if os.path.exists(os.path.join(indir, 'sedcore.nc')):
+        fs += [os.path.join(indir, 'sedcore.nc')]
     for f in fs: shutil.copy(f, outdir)

@@ -214,7 +214,7 @@ with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
         try:
             with open(os.devnull, 'w') as sink:
                 rev = sp.check_output(['git', 'describe',
-                                       '--tags', 'HEAD'], stdout=sink).strip()
+                                       '--tags', 'HEAD'], stderr=sink).strip()
             print('DEVELOPMENT:' + rev, file=fp)
         except:
             print('DEVELOPMENT:UNKNOWN', file=fp)

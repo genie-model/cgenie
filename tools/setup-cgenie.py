@@ -9,8 +9,8 @@ import utils
 
 # Data and test GitHub repositories.
 
-datarepo = 'git@github.com:ian-ross/cgenie-data'
-testrepo = 'git@github.com:ian-ross/cgenie-test'
+datarepo = 'https://github.com/genie-model/cgenie-data'
+testrepo = 'https://github.com/genie-model/cgenie-test'
 
 
 # Input helpers.

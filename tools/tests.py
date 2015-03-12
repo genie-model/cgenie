@@ -41,7 +41,7 @@ def list(list_base):
 #   ADD A TEST
 #
 
-def biogem_defaults(subd):
+def biogemish_defaults(subd):
     ncs = glob.glob(os.path.join(subd, '*.nc'))
     ncs = [f for f in ncs if f.find('restart') < 0]
     ress = glob.glob(os.path.join(subd, '*.res'))
@@ -51,7 +51,9 @@ def nc_defaults(subd):
     ncs = glob.glob(os.path.join(subd, '*.nc'))
     return [f for f in ncs if f.find('restart') < 0]
 
-select_defaults = { 'biogem': biogem_defaults }
+select_defaults = { 'biogem': biogemish_defaults,
+                    'rokgem': biogemish_defaults,
+                    'sedgem': biogemish_defaults }
 
 def add_test(test_job, test_name, restart):
     def has_job_output(jdir):
@@ -249,6 +251,10 @@ def do_run(t, rdir, logfp):
         cmd += ['-v', test_version]
     if os.path.exists(os.path.join(test_dir, 'restart')):
         cmd += ['-r', os.path.join(test_dir, 'restart')]
+    elif 'restart_from' in config:
+        rjobdir = config['restart_from']
+        if plat.system() == 'Windows': rjobdir = rjobdir.replace('/', '\\')
+        cmd += ['-r', rjobdir]
     cmd += [t, config['run_length']]
 
     # Do job configuration, copying restart files if necessary.
@@ -257,10 +263,6 @@ def do_run(t, rdir, logfp):
     logfp.flush()
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to configure test job')
-    if 'restart_from' in config:
-        rjob = config['restart_from']
-        shutil.copytree(os.path.join(rdir, rjob, 'output'),
-                        os.path.join(rdir, t, 'restart'))
 
     # Build and run job.
     os.chdir(os.path.join(rdir, t))
