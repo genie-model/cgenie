@@ -13,7 +13,10 @@ if os.path.exists('version.py'):
     sys.path.append(scriptdir)
 else:
     srcdir = 'src'
-    build_type = 'normal'
+    if 'debug' in ARGUMENTS:
+        build_type = 'debug'
+    else:
+        build_type = 'normal'
     sys.path.append('tools')
 
 import utils as U
@@ -143,7 +146,7 @@ if 'progress' not in ARGUMENTS or ARGUMENTS['progress'] == '1':
 
 # Build!
 
-Export('env', 'subdirs')
+Export('env', 'subdirs', 'build_type')
 SConscript(os.path.join(srcdir, 'SConscript'),
            variant_dir='#build', duplicate=0)
 Install('.', 'build/genie.exe')

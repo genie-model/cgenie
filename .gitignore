@@ -54,3 +54,7 @@ genie.exe
 *.dll
 *.lib
 *.exp
+cgenie-scons.sln
+cgenie-scons.vcxproj
+cgenie-scons.vcxproj.filters
+genie.pdb

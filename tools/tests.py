@@ -312,6 +312,8 @@ def restart_map(tests):
                 for line in fp:
                     if line.startswith('restart_from'):
                         r = line.split(':')[1].strip()
+                        if plat.system() == 'Windows':
+                            r = r.replace('/', '\\')
             res[t] = r
         check = set(res.values()) - set(res.keys()) - set([None])
     return res

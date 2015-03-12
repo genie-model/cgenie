@@ -1,4 +1,5 @@
 Import('env')
 srcs = Glob('*.f90')
 objs = env.Object(srcs)
-Return('objs')
+res = { 'srcs': srcs, 'objs': objs }
+Return('res')

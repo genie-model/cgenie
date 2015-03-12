@@ -2302,7 +2302,8 @@ CONTAINS
              IF (k >= k1(i,j) .AND. k < kmax) THEN
                 ! First get vertical density gradient (also needed for
                 ! isopycnal diff)
-                CALL eosd(ec, ts1(1,i,j,k:k+1), ts1(2,i,j,k:k+1), &
+                CALL eosd(ec, ts1(1,i,j,k), ts1(1,i,j,k+1), &
+                     & ts1(2,i,j,k), ts1(2,i,j,k+1), &
                      & zw(k), rdza(k), ieos, dzrho, tec)
                 IF (dzrho < -1.0E-12) THEN
                    rdzrho = 1.0 / dzrho
@@ -2872,16 +2873,16 @@ CONTAINS
   END SUBROUTINE eos
 
 
-  SUBROUTINE eosd(ec, t, s, z, rdz, ieos, dzrho, tec)
+  SUBROUTINE eosd(ec, t1, t2, s1, s2, z, rdz, ieos, dzrho, tec)
     IMPLICIT NONE
 
-    REAL, INTENT(IN) :: ec(5), t(2), s(2), z, rdz
+    REAL, INTENT(IN) :: ec(5), t1, t2, s1, s2, z, rdz
     INTEGER :: ieos
     REAL, INTENT(OUT) :: dzrho, tec
     REAL tatw
 
     ! Calculate dzrho (vertical density gradient).
-    tatw = 0.5 * (t(1) + t(2))
+    tatw = 0.5 * (t1 + t2)
     IF (ieos == 0) THEN
        ! No thermobaricity term
        tec = -ec(1) - ec(3) * tatw * 2 - ec(4) * tatw * tatw * 3
@@ -2889,7 +2890,7 @@ CONTAINS
        ! Thermobaricity term is in
        tec = -ec(1) - ec(3) * tatw * 2 - ec(4) * tatw * tatw * 3 - ec(5) * z
     END IF
-    dzrho = (ec(2) * (s(2) - s(1)) - tec * (t(2) - t(1))) * rdz
+    dzrho = (ec(2) * (s2 - s1) - tec * (t2 - t1)) * rdz
   END SUBROUTINE eosd
 
 

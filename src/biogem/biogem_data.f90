@@ -725,10 +725,12 @@ CONTAINS
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     real,dimension(1:n_ocn,1:n_sed)::loc_conv_sed_ocn          !
+    integer,dimension(0:n_ocn,0:n_sed)::loc_tracerrelationships
     ! -------------------------------------------------------- !
     ! INITIALIZE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     loc_conv_sed_ocn(:,:) = 0.0
+    loc_tracerrelationships = 0
     ! -------------------------------------------------------- !
     ! UPDATE REDFIELD RELATIONSHIPS
     ! -------------------------------------------------------- !
@@ -886,7 +888,8 @@ CONTAINS
     if (ocn_select(io_SO4)) conv_ls_lo_S(:,:)    =  fun_conv_sedocn2lslo(conv_sed_ocn_S(:,:))
     if (ocn_select(io_CH4)) conv_ls_lo_meth(:,:) =  fun_conv_sedocn2lslo(conv_sed_ocn_meth(:,:))
     ! -------------------------------------------------------- !  indexing array (all possible)
-    conv_ls_lo_i(:,:) =  fun_conv_sedocn2lslo_i(fun_recalc_tracerrelationships_i(loc_conv_sed_ocn(:,:)))
+    loc_tracerrelationships = fun_recalc_tracerrelationships_i(loc_conv_sed_ocn)
+    conv_ls_lo_i(:,:) =  fun_conv_sedocn2lslo_i(loc_tracerrelationships)
     ! -------------------------------------------------------- ! POM -> DOM
     conv_lP_lD(:,:)   =  fun_conv_sedocn2lslo(conv_POM_DOM(:,:))
     conv_lP_lD_i(:,:) =  fun_conv_sedocn2lslo_i(conv_POM_DOM_i(:,:))
