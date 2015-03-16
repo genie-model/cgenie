@@ -16,10 +16,5 @@ script:
  - git clone git://github.com/genie-model/cgenie-data.git
  - git clone git://github.com/genie-model/cgenie-test.git
  - cd cgenie
- - root=`pwd`
- - echo "cgenie_root: ${root}" > ~/.cgenierc
- - echo "cgenie_data: ${root/cgenie/cgenie-data}" >> ~/.cgenierc
- - echo "cgenie_test: ${root/cgenie/cgenie-test}" >> ~/.cgenierc
- - echo "cgenie_jobs: ${root/cgenie/cgenie-jobs}" >> ~/.cgenierc
- - echo "cgenie_version: DEVELOPMENT" >> ~/.cgenierc
+ - ./tools/travis-setup
  - ./tests run basic

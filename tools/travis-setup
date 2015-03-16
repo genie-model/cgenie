@@ -1,0 +1,7 @@
+#!/bin/bash
+root=`pwd`
+echo "cgenie_root: ${root}" > ~/.cgenierc
+echo "cgenie_data: ${root/cgenie/cgenie-data}" >> ~/.cgenierc
+echo "cgenie_test: ${root/cgenie/cgenie-test}" >> ~/.cgenierc
+echo "cgenie_jobs: ${root/cgenie/cgenie-jobs}" >> ~/.cgenierc
+echo "cgenie_version: DEVELOPMENT" >> ~/.cgenierc
