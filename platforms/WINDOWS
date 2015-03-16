@@ -20,13 +20,14 @@ f90 = {
     'compiler': 'ifort',
 
     # Default flags.
-    'baseflags': ['/fpp', '/noauto', '/heap-arrays',
+    'baseflags': ['/fpp', '/heap-arrays:0',
                   '/warn:declarations', '/real-size:64'],
     'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:16777216'],
 
     # Debug flags.
-    'debug': ['/debug:full', '/Od', '/Fdgenie.pdb',
-              '/check:noarg_temp_created', '/traceback'],
+    'debug': ['/debug:full', '/Od', '/Fdvc120.pdb',
+              '/check:all', '/check:noarg_temp_created',
+              '/traceback', '/dbglibs'],
     'debug_link': ['/DEBUG', '/PDB:genie.pdb'],
 
     # Optimisation flags.
