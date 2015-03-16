@@ -132,16 +132,16 @@ env = Environment(ENV = envcopy,
 
 # Set up prompt progress reporting.
 
-if 'progress' not in ARGUMENTS or ARGUMENTS['progress'] == '1':
-    if P.system() == 'Windows':
-        screen = open('CON:', 'w')
-    else:
-        screen = open('/dev/tty', 'w')
-    def progress_function(node):
-        node = str(node)
-        if node.endswith('.f90'):
-            print(os.path.relpath(node, srcdir), file=screen)
-    Progress(progress_function)
+# if 'progress' not in ARGUMENTS or ARGUMENTS['progress'] == '1':
+#     if P.system() == 'Windows':
+#         screen = open('CON:', 'w')
+#     else:
+#         screen = open('/dev/tty', 'w')
+#     def progress_function(node):
+#         node = str(node)
+#         if node.endswith('.f90'):
+#             print(os.path.relpath(node, srcdir), file=screen)
+#     Progress(progress_function)
 
 
 # Build!
