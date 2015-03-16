@@ -167,12 +167,6 @@ fpline_re_str = '^(' + fp_re_str + ')(\s*,?\s*' + fp_re_str + ')*$'
 fpline_re = re.compile(fpline_re_str)
 
 def compare_ascii(f1, f2, logfp):
-    if not os.path.exists(fp1):
-        print('File missing: ' + fp1)
-        return False
-    if not os.path.exists(fp2):
-        print('File missing: ' + fp2)
-        return False
     with open(f1) as fp1, open(f2) as fp2:
         l1 = 'dummy'
         l2 = 'dummy'
@@ -194,13 +188,15 @@ def compare_ascii(f1, f2, logfp):
                     if max_reldiff < reltol:
                         print('Max abs. diff. = ' + str(max_absdiff) +
                               ' but max. rel. diff. = ' + str(max_reldiff) +
-                              ' < ' + str(reltol))
+                              ' < ' + str(reltol),
+                              file=logfp)
                     else: break
         if l1 == '' and l2 != '' or l1 != '' and l2 == '':
-            print('Files ' + f1 + ' and ' + f2 + ' differ in length')
+            print('Files ' + f1 + ' and ' + f2 + ' differ in length',
+                  file=logfp)
             return True
         elif l1 != l2:
-            print('Files ' + f1 + ' and ' + f2 + ' are different')
+            print('Files ' + f1 + ' and ' + f2 + ' are different', file=logfp)
             return True
         return False
 
@@ -208,6 +204,14 @@ def compare_ascii(f1, f2, logfp):
 # Compare files: might be NetCDF, might be ASCII.
 
 def file_compare(f1, f2, logfp):
+    if not os.path.exists(f1):
+        print('File missing: ' + f1)
+        print('File missing: ' + f1, file=logfp)
+        return True
+    if not os.path.exists(f2):
+        print('File missing: ' + f2)
+        print('File missing: ' + f2, file=logfp)
+        return True
     with open(f1) as tstfp: chk = tstfp.read(4)
     if chk == 'CDF\x01':
         return compare_nc(f1, f2, logfp)
