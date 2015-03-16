@@ -64,3 +64,5 @@ cgenie-msvs.u2d
 *.pdb
 cgenie-msvs/Debug
 cgenie-msvs/Release
+cgenie-msvs/x64/Debug
+cgenie-msvs/x64/Release

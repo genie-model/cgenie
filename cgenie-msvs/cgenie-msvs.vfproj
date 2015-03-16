@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject ProjectCreator="Intel Fortran" Keyword="Console Application" Version="11.0" ProjectIdGuid="{DCDEDB21-2F73-4FB7-8136-122223803492}">
 	<Platforms>
-		<Platform Name="Win32"/></Platforms>
+		<Platform Name="Win32"/>
+		<Platform Name="x64"/></Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32">
 				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" HeapArrays="0" Preprocess="preprocessYes" AdditionalIncludeDirectories="C:\cgenie\tools\netcdf\ia32\include" PreprocessorDefinitions="GENIENX=36;GENIENY=36;GOLDSTEINNTRACS=14" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" BoundsCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
@@ -18,6 +19,26 @@
 				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" SubSystem="subSystemConsole"/>
 				<Tool Name="VFResourceCompilerTool"/>
 				<Tool Name="VFMidlTool" SuppressStartupBanner="true"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Debug|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" HeapArrays="0" Preprocess="preprocessYes" AdditionalIncludeDirectories="C:\cgenie\tools\netcdf\intel64\include" PreprocessorDefinitions="GENIENX=36;GENIENY=36;GOLDSTEINNTRACS=14" WarnInterfaces="true" RealKIND="realKIND8" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" DescriptorDataTypeCheck="true" DescriptorDataSizeCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\cgenie\tools\netcdf\intel64\lib" GenerateDebugInformation="true" SubSystem="subSystemConsole" StackReserveSize="16777216" AdditionalDependencies="netcdf_f90.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/>
+				<Tool Name="VFManifestTool" SuppressStartupBanner="true"/></Configuration>
+		<Configuration Name="Release|x64">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" AdditionalIncludeDirectories="C:\cgenie\tools\netcdf\intel64\include" PreprocessorDefinitions="GENIENX=36;GENIENY=36;GOLDSTEINNTRACS=14" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLinkerTool" LinkIncremental="linkIncrementalNo" SuppressStartupBanner="true" AdditionalLibraryDirectories="C:\cgenie\tools\netcdf\intel64\lib" SubSystem="subSystemConsole" StackReserveSize="16777216" AdditionalDependencies="netcdf_f90.lib"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
 				<Tool Name="VFCustomBuildTool"/>
 				<Tool Name="VFPreLinkEventTool"/>
 				<Tool Name="VFPreBuildEventTool"/>
@@ -85,28 +106,18 @@
 		<File RelativePath="..\src\goldsteinseaice\gold_seaice_data.f90"/>
 		<File RelativePath="..\src\goldsteinseaice\gold_seaice_lib.f90"/>
 		<File RelativePath="..\src\goldsteinseaice\gold_seaice_netcdf.f90"/></Filter>
-		<Filter Name="wrappers">
-		<File RelativePath="..\src\wrappers\end_genie.f90"/>
-		<File RelativePath="..\src\wrappers\genie_control.f90"/>
-		<File RelativePath="..\src\wrappers\genie_end_wrappers.f90"/>
-		<File RelativePath="..\src\wrappers\genie_global.f90"/>
-		<File RelativePath="..\src\wrappers\genie_ini_wrappers.f90"/>
-		<File RelativePath="..\src\wrappers\genie_loop_wrappers.f90"/>
-		<File RelativePath="..\src\wrappers\genie_util.f90"/>
-		<File RelativePath="..\src\wrappers\initialise_genie.f90"/>
-		<File RelativePath="..\src\wrappers\local_netcdf.f90"/>
-		<File RelativePath="..\src\wrappers\local_output.f90"/>
-		<File RelativePath="..\src\wrappers\write_netcdf_genie.f90"/></Filter>
-		<Filter Name="utils">
-		<File RelativePath="..\src\utils\close_file_nc.f90"/>
-		<File RelativePath="..\src\utils\extras.f90"/>
-		<File RelativePath="..\src\utils\get1d_data_nc.f90"/>
-		<File RelativePath="..\src\utils\get2d_data_nc.f90"/>
-		<File RelativePath="..\src\utils\get3d_data_nc.f90"/>
-		<File RelativePath="..\src\utils\length_of_char_nc.f90"/>
-		<File RelativePath="..\src\utils\open_file_nc.f90"/>
-		<File RelativePath="..\src\utils\util1.f90"/>
-		<File RelativePath="..\src\utils\writenc6.f90"/></Filter>
+		<Filter Name="rokgem">
+		<File RelativePath="..\src\rokgem\cpl_comp_rokocn.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_ocnrok.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_rokatm.f90"/>
+		<File RelativePath="..\src\rokgem\cpl_flux_rokocn.f90"/>
+		<File RelativePath="..\src\rokgem\end_rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\initialise_rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_box.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_data.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_data_netCDF.f90"/>
+		<File RelativePath="..\src\rokgem\rokgem_lib.f90"/></Filter>
 		<Filter Name="sedgem">
 		<File RelativePath="..\src\sedgem\cpl_comp_sedgem.f90"/>
 		<File RelativePath="..\src\sedgem\cpl_flux_sedgem.f90"/>
@@ -122,17 +133,27 @@
 		<File RelativePath="..\src\sedgem\sedgem_data_netCDF.f90"/>
 		<File RelativePath="..\src\sedgem\sedgem_lib.f90"/>
 		<File RelativePath="..\src\sedgem\sedgem_nnutils.f90"/></Filter>
-		<Filter Name="rokgem">
-		<File RelativePath="..\src\rokgem\cpl_comp_rokocn.f90"/>
-		<File RelativePath="..\src\rokgem\cpl_flux_ocnrok.f90"/>
-		<File RelativePath="..\src\rokgem\cpl_flux_rokatm.f90"/>
-		<File RelativePath="..\src\rokgem\cpl_flux_rokocn.f90"/>
-		<File RelativePath="..\src\rokgem\end_rokgem.f90"/>
-		<File RelativePath="..\src\rokgem\initialise_rokgem.f90"/>
-		<File RelativePath="..\src\rokgem\rokgem.f90"/>
-		<File RelativePath="..\src\rokgem\rokgem_box.f90"/>
-		<File RelativePath="..\src\rokgem\rokgem_data.f90"/>
-		<File RelativePath="..\src\rokgem\rokgem_data_netCDF.f90"/>
-		<File RelativePath="..\src\rokgem\rokgem_lib.f90"/></Filter>
+		<Filter Name="utils">
+		<File RelativePath="..\src\utils\close_file_nc.f90"/>
+		<File RelativePath="..\src\utils\extras.f90"/>
+		<File RelativePath="..\src\utils\get1d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\get2d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\get3d_data_nc.f90"/>
+		<File RelativePath="..\src\utils\length_of_char_nc.f90"/>
+		<File RelativePath="..\src\utils\open_file_nc.f90"/>
+		<File RelativePath="..\src\utils\util1.f90"/>
+		<File RelativePath="..\src\utils\writenc6.f90"/></Filter>
+		<Filter Name="wrappers">
+		<File RelativePath="..\src\wrappers\end_genie.f90"/>
+		<File RelativePath="..\src\wrappers\genie_control.f90"/>
+		<File RelativePath="..\src\wrappers\genie_end_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_global.f90"/>
+		<File RelativePath="..\src\wrappers\genie_ini_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_loop_wrappers.f90"/>
+		<File RelativePath="..\src\wrappers\genie_util.f90"/>
+		<File RelativePath="..\src\wrappers\initialise_genie.f90"/>
+		<File RelativePath="..\src\wrappers\local_netcdf.f90"/>
+		<File RelativePath="..\src\wrappers\local_output.f90"/>
+		<File RelativePath="..\src\wrappers\write_netcdf_genie.f90"/></Filter>
 		<File RelativePath="..\src\genie.f90"/></Filter></Files>
 	<Globals/></VisualStudioProject>

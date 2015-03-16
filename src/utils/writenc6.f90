@@ -81,7 +81,6 @@ CONTAINS
           END IF
           CALL check_err(NF90_PUT_ATT(ncid, iddim(ii), &
                & TRIM(attdimname(1,iii,ii)), TRIM(attdimname(2,iii,ii))))
-          CALL check_err(iret)
        END DO
        realval(1) = -99999.0
        CALL check_err(NF90_PUT_ATT(ncid, iddim(ii), 'missing_value', realval))
