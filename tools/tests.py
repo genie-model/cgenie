@@ -16,7 +16,8 @@ import config_utils as C
 
 if not U.read_cgenie_config():
     sys.exit('GENIE not set up: run the setup-cgenie script!')
-scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+scons = [os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+if plat.system() == 'Windows': scons = ['python'] + scons
 nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
 test_version = U.cgenie_version
 
@@ -134,7 +135,7 @@ reltol = 35
 
 def ensure_nccompare():
     if os.path.exists(nccompare): return
-    cmd = [scons, '-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
+    cmd = scons + ['-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
     with open(os.devnull, 'w') as sink:
         status = sp.call(cmd, stdout=sink, stderr=sink)
     if status != 0:
