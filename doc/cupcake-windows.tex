@@ -1,0 +1,485 @@
+\documentclass[a4paper,10pt,article]{memoir}
+
+\usepackage[a4paper,margin=1in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage{fourier}
+\usepackage{amsmath,amssymb}
+
+\usepackage{color}
+\definecolor{orange}{rgb}{0.75,0.5,0}
+\definecolor{magenta}{rgb}{1,0,1}
+\definecolor{cyan}{rgb}{0,1,1}
+\definecolor{grey}{rgb}{0.25,0.25,0.25}
+\newcommand{\outline}[1]{{\color{grey}{\scriptsize #1}}}
+\newcommand{\revnote}[1]{{\color{red}\textit{\textbf{#1}}}}
+\newcommand{\note}[1]{{\color{blue}\textit{\textbf{#1}}}}
+\newcommand{\citenote}[1]{{\color{orange}{[\textit{\textbf{#1}}]}}}
+
+\usepackage{xspace}
+
+\usepackage{listings}
+\usepackage{courier}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,language=Python}
+
+\usepackage{fancyvrb}
+\usepackage{url}
+
+\usepackage{float}
+\newfloat{listing}{tbp}{lop}
+\floatname{listing}{Listing}
+
+\title{GENIE \texttt{cupcake} on Windows}
+\author{Ian~Ross}
+\date{4 March 2015}
+
+\begin{document}
+
+\catcode`~=11    % Make tilde a normal character (danger of weirdness...)
+%\catcode`~=13    % Make tilde an active character again
+
+\maketitle
+
+This document describes how to use the new \texttt{cupcake} version of
+the GENIE model on Windows.  Documentation is divided into two
+sections, one for users of the model and one for those who wish to
+modify the model.
+
+\emph{Throughout this document, shell commands are shown in
+  \texttt{typewriter} font.  Commands that extend over several lines
+  are marked with lines ending \texttt{...} with the following line
+  beginning \texttt{...}.}
+
+%======================================================================
+\chapter{For GENIE users}
+
+%----------------------------------------------------------------------
+\section{Installation and setup}
+
+The following prerequisites are needed in order to install and use
+GENIE on Windows:
+\begin{description}
+  \item[Git]{You can install Git from here:
+    \url{http://git-scm.com/download/win}.}
+  \item[Python]{You need Python version 2.7.9, which can be installed
+    from here:
+    \url{https://www.python.org/downloads/release/python-279/}.}
+  \item[Microsoft Visual Studio]{All of the features described here
+    have been tested with \emph{Microsoft Visual Studio Ultimate 2013}
+    (version 12.0.31101.00).}
+  \item[Intel Visual Fortran]{All of the features described here have
+    been tested with \emph{Intel Parallel Studio XE 2015 Composer
+      Edition for Fortan} (compiler version 15.0.2.179).}
+\end{description}
+
+I have no way of testing with other versions of Visual Studio or Intel
+Fortran, but significantly older versions of either are unlikely to
+work.
+
+To install GENIE, first choose a location for the installation.  On
+Windows, it's probably best just to install GENIE in
+\texttt{C:\textbackslash{}cgenie}.  In a command prompt window, clone
+the main \texttt{cgenie} repository from GitHub using the command
+\begin{verbatim}
+  git clone https://github.com/genie-model/cgenie.git
+\end{verbatim}
+This will produce a new directory called \texttt{cgenie} containing
+the model source code and build scripts.
+
+You then need to install NetCDF libraries suitable for use on Windows:
+\begin{verbatim}
+  c:
+  cd \cgenie\tools
+  git clone https://github.com/genie-model/netcdf-min-ifort-win netcdf
+\end{verbatim}
+and you need to add the path to the NetCDF Fortran 90 DLL
+(\texttt{C:\textbackslash{}genie\textbackslash{}tools\textbackslash{}netcdf\textbackslash{}ia32\textbackslash{}bin})
+to your \texttt{PATH}.
+
+Before using the model, it's necessary to do a little bit of setup.
+Go into the new \texttt{cgenie} directory and run the
+\texttt{setup-cgenie} script:
+\begin{verbatim}
+  c:
+  cd \cgenie
+  setup-cgenie
+\end{verbatim}
+Note that unlike the Linux setup scripts, this does \emph{not} test
+for a suitable version of Python -- it's up to you to make sure that
+you have Python 2.7.9 installed!  The script will ask where you want
+to put a number of things -- it's usually find to just take the
+defaults (just hit enter at each of the prompts).  In all of what
+follows below, we'll assume that you chose the defaults.  The things
+the script asks for are:
+\begin{itemize}
+  \item{The GENIE root installation directory: unless you know what
+    you're doing, accept the \texttt{C:\textbackslash{}cgenie} default
+    for this.}
+  \item{The GENIE data directory (default
+    \texttt{C:\textbackslash{}cgenie-data}) where base and user model
+    configurations are stored, along with forcing files.}
+  \item{The GENIE test directory (default
+    \texttt{C:\textbackslash{}cgenie-test}) where GENIE jobs with
+    known good outputs can be stored for use as tests -- it's possible
+    to run sets of tests and compare their results with the known good
+    values with a single command, which is useful for making sure that
+    the model is working.}
+  \item{The GENIE jobs directory (default
+    \texttt{C:\textbackslash{}cgenie-jobs}) where new GENIE jobs are
+    set up -- the \texttt{new-job} script (see next section) sets jobs
+    up here by default.}
+  \item{The default model version to use for running jobs.  By
+    default, the most recent released version is selected, but you can
+    type another version if necessary.  You can also set jobs up to
+    use any model version later on.}
+\end{itemize}
+After providing this information, the setup script will ask whether
+you want to download the data and test repositories.  It's usually
+best to say yes.
+
+Once the data and test repositories have been downloaded, GENIE is
+ready to use.  The setup information is written to a
+\texttt{.cgenierc} file in your home directory (which can be in a
+number of places on Windows: the \texttt{USERPROFILE} environment
+variable normally points to the right place).  If you ever want to set
+the model up afresh, just remove this file and run the
+\texttt{setup-cgenie} script again.
+
+\paragraph{Important:}
+
+There are a large number of environment variables that need to be set
+up for the Intel Fortran compiler to work correctly.  You \emph{must}
+run the GENIE configuration and build scripts from a command prompt
+window that has these environment variables set.  Command prompt
+shortcuts with the appropriate variables set will be found in the
+Start menu under: ``All Programs'' $\to$ ``Intel Parallel Studio XE
+2015'' $\to$ ``Compiler and Performance Libraries'' $\to$ ``Command
+Prompt with Intel Compiler XE v15.0 Update 2'' $\to$ ``IA-32 Visual
+Studio 2013 mode''.  \emph{Note that only 32-bit builds of GENIE are
+  currently supported.}
+
+\vspace{\baselineskip}
+
+To check that the installation has been successful and that the model
+works on your machine, you can run some basic test jobs -- in the
+\texttt{C:\textbackslash{}cgenie} directory, just type
+\begin{verbatim}
+  tests run basic
+\end{verbatim}
+This runs an ocean-atmosphere simulation and an ocean biogeochemistry
+simulation using the default model version selected at setup time.
+
+%----------------------------------------------------------------------
+\section{Creating new jobs}
+
+New GENIE jobs are configured using the \texttt{new-job} script in
+\texttt{~/cgenie}.  This takes a number of arguments that describe the
+job to be set up and produces a job directory under
+\texttt{~/cgenie-jobs} containing everything needed to build and run
+the model with the selected configuration.  The \texttt{new-job}
+script should be run as:
+\begin{verbatim}
+  new-job [options] job-name run-length
+\end{verbatim}
+where \texttt{job-name} is the name to be used for the job directory
+to be created under \texttt{C:\textbackslash{}cgenie-jobs} and
+\texttt{run-length} is the length of the model run in years.  The
+possible options for \texttt{new-job} are as follows (in each case
+given in both short and long forms where these exist).  First, there
+are three options that control the basic configuration of the model.
+In most cases, a base and a user configuration should be supplied
+(options \texttt{-b} and \texttt{-u}).  In some special circumstances,
+a custom ``full'' configuration may also be used (the \texttt{-c}
+option).
+
+\begin{verbatim}
+  -b BASE_CONFIG   --base-config=BASE_CONFIG
+\end{verbatim}
+The base model configuration to use -- these are stored in the
+\texttt{C:\textbackslash{}cgenie-data\textbackslash{}base-configs} directory.
+
+\begin{verbatim}
+  -u USER_CONFIG   --user-config=USER_CONFIG
+\end{verbatim}
+The user model configuration to apply on top of the base configuration
+-- model user configurations are stored in the
+\texttt{C:\textbackslash{}cgenie-data\textbackslash{}user-configs}
+directory.
+
+\begin{verbatim}
+  -c CONFIG        --config=CONFIG
+\end{verbatim}
+Full configuration name (this is mostly used for conversions of
+pre-\texttt{cupcake} tests) -- full configurations are stored in the
+\texttt{C:\textbackslash{}cgenie-data\textbackslash{}full-configs}
+directory.
+
+In addition to the configuration file options, the following
+additional options may be supplied to \texttt{new-job}:
+
+\begin{verbatim}
+  -O     --overwrite
+\end{verbatim}
+Normally, \texttt{new-job} will not overwrite any existing job of the
+requested name.  Supplying the \texttt{-O} flag causes
+\texttt{new-job} to delete and replace any existing job with the
+requested name.
+
+\begin{verbatim}
+  -r RESTART    --restart=RESTART
+\end{verbatim}
+One GENIE job can be \emph{restarted} from the end of another.  This
+option allows for a restart job to be specified.  This must be a job
+that has already been run (so that there is output data to use for
+restarting the model).
+
+\begin{verbatim}
+  --old-restart
+\end{verbatim}
+It may sometimes be useful to restart from an old pre-\texttt{cupcake}
+job.  This flag indicates that the job name supplied to the
+\texttt{-r} flag is the name of an old GENIE job whose output can be
+found in the \texttt{C:\textbackslash{}cgenie\_output} directory.
+
+\begin{verbatim}
+  --t100
+\end{verbatim}
+This flag indicates that the job should use the alternative "T100"
+timestepping options for the model (i.e. 100 timesteps per year for
+the default model resolution instead of 96).
+
+\begin{verbatim}
+  -j JOB_DIR     --job-dir=JOB_DIR
+\end{verbatim}
+It can sometimes be useful to put GENIE jobs somewhere other than
+\texttt{C:\textbackslash{}cgenie-jobs}.  This flag allows an
+alternative job directory to be specified.
+
+\begin{verbatim}
+  -v MODEL_VERSION    --model-version=MODEL_VERSION
+\end{verbatim}
+Normally, \texttt{new-job} will generate a job set up to use the
+default model version which was selected when the
+\texttt{setup-cgenie} script was run.  This flag allows for a
+different model version to be selected.
+
+\subsection*{Examples}
+
+\begin{verbatim}
+  new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
+            ... -u LABS\LAB_0.snowball snowball 10
+\end{verbatim}
+This configures the first example job in the workshop handout.  After
+running this invocation of \texttt{new-job}, a new
+\texttt{~/cgenie-jobs/snowball} job directory will have been created
+from which the job can be executed.
+
+\begin{verbatim}
+  new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
+            ... -u LABS\LAB_0.snowball -r snowball snowball2 10
+\end{verbatim}
+This invocation of \texttt{new-job} sets up a new \texttt{snowball2}
+job that restarts from the end of the \texttt{snowball} job to run for
+an additional 10 years.
+
+%----------------------------------------------------------------------
+\section{Running jobs}
+
+Once a job has been set up using the \texttt{new-job} script, it can
+be run from the newly created job directory using a ``\texttt{go}''
+script.  Configuring and running a job is as simple as:
+\begin{verbatim}
+  c:
+  cd \cgenie
+  new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
+            ... -u LABS/LAB_0.snowball snowball 10
+  cd \cgenie-jobs\snowball
+  go run
+\end{verbatim}
+The \texttt{go} script has three main options and two advanced
+options.  The basic options are:
+\begin{description}
+  \item[\texttt{go clean}]{Remove model output and model executables
+    and compiled object files for the current job setup.}
+  \item[\texttt{go build}]{Compile the required version of the model
+    to run this job -- this depends on a number of things, including
+    the selected model resolution, but the build system ensures that
+    model executables are not recompiled unnecessarily.}
+  \item[\texttt{go run}]{Compile the model (if necessary) and run
+    the current job.}
+\end{description}
+Both the \texttt{build} and \texttt{run} commands can also take a
+``build type'' argument for building debug or profiling versions of
+the model.  For more information about this and about how the build
+system maintains fresh executables of selected versions of the model,
+see Section~\ref{sec:genie-devs}.  Also see that section for the two
+``advanced'' options to the \texttt{go} script, which are used to
+select alternative ``platforms'' for a machine -- in the normal case,
+the build system will select the appropriate compilers and flags based
+on the machine on which the model is being run (assuming that a
+platform definition has been set up for the machine), but sometimes it
+may be desirable to select between different compilers on the same
+machine, for which a \texttt{set-platform} option is provided by the
+\texttt{go} script.
+
+%----------------------------------------------------------------------
+\section{Managing configuration files}
+
+Configuration files are all kept in
+\texttt{C:\textbackslash{}cgenie-data}, base configurations in the
+\texttt{base-configs} directory and user configurations in
+\texttt{user-configs}.  All of this configuration data is held in a
+Git repository on GitHub, so if you want to add user or base
+configurations to share with other users, ask someone about how to set
+yourself up to use GitHub.
+
+%----------------------------------------------------------------------
+\section{Managing tests}
+
+It is possible to save job configurations and results as test jobs
+with ``known good'' data.  This has two main uses -- first, for
+testing a GENIE installation to make sure that it's working; second,
+to test that changes to the model don't inadvertently affect
+simulation results.  The second application is of more interest for
+people changing the GENIE model code, but it can still be useful to
+save jobs as tests.
+
+The \texttt{tests} script in \texttt{C:\textbackslash{}cgenie} is used
+to manage and run test jobs.  To list the available tests, do
+\begin{verbatim}
+  tests list
+\end{verbatim}
+and to run an individual test or a set of tests, do
+\begin{verbatim}
+  tests run <test>
+\end{verbatim}
+where \texttt{<test>} is either a single test name (e.g.
+\texttt{basic/biogem}), a set of tests (e.g. \texttt{basic}) or
+\texttt{ALL}, which runs \emph{all} available tests.  The tests are
+run as normal GENIE jobs in a subdirectory of
+\texttt{C:\textbackslash{}cgenie-jobs} with a name of the form
+\texttt{test-YYYYMMDD-HHMMSS} based on the current date and time.  As
+well as full test job output, build and run logs, a \texttt{test.log}
+file is produced in this test directory, plus a \texttt{summary.txt}
+file giving a simple pass/fail indication for each test.
+
+An existing job can be added as a test using a command like
+\begin{verbatim}
+  tests add <job-name>
+\end{verbatim}
+where \texttt{<job-name>} is the name of an existing job in
+\texttt{C:\textbackslash{}cgenie-jobs}.  Note that you need to run the
+job before you can add it as a test!  The test script will ask you
+which output files you want to use for comparison for each model
+component -- there are sensible defaults in most cases, but you can
+select individual files too if you prefer.
+
+There are two other features of the test addition command that can be
+useful.  First, it's possible to give the test a different name than
+the job it's made from -- for example
+\begin{verbatim}
+  tests add hosing\test-1=hosing-experiment-1
+\end{verbatim}
+adds a test called \texttt{hosing\textbackslash{}test-1} based on the
+\texttt{hosing-experiment-1} job.  Second, it's possible to say that a
+new test should be restarted from the output of an existing test.
+Normally, if a test is created from a job that requires restart files,
+the restart files are just copied from the job into the new test.
+Sometimes though, it can be of interest to run the job that generated
+the restart data, then immediately run a test starting from the output
+of the first test.  This can be done using something like this:
+\begin{verbatim}
+  tests add foo\test-1=job-1
+  tests add foo\test-2=job-2 -r foo\test-1
+\end{verbatim}
+This indicates that \texttt{foo\textbackslash{}test-1} is a ``normal''
+test, while \texttt{foo\textbackslash{}test-2} is a test that depends
+on \texttt{foo\textbackslash{}test-1} for its restart data.  When you
+run a test that depends on another for restart data, the test script
+deals with making sure that the restart test is run before the test
+that depends on it.  So, for example, you can just say
+\begin{verbatim}
+  tests run foo\test-2
+\end{verbatim}
+and the test script will figure out that it needs to run
+\texttt{foo\textbackslash{}test-1} first in order to generate restart
+data for \texttt{foo\textbackslash{}test-2}.
+
+%----------------------------------------------------------------------
+\section{Managing model versions}
+
+For most users, it makes sense to run jobs using the most recent
+available version of the GENIE model code.  This is the option chosen
+by default when the model is initially set up.  However, it can
+sometimes be useful to run jobs with earlier model versions (or with a
+development version of the model -- see the next section).  The GENIE
+configuration and build system provides a simple mechanism to permit
+this, hiding most of the (rather complex) details of managing multiple
+model versions from users.
+
+Model versions are indicated by Git ``tags''.  In order to see a list
+of available model versions, use the following command in the
+\texttt{C:\textbackslash{}cgenie} directory:
+\begin{verbatim}
+  git tag -l
+\end{verbatim}
+To configure a job to use a different model version from the default,
+simply add a \texttt{-v} flag to \texttt{new-job} specifying the model
+version you want to use.  For example, to configure a job to use the
+\texttt{cupcake-1.0} version of the model, use something like the
+following command:
+\begin{verbatim}
+  new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
+            ... -u LABS\LAB_0.snowball snowball 10 ...
+            ... -v cupcake-1.0
+\end{verbatim}
+Within a job directory, you can see what model version the job was
+configured with by looking at the contents of the
+\texttt{config\textbackslash{}model-version} file -- in
+non-development cases, this will just contain the Git tag of the model
+version.
+
+
+%======================================================================
+\chapter{For GENIE developers}
+\label{sec:genie-devs}
+
+For developers of GENIE, there are a few extra things to know beyond
+what's needed to run the model.  Most of this is covered in the
+\emph{GENIE \texttt{cupcake} Configuration and Build System} document.
+
+The only Windows-specific feature to be covered here is how to debug
+the model in Visual Studio.  This is a little complicated and there
+are a number of possible approaches.  The following steps describe the
+recommended method:
+
+\begin{enumerate}
+  \item{Set up a new GENIE job for the conditions you want to use for
+    debugging using the \texttt{new-job} script.}
+  \item{Start Microsoft Visual Studio.}
+  \item{Open the
+    \texttt{C:\textbackslash{}cgenie\textbackslash{}cgenie-msvs\textbackslash{}cgenie-msvs.sln}
+    Visual Studio solution file.}
+  \item{Right click on the ``\texttt{cgenie-msvs}'' project line in
+    the Solution Explorer and choose ``Properties''.}
+  \item{In the properties dialog, select ``Configuration Properties''
+    $\to$ ``Fortran'' $\to$ ``Preprocessor'' and edit the
+    ``Preprocessor definitions'' line to include all the coordinate
+    definitions listed in the \texttt{config\textbackslash{}job.py}
+    file in the job directory of the job you want to use for
+    debugging.}
+  \item{Still in the properties dialog, select ``Configuration
+    Properties'' $\to$ ``Debugging'' and edit the ``Working
+    Directory'' field to point to the job directory of the job you
+    want to use for debugging.}
+  \item{Click ``OK'' in the properties dialog to save the changed
+    settings.}
+  \item{From the ``BUILD'' menu, select ``Rebuild Solution'' and wait
+    for the model to be rebuilt.}
+  \item{Set breakpoints in source files before starting debugging.}
+  \item{From the ``DEBUG'' menu, select ``Start Debugging'' and debug
+    as normal.  Output from GENIE will appear in a seperate console
+    window.}
+\end{enumerate}
+
+\end{document}
