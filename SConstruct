@@ -108,10 +108,7 @@ baselinkflags = []
 if 'baselinkflags' in f90:
     baselinkflags = f90['baselinkflags']
 extraf90flags = []
-if build_type in f90:
-    extraf90flags = f90[build_type]
-else:
-    sys.exit('Build type "' + build_type + '" not supported for platform!')
+if build_type in f90: extraf90flags = f90[build_type]
 extralinkflags = []
 if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
 extraf90libpaths = []

@@ -141,7 +141,7 @@ def ensure_nccompare():
     with open(os.devnull, 'w') as sink:
         status = sp.call(cmd, stdout=sink, stderr=sink)
     if status != 0:
-        sys.exit('Couldn not build nccompare.exe program')
+        sys.exit('Could not build nccompare.exe program')
 
 
 # Compare NetCDF files.
