@@ -157,6 +157,7 @@ def run_coverage(tests):
     # Determine suitable execution order for tests from topological
     # sort of restart dependency graph.
     rtests = topological_sort(restarts)
+    if rtests == []: sys.exit('No tests specified!')
 
     # Clear coverage builds, run all jobs and collect gcov data.
     clear_gcov()
@@ -193,11 +194,20 @@ def collect_gcov(rdir, logfp):
         # Run gcov on all object files.
         objs = glob.glob('*.o') + glob.glob('*/*.o')
         for o in objs:
-            if sp.check_call(['gcov', o], stdout=logfp, stderr=logfp) != 0:
+            ps = o.split('/')
+            if len(ps) == 2:
+                d = ps[0]
+                f = ps[1]
+            else:
+                d = None
+                f = ps[0]
+            if d: os.chdir(d)
+            if sp.check_call(['gcov', f], stdout=logfp, stderr=logfp) != 0:
                 sys.exit('Failed processing ' + o + ' in ' + cov)
-            gc = os.path.splitext(os.path.basename(o))[0] + '.f90.gcov'
+            gc = os.path.splitext(f)[0] + '.f90.gcov'
             gcto = os.path.join(rdir, 'gcov-results', gc + '-' + str(icov))
             if os.path.exists(gc): shutil.move(gc, gcto)
+            if d: os.chdir(os.pardir)
 
 
 # Merge coverage results.
@@ -212,18 +222,20 @@ def count_max(c1, c2):
 def merge_gcov(rdir, logfp):
     os.chdir(os.path.join(rdir, 'gcov-results'))
     for gc in glob.iglob('*.f90.gcov-1'):
-        f90 = fc.replace('.gcov-1', '')
+        f90 = gc.replace('.gcov-1', '')
         lines = []
         counts = []
         first = True
-        for f in glob.iglob(os.path.join(f90, 'gcov-*')):
+        print('f90:', gc)
+        for f in glob.iglob(f90 + '.gcov-*'):
+            print('  f:', f)
             i = 0
             with open(f) as fpin:
                 for l in fpin:
-                    c, n, v = l.split(':')
+                    c, v = l.split(':', 1)
                     if first:
-                        lines += n + ':' + v
-                        counts += c
+                        lines.append(v.rstrip())
+                        counts.append(c)
                     else:
                         counts[i] = count_max(counts[i], c)
                     i += 1
