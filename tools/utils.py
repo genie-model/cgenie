@@ -56,7 +56,7 @@ def discover_platform():
 
 # Recognised build types.
 
-build_types = ['normal', 'debug', 'ship', 'profile', 'bounds']
+build_types = ['normal', 'debug', 'ship', 'profile', 'bounds', 'coverage']
 
 
 # Model configuration information: model configuration is based on

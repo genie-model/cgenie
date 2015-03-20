@@ -268,7 +268,7 @@ if not gui:
             else:                              usage()
         elif len(sys.argv) != 2: usage()
         if build_type and build_type not in U.build_types:
-            sys.exit('Unrecognised build type: "', build_type, '"')
+            sys.exit('Unrecognised build type: "' + build_type + '"')
     else: usage()
 
 

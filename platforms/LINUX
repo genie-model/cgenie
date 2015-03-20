@@ -21,6 +21,10 @@ f90 = {
     # Bounds checking flags ("bounds" build type).
     'bounds': ['-fbounds-check'],
 
+    # Test coverage analysis.
+    'coverage': ['-O0', '--coverage'],
+    'coverage_link': ['--coverage'],
+
     # Miscellaneous flags.
     'include': '-I',         # Include files.
     'module_dir': '-J',      # Module file output directory.
