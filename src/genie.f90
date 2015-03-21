@@ -5,7 +5,6 @@
 PROGRAM GENIE
 
   USE genie_util, ONLY : die
-  USE write_netcdf
   USE genie_control
   USE genie_global
   USE genie_ini_wrappers

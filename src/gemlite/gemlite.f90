@@ -496,24 +496,6 @@ end subroutine gemlite_cycleinit
 
 
 ! ******************************************************************************************************************************** !
-! GEMLITE LOOP SUBROUTINE - INITIALIZATION
-     subroutine gemlite_cycleclean( &
-     & dum_sfxsumrok1_gem      &
-     & )
-  USE gemlite_lib
-  IMPLICIT NONE
-  ! dummy arguments
-  REAL,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1_gem       !
-
-  ! *** RE-INITIALIZE VARIABLES ***
-  ! reset cumulative (annual average) weathering array (<dum_sfxsumrok1_gem>)
-  dum_sfxsumrok1_gem(:,:,:) = 0.0
-
-end subroutine gemlite_cycleclean
-! ******************************************************************************************************************************** !
-
-
-! ******************************************************************************************************************************** !
 ! GEMlite<->ts COUPLING SUBROUTINE
 subroutine gemlite_ts( &
      & dum_ts,         &

@@ -4,56 +4,6 @@ MODULE genie_loop_wrappers
 
 CONTAINS
 
-  SUBROUTINE surf_ocn_sic_wrapper
-    USE goldstein
-    IMPLICIT NONE
-    ! Surflux module : GOLDSTEIN-GOLDSEAICE (parentage = c-GOLDSTEIN)
-    !
-    ! Inputs :  tstar_ocn                ocean surface temperature
-    !           sstar_ocn                ocean surface salinity
-    !           albedo_ocn               ocean albedo
-    !           tstar_atm                surface temperature
-    !           surf_qstar_atm           surface specific humidity
-    !           surf_pres_atm            surface pressure
-    !           surf_hght_atm            surface height (atmosphere)
-    !           hght_sic                 sea-ice height
-    !           frac_sic                 sea-ice fractional cover
-    !           temp_sic                 sea-ice surface temperature
-    !           albd_sic                 sea-ice albedo (also an output)
-    !           ocean_lowestlu2_ocn      surface wind speed (x) at u point
-    !           ocean_lowestlv2_ocn      surface wind speed (y) at u point
-    !           ocean_lowestlu3_ocn      surface wind speed (x) at v point
-    !           ocean_lowestlv3_ocn      surface wind speed (y) at v point
-    !           netsolar_ocnsic          net short-wave to ocean + sea-ice
-    !           netlong_ocnsic           net long-wave to ocean + sea-ice
-    !           albavg_ocn               average ocean grid cell albedo
-    !           rough_ocn                ocean roughness
-    !           ocean_stressx2_ocn       surface wind stress (x) at u point
-    !           ocean_stressy2_ocn       surface wind stress (y) at u point
-    !           ocean_stressx3_ocn       surface wind stress (x) at v point
-    !           ocean_stressy3_ocn       surface wind stress (y) at v point
-    !           latent_ocn               latent heat flux
-    !           sensible_ocn             sensible heat flux
-    !           netsolar_ocn             net short-wave heat flux to ocean only
-    !           netlong_ocn              net long-wave heat flux to ocean only
-    !           evap_ocn                 evaporation
-    !           surf_latent_atm          latent heat flux
-    !           surf_sensible_atm        sensible heat flux
-    !           evap_atm                 evaporation
-    !           dhght_sic                change in sea-ice height
-    !           dfrac_sic                change in sea-ice fractional cover
-    CALL surf_ocn_sic(istep_gsurf, tstar_ocn, sstar_ocn, albedo_ocn, &
-         & ocean_lowestlt_ocn, ocean_lowestlq_ocn, ocean_lowestlp_ocn, &
-         & ocean_lowestlh_ocn, hght_sic, frac_sic, temp_sic, albd_sic, &
-         & ocean_lowestlu2_ocn,ocean_lowestlv2_ocn, ocean_lowestlu3_ocn, &
-         & ocean_lowestlv3_ocn, ocean_atm_netsolar_ocn, ocean_atm_netlong_ocn, &
-         & albavg_ocn, rough_ocn, ocean_stressx2_ocn, ocean_stressy2_ocn, &
-         & ocean_stressx3_ocn, ocean_stressy3_ocn, ocean_latent_ocn, &
-         & ocean_sensible_ocn, ocean_netsolar_ocn, ocean_netlong_ocn, &
-         & ocean_evap_ocn, atmos_latent_ocn, atmos_sensible_ocn, &
-         & atmos_evap_ocn, dhght_sic, dfrac_sic, test_energy_seaice, weight_ocn)
-  END SUBROUTINE surf_ocn_sic_wrapper
-
   SUBROUTINE surflux_wrapper
     USE embm
     IMPLICIT NONE
@@ -314,10 +264,6 @@ CONTAINS
     CALL reinit_flux_rokocn(genie_sfxsumrok1_gem)
   END SUBROUTINE reinit_flux_rokocn_gem_wrapper
 
-  SUBROUTINE cpl_comp_rokEMBM_wrapper
-    ! EMPTY
-  END SUBROUTINE cpl_comp_rokEMBM_wrapper
-
   SUBROUTINE rokgem_save_restart_wrapper
     IMPLICIT NONE
     CALL rest_rokgem()
@@ -527,11 +473,6 @@ CONTAINS
     IMPLICIT NONE
     CALL gemlite_cycleinit()
   END SUBROUTINE gemlite_cycleinit_wrapper
-
-  SUBROUTINE gemlite_cycleclean_wrapper
-    IMPLICIT NONE
-    CALL gemlite_cycleclean(genie_sfxsumrok1_gem)
-  END SUBROUTINE gemlite_cycleclean_wrapper
 
   SUBROUTINE gemlite_gltts_wrapper
     IMPLICIT NONE

@@ -205,7 +205,9 @@ def collect_gcov(rdir, logfp):
             if sp.check_call(['gcov', f], stdout=logfp, stderr=logfp) != 0:
                 sys.exit('Failed processing ' + o + ' in ' + cov)
             gc = os.path.splitext(f)[0] + '.f90.gcov'
-            gcto = os.path.join(rdir, 'gcov-results', gc + '-' + str(icov))
+            gcto = gc + '-' + str(icov)
+            if d: gcto = d + '-' + gcto
+            gcto = os.path.join(rdir, 'gcov-results', gcto)
             if os.path.exists(gc): shutil.move(gc, gcto)
             if d: os.chdir(os.pardir)
 
@@ -226,9 +228,7 @@ def merge_gcov(rdir, logfp):
         lines = []
         counts = []
         first = True
-        print('f90:', gc)
         for f in glob.iglob(f90 + '.gcov-*'):
-            print('  f:', f)
             i = 0
             with open(f) as fpin:
                 for l in fpin:
@@ -243,6 +243,7 @@ def merge_gcov(rdir, logfp):
         with open(f90 + '.GCOV', 'w') as fpout:
             for i in range(len(lines)):
                 print(counts[i] + ':' + lines[i], file=fpout)
+    for gc in glob.iglob('*.f90.gcov-*'): os.remove(gc)
 
 
 # Command line arguments.

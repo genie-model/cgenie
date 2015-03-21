@@ -10,7 +10,6 @@ MODULE sedgem_box
   use genie_control
   USE gem_carbchem
   USE sedgem_lib
-  USE sedgem_nnutils
   use sedgem_box_archer1991_sedflx
   use sedgem_box_ridgwelletal2003_sedflx
   use sedgem_box_benthic
@@ -618,42 +617,6 @@ CONTAINS
           sedocn_fnet(io,dum_i,dum_j) = sedocn_fnet(io,dum_i,dum_j) + conv_sed_ocn(io,is)*sed_fdis(is,dum_i,dum_j)
        end do
     end DO
-
-!!$    ! ############################################################################################################################ !
-!!$    ! ### FIX THIS UP!!! ######################################################################################################### !
-!!$    ! ############################################################################################################################ !
-!!$    IF (ctrl_misc_debug3) print*,'(g) deal with low bottom-water [O2]'
-!!$    ! *** (g) deal with low bottom-water [O2]
-!!$    !         NOTE: because SEDGEM knows nothing about the geometry of the overlying ocean,
-!!$    !               the only criterion that can be applied in deciding whether there is sufficient O2 for oxidizing organic matter
-!!$    !               is to test whether [O2] is above zero or not.
-!!$    !               => if [O2] is zero (or rather, very close to it) then do NO3 then SO4 reduction
-!!$    !               => replacement of O2 (oxidation) deficit must be done in its entirety, by either NO3 OR SO4,
-!!$    !                  because there is no way of knowing how much NO3 is available in the ocean befoer SO4 has to be used ...
-!!$    !         NOTE: because consumption of NO3 of SO4 diffusing into the sediments must be complete,
-!!$    !               no fractionation w.r.t. 15N or 34S can occur
-!!$    !         NOTE: all fluxes in units of mol cm-2
-!!$    If (ocn_select(io_O2) .AND. (dum_sfcsumocn(io_O2) < const_real_nullsmall)) then
-!!$       loc_potO2def = -sedocn_fnet(io_O2,dum_i,dum_j)
-!!$       if (ocn_select(io_NO3) .AND. (dum_sfcsumocn(io_NO3) > const_real_nullsmall)) then
-!!$          loc_r15N = dum_sfcsumocn(io_NO3_15N)/dum_sfcsumocn(io_NO3)
-!!$          sedocn_fnet(io_NO3,dum_i,dum_j) = -(2.0/3.0)*loc_potO2def
-!!$          sedocn_fnet(io_N2,dum_i,dum_j)  = 0.5*(2.0/3.0)*loc_potO2def
-!!$          sedocn_fnet(io_O2,dum_i,dum_j)  = 0.0
-!!$          sedocn_fnet(io_NO3_15N,dum_i,dum_j) = -loc_r15N*(2.0/3.0)*loc_potO2def
-!!$          sedocn_fnet(io_N2_15N,dum_i,dum_j)  = loc_r15N*0.5*(2.0/3.0)*loc_potO2def
-!!$       else if (ocn_select(io_SO4) .AND. (dum_sfcsumocn(io_SO4) > const_real_nullsmall)) then
-!!$          loc_r34S = dum_sfcsumocn(io_SO4_34S)/dum_sfcsumocn(io_SO4)
-!!$          sedocn_fnet(io_SO4,dum_i,dum_j) = -0.5*loc_potO2def
-!!$          sedocn_fnet(io_H2S,dum_i,dum_j) = 0.5*loc_potO2def
-!!$          sedocn_fnet(io_O2,dum_i,dum_j)  = 0.0
-!!$          sedocn_fnet(io_SO4_34S,dum_i,dum_j) = -loc_r34S*0.5*loc_potO2def
-!!$          sedocn_fnet(io_H2S_34S,dum_i,dum_j) = loc_r34S*0.5*loc_potO2def
-!!$       end if
-!!$    end If
-!!$    ! ############################################################################################################################ !
-!!$    ! ############################################################################################################################ !
-!!$    ! ############################################################################################################################ !
 
     ! *** DEBUG ***
     ! finally ... print some dull debugging info if 'iopt_sed_debug2' option is selected
@@ -1677,40 +1640,6 @@ CONTAINS
             & lookup_vec_D,lookup_vec_dco3,lookup_vec_frac,lookup_vec_fCorg,    &
             & lookup_sed_dis_cal)
        loc_dis = conv_cal_mol_cm3*loc_dis*dum_dtyr
-!!$    case ('ridgwell2001nn')
-!!$       ! CALCULATE SEDIMENT CACO3 DIAGENESIS VIA A NEURAL NETWORK (#1)
-!!$       ! NOTE: underlying model is Archer [1991]
-!!$       loc_nn_inp(1) = dum_D
-!!$       loc_nn_inp(2) = dum_dCO3_cal
-!!$       loc_nn_inp(3) = 200.0e-6
-!!$       loc_nn_inp(4) = loc_frac_CaCO3_top
-!!$       loc_nn_inp(5) = loc_fPOC
-!!$       ! NOTE: the nn_minp, nn_maxp scaling limits appear to have screwy values in the netCDF file
-!!$       !       => use har-coded limits (nn_min, nn_max) set in sedgem_nnutils for now
-!!$       loc_nn_inpnorm(:) = fun_nn_parnorm(loc_nn_inp(:),nn_min(:),nn_max(:),par_nn_input)
-!!$       call sub_nn_forward_model(loc_nn_inpnorm)
-!!$       loc_dis = fun_nn_posmn(nn_a(1),nn_mint,nn_maxt)
-!!$       loc_dis = conv_cal_mol_cm3*conv_umol_mol*loc_dis*dum_dtyr
-!!$    case ('archer1991nn')
-!!$       ! CALCULATE SEDIMENT CACO3 DIAGENESIS VIA A NEURAL NETWORK (#1)
-!!$       ! NOTE: underlying model is Archer [1991]
-!!$       loc_nn_inp(1) = dum_D
-!!$       loc_nn_inp(2) = dum_dCO3_cal
-!!$       loc_nn_inp(3) = 200.0e-6
-!!$       loc_nn_inp(4) = loc_frac_CaCO3_top
-!!$       loc_nn_inp(5) = loc_fPOC
-!!$       ! NOTE: the nn_minp, nn_maxp scaling limits appear to have screwy values in the netCDF file
-!!$       !       => use har-coded limits (nn_min, nn_max) set in sedgem_nnutils for now
-!!$       loc_nn_inpnorm(:) = fun_nn_parnorm(loc_nn_inp(:),nn_min(:),nn_max(:),par_nn_input)
-!!$       call sub_nn_forward_model(loc_nn_inpnorm)
-!!$       loc_dis = fun_nn_posmn(nn_a(1),nn_mint,nn_maxt)
-!!$       loc_dis = conv_cal_mol_cm3*conv_umol_mol*loc_dis*dum_dtyr
-!!$    case ('archer2002mudsnn')
-!!$       ! CALCULATE SEDIMENT CACO3 DIAGENESIS VIA A NEURAL NETWORK (#2)
-!!$       ! NOTE: underlying model is Archer et al. [2002]
-!!$       ! *********************
-!!$       ! *** <INSERT CODE> ***
-!!$       ! *********************
     end select
 
     ! *** calculate actual dissolution flux ***
