@@ -1,2 +1,2 @@
 # cgenie
-cgenie Earth system model -- fruitcake release
+cgenie Earth system model -- cupcake release
