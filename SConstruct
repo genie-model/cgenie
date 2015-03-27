@@ -25,7 +25,7 @@ import utils as U
 # Read GENIE configuration.
 
 if not U.read_cgenie_config():
-    sys.exit("GENIE not set up: run the setup.py script!")
+    sys.exit('GENIE not set up: run the setup.py script!')
 
 
 # Load platform configuration.
@@ -90,7 +90,7 @@ for d in coordvars:
 # Set up model version marker.
 
 rev = ARGUMENTS['rev'] if 'rev' in ARGUMENTS else 'UNKNOWN'
-defs.append(f90['define'] + "REV=" + rev)
+defs.append(f90['define'] + 'REV=' + rev)
 
 
 # Set up SCons environment: Fortran compiler definitions taken from
