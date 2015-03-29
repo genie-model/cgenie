@@ -1311,54 +1311,6 @@ CONTAINS
   END SUBROUTINE sub_GEM_CO2
 
 
-  ! ======= SUM UP THE WEATHERING FLUX ====================================================!
-
-  ! Subroutine: sum_calcium_flux
-  !
-  ! Subroutine to sum up calcium fluxes.
-  !
-  ! Calls:
-  !
-  ! - <sub_save_data_ij>
-  !
-  ! Input:
-  !
-  ! dum_calcium_flux - array containing fluxes of calcium for each lithological type
-  !
-  ! Output:
-  !
-  ! dum_total_calcium_flux - array containing total fluxes of calcium from each grid cell
-
-  SUBROUTINE sum_calcium_flux(dum_calcium_flux,dum_total_calcium_flux)
-
-    REAL, INTENT(in)                :: dum_calcium_flux(par_nliths,n_i,n_j)            ! F_HCO_3- is sum of this
-    REAL, INTENT(inout)             :: dum_total_calcium_flux(n_i,n_j)                 ! F_HCO_3-
-
-    INTEGER                         :: i, j, k
-
-    dum_total_calcium_flux(:,:) = 0.0
-
-    DO k=1,par_nliths
-       DO i=1,n_i
-          DO j=1,n_j
-             dum_total_calcium_flux(i,j) = dum_total_calcium_flux(i,j) +               &
-                  &        dum_calcium_flux(k,i,j)
-          END DO
-       END DO
-    END DO
-
-    ! Save data to file calcium_total.dat
-    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
-       IF (opt_2d_ascii_output) THEN
-          CALL sub_save_data_ij( &
-               & TRIM(par_outdir_name)//'calcium_total_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_total_calcium_flux(:,:) &
-               & )
-       ENDIF
-    ENDIF
-
-  END SUBROUTINE sum_calcium_flux
-
-
   ! ======= DIVIDE WEATHERING FLUX INTO CARBONATE AND SILICATE WEATHERING ==================!
 
   ! Subroutine: sum_calcium_flux_CaSi
