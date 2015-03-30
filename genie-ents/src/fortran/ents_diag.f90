@@ -553,12 +553,12 @@ CONTAINS
     IF (dosc) THEN
        rnyear = 1.0 / nyear
 
-       tqldavg(1,:,:) = SUM(tqld(1,:,:) * rnyear)
-       tqldavg(2,:,:) = SUM(tqld(2,:,:) * rnyear)
-       snowavg = SUM(REAL(land_snow_lnd) * rnyear)
-       albsavg = SUM(albs_lnd * rnyear)
-       bcapavg = SUM(bcap * rnyear)
-       z0avg = SUM(z0 * rnyear)
+       tqldavg(1,:,:) = tqldavg(1,:,:) + tqld(1,:,:) * rnyear
+       tqldavg(2,:,:) = tqldavg(2,:,:) + tqld(2,:,:) * rnyear
+       snowavg = snowavg + REAL(land_snow_lnd) * rnyear
+       albsavg = albsavg + albs_lnd * rnyear
+       bcapavg = bcapavg + bcap * rnyear
+       z0avg = z0avg + z0 * rnyear
 
        IF (iout == 1 .AND. MOD(istep, ents_ianav) == 0 &
             & .AND. istep >= ents_ianav) THEN
