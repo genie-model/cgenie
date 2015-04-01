@@ -638,26 +638,6 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! CONVERT: D14C -> d14C
-  FUNCTION fun_convert_D14Ctodelta14C(dum_delta13C,dum_D14C)
-    IMPLICIT NONE
-    ! result variable
-    REAL::fun_convert_D14Ctodelta14C
-    ! dummy arguments
-    REAL,INTENT(in)::dum_delta13C,dum_D14C
-    ! return function value
-    ! NOTE: see Stuiver and Polach [1977] (Stuiver and Robinson [1974])
-    fun_convert_D14Ctodelta14C = 1000.0* &
-         &( &
-         &   (1.0 + dum_D14C/1000.0) * &
-         &   ((1.0 + dum_delta13C/1000.0)**2)/(0.975**2) - &
-         &   1.0 &
-         & )
-  END FUNCTION fun_convert_D14Ctodelta14C
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
   ! CONVERT: D14C -> RADIOCARBON AGE
   FUNCTION fun_convert_D14Ctoage(dum_D14C)
     IMPLICIT NONE

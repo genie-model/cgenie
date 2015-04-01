@@ -244,6 +244,9 @@ if 'embm' in modules and 'ents' in modules:
 if 'ents' in modules:
     extra_data_files['ents'] = ['ents_config.par', 'sealevel_config.par']
 
+if 'sedgem' in modules:
+    extra_data_files['sedgem'] = ['lookup_calcite_4.dat', 'lookup_opal_5.dat']
+
 
 # Construct namelists and copy data files.
 
