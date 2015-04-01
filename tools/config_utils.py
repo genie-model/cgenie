@@ -25,7 +25,7 @@ def read_config(f, msg):
         res = { }
         with (open(f)) as fp:
             for line in fp:
-                if re.match('^\s*#' ,line): continue
+                if re.match('^\s*#', line): continue
                 m = re.search('([a-zA-Z0-9_]+)=(.*)', line)
                 if m: res[m.group(1)] = clean(m.group(2).strip())
             return res
@@ -100,6 +100,13 @@ def extract_defines(maps):
             if v.startswith('$(DEFINE)'):
                 ckv = v[9:].split('=')
                 res[ckv[0]] = int(ckv[1])
+    return res
+
+
+def make_coordinates(defs):
+    res = { }
+    for k, v in defs.iteritems():
+        res['ma_dim_' + k] = v
     return res
 
 

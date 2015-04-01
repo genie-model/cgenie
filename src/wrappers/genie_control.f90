@@ -79,19 +79,22 @@ MODULE genie_control
 
   ! For ice sheets in EMBM and ENTS
   INTEGER, PARAMETER :: ilon1_lic=GOLDSTEINNLONS, ilat1_lic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_lic=GOLDSTEINNLONS, ilat2_lic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_lic=GOLDSTEINNLONS, ilat3_lic=GOLDSTEINNLATS
 
   ! For ENTS
   INTEGER, PARAMETER :: ilon1_lnd=GOLDSTEINNLONS, ilat1_lnd=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_lnd=GOLDSTEINNLONS, ilat2_lnd=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_lnd=GOLDSTEINNLONS, ilat3_lnd=GOLDSTEINNLATS
 
   ! For sediments
   INTEGER, PARAMETER :: ilon1_sed=SEDGEMNLONS, ilat1_sed=SEDGEMNLATS
 
   ! For weathering
   INTEGER, PARAMETER :: ilon1_rok=ROKGEMNLONS, ilat1_rok=ROKGEMNLATS
+
+  ! Coordinate definitions.
+  INTEGER :: dim_GENIENL, dim_GENIENX, dim_GENIENY
+  INTEGER :: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS
+  INTEGER :: dim_GOLDSTEINNLEVS, dim_GOLDSTEINNTRACS, dim_GOLDSTEINMAXISLES
+  INTEGER :: dim_SEDGEMNLONS, dim_SEDGEMNLATS
+  INTEGER :: dim_ROKGEMNLONS, dim_ROKGEMNLATS
 
   ! ======================================================================
   ! Miscellaneous control variables
