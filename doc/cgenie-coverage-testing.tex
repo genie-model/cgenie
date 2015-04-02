@@ -1,0 +1,1347 @@
+\documentclass[a4paper,10pt,article]{memoir}
+
+\usepackage[a4paper,margin=1in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage{fourier}
+\usepackage{amsmath,amssymb}
+
+\usepackage{color}
+\definecolor{orange}{rgb}{0.75,0.5,0}
+\definecolor{magenta}{rgb}{1,0,1}
+\definecolor{cyan}{rgb}{0,1,1}
+\definecolor{grey}{rgb}{0.25,0.25,0.25}
+\newcommand{\outline}[1]{{\color{grey}{\scriptsize #1}}}
+\newcommand{\revnote}[1]{{\color{red}\textit{\textbf{#1}}}}
+\newcommand{\note}[1]{{\color{blue}\textit{\textbf{#1}}}}
+\newcommand{\citenote}[1]{{\color{orange}{[\textit{\textbf{#1}}]}}}
+
+\usepackage{xspace}
+
+\usepackage{listings}
+\usepackage{courier}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,language=Python}
+
+\usepackage{fancyvrb}
+\usepackage{url}
+
+\usepackage{float}
+\newfloat{listing}{tbp}{lop}
+\floatname{listing}{Listing}
+
+\title{Coverage testing for GENIE \texttt{cupcake}}
+\author{Ian~Ross}
+\date{4 March 2015}
+
+\begin{document}
+
+\catcode`~=11    % Make tilde a normal character (danger of weirdness...)
+%\catcode`~=13    % Make tilde an active character again
+
+\maketitle
+
+The idea here is to collect a set of tests to provide near-complete
+coverage of the GENIE codebase, in order to help with preventing
+inadvertent science changes when making wide-ranging code
+transformations for optimisation.  There's a \texttt{coverage} script
+in the main \texttt{cgenie} directory that compiles and runs a set of
+tests with compiler flags suitable for coverage testing, then collects
+coverage data using the \texttt{gcov} program and finally merges the
+coverage data for the different test runs (you can't use
+\texttt{gcov}'s cumulative coverage collection facility to do this
+because the executables for different jobs may be different, depending
+on the model resolution and other preprocessor settings).
+
+The final results are stored in the \texttt{gcov-results} directory of
+the top-level directory in \texttt{~/cgenie-jobs} used by the coverage
+analysis script.  There is one coverage file for each Fortran 90
+source file in GENIE, with each line annotated with the maximum number
+of ``visits'' in any single simulation from the set of test jobs used.
+Non-executable lines are annotated with a hyphen and executable lines
+that were never executed are marked with ``\texttt{\#\#\#\#\#}''.
+These latter lines are the most important to consider.
+
+%======================================================================
+\chapter{Step \#1: initial setup and experiments}
+
+%----------------------------------------------------------------------
+\section{Test jobs}
+
+The first set of tests includes the following jobs:
+\begin{description}
+  \item[\texttt{ocean-atmos}]{Basic ocean-atmosphere test (the
+    ``\texttt{testebgogs}'' job) [10 years].}
+  \item[\texttt{biogem}]{Basic BIOGEM test (the
+    ``\texttt{testbiogem}'' job) [10 years].}
+  \item[\texttt{make-restart}]{Restart setup test (the
+    ``\texttt{restartmake}'' job from the old \texttt{fruitcake} test
+    jobs [10 years].}
+  \item[\texttt{restart-read}]{Restart read test (the
+    ``\texttt{restartread}'' job from the old \texttt{fruitcake} test
+    jobs [10 years].}
+  \item[\texttt{ocean-geochem-spin-up}]{Includes a large number of
+    ocean tracers, and different use of sediments [100 years].}
+  \item[\texttt{ocean-geochem-spin-up-2}]{Follows from above, testing
+    restarts, and uses a fuller range of ROKGEM features [10000
+      years].}
+  \item[\texttt{cao-et-al-2009}]{'Gold standard' modern configuration,
+    including climate components and atmospheric and oceanic
+    biogeochemistry [10 years].}
+  \item[\texttt{ridgwell-schmidt-2010}]{Well used paleo configuration,
+    including sediments and basic ROKGEM [10 years].}
+  \item[\texttt{orbital-variations-abiotic-ocean}]{Very basic
+    climate-only test, but including some additional (orbital)
+    features and a very different continental configuration [100
+      years].}
+\end{description}
+
+%----------------------------------------------------------------------
+\section{Results (subroutine level)}
+
+Uncalled subroutines:
+\begin{description}
+  \item[\texttt{atchem/atchem\_box.f90}]{\texttt{sub\_calc\_terrCO2exchange},
+    \texttt{sub\_calc\_oxidize\_CH4}, \\
+    \texttt{sub\_calc\_wetlands\_CH4}}
+
+  \item[\texttt{atchem/cpl\_flux\_atchem.f90}]{\texttt{cpl\_flux\_lndatm}}
+
+  \item[\texttt{biogem/biogem\_box.f90}]{
+    \texttt{sub\_calc\_bio\_uptake\_abio},
+    \texttt{sub\_calc\_geochem\_Fe}, \\
+    \texttt{sub\_box\_oxidize\_NH4toNO3},
+    \texttt{sub\_box\_oxidize\_NH4toNO2},
+    \texttt{sub\_box\_oxidize\_NO2}, \\ \texttt{sub\_box\_reduce\_NO2},
+    \texttt{sub\_calc\_bio\_remin\_oxidize\_CH4},
+    \texttt{sub\_box\_scav\_Fe}, \\ \texttt{sub\_calc\_scav\_Fe},
+    \texttt{sub\_box\_scav\_H2S},
+    \texttt{sub\_calc\_misc\_brinerejection}, \\
+    \texttt{sub\_update\_force\_flux\_atm},
+    \texttt{sub\_update\_force\_flux\_sed},
+    \texttt{sub\_audit\_update}}
+
+  \item[\texttt{biogem/biogem\_data\_ascii.f90}]{
+    \texttt{sub\_data\_save\_global\_snap},
+    \texttt{sub\_echo\_maxmin}}
+
+  \item[\texttt{biogem/biogem\_data.f90}]{\texttt{sub\_init\_misc2D},
+    \texttt{sub\_init\_audit}, \texttt{sub\_data\_audit\_diagnostics},
+    \texttt{sub\_init\_force\_solconst}}
+
+  \item[\texttt{biogem/biogem\_data\_netCDF.f90}]{
+    \texttt{sub\_save\_netcdf\_flux\_seaair},
+    \texttt{sub\_save\_netcdf\_3d\_sig}, \\
+    \texttt{sub\_save\_netcdf\_ocn\_col\_extra},
+    \texttt{sub\_save\_netcdf\_runtime}}
+
+  \item[\texttt{common/gem\_netcdf.f90}]{\texttt{sub\_defvar\_scalar}}
+
+  \item[\texttt{common/gem\_util.f90}]{\texttt{sub\_load\_data\_ijk}}
+
+  \item[\texttt{embm/embm\_diag.f90}]{\texttt{diaga}, \texttt{aminmax},
+    \texttt{diagend\_embm}, \texttt{diagfna}, \texttt{diagosc\_embm}, \\
+    \texttt{read\_embm\_target\_field}}
+
+  \item[\texttt{embm/embm.f90}]{\texttt{field\_interp},
+    \texttt{ocean\_alb}, \texttt{rad\_out}}
+
+  \item[\texttt{ents/ents\_data.f90}]{\texttt{in\_ents\_ascii},
+    \texttt{in\_ents\_netcdf}, \texttt{out\_ents}}
+
+  \item[\texttt{ents/ents\_diag.f90}]{\texttt{annav\_diags},
+    \texttt{carbt\_diags}, \texttt{physt\_diags},
+    \texttt{screen\_diags}, \texttt{aminmaxl},
+    \texttt{slnd\_h2o\_invent}, \texttt{slnd\_c\_invent},
+    \texttt{entsdiagosc}}
+
+  \item[\texttt{ents/ents.f90}]{\texttt{initialise\_ents},
+    \texttt{setup\_ents}, \texttt{step\_ents}, \texttt{sealevel},
+    \texttt{carbon}, \texttt{photosynthesis}, \texttt{veg\_resp},
+    \texttt{leaf\_litter}, \texttt{soil\_resp}}
+
+  \item[\texttt{ents/ents\_netcdf.f90}]{\texttt{netcdf\_ents},
+    \texttt{netcdf\_db\_ents}, \texttt{netcdf\_ts\_ents}}
+
+  \item[\texttt{goldstein/goldstein\_data.f90}]{\texttt{outm\_surf\_ocn\_sic}}
+
+  \item[\texttt{goldstein/goldstein\_diag.f90}]{\texttt{diag}, \texttt{diagend}}
+
+  \item[\texttt{goldstein/goldstein.f90}]{\texttt{coshuffle}, \texttt{ediff},
+    \texttt{krausturner}}
+
+  \item[\texttt{goldsteinseaice/gold\_seaice\_data.f90}]{\texttt{diagsic},
+    \texttt{diagosc\_sic}}
+
+  \item[\texttt{goldsteinseaice/gold\_seaice.f90}]{\texttt{diagend\_seaice},
+    \texttt{tstipsic}}
+
+  \item[\texttt{rokgem/rokgem\_box.f90}]{\texttt{sub\_GKWM},
+    \texttt{sub\_GEM\_CO2}, \texttt{sum\_calcium\_flux},
+    \texttt{sum\_calcium\_flux\_CaSi}, \texttt{sub\_2D\_weath}}
+
+  \item[\texttt{rokgem/rokgem\_data.f90}]{
+    \texttt{sub\_load\_rokgem\_restart},
+    \texttt{sub\_data\_input\_3D}, \texttt{sub\_load\_weath}}
+
+  \item[\texttt{rokgem/rokgem\_data\_netCDF.f90}]{\texttt{rokgem\_netcdf},
+    \texttt{sub\_save\_netcdf\_2d\_rg}, \texttt{sub\_save\_netcdf}}
+
+  \item[\texttt{rokgem/rokgem\_lib.f90}]{\texttt{define\_2D\_arrays}}
+
+  \item[\texttt{sedgem/sedgem\_box.f90}]{\texttt{sub\_update\_sed\_mud},
+    \texttt{calc\_sed\_dis\_opal}}
+
+  \item[\texttt{sedgem/sedgem\_box\_ridgwell2001\_sedflx.f90}]{
+    \texttt{init\_sedflx\_Si}, \texttt{runge\_kutta\_4\_opal}}
+
+  \item[\texttt{sedgem/sedgem\_box\_ridgwelletal2003\_sedflx.f90}]{
+    \texttt{init\_sedflx\_Si}, \texttt{runge\_kutta\_4\_opal}}
+
+  \item[\texttt{sedgem/sedgem\_data.f90}]{
+    \texttt{sub\_load\_sed\_dis\_lookup\_CaCO3},
+    \texttt{sub\_load\_sed\_dis\_lookup\_opal}, \\
+    \texttt{sub\_load\_sed\_mix\_k},
+    \texttt{sub\_sedgem\_save\_sedcore},
+    \texttt{sub\_data\_save\_seddiag\_2D}, \\
+    \texttt{sub\_data\_output\_years}, \texttt{sub\_output\_year},
+    \texttt{sub\_output\_counters}}
+
+  \item[\texttt{utils/writenc6.f90}]{\texttt{writevar\_1d}}
+
+  \item[\texttt{wrappers/genie\_ini\_wrappers.f90}]{
+    \texttt{initialise\_ents\_wrapper}}
+
+  \item[\texttt{wrappers/genie\_loop\_wrappers.f90}]{
+    \texttt{ents\_wrapper}, \texttt{cpl\_flux\_lndatm\_wrapper}, \\
+
+    \texttt{diag\_biogem\_gem\_wrapper}}
+
+  \item[\texttt{genie\_util.f90}]{\texttt{die}, \texttt{message}}
+
+  \item[\texttt{local\_netcdf.f90}]{\texttt{lookupREAL1dVars},
+    \texttt{lookupREAL2dVars}, \texttt{lookupREAL3dVars},
+    \texttt{openNetCDFRead}, \texttt{closeNetCDF},
+    \texttt{handle\_err}, \texttt{handle\_nc\_err}}
+\end{description}
+
+%----------------------------------------------------------------------
+\section{Coverage conditions (subroutine level)}
+
+\subsubsection*{\texttt{atchem/atchem\_box.f90}}
+
+\paragraph{\texttt{sub\_calc\_terrCO2exchange}}
+
+\texttt{atchem/atchem.f90:69}
+
+\begin{verbatim}
+  IF ((par_atm_FterrCO2exchange > const_real_nullsmall) .AND.
+    atm_select(ia_pCO2) .AND. atm_select(ia_pCO2_13C)) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_oxidize\_CH4}}
+
+\texttt{atchem/atchem.f90:54}
+
+\begin{verbatim}
+  IF (atm_select(ia_pCH4) .AND. atm_select(ia_pCO2) .AND.
+    atm_select(ia_pO2)) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_wetlands\_CH4}}
+
+\texttt{atchem/atchem.f90:59}
+
+\begin{verbatim}
+  IF (atm_select(ia_pCH4) .AND. atm_select(ia_pCO2) .AND.
+    atm_select(ia_pO2)) THEN
+\end{verbatim}
+
+\subsection*{\texttt{atchem/cpl\_flux\_atchem.f90}}
+
+\paragraph{\texttt{cpl\_flux\_lndatm}}
+
+\texttt{genie.f90:210}
+
+\begin{verbatim}
+  IF (flag_ents) THEN
+\end{verbatim}
+
+\subsection*{\texttt{biogem/biogem\_box.f90}}
+
+\paragraph{\texttt{sub\_calc\_bio\_uptake\_abio}}
+
+\texttt{biogem/biogem.f90:1171}
+
+\begin{verbatim}
+  if (ctrl_bio_CaCO3precip .AND. sed_select(is_CaCO3)) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_geochem\_Fe}}
+
+\texttt{biogem/biogem.f90:1185}
+
+\begin{verbatim}
+  if (sed_select(is_det) .AND. ocn_select(io_Fe)) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_box\_oxidize\_NH4toNO3} \& \texttt{sub\_box\_oxidize\_NH4toNO2}}
+
+\texttt{biogem/biogem.f90:1140}
+
+\begin{verbatim}
+  if (ocn_select(io_O2) .AND. ocn_select(io_NO3) .AND.
+    ocn_select(io_NH4)) then
+     if (ocn_select(io_NO2)) then
+        call sub_box_oxidize_NH4toNO2(i,j,loc_k1,loc_dtyr)
+     else
+        call sub_box_oxidize_NH4toNO3(i,j,loc_k1,loc_dtyr)
+     end if
+  end If
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_bio\_remin\_oxidize\_CH4}}
+
+\texttt{biogem/biogem.f90:1158}
+
+\begin{verbatim}
+  if (ocn_select(io_O2) .AND. ocn_select(io_CH4)) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_box\_scav\_Fe}}
+
+\texttt{biogem/biogem\_box.f90:2799}
+
+\begin{verbatim}
+  if (ocn_select(io_Fe)) then
+     if (dum_vocn%mk(io2l(io_Fe),kk) > const_real_nullsmall) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_scav\_Fe}}
+
+\texttt{biogem/biogem\_box.f90:1420}
+
+\begin{verbatim}
+  if (ocn_select(io_Fe)) then
+     DO k=n_k,loc_k_mld,-1
+        if (ocn(io_Fe,dum_i,dum_j,k) > const_real_nullsmall) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_box\_scav\_H2S}}
+
+\texttt{biogem/biogem\_box.f90:2812}
+
+\begin{verbatim}
+  if (ocn_select(io_H2S) .AND. sed_select(is_POM_S)) then
+     if (dum_vocn%mk(io2l(io_H2S),kk) > const_real_nullsmall) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_calc\_misc\_brinerejection}}
+
+\texttt{biogem/biogem.f90:490}
+
+\begin{verbatim}
+  if (par_misc_brinerejection_frac > const_real_nullsmall) then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_update\_force\_flux\_atm}}
+
+\texttt{biogem/biogem.f90:1573}
+
+\begin{verbatim}
+  IF (force_flux_atm_select(ia)) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_update\_force\_flux\_sed}}
+
+\texttt{biogem/biogem.f90:1590}
+
+\begin{verbatim}
+  IF (force_flux_sed_select(is)) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_audit\_update}}
+
+\texttt{biogem/biogem.f90:1923}
+
+\begin{verbatim}
+  IF (ctrl_audit) THEN
+\end{verbatim}
+
+
+\subsection*{\texttt{biogem/biogem\_data\_ascii.f90}}
+
+\paragraph{\texttt{sub\_data\_save\_global\_snap}}
+
+\texttt{biogem/biogem/f90:2208}
+
+\begin{verbatim}
+  If (ctrl_data_save_GLOBAL .AND. ctrl_data_save_derived)
+\end{verbatim}
+
+\paragraph{\texttt{sub\_echo\_maxmin}}
+
+\texttt{biogem/biogem.f90:1923}
+
+\begin{verbatim}
+  IF (ctrl_audit) THEN
+\end{verbatim}
+
+
+\subsection*{\texttt{biogem/biogem\_data.f90}}
+
+\paragraph{\texttt{sub\_init\_misc2D}}
+
+\texttt{biogem/initialise\_biogem.f90:248}
+
+\begin{verbatim}
+  IF (trim(opt_misc_geoeng) /= 'NONE') THEN
+     ! initialize geoengineering
+     IF (ctrl_debug_lvl2) print*, 'initialize geoengineering'
+\end{verbatim}
+
+\paragraph{\texttt{sub\_init\_audit}}
+
+\texttt{biogem/initialise\_biogem.f90:227}
+
+\begin{verbatim}
+  IF (ctrl_audit) CALL sub_init_audit()
+\end{verbatim}
+
+\paragraph{\texttt{sub\_data\_audit\_diagnostics}}
+
+\texttt{biogem/end\_biogem.f90:14}
+
+\begin{verbatim}
+  IF (ctrl_audit) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_init\_force\_solconst}}
+
+\texttt{biogem/initialise\_biogem.f90:289}
+
+\begin{verbatim}
+  if (ctrl_force_solconst) call sub_init_force_solconst()
+\end{verbatim}
+
+
+\subsection*{\texttt{biogem/biogem\_data\_netCDF.f90}}
+
+\paragraph{\texttt{sub\_save\_netcdf\_flux\_seaair}}
+
+\texttt{biogem/biogem\_data\_netCDF.f90:1187}
+
+\begin{verbatim}
+  IF (ctrl_data_save_slice_fairsea) then
+     CALL sub_save_netcdf_flux_seaair()
+  end if
+\end{verbatim}
+
+\paragraph{\texttt{sub\_save\_netcdf\_3d\_sig}}
+
+\texttt{biogem/biogem.f90:2663}
+
+\begin{verbatim}
+  if (ctrl_data_save_3d_sig) then
+     call sub_save_netcdf(loc_yr_save,4)
+     CALL sub_save_netcdf_3d_sig()
+\end{verbatim}
+
+\paragraph{\texttt{sub\_save\_netcdf\_ocn\_col\_extra}}
+
+\texttt{biogem/biogem\_data\_netCDF.f90:2028}
+
+\begin{verbatim}
+  IF (ctrl_data_save_derived) THEN
+     ! color tracer ratios
+     IF (ocn_select(io_colr) .AND. ocn_select(io_colb)) then
+        CALL sub_save_netcdf_ocn_col_extra()
+     END IF
+  END IF
+\end{verbatim}
+
+\paragraph{\texttt{sub\_save\_netcdf\_runtime}}
+
+\texttt{biogem/biogem.f90:2652}
+
+\begin{verbatim}
+  IF (int_t_sig > const_real_nullsmall) then
+     IF (ctrl_data_save_sig_ascii) then
+        CALL sub_data_save_runtime(loc_yr_save)
+     else
+        CALL sub_save_netcdf_runtime(loc_yr_save)
+     end IF
+\end{verbatim}
+
+
+\subsection*{\texttt{common/gem\_netcdf.f90}}
+
+\paragraph{\texttt{sub\_defvar\_scalar}}
+
+Called from \texttt{sub\_save\_netcdf\_runtime} in
+\texttt{biogem/biogem\_data\_netCDF.f90}.
+
+
+\subsection*{\texttt{common/gem\_util.f90}}
+
+\paragraph{\texttt{sub\_load\_data\_ijk}}
+
+\texttt{biogem/biogem\_data.f90:672} + others
+
+\begin{verbatim}
+  if (ctrl_force_scav_fpart_POC) then
+\end{verbatim}
+
+
+\subsection*{\texttt{embm/embm\_diag.f90}}
+
+All of these just need EMBM diagnostics to be enabled by setting the
+\texttt{debug\_loop} and/or \texttt{debug\_end} flags:
+\textbf{\texttt{diaga}}, \textbf{\texttt{aminmax}},
+\textbf{\texttt{diagend\_embm}}, \textbf{\texttt{diagfna}},
+\textbf{\texttt{diagosc\_embm}},
+\textbf{\texttt{read\_embm\_target\_field}}.
+
+
+\subsection*{\texttt{embm/embm.f90}}
+
+\paragraph{\texttt{field\_interp}}
+
+\texttt{embm/embm.f90:1620}
+
+\begin{verbatim}
+  IF (flag_ents) THEN
+\end{verbatim}
+
+\paragraph{\texttt{ocean\_alb}, \texttt{rad\_out}}
+
+\texttt{embm/embm.f90:2258}
+
+\begin{verbatim}
+  IF (flag_ents) CALL ocean_alb(oscss, osccc, oscday, j, istep)
+\end{verbatim}
+
+
+\subsection*{\texttt{ents/ents\_data.f90}}
+
+Need ENTS to be enabled: \textbf{\texttt{in\_ents\_ascii}},
+\textbf{\texttt{in\_ents\_netcdf}}, \textbf{\texttt{out\_ents}}.
+
+
+\subsection*{\texttt{ents/ents\_diag.f90}}
+
+Need ENTS to be enabled: \textbf{\texttt{annav\_diags}},
+\textbf{\texttt{carbt\_diags}}, \textbf{\texttt{physt\_diags}},
+\textbf{\texttt{screen\_diags}}, \textbf{\texttt{aminmaxl}},
+\textbf{\texttt{slnd\_h2o\_invent}},
+\textbf{\texttt{slnd\_c\_invent}}, \textbf{\texttt{entsdiagosc}}.
+
+
+\subsection*{\texttt{ents/ents.f90}}
+
+Need ENTS to be enabled: \textbf{\texttt{initialise\_ents}},
+\textbf{\texttt{setup\_ents}}, \textbf{\texttt{step\_ents}},
+\textbf{\texttt{sealevel}}, \textbf{\texttt{carbon}},
+\textbf{\texttt{photosynthesis}}, \textbf{\texttt{veg\_resp}},
+\textbf{\texttt{leaf\_litter}}, \textbf{\texttt{soil\_resp}}.
+
+
+\subsection*{\texttt{ents/ents\_netcdf.f90}}
+
+Need ENTS to be enabled: \textbf{\texttt{netcdf\_ents}},
+\textbf{\texttt{netcdf\_db\_ents}},
+\textbf{\texttt{netcdf\_ts\_ents}}.
+
+
+\subsection*{\texttt{goldstein/goldstein\_diag.f90}}
+
+These just need GOLDSTEIN diagnostics to be enabled by setting the
+\texttt{debug\_loop} and/or \texttt{debug\_end} flags:
+\textbf{\texttt{diag}}, \textbf{\texttt{diagend}}.
+
+
+\subsection*{\texttt{goldstein/goldstein.f90}}
+
+\paragraph{\texttt{coshuffle}}
+
+\texttt{goldstein/goldstein.f90:2477}
+
+\begin{verbatim}
+  IF (iconv == 1) THEN
+\end{verbatim}
+
+\paragraph{\texttt{ediff}}
+
+\texttt{goldstein/goldstein.f90:1870}
+
+\begin{verbatim}
+  IF (iediff > 0) CALL ediff
+\end{verbatim}
+
+\paragraph{\texttt{krausturner}}
+
+\texttt{goldstein/goldstein.f90:2130}
+
+\begin{verbatim}
+  IF (imld == 1) THEN
+     ...
+     DO i = 1, imax
+        DO j = 1, jmax
+           IF (k1(i,j) <= kmax) THEN
+              IF (mldemix(i,j) > 0.0) THEN
+\end{verbatim}
+
+
+\subsection*{\texttt{goldsteinseaice/gold\_seaice\_data.f90}}
+
+These just need diagnostics to be enabled by setting the
+\texttt{debug\_loop} flag: \textbf{\texttt{diagsic}},
+\textbf{\texttt{diagosc\_sic}}.
+
+
+\subsection*{\texttt{goldsteinseaice/gold\_seaice.f90}}
+
+This just needs diagnostics to be enabled by setting the
+\texttt{debug\_end} flag: \textbf{\texttt{diagend\_seaice}}.
+
+\paragraph{\texttt{tstipsic}}
+
+\texttt{goldsteinseaice/gold\_seaice.f90:538}
+
+\begin{verbatim}
+  IF (impsic) THEN
+\end{verbatim}
+
+
+\subsection*{\texttt{rokgem/rokgem\_box.f90}}
+
+\paragraph{\texttt{sub\_GKWM}}
+
+\texttt{rokgem/rokgem.f90:65}
+
+\begin{verbatim}
+  SELECT case (par_weathopt)
+  ...
+  case ('GKWM')
+\end{verbatim}
+
+Also \textbf{\texttt{sub\_GEM\_CO2}},
+\textbf{\texttt{sum\_calcium\_flux\_CaSi}} and
+\textbf{\texttt{sub\_2D\_weath}}.
+
+
+\subsection*{\texttt{rokgem/rokgem\_data.f90}}
+
+\paragraph{\texttt{sub\_load\_rokgem\_restart}}
+
+\texttt{rokgem/initialise\_rokgem.f90:72}
+
+\begin{verbatim}
+  IF (ctrl_continuing.AND.opt_append_data) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_load\_weath}}
+
+\texttt{rokgem/initialise\_rokgem.f90:234}
+
+\begin{verbatim}
+  IF (par_weathopt.ne.'Global_avg') THEN
+\end{verbatim}
+
+Also \textbf{\texttt{sub\_data\_input\_3D}}.
+
+
+\subsection*{\texttt{rokgem/rokgem\_data\_netCDF.f90}}
+
+\paragraph{\texttt{rokgem\_netcdf}}
+
+\texttt{rokgem/rokgem\_box.f90:972}
+
+\begin{verbatim}
+  IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
+     IF (opt_2d_netcdf_output) THEN
+\end{verbatim}
+
+Also \textbf{\texttt{sub\_save\_netcdf\_2d\_rg}} and
+\textbf{\texttt{sub\_save\_netcdf}}.
+
+
+\subsection*{\texttt{rokgem/rokgem\_lib.f90}}
+
+\paragraph{\texttt{define\_2D\_arrays}}
+
+\texttt{rokgem/initialise\_rokgem.f90:234}
+
+\begin{verbatim}
+  IF (par_weathopt.ne.'Global_avg') THEN
+\end{verbatim}
+
+
+\subsection*{\texttt{sedgem/sedgem\_box.f90}}
+
+\paragraph{\texttt{sub\_update\_sed\_mud}}
+
+\texttt{sedgem/sedgem.f90:267}
+
+\begin{verbatim}
+  elseif (sed_mask_muds(i,j)) then
+\end{verbatim}
+
+\paragraph{\texttt{calc\_sed\_dis\_opal}}
+
+\texttt{sedgem/sedgem\_box.f90:346}
+
+\begin{verbatim}
+  select case (par_sed_diagen_opalopt)
+  case ('ridgwelletal2003lookup')
+\end{verbatim}
+
+
+\subsection*{\texttt{sedgem/sedgem\_box\_ridgwelletal2003\_sedflx.f90}}
+
+\paragraph{\texttt{init\_sedflx\_Si}}
+
+\texttt{sedgem/sedgem\_box.f90:1789}
+
+\begin{verbatim}
+  select case (par_sed_diagen_opalopt)
+  case ('ridgwelletal2003explicit')
+\end{verbatim}
+
+Also \textbf{\texttt{runge\_kutta\_4\_opal}}.
+
+
+\subsection*{\texttt{sedgem/sedgem\_data.f90}}
+
+\paragraph{\texttt{sub\_load\_sed\_dis\_lookup\_CaCO3}}
+
+\texttt{sedgem/sedgem\_data.f90:672}
+
+\begin{verbatim}
+  if (par_sed_diagen_CaCO3opt == 'ridgwell2001lookup' .OR.
+      par_sed_diagen_CaCO3opt == 'ridgwell2001lookupvec') then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_load\_sed\_dis\_lookup\_opal}}
+
+\texttt{sedgem/sedgem\_data.f90:711}
+
+\begin{verbatim}
+  if (par_sed_diagen_opalopt == 'ridgwelletal2003lookup') then
+\end{verbatim}
+
+\paragraph{\texttt{sub\_load\_sed\_mix\_k}}
+
+\texttt{sedgem/initialise\_sedgem.f90:104}
+
+\begin{verbatim}
+  IF (ctrl_sed_bioturb) THEN
+     if (ctrl_sed_bioturb_Archer) then
+        ALLOCATE(par_sed_mix_k(0:par_n_sed_mix),STAT=error)
+     else
+\end{verbatim}
+
+\paragraph{\texttt{sub\_sedgem\_save\_sedcore}}
+
+\texttt{sedgem/end\_sedgem.f90:44}
+
+\begin{verbatim}
+  if (ctrl_data_save_ascii) call sub_sedgem_save_sedcore()
+\end{verbatim}
+
+\paragraph{\texttt{sub\_data\_save\_seddiag\_2D}}
+
+\texttt{sedgem/end\_sedgem.f90:47}
+
+\begin{verbatim}
+  if (ctrl_data_save_ascii) call sub_data_save_seddiag_2D(loc_dtyr,dum_sfcsumocn)
+\end{verbatim}
+
+\paragraph{\texttt{sub\_data\_output\_years}}
+
+\texttt{sedgem/initialise\_sedgem.f90:137}
+
+\begin{verbatim}
+  IF (ctrl_timeseries_output) THEN
+\end{verbatim}
+
+\paragraph{\texttt{sub\_output\_year}}
+
+\texttt{sedgem/sedgem.f90:461}
+
+\begin{verbatim}
+  IF (ctrl_timeseries_output) THEN
+\end{verbatim}
+
+Also \textbf{\texttt{sub\_output\_counters}}.
+
+
+\subsection*{\texttt{wrappers/genie\_ini\_wrappers.f90}}
+
+\paragraph{\texttt{initialise\_ents\_wrapper}}
+
+Need to use ENTS!
+
+
+\subsection*{\texttt{wrappers/genie\_loop\_wrappers.f90}}
+
+Need to use ENTS: \textbf{\texttt{ents\_wrapper}},
+\textbf{\texttt{cpl\_flux\_lndatm\_wrapper}}.
+
+\paragraph{\texttt{diag\_biogem\_gem\_wrapper}}
+
+Needs \texttt{debug\_loop} flag to be set.
+
+
+\subsection*{\texttt{genie\_util.f90}}
+
+Ignore: \textbf{\texttt{die}}, \textbf{\texttt{message}}.
+
+
+\subsection*{\texttt{local\_netcdf.f90}}
+
+\paragraph{\texttt{lookupREAL1dVars}}
+
+\texttt{embm/embm\_diag.f90:447}
+
+\begin{verbatim}
+  IF (.NOT. interpolate) THEN
+  ...
+  ELSE
+\end{verbatim}
+
+Also \textbf{\texttt{lookupREAL2dVars}},
+\textbf{\texttt{openNetCDFRead}} and \textbf{\texttt{closeNetCDF}}.
+
+\paragraph{\texttt{lookupREAL3dVars}}
+
+\texttt{goldstein/goldsteain\_diag.f90:703}
+
+\begin{verbatim}
+  IF (.NOT. interpolate) THEN
+  ...
+  ELSE
+\end{verbatim}
+
+Ignore: \textbf{\texttt{handle\_err}},
+\textbf{\texttt{handle\_nc\_err}}.
+
+
+%----------------------------------------------------------------------
+\section{Additional tests (subroutine level)}
+
+\begin{itemize}
+  \item{ENTS jobs -- none of the existing test jobs use ENTS at all.
+    I've added a test job derived from an ENTS job in the original
+    \texttt{muffin} distribution which should cover at least some of
+    the ENTS code.}
+  \item{Debug and output -- there is quite a bit of diagnostic and
+    data output code that can be exercised by enabling the following
+    options: \texttt{debug\_loop}, \texttt{debug\_end},
+    \texttt{ctrl\_audit}, \texttt{ctrl\_data\_save\_GLOBAL},
+    \texttt{ctrl\_data\_save\_derived},
+    \texttt{ctrl\_data\_save\_slice\_fairsea},
+    \texttt{ctrl\_data\_save\_3d\_sig},
+    \texttt{opt\_2d\_netcdf\_output},
+    \texttt{ctrl\_data\_save\_ascii},
+    \texttt{ctrl\_timeseries\_output}.  The most efficient way to do
+    this is probably to enable all of these flags for a single test
+    job -- I've done this for the \texttt{ocean-geochem-spin-up-2} job
+    (the \texttt{ctrl\_timeseries\_output} and
+    \texttt{ctrl\_data\_save\_GLOBAL} options are excluded from this
+    because they slightly change the output results).}
+  \item{Atmospheric methane -- a suitable job is from Section 5.3 of
+    Andy's \texttt{muffin} examples document: ``Modern 36x36x16
+    configuration + Fe \& CH4 cycles''.  The examples document has
+    this running for 10,000 years, but that's way too long -- 100
+    years should be enough (job name \texttt{cover/fe-atmos-ch4}).
+    This job also includes ocean iron dynamics.}
+  \item{An additional feature is the terrestrial carbon reservoir
+    exchange introduced for doing inversions -- I've added a
+    \texttt{cover/inversion} job to do this.}
+  \item{I can't find any example jobs for ocean nitrate and ammonia
+    cycling, although there are some configuration files that look
+    reasonable.}
+  \item{Ocean methane -- Section 6.1 in the examples document is
+    ``Eocene $36 \times 36 \times 16$ configuration + $\mathrm{CH_4}$
+    cycle'', which I've set up as \texttt{cover/eocene-ch4} and which
+    should exercise some of the ocean methane cycle.}
+  \item{Sedimenation -- I've added a job based on Section 2.6.1 in the
+    examples document (part of ``Ridgwell and Hargreaves [2007]'')
+    which has some sedimenation forcing
+    (\texttt{cover/ridgwell-hargreaves-2007}).}
+\end{itemize}
+
+
+%======================================================================
+\chapter{Step \#2: subroutine gap-filling}
+
+%----------------------------------------------------------------------
+\section{Test jobs}
+
+At this point, the coverage test suite includes the following jobs:
+\begin{itemize}
+  \setlength\itemsep{0pt}
+  \item{\texttt{biogem}}
+  \item{\texttt{cao-et-al-2009}}
+  \item{\texttt{ents}}
+  \item{\texttt{eocene-ch4}}
+  \item{\texttt{fe-atmos-ch4}}
+  \item{\texttt{inversion}}
+  \item{\texttt{make-restart}}
+  \item{\texttt{ocean-atmos}}
+  \item{\texttt{ocean-geochem-spin-up}}
+  \item{\texttt{ocean-geochem-spin-up-2}}
+  \item{\texttt{orbital-variations-abiotic-ocean}}
+  \item{\texttt{restart-read}}
+  \item{\texttt{ridgwell-hargreaves-2007}}
+  \item{\texttt{ridgwell-schmidt-2010}}
+\end{itemize}
+
+The next step is to fill in any remaining subroutine-level gaps before
+looking at smaller-scale results.
+
+%----------------------------------------------------------------------
+\section{Results (remaining uncalled subroutines)}
+
+Uncalled subroutines:
+
+\begin{tabular}{ll}
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_box.f90}}} \\
+  \texttt{sub\_calc\_bio\_uptake\_abio}    & NO CONFIGS \\
+  \texttt{sub\_box\_oxidize\_NH4toNO3}     & \textbf{SEE \#3 BELOW} \\
+  \texttt{sub\_box\_oxidize\_NH4toNO2}     & \textbf{SEE \#3 BELOW} \\
+  \texttt{sub\_box\_scav\_H2S}             & NO CONFIGS \\
+  \texttt{sub\_calc\_misc\_brinerejection} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data\_ascii.f90}}} \\
+  \texttt{sub\_data\_save\_global\_snap} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data.f90}}} \\
+  \texttt{sub\_init\_misc2D} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data\_netCDF.f90}}} \\
+  \texttt{sub\_save\_netcdf\_flux\_seaair}    & NO CONFIGS \\
+  \texttt{sub\_save\_netcdf\_ocn\_col\_extra} & \textbf{SEE \#4 BELOW} \\
+  \texttt{sub\_save\_netcdf\_runtime}         & \textbf{SEE \#5 BELOW} \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{common/gem\_netcdf.f90}}} \\
+  \texttt{sub\_defvar\_scalar} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{common/gem\_util.f90}}} \\
+  \texttt{sub\_load\_data\_ijk} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{embm/embm\_diag.f90}}} \\
+  \texttt{diaga}                     & \textbf{SEE \#6 BELOW} \\
+  \texttt{aminmax}                   & \textbf{SEE \#6 BELOW} \\
+  \texttt{diagend\_embm}             & \textbf{SEE \#6 BELOW} \\
+  \texttt{diagfna}                   & \textbf{SEE \#6 BELOW} \\
+  \texttt{diagosc\_embm}             & \textbf{SEE \#6 BELOW} \\
+  \texttt{read\_embm\_target\_field} & \textbf{SEE \#6 BELOW} \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{ents/ents\_data.f90}}} \\
+  \texttt{in\_ents\_ascii}  & IGNORE \\
+  \texttt{in\_ents\_netcdf} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{goldstein/goldstein.f90}}} \\
+  \texttt{coshuffle}   & NO CONFIGS \\
+  \texttt{ediff}       & NO CONFIGS \\
+  \texttt{krausturner} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{goldsteinseaice/gold\_seaice\_data.f90}}} \\
+  \texttt{diagsic}      & \textbf{SEE \#6 BELOW} \\
+  \texttt{diagosc\_sic} & \textbf{SEE \#6 BELOW} \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{goldsteinseaice/gold\_seaice.f90}}} \\
+  \texttt{diagend\_seaice} & \textbf{SEE \#6 BELOW} \\
+  \texttt{tstipsic}        & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_box.f90}}} \\
+  \texttt{sub\_GKWM}                & NO CONFIGS \\
+  \texttt{sub\_GEM\_CO2}            & NO CONFIGS \\
+  \texttt{sum\_calcium\_flux\_CaSi} & NO CONFIGS \\
+  \texttt{sub\_2D\_weath}           & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_data.f90}}} \\
+  \texttt{sub\_load\_rokgem\_restart} & IGNORE \\
+  \texttt{sub\_data\_input\_3D}       & IGNORE \\
+  \texttt{sub\_load\_weath}           & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_lib.f90}}} \\
+  \texttt{define\_2D\_arrays} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_box.f90}}} \\
+  \texttt{sub\_update\_sed\_mud} & \textbf{SEE \#7 BELOW} \\
+  \texttt{calc\_sed\_dis\_opal}  & \textbf{SEE \#1 BELOW} \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_box\_ridgwelletal2003\_sedflx.f90}}} \\
+  \texttt{init\_sedflx\_Si}      & \textbf{SEE \#1 BELOW} \\
+  \texttt{runge\_kutta\_4\_opal} & \textbf{SEE \#1 BELOW} \\
+\end{tabular}
+
+\begin{tabular}{ll}
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_data.f90}}} \\
+  \texttt{sub\_load\_sed\_dis\_lookup\_opal} & \textbf{SEE \#1 BELOW} \\
+  \texttt{sub\_load\_sed\_mix\_k}            & \textbf{SEE \#2 BELOW} \\
+  \texttt{sub\_data\_output\_years}          & IGNORE \\
+  \texttt{sub\_output\_year}                 & IGNORE \\
+  \texttt{sub\_output\_counters}             & IGNORE
+\end{tabular}
+
+\subsubsection*{IDEA \#1 [DONE]}
+
+Set up a job with base configuration
+\texttt{cgenie.eb\_go\_gs\_ac\_bg\_sg\_rg\_gl.p0000e.BASESFeLiCa} and
+user configuration \texttt{EXAMPLE.p0000e.PO4FeSi\_S36x36.SPIN}.
+
+\textbf{BROKEN: the forcings for this aren't available and I've not
+  figured out which forcings I have are compatible.  I'm going to
+  ignore this one.}
+
+\subsubsection*{IDEA \#2 [DONE]}
+
+Need \texttt{sg\_ctrl\_sed\_bioturb=.TRUE.} and
+\texttt{sg\_ctrl\_sed\_bioturb\_Archer=.FALSE.} (see \#7).
+
+\subsubsection*{IDEA \#3 [DONE]}
+
+Need selected ocean tracers: $\mathrm{O_2}$ (10), $\mathrm{NO_3}$ (6)
+and $\mathrm{NH_4}$ (28), then $\mathrm{NO_2}$ (34) selects between
+\texttt{sub\_box\_oxidize\_NH4toNO2} and
+\texttt{sub\_box\_oxidize\_NH4toNO3}.
+
+Added a new job, \texttt{nitrogen-no3}, using base configuration
+\texttt{cgenie.eb\_go\_gs\_ac\_bg.worjh2.BASESFeN} and user
+configuration \texttt{EXAMPLE.worjh2.PO4FeN.SPIN}.  Oxidation to
+$\mathrm{NO_2}$ seems to require setting some additional parameters,
+so I'm going to ignore it for now.
+
+\subsubsection*{IDEA \#4 [DONE]}
+
+Need a job with colour tracers enabled.  I've added a
+\texttt{geoengineering} job with these switched on.
+
+\subsubsection*{IDEA \#5 [DONE]}
+
+Need to have \texttt{ctrl\_data\_save\_sig\_ascii} false for NetCDF
+output.  \emph{I think I'll ignore this one.}
+
+\subsubsection*{IDEA \#6 [DONE]}
+
+EMBM and goldSIC have their own \texttt{debug\_loop} and
+\texttt{debug\_end} flags.  \emph{These can be switched on for the
+  \texttt{ocean-geochem-spin-up-2} job that has all the other debug
+  stuff in it.}
+
+\subsubsection*{IDEA \#7 [DONE]}
+
+Need to set \texttt{par\_sed\_Dmax\_neritic} to something sensible to
+trigger mud formation.  Quite a few configuration options for this.
+I've added a \texttt{ridgwell-schmidt-2010-mud} that has a depth
+setting that causes mud formation to be executed.  It also has
+bioturbation set up to cover \#2.
+
+
+%----------------------------------------------------------------------
+\section{Additional jobs}
+
+I've added the following new jobs:
+\begin{itemize}
+  \setlength\itemsep{0pt}
+  \item{\texttt{geoengineering}}
+  \item{\texttt{nitrogen-no3}}
+  \item{\texttt{ridgwell-schmidt-2010-mud}}
+\end{itemize}
+and I've modified the \texttt{ocean-geochem-spin-up-2} job to include
+more debugging code.
+
+
+%======================================================================
+\chapter{Step \#3: small-scale coverage analysis}
+
+%----------------------------------------------------------------------
+\section{Test jobs}
+
+At this point, the coverage test suite includes the following jobs:
+\begin{itemize}
+  \setlength\itemsep{0pt}
+  \item{\texttt{biogem}}
+  \item{\texttt{cao-et-al-2009}}
+  \item{\texttt{ents}}
+  \item{\texttt{eocene-ch4}}
+  \item{\texttt{fe-atmos-ch4}}
+  \item{\texttt{geoengineering}}
+  \item{\texttt{inversion}}
+  \item{\texttt{make-restart}}
+  \item{\texttt{nitrogen-no3}}
+  \item{\texttt{ocean-atmos}}
+  \item{\texttt{ocean-geochem-spin-up}}
+  \item{\texttt{ocean-geochem-spin-up-2}}
+  \item{\texttt{orbital-variations-abiotic-ocean}}
+  \item{\texttt{restart-read}}
+  \item{\texttt{ridgwell-hargreaves-2007}}
+  \item{\texttt{ridgwell-schmidt-2010}}
+  \item{\texttt{ridgwell-schmidt-2010-mud}}
+\end{itemize}
+
+%----------------------------------------------------------------------
+\section{Results (remaining uncalled subroutines)}
+
+Uncalled subroutines:
+
+\begin{tabular}{ll}
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_box.f90}}} \\
+  \texttt{sub\_calc\_bio\_uptake\_abio}    & NO CONFIGS \\
+  \texttt{sub\_box\_oxidize\_NH4toNO2}     & NO CONFIGS \\
+  \texttt{sub\_box\_scav\_H2S}             & NO CONFIGS \\
+  \texttt{sub\_calc\_misc\_brinerejection} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data\_ascii.f90}}} \\
+  \texttt{sub\_data\_save\_global\_snap} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data.f90}}} \\
+  \texttt{sub\_init\_misc2D}          & NO CONFIGS \\
+  \texttt{sub\_init\_force\_solconst} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{biogem/biogem\_data\_netCDF.f90}}} \\
+  \texttt{sub\_save\_netcdf\_flux\_seaair}    & NO CONFIGS \\
+  \texttt{sub\_save\_netcdf\_ocn\_col\_extra} & ??? \\
+  \texttt{sub\_save\_netcdf\_runtime}         & ??? \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{common/gem\_netcdf.f90}}} \\
+  \texttt{sub\_defvar\_scalar} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{common/gem\_util.f90}}} \\
+  \texttt{sub\_load\_data\_ijk} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{ents/ents\_data.f90}}} \\
+  \texttt{in\_ents\_ascii}  & IGNORE \\
+  \texttt{in\_ents\_netcdf} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{goldstein/goldstein.f90}}} \\
+  \texttt{coshuffle}   & NO CONFIGS \\
+  \texttt{ediff}       & NO CONFIGS \\
+  \texttt{krausturner} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{goldsteinseaice/gold\_seaice.f90}}} \\
+  \texttt{tstipsic}        & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_box.f90}}} \\
+  \texttt{sub\_GKWM}                & NO CONFIGS \\
+  \texttt{sub\_GEM\_CO2}            & NO CONFIGS \\
+  \texttt{sum\_calcium\_flux\_CaSi} & NO CONFIGS \\
+  \texttt{sub\_2D\_weath}           & NO CONFIGS \\
+\end{tabular}
+
+\begin{tabular}{ll}
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_data.f90}}} \\
+  \texttt{sub\_load\_rokgem\_restart} & IGNORE \\
+  \texttt{sub\_data\_input\_3D}       & IGNORE \\
+  \texttt{sub\_load\_weath}           & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{rokgem/rokgem\_lib.f90}}} \\
+  \texttt{define\_2D\_arrays} & NO CONFIGS \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_box.f90}}} \\
+  \texttt{calc\_sed\_dis\_opal}  & IGNORE \\
+\end{tabular}
+
+\begin{tabular}{ll}
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_box\_ridgwelletal2003\_sedflx.f90}}} \\
+  \texttt{init\_sedflx\_Si}      & IGNORE \\
+  \texttt{runge\_kutta\_4\_opal} & IGNORE \\
+
+  \multicolumn{2}{l}{\textbf{\texttt{sedgem/sedgem\_data.f90}}} \\
+  \texttt{sub\_load\_sed\_dis\_lookup\_opal} & IGNORE \\
+  \texttt{sub\_data\_output\_years}          & IGNORE \\
+  \texttt{sub\_output\_year}                 & IGNORE \\
+  \texttt{sub\_output\_counters}             & IGNORE
+\end{tabular}
+
+%----------------------------------------------------------------------
+\section{Results (unexecuted lines)}
+
+``OK'' means trivial stuff (where ``trivial'' means sections of code
+that, although they might be quite large, are unlikely to be affected
+by the upcoming optimisation changes); ``NC'' means there are no
+configurations available that will trigger this code; numbers refer to
+the points below.
+
+\begin{center}
+\begin{tabular}{cll}
+  1/597  & \texttt{sedgem/sedgem\_lib.f90}                           & OK(1) \\
+  1/60   & \texttt{utils/util1.f90}                                  & OK \\
+  2/103  & \texttt{wrappers/initialise\_genie.f90}                   & OK \\
+  2/154  & \texttt{atchem/atchem\_box.f90}                           & OK(2) \\
+  2/19   & \texttt{utils/open\_file\_nc.f90}                         & OK \\
+  2/20   & \texttt{utils/close\_file\_nc.f90}                        & OK \\
+  2/360  & \texttt{goldsteinseaice/gold\_seaice\_netcdf.f90}         & OK \\
+  2/417  & \texttt{embm/embm\_netcdf.f90}                            & OK \\
+  2/723  & \texttt{goldstein/goldstein\_netcdf.f90}                  & OK(3) \\
+  3/438  & \texttt{wrappers/genie\_global.f90}                       & OK \\
+  5/172  & \texttt{rokgem/rokgem.f90}                                & NC \\
+  6/159  & \texttt{atchem/atchem.f90}                                & OK \\
+  6/162  & \texttt{utils/writenc6.f90}                               & OK \\
+  6/358  & \texttt{biogem/initialise\_biogem.f90}                    & OK/NC \\
+  6/94   & \texttt{gemlite/gemlite\_data.f90}                        & OK \\
+  7/678  & \texttt{ents/ents\_diag.f90}                              & OK \\
+  8/200  & \texttt{ents/ents\_lib.f90}                               & OK \\
+  9/45   & \texttt{utils/extras.f90}                                 & OK \\
+ 10/132  & \texttt{sedgem/end\_sedgem.f90}                           & OK/NC \\
+ 10/410  & \texttt{rokgem/rokgem\_lib.f90}                           & NC \\
+ 10/76   & \texttt{common/initialise\_gem.f90}                       & OK \\
+ 13/1047 & \texttt{sedgem/sedgem\_box\_archer1991\_sedflx.f90}       & OK? \\
+ 16/144  & \texttt{common/gem\_data.f90}                             & OK \\
+ 16/299  & \texttt{embm/embm\_data.f90}                              & OK \\
+ 16/65   & \texttt{utils/get1d\_data\_nc.f90}                        & OK \\
+ 20/546  & \texttt{gemlite/gemlite.f90}                              & OK(4) \\
+ 22/77   & \texttt{utils/get2d\_data\_nc.f90}                        & OK \\
+ 23/451  & \texttt{goldstein/goldstein\_data.f90}                    & OK(5) \\
+ 28/103  & \texttt{wrappers/genie\_util.f90}                         & OK \\
+ 28/89   & \texttt{utils/get3d\_data\_nc.f90}                        & OK \\
+ 29/1578 & \texttt{sedgem/sedgem\_data\_netCDF.f90}                  & OK(6) \\
+ 31/213  & \texttt{sedgem/initialise\_sedgem.f90}                    & OK(7) \\
+ 32/119  & \texttt{sedgem/sedgem\_box\_benthic.f90}                  & NC(8) \\
+ 36/290  & \texttt{atchem/atchem\_data.f90}                          & OK \\
+ 37/1652 & \texttt{biogem/biogem\_lib.f90}                           & OK \\
+ 37/604  & \texttt{genie.f90}                                        & NEW JOB (9) \\
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{cll}
+ 37/807  & \texttt{ents/ents.f90}                                    & OK(10) \\
+ 38/134  & \texttt{ents/ents\_data.f90}                              & OK \\
+ 43/279  & \texttt{rokgem/initialise\_rokgem.f90}                    & OK/NC \\
+ 50/659  & \texttt{ents/ents\_netcdf.f90}                            & OK \\
+ 51/450  & \texttt{goldsteinseaice/gold\_seaice\_data.f90}           & OK \\
+ 58/575  & \texttt{sedgem/sedgem.f90}                                & OK(11) \\
+ 59/260  & \texttt{wrappers/local\_netcdf.f90}                       & OK \\
+ 87/1156 & \texttt{common/gem\_netcdf.f90}                           & OK \\
+119/479  & \texttt{sedgem/sedgem\_box\_ridgwelletal2003\_sedflx.f90} & NC(12) \\
+124/1032 & \texttt{goldsteinseaice/gold\_seaice.f90}                 & OK/NC \\
+125/1453 & \texttt{common/gem\_carbchem.f90}                         & NC(13) \\
+189/832  & \texttt{rokgem/rokgem\_data.f90}                          & OK/NC \\
+219/2700 & \texttt{biogem/biogem.f90}                                & NEW JOB (14) \\
+226/799  & \texttt{embm/embm\_diag.f90}                              & OK \\
+237/1152 & \texttt{goldstein/goldstein\_diag.f90}                    & OK(15) \\
+237/2475 & \texttt{biogem/biogem\_data\_ascii.f90}                   & OK \\
+255/1931 & \texttt{common/gem\_util.f90}                             & OK \\
+289/2417 & \texttt{sedgem/sedgem\_data.f90}                          & OK(15) \\
+305/2072 & \texttt{sedgem/sedgem\_box.f90}                           & NEW JOB (16) \\
+343/3529 & \texttt{goldstein/goldstein.f90}                          & NEW JOB (17) \\
+378/1742 & \texttt{rokgem/rokgem\_box.f90}                           & OK/NC \\
+443/3598 & \texttt{embm/embm.f90}                                    & OK \\
+456/3872 & \texttt{biogem/biogem\_box.f90}                           & OK(18) \\
+584/2999 & \texttt{biogem/biogem\_data\_netCDF.f90}                  & OK \\
+643/3151 & \texttt{biogem/biogem\_data.f90}                          & OK \\
+\end{tabular}
+\end{center}
+
+\begin{enumerate}
+  \item{Need \texttt{ctrl\_data\_save\_wtfrac} to be false.}
+  \item{Need \texttt{atm\_select(ia\_pCH4\_14C)} and
+    \texttt{atm\_select(ia\_pCO2\_14C)} to be set.}
+  \item{GOLDSTEIN-specific \texttt{debug\_loop}.}
+  \item{Various tracers: need to have GEMLITE enabled and
+    \texttt{ocn\_select(io\_Ca)} false, \texttt{ocn\_select(io\_SO4)}
+    false, \texttt{ocn\_select(io\_B)} true,
+    \texttt{ocn\_select(io\_F)} true, \texttt{ocn\_select(io\_PO4)}
+    false, \texttt{ocn\_select(io\_SiO2)} true,
+    \texttt{ocn\_select(io\_H2S)} false, \texttt{ocn\_select(io\_NH4)}
+    true.  \emph{Probably not worth worrying about...}}
+  \item{GOLDSTEIN-specific \texttt{debug\_init}.}
+  \item{Some stuff to do with saving cores, but looks OK.}
+  \item{Needs \texttt{ctrl\_time\_series\_output},
+    \texttt{ctrl\_continuing} and \texttt{ctrl\_append\_data} to be
+    set.  \emph{All to do with SEDGEM restarts -- OK for now.}}
+  \item{Needs \texttt{par\_sed\_diagen\_Corgopt} to be set to
+    ``\texttt{arndtetal2013}'' -- no configs.}
+  \item{\emph{Added a new job with \texttt{gem\_adapt\_auto} flag
+      set.}}
+  \item{Not sure about \texttt{snowswitch} here; also ENTS restarts;
+    plus a couple of other things -- should all be OK though.}
+  \item{Radioactive tracer; detrital age tracer; foram tracers; debug
+    and time series output -- should all be OK.}
+  \item{Need \texttt{par\_sed\_diagen\_opalopt} set to
+    ``\texttt{ridgwelletal2003explicit}'' -- no configs.}
+  \item{Possible values for \texttt{par\_carbconstset\_name}:
+    ``\texttt{DicksonMillero}'', ``\texttt{Hansson}''
+    ``\texttt{Roy}'' -- no configs.}
+  \item{Some stuff to do with forcing of ocean tracers (e.g. Ca and
+    $\mathrm{Ca^{44}}$); some stuff to do with sedimentation of opal
+    and POC -- \emph{added a \texttt{calcium-isotopes} job}.}
+  \item{Some dynamics changes, but all things that would cause
+    breakage elsewhere in executed code if they were wrong.}
+  \item{Possible values for \texttt{par\_sed\_diagen\_Corgopt}:
+    ``\texttt{simple}'', ``\texttt{dunne2007}'',
+    ``\texttt{arndtetal2013}'' -- \emph{added a
+      \texttt{simple-corg-diagen} job with ``\texttt{simple} setting
+      for this option (only config available)}.}
+  \item{Hosing experiments: \emph{add hosing job from LABS}.}
+  \item{Radioactive tracers; quite a few things to do with tracer
+    indexing; some stuff to do with opal remineralisation -- probably
+    all OK though since other things are likely to break along with
+    these.}
+\end{enumerate}
+
+%======================================================================
+\chapter{Final job list}
+
+Based on the preceding investigations, the full coverage test suite
+includes the following jobs:
+\begin{itemize}
+  \setlength\itemsep{0pt}
+  \item{\texttt{biogem}}
+  \item{\texttt{calcium-isotopes}}
+  \item{\texttt{cao-et-al-2009}}
+  \item{\texttt{ents}}
+  \item{\texttt{eocene-ch4}}
+  \item{\texttt{fe-atmos-ch4}}
+  \item{\texttt{gem-adapt-auto}}
+  \item{\texttt{geoengineering}}
+  \item{\texttt{hosing}}
+  \item{\texttt{inversion}}
+  \item{\texttt{make-restart}}
+  \item{\texttt{nitrogen-no3}}
+  \item{\texttt{ocean-atmos}}
+  \item{\texttt{ocean-geochem-spin-up}}
+  \item{\texttt{ocean-geochem-spin-up-2}}
+  \item{\texttt{orbital-variations-abiotic-ocean}}
+  \item{\texttt{restart-read}}
+  \item{\texttt{ridgwell-hargreaves-2007}}
+  \item{\texttt{ridgwell-schmidt-2010}}
+  \item{\texttt{ridgwell-schmidt-2010-mud}}
+  \item{\texttt{simple-corg-diagen}}
+\end{itemize}
+
+Some of these are ``standard'' jobs, while others are ``artificial''
+jobs constructed purely to exercise certain paths through the GENIE
+code.
+
+Running the full set of coverage tests takes:
+\begin{center}
+\begin{tabular}{ll}
+  Test mode (optimised)       & 1h 28min \\
+  Coverage mode (unoptimised) & 3h 00min
+\end{tabular}
+\end{center}
+
+The following modules have changes in the number of unexecuted lines
+compared to the previous test:
+\begin{center}
+\begin{tabular}{cl}
+ 33/604  & \texttt{genie.f90}                        \\
+111/1032 & \texttt{goldsteinseaice/gold\_seaice.f90} \\
+122/1435 & \texttt{common/gem\_carbchem.f90}         \\
+217/2700 & \texttt{biogem/biogem.f90}                \\
+233/1152 & \texttt{goldstein/goldstein\_diag.f90}    \\
+236/2475 & \texttt{biogem/biogem\_data\_ascii.f90}   \\
+274/2072 & \texttt{sedgem/sedgem\_box.f90}           \\
+331/3529 & \texttt{goldstein/goldstein.f90}          \\
+455/3872 & \texttt{biogem/biogem\_box.f90}           \\
+582/2999 & \texttt{biogem/biogem\_data\_netCDF.f90}  \\
+629/3151 & \texttt{biogem/biogem\_data.f90}          \\
+\end{tabular}
+\end{center}
+
+\end{document}
