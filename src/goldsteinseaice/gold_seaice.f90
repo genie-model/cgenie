@@ -99,6 +99,10 @@ CONTAINS
     ALLOCATE(albice(maxi,maxj))
     ALLOCATE(haavg(2,maxi,maxj))
     ALLOCATE(dthaavg(2,maxi,maxj))
+    ALLOCATE(ticeavg(maxi,maxj))
+    ALLOCATE(albiceavg(maxi,maxj))
+    ALLOCATE(fxdelavg(maxi,maxj))
+    ALLOCATE(fwdelavg(maxi,maxj))
 
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))

@@ -55,7 +55,7 @@ MODULE gold_seaice_lib
 
   ! v2 seasonal diagnostics
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: haavg, dthaavg
-  REAL, DIMENSION(maxi,maxj) :: ticeavg, albiceavg, fxdelavg ,fwdelavg
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ticeavg, albiceavg, fxdelavg ,fwdelavg
 
   INTEGER(KIND=8) :: nsteps
   INTEGER :: npstp, iwstp, itstp, iw, ianav
