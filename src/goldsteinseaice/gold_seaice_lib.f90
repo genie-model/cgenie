@@ -27,7 +27,8 @@ MODULE gold_seaice_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: u
   ! Reciprocal and other variables to speed up fortran
   REAL, DIMENSION(:), ALLOCATABLE :: rc, rcv, cv2, rc2
-  REAL :: rdphi, rds(maxj), rdsv(1:maxj-1)
+  REAL :: rdphi
+  REAL, DIMENSION(:), ALLOCATABLE :: rds, rdsv
 
   ! Dimensional scale values
   REAL, PARAMETER :: pi = 4 * ATAN(1.0)
