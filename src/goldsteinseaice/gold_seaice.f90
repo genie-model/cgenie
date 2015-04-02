@@ -130,11 +130,8 @@ CONTAINS
     IF (debug_init) PRINT *, 'seasonality enabled =', dosc
 
     ! Grid dimensions must be no greater than array dimensions in var.cmn
-    ! kmax needed to interpret topography file for masking
-    imax = maxi
-    jmax = maxj
-    kmax = maxk
-    dphi = phix / imax
+    ! maxk needed to interpret topography file for masking
+    dphi = phix / maxi
     IF (igrid < 2) phi0 = -260.0 * deg_to_rad
     rdphi = 1.0 / dphi
 
@@ -145,8 +142,8 @@ CONTAINS
     sv(0) = s0
     cv(0) = COS(th0)
     IF (igrid == 1) THEN
-       dth = (th1 - th0) / jmax
-       DO j = 1, jmax
+       dth = (th1 - th0) / maxj
+       DO j = 1, maxj
           thv = th0 + j * dth
           theta = thv - 0.5 * dth
           sv(j) = SIN(thv)
@@ -154,8 +151,8 @@ CONTAINS
           cv(j) = COS(thv)
        END DO
     ELSE IF (igrid == 0) THEN
-       dscon = (s1 - s0) / jmax
-       DO j = 1, jmax
+       dscon = (s1 - s0) / maxj
+       DO j = 1, maxj
           sv(j) = s0 + j * dscon
           cv(j) = SQRT(1 - sv(j) * sv(j))
           s(j) = sv(j) - 0.5 * dscon
@@ -163,13 +160,13 @@ CONTAINS
     END IF
     IF (debug_init) PRINT *, 'SIC latitudes: velocity; tracers'
     IF (debug_init) PRINT *, 'j, 180/pi*asin(sv(j)), 180/pi*asin(s(j))'
-    DO j = 1, jmax
+    DO j = 1, maxj
        ds(j) = sv(j) - sv(j-1)
        rds(j) = 1.0 / ds(j)
        c(j) = SQRT(1 - s(j) * s(j))
        rc(j) = 1.0 / c(j)
        rc2(j) = rc(j) * rc(j) * rdphi
-       IF (j < jmax) THEN
+       IF (j < maxj) THEN
           dsv(j) = s(j+1) - s(j)
           rdsv(j) = 1.0 / dsv(j)
           rcv(j) = 1.0 / cv(j)
@@ -190,19 +187,19 @@ CONTAINS
 
     ! reading in ocean bathymetry/runoff patterns
     ! seabed depth h needed BEFORE forcing if coastlines are
-    ! non-trivial note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j)
-    ! = 0 and k1(1,j) - k1(imax+1,j) = 0
+    ! non-trivial note k1(i,j) must be periodic ; k1(0,j) - k1(maxi,j)
+    ! = 0 and k1(1,j) - k1(maxi+1,j) = 0
     IF (debug_init) PRINT *, 'Bathymetry being read in'
     CALL check_unit(13, __LINE__, __FILE__)
     OPEN(13, FILE=indir_name(1:lenin)//world//'.k1', IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
 
-    DO j = jmax+1, 0, -1
-       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, imax+1)
+    DO j = maxj+1, 0, -1
+       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, maxi+1)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       k1(0,j) = k1(imax,j)
-       k1(imax+1,j) = k1(1,j)
-       IF(j /= 0 .AND. j /= jmax+1 .AND. debug_init) &
+       k1(0,j) = k1(maxi,j)
+       k1(maxi+1,j) = k1(1,j)
+       IF(j /= 0 .AND. j /= maxj+1 .AND. debug_init) &
             & WRITE (6,'(i4,32i3)') j, (k1(i,j), i = 1, 32)
     END DO
 
@@ -213,7 +210,7 @@ CONTAINS
     IF (debug_init) PRINT *, 'Bathymetry successfully read in'
 
     ! EMBM stuff follows...
-    DO j = 1, jmax
+    DO j = 1, maxj
        asurf(j) = rsc * rsc * ds(j) * dphi
        IF (debug_init) &
             & PRINT *, 'j = ', j, 'SIC grid cell area is', asurf(j), 'm2'
@@ -355,26 +352,26 @@ CONTAINS
     IF (debug_init) PRINT *, 'Sea-ice/GENIE grid interpolation variables :'
     IF (debug_init) PRINT *, &
          & '* Longitude : ilon1, ilon2, ilon3, ibox1, ibox2, ibox3 *'
-    DO i = 1, imax
-       ilon1(i) = REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
-       ilon2(i) = REAL(360.0 * i / REAL(imax) + phi0 / deg_to_rad)
-       ilon3(i) = REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
+    DO i = 1, maxi
+       ilon1(i) = REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
+       ilon2(i) = REAL(360.0 * i / REAL(maxi) + phi0 / deg_to_rad)
+       ilon3(i) = REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
        nclon1(i) = ilon1(i)
-       nclon2(i) = REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+       nclon2(i) = REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
        nclon3(i) = ilon3(i)
     END DO
-    DO i = 1, imax+1
+    DO i = 1, maxi+1
        iboxedge1_lon(i) = &
-            & REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+            & REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
        iboxedge2_lon(i) = &
-            & REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
+            & REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
        iboxedge3_lon(i) = &
-            & REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+            & REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
     END DO
 
     IF (debug_init) THEN
-       DO i = 1, imax+1
-          IF (i < imax+1) THEN
+       DO i = 1, maxi+1
+          IF (i < maxi+1) THEN
              WRITE (*,314) i, ilon1(i), ilon2(i), ilon3(i), &
                   & iboxedge1_lon(i), iboxedge2_lon(i), iboxedge3_lon(i)
           ELSE
@@ -387,24 +384,24 @@ CONTAINS
     IF (debug_init) PRINT *, &
          & '* Latitude : ilat1, ilat2, ilat3, ibox1, ibox2, ibox3 *'
     nclat3(1) = REAL(ASIN(sv(0)) * 180.0 / pi)
-    DO j = 1, jmax
+    DO j = 1, maxj
        ilat1(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        ilat2(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        ilat3(j) = REAL(ASIN(sv(j)) * 180.0 / pi)
        nclat1(j) = ilat1(j)
        nclat2(j) = ilat2(j)
-       IF (j < jmax) nclat3(j+1) = REAL(ASIN(sv(j)) * 180.0 / pi)
+       IF (j < maxj) nclat3(j+1) = REAL(ASIN(sv(j)) * 180.0 / pi)
     END DO
-    DO j = 1, jmax+1
+    DO j = 1, maxj+1
        iboxedge1_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
        iboxedge2_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
        ! following if statement stops bounds error
-       IF (j <= jmax) iboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
+       IF (j <= maxj) iboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
     END DO
-    iboxedge3_lat(jmax+1) = REAL(ASIN(sv(jmax)) * 180.0 / pi)
+    iboxedge3_lat(maxj+1) = REAL(ASIN(sv(maxj)) * 180.0 / pi)
     IF (debug_init) THEN
-       DO j = 1, jmax+1
-          IF (j < jmax+1) THEN
+       DO j = 1, maxj+1
+          IF (j < maxj+1) THEN
              WRITE (*,314) j, ilat1(j), ilat2(j), ilat3(j), &
                   & iboxedge1_lat(j), iboxedge2_lat(j), iboxedge3_lat(j)
           ELSE
@@ -415,10 +412,10 @@ CONTAINS
     END IF
 
     ! Make the land-sea mask on the genie grid.  The genie grid is
-    ! offset from the goldstein grid by imax/4 in the longitudinal
+    ! offset from the goldstein grid by maxi/4 in the longitudinal
     ! direction.
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (k1(i,j) >= 90) THEN
              ilandmask1(i,j) = 1
              ilandmask2(i,j) = 1
@@ -438,8 +435,8 @@ CONTAINS
     ! Output arguments
     ! ----------------------------------------------------------------------
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Sea-ice height              [-> surface fluxes]
           hght_sic(i,j) = REAL(varice(1,i,j))
           ! Sea-ice fractional area     [-> surface fluxes]
@@ -465,17 +462,17 @@ CONTAINS
     ! Declarations
     ! ======================================================================
 
-    REAL :: dhght_sic(imax,jmax),dfrac_sic(imax,jmax),    &
-         & ustar_ocn(imax,jmax),vstar_ocn(imax,jmax),  &
-         & hght_sic(imax,jmax),frac_sic(imax,jmax),    &
-         & temp_sic(imax,jmax),albd_sic(imax,jmax),    &
-         & sic_FW_ocn(imax,jmax),sic_FX0_ocn(imax,jmax)
+    REAL :: dhght_sic(maxi,maxj),dfrac_sic(maxi,maxj),    &
+         & ustar_ocn(maxi,maxj),vstar_ocn(maxi,maxj),  &
+         & hght_sic(maxi,maxj),frac_sic(maxi,maxj),    &
+         & temp_sic(maxi,maxj),albd_sic(maxi,maxj),    &
+         & sic_FW_ocn(maxi,maxj),sic_FX0_ocn(maxi,maxj)
 
     INTEGER :: istep
     INTEGER(KIND=8) :: koverall
 
     INTEGER :: i, j, itv, iout, ios
-    REAL :: fw_delta(imax,jmax), fx_delta(imax,jmax)
+    REAL :: fw_delta(maxi,maxj), fx_delta(maxi,maxj)
     REAL, DIMENSION(2) :: sum1, sum2, sum3, sum4
     INTEGER, DIMENSION(2) :: isum1, isum2, isum3
 
@@ -502,8 +499,8 @@ CONTAINS
        vsc = dphi * rsc * rsc
        ini_energy = 0.0
        ini_water = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              ini_water = ini_water + varice(1,i,j) * ds(j)
           END DO
        END DO
@@ -517,8 +514,8 @@ CONTAINS
     ! Input field modifications
     ! ======================================================================
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           tice(i,j) = temp_sic(i,j)
           albice(i,j) = albd_sic(i,j)
           dtha(1,i,j) = dhght_sic(i,j)
@@ -552,9 +549,9 @@ CONTAINS
     ! other fluxes to determine the net ocean fluxes.  This is
     ! consistent with the previous calculations below.
 
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (kmax >= k1(i,j)) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (maxk >= k1(i,j)) THEN
              fw_delta(i,j) = -rhoio * dtha(1,i,j)
              varice(2,i,j) = MAX(0.0, MIN(1.0, varice(2,i,j)))
              IF (varice(1,i,j) < hmin) THEN
@@ -653,8 +650,8 @@ CONTAINS
     ! Output arguments
     ! ----------------------------------------------------------------------
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Sea-ice thickness [-> surface fluxes]
           hght_sic(i,j) = REAL(varice(1,i,j))
           ! Sea-ice area      [-> surface fluxes]
@@ -678,8 +675,8 @@ CONTAINS
        vsc = dphi * rsc * rsc
        tot_energy = 0.0
        tot_water = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              tot_energy = tot_energy - sic_FX0_ocn(i,j) * ds(j)
              tot_water = tot_water + varice(1,i,j) * ds(j)
           END DO
@@ -722,9 +719,9 @@ CONTAINS
     CALL check_unit(28, __LINE__, __FILE__)
     OPEN(28, FILE=outdir_name(1:lenout)//lout//'.arcice', IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
-    DO i = 1 ,imax
-       WRITE (28,'(4e14.6)',IOSTAT=ios) varice(1,i,jmax), &
-            & varice(2,i,jmax), tice(i,jmax), albice(i,jmax)
+    DO i = 1 ,maxi
+       WRITE (28,'(4e14.6)',IOSTAT=ios) varice(1,i,maxj), &
+            & varice(2,i,maxj), tice(i,maxj), albice(i,maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
     END DO
     CLOSE(28,IOSTAT=ios)
@@ -772,10 +769,10 @@ CONTAINS
     isum1 = 0 ; isum2 = 0 ; isum3 = 0
 
     ! Calculate averages, minima, maxima, etc.
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Northern/Southern hemisphere totals
-          IF (j > jmax / 2) THEN
+          IF (j > maxj / 2) THEN
              sum1(1) = sum1(1) + (varice(1,i,j)*varice(2,i,j))*asurf(j)
              sum2(1) = sum2(1) + varice(2,i,j)*asurf(j)
           ELSE
@@ -820,22 +817,22 @@ CONTAINS
     j = 1
     fs = 0
 
-    DO j = 1, jmax
+    DO j = 1, maxj
        ! western boundary fluxes
        i = 1
        DO l = 1, 2
-          IF (kmax >= MAX(k1(imax,j), k1(1,j))) THEN
+          IF (maxk >= MAX(k1(maxi,j), k1(1,j))) THEN
              ! western doorway
-             fw(l) = u(1,imax,j) * rc(j) * (varice1(l,1,j) + &
-                  & varice1(l,imax,j)) * 0.5
-             IF (u(1,imax,j) >= 0.0) THEN
+             fw(l) = u(1,maxi,j) * rc(j) * (varice1(l,1,j) + &
+                  & varice1(l,maxi,j)) * 0.5
+             IF (u(1,maxi,j) >= 0.0) THEN
                 IF (varice1(2,1,j) > par_sica_thresh) fw(l) = 0
                 IF (varice1(1,1,j) > par_sich_thresh) fw(l) = 0
              ELSE
-                IF (varice1(2,imax,j) > par_sica_thresh) fw(l) = 0
-                IF (varice1(1,imax,j) > par_sich_thresh) fw(l) = 0
+                IF (varice1(2,maxi,j) > par_sica_thresh) fw(l) = 0
+                IF (varice1(1,maxi,j) > par_sich_thresh) fw(l) = 0
              END IF
-             fw(l) = fw(l) - (varice1(l,1,j) - varice1(l,imax,j)) * &
+             fw(l) = fw(l) - (varice1(l,1,j) - varice1(l,maxi,j)) * &
                   & rc(j) * rc(j) * rdphi * diffsic
           ELSE
              fw(l) = 0
@@ -843,13 +840,13 @@ CONTAINS
           fwsave(l) = fw(l)
        END DO
 
-       DO i = 1, imax
+       DO i = 1, maxi
           DO l = 1, 2
              ! flux to east
-             IF (i == imax) THEN
+             IF (i == maxi) THEN
                 ! eastern edge(doorway or wall)
                 fe(l) = fwsave(l)
-             ELSE IF (kmax < max(k1(i,j), k1(i+1,j))) THEN
+             ELSE IF (maxk < max(k1(i,j), k1(i+1,j))) THEN
                 fe(l) = 0
              ELSE
                 fe(l) = u(1,i,j) * rc(j) * (varice1(l,i+1,j) + &
@@ -865,7 +862,7 @@ CONTAINS
                      & rc(j) * rc(j) * rdphi * diffsic
              END IF
              ! flux to north
-             IF (kmax < MAX(k1(i,j), k1(i,j+1))) THEN
+             IF (maxk < MAX(k1(i,j), k1(i,j+1))) THEN
                 fn(l) = 0
              ELSE
                 fn(l) = cv(j) * u(2,i,j) * (varice1(l,i,j+1) + &
@@ -881,7 +878,7 @@ CONTAINS
                      &varice1(l,i,j))*rdsv(j)*diffsic
              END IF
 
-             IF (kmax >= k1(i,j)) THEN
+             IF (maxk >= k1(i,j)) THEN
                 varice(l,i,j) = varice1(l,i,j) - dtsic * ( &
                      & (fe(l) - fw(l)) * rdphi + &
                      & (fn(l) - fs(l,i)) * rds(j)) + &
@@ -918,16 +915,16 @@ CONTAINS
 
     ! set b.c's on local variables
     cin(:,0) = 0.0
-    cin(:,jmax) = 0.0
+    cin(:,maxj) = 0.0
     cis(:,0) = 0.0
-    cis(:,jmax) = 0.0
+    cis(:,maxj) = 0.0
     varice2(:,0) = 0.0
-    varice2(:,jmax+1) = 0.0
+    varice2(:,maxj+1) = 0.0
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! flux to east
-          IF (kmax < MAX(k1(i,j), k1(i+1,j))) THEN
+          IF (maxk < MAX(k1(i,j), k1(i+1,j))) THEN
              cie(i,j) = 0
              ciw(i,j) = 0
           ELSE
@@ -939,7 +936,7 @@ CONTAINS
              cie(i,j) = cie(i,j) * (1-ups) - tv
           END IF
           ! flux to north
-          IF (kmax < MAX(k1(i,j), k1(i,j+1))) THEN
+          IF (maxk < MAX(k1(i,j), k1(i,j+1))) THEN
              cin(i,j) = 0
              cis(i,j) = 0
           ELSE
@@ -952,24 +949,24 @@ CONTAINS
           END IF
        END DO
     END DO
-    cie(0,1:jmax) = cie(imax,1:jmax)
-    ciw(0,1:jmax) = ciw(imax,1:jmax)
+    cie(0,1:maxj) = cie(maxi,1:maxj)
+    ciw(0,1:maxj) = ciw(maxi,1:maxj)
 
     ! loop for ice tracers (Hice, Aice)
     DO l = 1, 2
        ! iterate to solve timestep
        DO iits = 1, nii
-          DO j = 1, jmax
-             DO i = 1, imax
+          DO j = 1, maxj
+             DO i = 1, maxi
                 varice2(i,j) = cimp * varice(l,i,j) + &
                      & (1.0 - cimp) * varice1(l,i,j)
              END DO
           END DO
-          varice2(0,1:jmax) = varice2(imax,1:jmax)
-          varice2(imax+1,1:jmax) = varice2(1,1:jmax)
-          DO j = 1, jmax
-             DO i = 1, imax
-                IF (kmax >= k1(i,j)) THEN
+          varice2(0,1:maxj) = varice2(maxi,1:maxj)
+          varice2(maxi+1,1:maxj) = varice2(1,1:maxj)
+          DO j = 1, maxj
+             DO i = 1, maxi
+                IF (maxk >= k1(i,j)) THEN
                    centre = dtsic*(ciw(i,j) - cie(i-1,j) + &
                         & (cis(i,j) - cin(i,j-1)) * rds(j))
                    varice(l,i,j) = (varice1(l,i,j) * &
@@ -985,17 +982,17 @@ CONTAINS
           END DO
        END DO
        IF (correct) THEN
-          DO j = 1, jmax
-             DO i = 1, imax
+          DO j = 1, maxj
+             DO i = 1, maxi
                 varice2(i,j) = 0.5 * (varice2(i,j) + cimp * varice(l,i,j) + &
                      & (1.0 - cimp) * varice1(l,i,j))
              END DO
           END DO
-          varice2(0,1:jmax) = varice2(imax,1:jmax)
-          varice2(imax+1,1:jmax) = varice2(1,1:jmax)
-          DO j = 1, jmax
-             DO i = 1, imax
-                IF (kmax >= k1(i,j)) THEN
+          varice2(0,1:maxj) = varice2(maxi,1:maxj)
+          varice2(maxi+1,1:maxj) = varice2(1,1:maxj)
+          DO j = 1, maxj
+             DO i = 1, maxi
+                IF (maxk >= k1(i,j)) THEN
                    ! explicit and conservative corrector step
                    varice(l,i,j) =  varice1(l,i,j)- dtsic * ( &
                         & -dtha(l,i,j) * tsc + &
@@ -1012,9 +1009,9 @@ CONTAINS
        END IF
        ! calculate dynamical and thermal component of ice evolution
        ! (this is purely diagnostic)
-       DO j = 1, jmax
-          DO i = 1, imax
-             IF (kmax >= k1(i,j)) THEN
+       DO j = 1, maxj
+          DO i = 1, maxi
+             IF (maxk >= k1(i,j)) THEN
                 variceth(l,i,j) = tsc * dtsic * dtha(l,i,j)
                 varicedy(l,i,j) = &
                      & varice(l,i,j) - varice1(l,i,j) - variceth(l,i,j)
