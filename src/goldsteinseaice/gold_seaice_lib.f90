@@ -21,7 +21,7 @@ MODULE gold_seaice_lib
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1
   INTEGER :: nyear
 
-  REAL, DIMENSION(0:maxj) :: s, c, sv, cv
+  REAL, DIMENSION(:), ALLOCATABLE :: s, c, sv, cv
   REAL :: dtsic, phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
        & u(2,0:maxi,0:maxj), t0
   ! Reciprocal and other variables to speed up fortran

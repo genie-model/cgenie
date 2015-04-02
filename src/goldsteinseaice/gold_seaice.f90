@@ -75,6 +75,10 @@ CONTAINS
     IF (debug_init) PRINT *
 
     ALLOCATE(k1(0:maxi+1,0:maxj+1))
+    ALLOCATE(s(0:maxj))
+    ALLOCATE(c(0:maxj))
+    ALLOCATE(sv(0:maxj))
+    ALLOCATE(cv(0:maxj))
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))
     ALLOCATE(nclon3(maxi))
