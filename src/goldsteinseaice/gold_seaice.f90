@@ -90,6 +90,11 @@ CONTAINS
     ALLOCATE(rds(maxj))
     ALLOCATE(rdsv(1:maxj-1))
     ALLOCATE(asurf(maxj))
+    ALLOCATE(varice(2,maxi,maxj))
+    ALLOCATE(varice1(2,maxi,maxj))
+    ALLOCATE(dtha(2,maxi,maxj))
+    ALLOCATE(varicedy(2,maxi,maxj))
+    ALLOCATE(variceth(2,maxi,maxj))
 
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))

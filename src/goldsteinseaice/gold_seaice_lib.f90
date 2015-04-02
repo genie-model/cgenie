@@ -41,7 +41,7 @@ MODULE gold_seaice_lib
   ! Grid cell area.
   REAL, DIMENSION(:), ALLOCATABLE :: asurf
 
-  REAL, DIMENSION(2,maxi,maxj) :: varice, varice1, dtha, varicedy, variceth
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: varice, varice1, dtha, varicedy, variceth
   REAL, DIMENSION(maxi,maxj) :: tice, albice
   REAL, PARAMETER :: rho0 = 1.0E3, rhoice = 913.0
   REAL, PARAMETER :: hmin = 0.01, rhmin = 1.0 / hmin
