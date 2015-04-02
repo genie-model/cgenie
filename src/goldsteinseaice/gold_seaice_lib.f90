@@ -18,7 +18,8 @@ MODULE gold_seaice_lib
   INTEGER, PARAMETER :: maxj = GOLDSTEINNLATS
   INTEGER, PARAMETER :: maxk = GOLDSTEINNLEVS
 
-  INTEGER :: k1(0:maxi+1,0:maxj+1), nyear
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1
+  INTEGER :: nyear
 
   REAL, DIMENSION(0:maxj) :: s, c, sv, cv
   REAL :: dtsic, phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &

@@ -74,6 +74,7 @@ CONTAINS
     PRINT *, ' >>> Initialising sea-ice module ...'
     IF (debug_init) PRINT *
 
+    ALLOCATE(k1(0:maxi+1,0:maxj+1))
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))
     ALLOCATE(nclon3(maxi))
