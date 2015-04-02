@@ -188,7 +188,6 @@ for i in range(1, len(deflines)):
 for i in range(len(deflines)-1):
     deflines[i] += ','
 deflines[-1] += ' }'
-configs.append(C.make_coordinates(defines))
 
 
 # Set up timestepping and restart options: this is only done if we
@@ -251,6 +250,7 @@ if 'sedgem' in modules:
 
 # Construct namelists and copy data files.
 
+configs.append(C.make_coordinates(defines))
 for m in modules + ['main', 'gem']:
     minfo = C.lookup_module(m)
     if minfo['flag_name'] == 'NONE':

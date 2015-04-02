@@ -27,7 +27,11 @@ SUBROUTINE initialise_genie()
        & debug_init, debug_end, debug_loop, gem_yr, gem_yr_min, &
        & gem_yr_max, gem_notyr, gem_notyr_min, gem_notyr_max, gem_dyr, &
        & gem_adapt_auto, gem_adapt_dpCO2dt, gem_adapt_DpCO2, &
-       & gem_adapt_auto_unlimitedGEM, gem_adapt_diag_biogem_full
+       & gem_adapt_auto_unlimitedGEM, gem_adapt_diag_biogem_full, &
+       & dim_GENIENL, dim_GENIENX, dim_GENIENY, dim_GOLDSTEINNLONS, &
+       & dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, dim_GOLDSTEINNTRACS, &
+       & dim_GOLDSTEINMAXISLES, dim_SEDGEMNLONS, dim_SEDGEMNLATS, &
+       & dim_ROKGEMNLONS, dim_ROKGEMNLATS
 
   ! Assign default values
   koverall_total = 0
