@@ -188,6 +188,7 @@ for i in range(1, len(deflines)):
 for i in range(len(deflines)-1):
     deflines[i] += ','
 deflines[-1] += ' }'
+configs.append(C.merge_coordinates(defines))
 
 
 # Set up timestepping and restart options: this is only done if we

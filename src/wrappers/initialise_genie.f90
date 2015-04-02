@@ -75,6 +75,18 @@ SUBROUTINE initialise_genie()
   verbosity = 0
   debug_init = 1
   fname_topo = 'worbe2'
+  dim_GENIENL = 7
+  dim_GENIENX = 64
+  dim_GENIENY = 32
+  dim_GOLDSTEINNLONS = 36
+  dim_GOLDSTEINNLATS = 36
+  dim_GOLDSTEINNLEVS = 8
+  dim_GOLDSTEINNTRACS = 2
+  dim_GOLDSTEINMAXISLES = 5
+  dim_SEDGEMNLONS = 36
+  dim_SEDGEMNLATS = 36
+  dim_ROKGEMNLONS = 36
+  dim_ROKGEMNLATS = 36
 
   CALL check_unit(unitNum, __LINE__, __FILE__)
   OPEN(UNIT=unitNum,FILE='data_genie',STATUS='old',IOSTAT=ios)
