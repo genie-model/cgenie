@@ -83,6 +83,10 @@ CONTAINS
     ALLOCATE(dsv(1:maxj-1))
     ALLOCATE(rds2(2:maxj-1))
     ALLOCATE(u(2,0:maxi,0:maxj))
+    ALLOCATE(rc(0:maxj))
+    ALLOCATE(rcv(0:maxj))
+    ALLOCATE(cv2(0:maxj))
+    ALLOCATE(rc2(0:maxj))
 
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))
