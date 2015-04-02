@@ -20,7 +20,7 @@ MODULE gemlite_lib
   ! ****************************************************************************************************************************** !
 
   ! ### EDIT ADD AND/OR EXTEND NAME-LIST PARAMETER AND CONTROL OPTIONS ########################################################### !
-  logical::ctrl_update_pCO2                                             ! 
+  logical::ctrl_update_pCO2                                             !
   NAMELIST /ini_gemlite_nml/ctrl_update_pCO2
   real::par_DpCO2_thresh                                                ! threshold for convergence of CO2 repartitioning (atm)
   NAMELIST /ini_gemlite_nml/par_DpCO2_thresh
@@ -33,9 +33,7 @@ MODULE gemlite_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i = ilon1_ocn                                    ! 
-  INTEGER,PARAMETER::n_j = ilat1_ocn                                    ! 
-  INTEGER,PARAMETER::n_k = inl1_ocn                                     !
+  INTEGER :: n_i, n_j, n_k
 
 
   ! ****************************************************************************************************************************** !
@@ -64,26 +62,25 @@ MODULE gemlite_lib
   ! 'physics'
   REAL,ALLOCATABLE,DIMENSION(:,:)::phys_atm_A                           !
   REAL,ALLOCATABLE,DIMENSION(:,:)::phys_atm_V                           !
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_Dmid                      ! 
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_A                         ! 
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_V                         ! 
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_mask                      ! 
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_Dmid                      !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_A                         !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_V                         !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::phys_ocn_mask                      !
   REAL,ALLOCATABLE,DIMENSION(:,:)::phys_ocnatm_seaice                   !
   ! aqueous carbonate system [SURFACE ONLY]
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carb                               ! 
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carbconst                          ! 
-  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carbalk                            ! 
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carb                               !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carbconst                          !
+  REAL,ALLOCATABLE,DIMENSION(:,:,:)::carbalk                            !
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::carbisor                           ! carbonate (carbon) isotopic properties array
 
   ! *** copies of GOLDSTEIn variables ***
   ! dimensional scale values for the ocean
-  REAL::goldstein_dsc                                                   ! 
+  REAL::goldstein_dsc
   ! depth and location of oceans
-  INTEGER,DIMENSION(n_i,n_j)::goldstein_k1                              ! 
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: goldstein_k1
   ! miscellaneous
-  REAL,DIMENSION(n_k)::goldstein_dz                                     ! 
-  REAL,DIMENSION(n_k)::goldstein_dza                                    ! 
-  REAL,DIMENSION(0:n_j)::goldstein_sv                                   !
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_dz, goldstein_dza
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_sv
 
   ! *** MISC ***
   integer::gemcycle_count                                               ! GEMlite cycle counter

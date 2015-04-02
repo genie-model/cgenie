@@ -100,6 +100,7 @@ CONTAINS
   END SUBROUTINE initialise_rokgem_wrapper
 
   SUBROUTINE initialise_gemlite_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL initialise_gemlite(go_dsc, go_k1, go_dz, go_dza, go_sv, &
          & genie_sfxsumsed, genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)

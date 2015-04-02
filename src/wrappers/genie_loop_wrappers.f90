@@ -459,22 +459,26 @@ CONTAINS
   ! *** GEMLITE ***
 
   SUBROUTINE gemlite_wrapper
+    USE gemlite
     IMPLICIT NONE
-    CALL gemlite(genie_sfcocn1, genie_sfxsumsed1, genie_sfxocn1, &
+    CALL step_gemlite(genie_sfcocn1, genie_sfxsumsed1, genie_sfxocn1, &
          & genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)
   END SUBROUTINE gemlite_wrapper
 
   SUBROUTINE gemlite_climate_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_climate(frac_sic)
   END SUBROUTINE gemlite_climate_wrapper
 
   SUBROUTINE gemlite_cycleinit_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_cycleinit()
   END SUBROUTINE gemlite_cycleinit_wrapper
 
   SUBROUTINE gemlite_gltts_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_ts(go_ts, go_ts1)
   END SUBROUTINE gemlite_gltts_wrapper
