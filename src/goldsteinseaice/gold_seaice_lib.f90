@@ -54,7 +54,7 @@ MODULE gold_seaice_lib
   REAL :: yearlen
 
   ! v2 seasonal diagnostics
-  REAL, DIMENSION(2,maxi,maxj) :: haavg, dthaavg
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: haavg, dthaavg
   REAL, DIMENSION(maxi,maxj) :: ticeavg, albiceavg, fxdelavg ,fwdelavg
 
   INTEGER(KIND=8) :: nsteps
