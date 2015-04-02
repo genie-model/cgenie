@@ -42,7 +42,7 @@ MODULE gold_seaice_lib
   REAL, DIMENSION(:), ALLOCATABLE :: asurf
 
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: varice, varice1, dtha, varicedy, variceth
-  REAL, DIMENSION(maxi,maxj) :: tice, albice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: tice, albice
   REAL, PARAMETER :: rho0 = 1.0E3, rhoice = 913.0
   REAL, PARAMETER :: hmin = 0.01, rhmin = 1.0 / hmin
   REAL :: dtatm, ghs, rdtdim, ryear, rho0sea, diffsic, rhoio, rhooi

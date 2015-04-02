@@ -95,6 +95,8 @@ CONTAINS
     ALLOCATE(dtha(2,maxi,maxj))
     ALLOCATE(varicedy(2,maxi,maxj))
     ALLOCATE(variceth(2,maxi,maxj))
+    ALLOCATE(tice(maxi,maxj))
+    ALLOCATE(albice(maxi,maxj))
 
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))
