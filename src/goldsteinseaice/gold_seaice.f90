@@ -23,16 +23,16 @@ CONTAINS
     ! Declarations
     ! ======================================================================
 
-    REAL, DIMENSION(maxi), INTENT(OUT) :: ilon1, ilon2, ilon3
-    REAL, DIMENSION(maxj), INTENT(OUT) :: ilat1, ilat2, ilat3
-    REAL, DIMENSION(maxi+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: ilon1, ilon2, ilon3
+    REAL, DIMENSION(:), INTENT(OUT) :: ilat1, ilat2, ilat3
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & iboxedge1_lon, iboxedge2_lon, iboxedge3_lon
-    REAL, DIMENSION(maxj+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & iboxedge1_lat, iboxedge2_lat, iboxedge3_lat
-    INTEGER, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: &
          & ilandmask1, ilandmask2, ilandmask3
     INTEGER(KIND=8), INTENT(IN) :: totsteps
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & hght_sic, frac_sic, temp_sic, albd_sic
     REAL, INTENT(OUT) :: test_energy_seaice
 
@@ -75,6 +75,7 @@ CONTAINS
     PRINT *, ' >>> Initialising sea-ice module ...'
     IF (debug_init) PRINT *
 
+    maxi = dim_GOLDSTEINNLONS
     maxj = dim_GOLDSTEINNLATS
     maxk = dim_GOLDSTEINNLEVS
 
@@ -845,7 +846,6 @@ CONTAINS
 
   ! Update sea-ice height and area
   SUBROUTINE tstepsic
-    USE gold_seaice_lib
     IMPLICIT NONE
 
     INTEGER :: i, j, l
@@ -939,7 +939,6 @@ CONTAINS
   ! eg flux across east face = cie(i)*T(i+1) + ciw(i)*T(i)
   ! converted from ocean to ice 28/10/04 yka, edited nre
   SUBROUTINE tstipsic
-    USE gold_seaice_lib
     IMPLICIT NONE
 
     REAL :: tv, ups, pec, centre

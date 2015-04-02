@@ -3,12 +3,7 @@ MODULE gold_seaice_lib
   IMPLICIT NONE
   SAVE
 
-! For GOLDSTEIN seaice
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-  INTEGER, PARAMETER :: maxi = GOLDSTEINNLONS
-  INTEGER :: maxj, maxk
+  INTEGER :: maxi, maxj, maxk
 
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1
   INTEGER :: nyear
