@@ -22,8 +22,9 @@ MODULE gold_seaice_lib
   INTEGER :: nyear
 
   REAL, DIMENSION(:), ALLOCATABLE :: s, c, sv, cv
-  REAL :: dtsic, phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
-       & u(2,0:maxi,0:maxj), t0
+  REAL :: dtsic, phi0, dphi, t0
+  REAL, DIMENSION(:), ALLOCATABLE :: ds, dsv, rds2
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: u
   ! Reciprocal and other variables to speed up fortran
   REAL, DIMENSION(0:maxj) :: rc, rcv, cv2, rc2
   REAL :: rdphi, rds(maxj), rdsv(1:maxj-1)

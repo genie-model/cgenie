@@ -79,6 +79,11 @@ CONTAINS
     ALLOCATE(c(0:maxj))
     ALLOCATE(sv(0:maxj))
     ALLOCATE(cv(0:maxj))
+    ALLOCATE(ds(maxj))
+    ALLOCATE(dsv(1:maxj-1))
+    ALLOCATE(rds2(2:maxj-1))
+    ALLOCATE(u(2,0:maxi,0:maxj))
+
     ALLOCATE(nclon1(maxi))
     ALLOCATE(nclon2(maxi))
     ALLOCATE(nclon3(maxi))
