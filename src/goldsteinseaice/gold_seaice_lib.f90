@@ -7,16 +7,8 @@ MODULE gold_seaice_lib
 #ifndef GOLDSTEINNLONS
 #define GOLDSTEINNLONS 36
 #endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
-
   INTEGER, PARAMETER :: maxi = GOLDSTEINNLONS
-  INTEGER, PARAMETER :: maxj = GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk = GOLDSTEINNLEVS
+  INTEGER :: maxj, maxk
 
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1
   INTEGER :: nyear
@@ -55,7 +47,7 @@ MODULE gold_seaice_lib
 
   ! v2 seasonal diagnostics
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: haavg, dthaavg
-  REAL, DIMENSION(:,:), ALLOCATABLE :: ticeavg, albiceavg, fxdelavg ,fwdelavg
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ticeavg, albiceavg, fxdelavg, fwdelavg
 
   INTEGER(KIND=8) :: nsteps
   INTEGER :: npstp, iwstp, itstp, iw, ianav

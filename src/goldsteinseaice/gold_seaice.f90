@@ -1,6 +1,7 @@
 MODULE gold_seaice
 
   USE genie_util, ONLY: check_unit, check_iostat
+  USE genie_control, ONLY: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS
   USE gold_seaice_lib
   USE gold_seaice_netcdf
   USE gold_seaice_data
@@ -73,6 +74,9 @@ CONTAINS
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising sea-ice module ...'
     IF (debug_init) PRINT *
+
+    maxj = dim_GOLDSTEINNLATS
+    maxk = dim_GOLDSTEINNLEVS
 
     ALLOCATE(k1(0:maxi+1,0:maxj+1))
     ALLOCATE(s(0:maxj))
