@@ -39,7 +39,7 @@ MODULE gold_seaice_lib
   REAL, PARAMETER :: cpsc = 3981.1
 
   ! Grid cell area.
-  REAL, DIMENSION(maxj) :: asurf
+  REAL, DIMENSION(:), ALLOCATABLE :: asurf
 
   REAL, DIMENSION(2,maxi,maxj) :: varice, varice1, dtha, varicedy, variceth
   REAL, DIMENSION(maxi,maxj) :: tice, albice
