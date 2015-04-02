@@ -9,8 +9,8 @@ MODULE gold_seaice_netcdf
   PUBLIC :: end_netcdf_sic
   PUBLIC :: nclon1, nclon2, nclon3, nclat1, nclat2, nclat3
 
-  REAL, DIMENSION(maxi) :: nclon1, nclon2, nclon3
-  REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclon1, nclon2, nclon3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclat1, nclat2, nclat3
 
   INTEGER, PARAMETER :: nall=100, nfiles=2
   INTEGER :: nco(nfiles), iddimo(nall, nfiles), idvaro(nall, nfiles)

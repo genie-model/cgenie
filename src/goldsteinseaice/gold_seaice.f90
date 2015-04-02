@@ -74,6 +74,13 @@ CONTAINS
     PRINT *, ' >>> Initialising sea-ice module ...'
     IF (debug_init) PRINT *
 
+    ALLOCATE(nclon1(maxi))
+    ALLOCATE(nclon2(maxi))
+    ALLOCATE(nclon3(maxi))
+    ALLOCATE(nclat1(maxj))
+    ALLOCATE(nclat2(maxj))
+    ALLOCATE(nclat3(maxj))
+
     ! read DATA (i.e. namelist) file
     CALL check_unit(56, __LINE__, __FILE__)
     OPEN(UNIT=56, FILE='data_goldSIC', STATUS='old', IOSTAT=ios)
