@@ -377,6 +377,36 @@ CONTAINS
        END IF
     END IF
 
+    ALLOCATE(k1(0:maxi+1,0:maxj+1)) ; k1 = 0
+    ALLOCATE(ku(2,maxi,maxj))       ; ku = 0
+    ALLOCATE(mk(maxi+1,maxj))       ; mk = 0
+
+    ALLOCATE(dt(maxk))       ; dt = 0.0
+    ALLOCATE(ds(maxj))       ; ds = 0.0
+    ALLOCATE(dsv(1:maxj-1))  ; dsv = 0.0
+    ALLOCATE(rds2(2:maxj-1)) ; rds2 = 0.0
+    ALLOCATE(dz(maxk))       ; dz = 0.0
+    ALLOCATE(s(0:maxj))      ; s = 0.0
+    ALLOCATE(c(0:maxj))      ; c = 0.0
+    ALLOCATE(sv(0:maxj))     ; sv = 0.0
+
+    ALLOCATE(dzu(2,maxk))    ; dzu = 0.0
+
+    ALLOCATE(tau(2,maxi,maxj))    ; tau = 0.0
+    ALLOCATE(drag(2,maxi+1,maxj)) ; drag = 0.0
+    ALLOCATE(dztau(2,maxi,maxj))  ; dztau = 0.0
+
+    ALLOCATE(cv(0:maxj)) ; cv = 0.0
+    ALLOCATE(dza(maxk))  ; dza = 0.0
+    ALLOCATE(tsa0(maxj)) ; tsa0 = 0.0
+
+    ALLOCATE(tau0(maxi,maxj))   ; tau0 = 0.0
+    ALLOCATE(dztav0(maxi,maxj)) ; dztav0 = 0.0
+    ALLOCATE(tau1(maxi,maxj))   ; tau1 = 0.0
+    ALLOCATE(dztav1(maxi,maxj)) ; dztav1 = 0.0
+
+    ALLOCATE(dztav(2,maxi,maxj)) ; dztav = 0.0
+
     ! Input directory name
     lenin = lnsig1(indir_name)
     IF (indir_name(lenin:lenin) /= '/') THEN

@@ -14,18 +14,20 @@ MODULE embm_lib
 #endif
 
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=2
+  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS
   INTEGER, PARAMETER :: maxnyr=400
-  INTEGER :: ntot, intot, k1(0:maxi+1,0:maxj+1)
-  INTEGER :: ku(2,maxi,maxj), mk(maxi+1,maxj), nyear
+  INTEGER :: ntot, intot, nyear
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: ku
 
-  REAL :: dt(maxk), phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
-       & dz(maxk), time, s(0:maxj), c(0:maxj), dzu(2,maxk), &
-       & tau(2,maxi,maxj), drag(2,maxi+1,maxj), dztau(2,maxi,maxj), &
-       & diff(2), ec(4), sv(0:maxj)
-  REAL :: cv(0:maxj), dza(maxk), dztav(2,maxi,maxj), ez0, &
-       & sda1, sdomg, dzz, tau0(maxi,maxj), dztav0(maxi,maxj), &
-       & tau1(maxi,maxj), dztav1(maxi,maxj), tsa0(maxj), t0
+  REAL :: phi0, dphi, time, diff(2), ec(4)
+  REAL, DIMENSION(:), ALLOCATABLE :: dt, ds, dsv, rds2, dz, s, c, sv
+  REAL, DIMENSION(:,:), ALLOCATABLE :: dzu
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: tau, drag, dztau
+  REAL :: ez0, sda1, sdomg, dzz, t0
+  REAL, DIMENSION(:), ALLOCATABLE :: cv, dza, tsa0
+  REAL, DIMENSION(:,:), ALLOCATABLE :: tau0, dztav0, tau1, dztav1
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: dztav
   ! Reciprocal and other variables to speed up fortran
   REAL :: rc(0:maxj), rcv(1:maxj-1), rdphi, rds(maxj), rdsv(1:maxj-1), &
        & cv2(1:maxj-1), rc2(0:maxj), rtv(maxi,maxj), rtv3(maxi,maxj), &
