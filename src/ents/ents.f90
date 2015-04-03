@@ -94,6 +94,38 @@ CONTAINS
        CLOSE(59)
     END IF
 
+    ALLOCATE(ents_k1(maxi,maxj))
+    ALLOCATE(ents_lat(maxj))
+
+    ALLOCATE(Cveg(maxi,maxj))
+    ALLOCATE(Csoil(maxi,maxj))
+    ALLOCATE(fv(maxi,maxj))
+    ALLOCATE(epsv(maxi,maxj))
+    ALLOCATE(leaf(maxi,maxj))
+    ALLOCATE(respveg(maxi,maxj))
+    ALLOCATE(respsoil(maxi,maxj))
+    ALLOCATE(photo(maxi,maxj))
+
+    ALLOCATE(sphoto(maxi,maxj))
+    ALLOCATE(srveg(maxi,maxj))
+    ALLOCATE(sleaf(maxi,maxj))
+    ALLOCATE(srsoil(maxi,maxj))
+    ALLOCATE(sCveg1(maxi,maxj))
+    ALLOCATE(sCsoil1(maxi,maxj))
+    ALLOCATE(sfv1(maxi,maxj))
+    ALLOCATE(sepsv1(maxi,maxj))
+    ALLOCATE(sfx0a(maxi,maxj))
+    ALLOCATE(sfx0o(maxi,maxj))
+    ALLOCATE(sfxsens(maxi,maxj))
+    ALLOCATE(sfxlw(maxi,maxj))
+    ALLOCATE(sevap(maxi,maxj))
+    ALLOCATE(spptn(maxi,maxj))
+    ALLOCATE(srelh(maxi,maxj))
+    ALLOCATE(sbcap(maxi,maxj))
+    ALLOCATE(salbs(maxi,maxj))
+    ALLOCATE(ssnow(maxi,maxj))
+    ALLOCATE(sz0(maxi,maxj))
+
     ! Input directory name
     lenin = lnsig1(indir_name)
     IF (indir_name(lenin:lenin) /= '/') THEN

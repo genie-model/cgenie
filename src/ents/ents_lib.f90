@@ -13,8 +13,9 @@ MODULE ents_lib
 
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
   INTEGER, PARAMETER :: maxnyr=220
-  INTEGER :: ents_k1(maxi,maxj), ents_kmax, ents_nyear
-  REAL :: ents_lat(maxj)
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: ents_k1
+  INTEGER :: ents_kmax, ents_nyear
+  REAL, DIMENSION(:), ALLOCATABLE :: ents_lat
 
   ! The par_output_years_0d and _2d, rstdir_name, start_year,
   ! opt_timeseries_output, opt_append_data vars are defined to be a
@@ -71,7 +72,7 @@ MODULE ents_lib
   INTEGER :: msimpleland        ! How often simple land called (units of istep)
 
   ! Carbon reservoirs
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & Cveg,  &              ! Veg carbon reservoir (kgC/m2)
        & Csoil, &              ! Soil carbon reservoir (kgC/m2)
        & fv,    &              ! Fractional veget. cover (/gridbox)
@@ -80,7 +81,7 @@ MODULE ents_lib
 
   REAL :: dtland                   ! time (seconds) of each land timestep
 
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & leaf,     &            ! leaf litter (kgC/m2/yr)
        & respveg,  &            ! veget. respiration (kgC/m2/yr)
        & respsoil, &            ! soil respiration (kgC/m2/yr)
@@ -88,7 +89,7 @@ MODULE ents_lib
 
   ! Arrays used to calculate .sland.avg files.  Used in annav_diags
   ! (these arrays only used to calculate .avg files)
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & sphoto,  &          ! summed photosynth
        & srveg,   &          ! summed veg resp
        & sleaf,   &          ! summed leaf litter
