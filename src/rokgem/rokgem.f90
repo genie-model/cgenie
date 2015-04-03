@@ -62,6 +62,10 @@ CONTAINS
 
     CALL sub_load_goin_rokgem()
 
+    ALLOCATE(phys_rok(n_phys_rok,n_i,n_j))         ; phys_rok = 0.0
+    ALLOCATE(phys_ocnrok(n_phys_ocnrok,n_io,n_jo)) ; phys_ocnrok = 0.0
+    ALLOCATE(goldstein_k1(ilon1_ocn,ilat1_ocn))    ; goldstein_k1 = 0
+
     CALL sub_init_phys_rok()
 
     ! *** setup for netcdf output  ***

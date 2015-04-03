@@ -196,7 +196,7 @@ MODULE rokgem_lib
   INTEGER,PARAMETER::n_phys_ocnrok                        = 06    ! number of grid properties descriptors
 
   ! *** PRIMARY rokgem ARRAYS ***
-  real,dimension(n_phys_rok,n_i,n_j)::phys_rok                                         ! 'physical' array info - see below (lats, lons, areas of grid cells)
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: phys_rok  ! 'physical' array info - see below (lats, lons, areas of grid cells)
 
   ! *** array index values ***
   ! weathering 'physics' properties array indices
@@ -212,9 +212,9 @@ MODULE rokgem_lib
   ! ocean/atm interface stuff: grids, depth and location of oceans, and tracers
   INTEGER,PARAMETER                              ::n_io = ilon1_rok
   INTEGER,PARAMETER                              ::n_jo = ilat1_rok
-  INTEGER,PARAMETER                              ::n_ko = inl1_ocn                                 ! no. of depth levels in ocean
-  REAL,DIMENSION(n_phys_ocnrok,n_io,n_jo)        ::phys_ocnrok                                     ! 'physical' array info for ocean-atmosphere - see above (lats, lons, areas of grid cells)
-  INTEGER,DIMENSION(ilon1_ocn,ilat1_ocn)         ::goldstein_k1                                    ! taken from goldstein (put this in somewhere: goldstein_k1(:,:) = go_k1(:,:))
+  INTEGER,PARAMETER                              ::n_ko = inl1_ocn  ! no. of depth levels in ocean
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: phys_ocnrok    ! 'physical' array info for ocean-atmosphere - see above (lats, lons, areas of grid cells)
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: goldstein_k1  ! taken from goldstein (put this in somewhere: goldstein_k1(:,:) = go_k1(:,:))
 
  ! ocean-atmosphere interface 'physics' properties array indices
   INTEGER,PARAMETER::ipoa_lat                    = 01                                              ! latitude (degrees) [mid-point]
