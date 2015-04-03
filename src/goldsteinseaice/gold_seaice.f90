@@ -79,42 +79,42 @@ CONTAINS
     maxj = dim_GOLDSTEINNLATS
     maxk = dim_GOLDSTEINNLEVS
 
-    ALLOCATE(k1(0:maxi+1,0:maxj+1))
-    ALLOCATE(s(0:maxj))
-    ALLOCATE(c(0:maxj))
-    ALLOCATE(sv(0:maxj))
-    ALLOCATE(cv(0:maxj))
-    ALLOCATE(ds(maxj))
-    ALLOCATE(dsv(1:maxj-1))
-    ALLOCATE(rds2(2:maxj-1))
-    ALLOCATE(u(2,0:maxi,0:maxj))
-    ALLOCATE(rc(0:maxj))
-    ALLOCATE(rcv(0:maxj))
-    ALLOCATE(cv2(0:maxj))
-    ALLOCATE(rc2(0:maxj))
-    ALLOCATE(rds(maxj))
-    ALLOCATE(rdsv(1:maxj-1))
-    ALLOCATE(asurf(maxj))
-    ALLOCATE(varice(2,maxi,maxj))
-    ALLOCATE(varice1(2,maxi,maxj))
-    ALLOCATE(dtha(2,maxi,maxj))
-    ALLOCATE(varicedy(2,maxi,maxj))
-    ALLOCATE(variceth(2,maxi,maxj))
-    ALLOCATE(tice(maxi,maxj))
-    ALLOCATE(albice(maxi,maxj))
-    ALLOCATE(haavg(2,maxi,maxj))
-    ALLOCATE(dthaavg(2,maxi,maxj))
-    ALLOCATE(ticeavg(maxi,maxj))
-    ALLOCATE(albiceavg(maxi,maxj))
-    ALLOCATE(fxdelavg(maxi,maxj))
-    ALLOCATE(fwdelavg(maxi,maxj))
+    ALLOCATE(k1(0:maxi+1,0:maxj+1)) ; k1 = 0
+    ALLOCATE(s(0:maxj))             ; s = 0.0
+    ALLOCATE(c(0:maxj))             ; c = 0.0
+    ALLOCATE(sv(0:maxj))            ; sv = 0.0
+    ALLOCATE(cv(0:maxj))            ; cv = 0.0
+    ALLOCATE(ds(maxj))              ; ds = 0.0
+    ALLOCATE(dsv(1:maxj-1))         ; dsv = 0.0
+    ALLOCATE(rds2(2:maxj-1))        ; rds2 = 0.0
+    ALLOCATE(u(2,0:maxi,0:maxj))    ; u = 0.0
+    ALLOCATE(rc(0:maxj))            ; rc = 0.0
+    ALLOCATE(rcv(0:maxj))           ; rcv = 0.0
+    ALLOCATE(cv2(0:maxj))           ; cv2 = 0.0
+    ALLOCATE(rc2(0:maxj))           ; rc2 = 0.0
+    ALLOCATE(rds(maxj))             ; rds = 0.0
+    ALLOCATE(rdsv(1:maxj-1))        ; rdsv = 0.0
+    ALLOCATE(asurf(maxj))           ; asurf = 0.0
+    ALLOCATE(varice(2,maxi,maxj))   ; varice = 0.0
+    ALLOCATE(varice1(2,maxi,maxj))  ; varice1 = 0.0
+    ALLOCATE(dtha(2,maxi,maxj))     ; dtha = 0.0
+    ALLOCATE(varicedy(2,maxi,maxj)) ; varicedy = 0.0
+    ALLOCATE(variceth(2,maxi,maxj)) ; variceth = 0.0
+    ALLOCATE(tice(maxi,maxj))       ; tice = 0.0
+    ALLOCATE(albice(maxi,maxj))     ; albice = 0.0
+    ALLOCATE(haavg(2,maxi,maxj))    ; haavg = 0.0
+    ALLOCATE(dthaavg(2,maxi,maxj))  ; dthaavg = 0.0
+    ALLOCATE(ticeavg(maxi,maxj))    ; ticeavg = 0.0
+    ALLOCATE(albiceavg(maxi,maxj))  ; albiceavg = 0.0
+    ALLOCATE(fxdelavg(maxi,maxj))   ; fxdelavg = 0.0
+    ALLOCATE(fwdelavg(maxi,maxj))   ; fwdelavg = 0.0
 
-    ALLOCATE(nclon1(maxi))
-    ALLOCATE(nclon2(maxi))
-    ALLOCATE(nclon3(maxi))
-    ALLOCATE(nclat1(maxj))
-    ALLOCATE(nclat2(maxj))
-    ALLOCATE(nclat3(maxj))
+    ALLOCATE(nclon1(maxi)) ; nclon1 = 0.0
+    ALLOCATE(nclon2(maxi)) ; nclon2 = 0.0
+    ALLOCATE(nclon3(maxi)) ; nclon3 = 0.0
+    ALLOCATE(nclat1(maxj)) ; nclat1 = 0.0
+    ALLOCATE(nclat2(maxj)) ; nclat2 = 0.0
+    ALLOCATE(nclat3(maxj)) ; nclat3 = 0.0
 
     ! read DATA (i.e. namelist) file
     CALL check_unit(56, __LINE__, __FILE__)
