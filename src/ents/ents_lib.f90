@@ -119,9 +119,8 @@ MODULE ents_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        &  tqld, &            ! land temp(1) oC and bucket fullness(2) m
        & tqldavg             ! avg version of above
-  REAL, DIMENSION(maxi,maxj) :: &
-       & bcap                 ! bucket capacity m
   REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & bcap,    &           ! bucket capacity m
        & bcapavg, &           ! avg bucket capacity (m)
        & snowavg, &           ! avg fractional snow cover
        & z0avg,   &           ! avg roughness length (m)
