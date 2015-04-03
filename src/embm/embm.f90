@@ -1,6 +1,8 @@
 MODULE embm
 
   USE genie_util, ONLY: check_unit, check_iostat
+  USE genie_control, &
+       & ONLY: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS
 
   USE embm_lib
   USE embm_netcdf
@@ -236,7 +238,7 @@ CONTAINS
          & tstar_atm, qstar_atm
     REAL, INTENT(OUT) :: atmos_dt_tim
     REAL, INTENT(IN) :: solconst
-    REAL, INTENT(OUT) :: eb_rmax, eb_dphi, eb_rdtdim, eb_ca(maxi,maxj)
+    REAL, INTENT(OUT) :: eb_rmax, eb_dphi, eb_rdtdim, eb_ca(:,:)
     REAL, INTENT(IN) :: gn_daysperyear
     REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & torog_atm, surf_orog_atm, landice_slicemask_lic
@@ -353,6 +355,11 @@ CONTAINS
     ! Setting up EMBM
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising EMBM atmosphere module ...'
+
+    maxi = dim_GOLDSTEINNLONS
+    maxj = dim_GOLDSTEINNLATS
+    maxk = dim_GOLDSTEINNLEVS
+    maxnyr = 400
 
     IF (debug_init) PRINT *
 
