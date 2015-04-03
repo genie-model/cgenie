@@ -48,22 +48,28 @@ CONTAINS
   ! dum_sfxsumrok1 - rocks-surface ocean fluxes; integrated, ocn grid
 
   SUBROUTINE initialise_rokgem(dum_genie_timestep, dum_sfxrok, dum_sfxsumrok1)
+    USE genie_control, ONLY: dim_ROKGEMNLONS, dim_ROKGEMNLATS
     USE rokgem_data
     USE rokgem_box
     USE rokgem_data_netCDF
     REAL, INTENT(INOUT) :: dum_genie_timestep
-    REAL, DIMENSION(n_ocn,n_i,n_j), INTENT(INOUT) :: dum_sfxrok     ! rocks-surface tracer composition; rok grid
-    REAL, DIMENSION(n_ocn,n_i,n_j), INTENT(INOUT) :: dum_sfxsumrok1 ! rocks-surface fluxes; integrated, ocn grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxrok     ! rocks-surface tracer composition; rok grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumrok1 ! rocks-surface fluxes; integrated, ocn grid
 
     INTEGER :: loc_iou, i, j
 
     print*,'======================================================='
     print*,' >>> Initialising rokgem weathering module ...'
 
+    n_i = dim_ROKGEMNLONS
+    n_j = dim_ROKGEMNLATS
+    n_phys_rok = 8
+    n_phys_ocnrok = 6
+
     CALL sub_load_goin_rokgem()
 
     ALLOCATE(phys_rok(n_phys_rok,n_i,n_j))         ; phys_rok = 0.0
-    ALLOCATE(phys_ocnrok(n_phys_ocnrok,n_io,n_jo)) ; phys_ocnrok = 0.0
+    ALLOCATE(phys_ocnrok(n_phys_ocnrok,n_i,n_j))   ; phys_ocnrok = 0.0
     ALLOCATE(goldstein_k1(ilon1_ocn,ilat1_ocn))    ; goldstein_k1 = 0
     ALLOCATE(landmask(n_i,n_j))                    ; landmask = 0
     ALLOCATE(runoff_drainage(n_i+2,n_j+2))         ; runoff_drainage = 0.0  !'+2' comes from fact that *.k1 file is 38x38
@@ -333,7 +339,7 @@ CONTAINS
     USE rokgem_box
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts                      ! time-step
-    REAL, INTENT(IN) :: dum_sfcatm1(n_atm,n_io,n_jo) ! atmosphere composition interface array
+    REAL, INTENT(IN) :: dum_sfcatm1(n_atm,n_i,n_j)   ! atmosphere composition interface array
     REAL, INTENT(IN) :: dum_runoff(n_i,n_j)          ! run-off to be read in from exernal module (EMBM, or ENTS)
     REAL, INTENT(IN) :: dum_photo(n_i,n_j)           ! photosythesis from land veg module (ENTS)
     REAL, INTENT(IN) :: dum_respveg(n_i,n_j)         ! vegetation respiration from land veg module (ENTS)
@@ -341,7 +347,7 @@ CONTAINS
     ! for same grid as RokGeM at the moment
     REAL, INTENT(INOUT) :: dum_sfxrok(n_ocn,n_i,n_j)   ! ocean flux interface array
     !  (same no of tracers as used in biogem ocean)
-    REAL, INTENT(INOUT) :: dum_sfxatm1(n_atm,n_io,n_jo) ! atmosphere flux interface array
+    REAL, INTENT(INOUT) :: dum_sfxatm1(n_atm,n_i,n_j ) ! atmosphere flux interface array
 
     ! increment timestep counter
     tstep_count = tstep_count + 1

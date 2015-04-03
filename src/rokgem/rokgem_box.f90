@@ -442,12 +442,12 @@ CONTAINS
 
     ! dummy variables
     REAL,INTENT(in)::dum_dts
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_io,n_jo)                   ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)                   ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                            ! run-off array (taken from EMBM)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                            ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)            ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_io,n_jo)                             ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)                             ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -537,27 +537,23 @@ CONTAINS
 
     ! calculate current mean surface land (air) temperature SLT (degrees C)
 
-    IF ((n_i.EQ.n_io).AND.(n_j.EQ.n_jo)) THEN
-
-       ! for equal area grid:
-       loc_avSLT = 0.0
-       loc_maxSLT = -100.0
-       loc_minSLT = 100.0
-       DO i=1,n_i
-          DO j=1,n_j
-             m = landmask(i,j) * loc_SLT(i,j)
-             loc_avSLT = loc_avSLT + m
-             IF ((m.GT.loc_maxSLT).AND.(landmask(i,j).EQ.1)) THEN
-                loc_maxSLT = m
-             ENDIF
-             IF ((m.LT.loc_minSLT).AND.(landmask(i,j).EQ.1)) THEN
-                loc_minSLT = m
-             ENDIF
-          END DO
+    ! for equal area grid:
+    loc_avSLT = 0.0
+    loc_maxSLT = -100.0
+    loc_minSLT = 100.0
+    DO i=1,n_i
+       DO j=1,n_j
+          m = landmask(i,j) * loc_SLT(i,j)
+          loc_avSLT = loc_avSLT + m
+          IF ((m.GT.loc_maxSLT).AND.(landmask(i,j).EQ.1)) THEN
+             loc_maxSLT = m
+          ENDIF
+          IF ((m.LT.loc_minSLT).AND.(landmask(i,j).EQ.1)) THEN
+             loc_minSLT = m
+          ENDIF
        END DO
-       loc_avSLT = loc_avSLT/nlandcells
-
-    ENDIF
+    END DO
+    loc_avSLT = loc_avSLT/nlandcells
 
     ! Put runoff into local array
     loc_runoff(:,:) = dum_runoff(:,:)
@@ -806,7 +802,7 @@ CONTAINS
     ! NOTE: does not matter how the standard is derived -- it is al the same standard! (13C)
     loc_standard = const_standards(atm_type(ia_pCO2_13C))
     loc_d13C = fun_calc_isotope_delta( &
-         & dum_sfcatm1(ia_pCO2,n_io,n_jo),dum_sfcatm1(ia_pCO2_13C,n_io,n_jo),loc_standard,.FALSE.,const_nulliso &
+         & dum_sfcatm1(ia_pCO2,n_i,n_j),dum_sfcatm1(ia_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
          & )
     IF (opt_short_circuit_atm.eqv..true.) THEN
        IF (opt_outgas_eq_Si.eqv..true.) THEN
@@ -1406,12 +1402,12 @@ CONTAINS
     ! Based on SUBROUTINE sub_glob_avg_weath - see above
 
     ! dummy variables
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_io,n_jo)      ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)      ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)              ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_io,n_jo)      ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)      ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k

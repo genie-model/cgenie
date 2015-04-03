@@ -189,11 +189,9 @@ MODULE rokgem_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i                                  = ilon1_rok !
-  INTEGER,PARAMETER::n_j                                  = ilat1_rok !
+  INTEGER :: n_i, n_j
   ! grid properties array dimensions
-  INTEGER,PARAMETER::n_phys_rok                           = 08    ! number of grid properties descriptors
-  INTEGER,PARAMETER::n_phys_ocnrok                        = 06    ! number of grid properties descriptors
+  INTEGER :: n_phys_rok, n_phys_ocnrok
 
   ! *** PRIMARY rokgem ARRAYS ***
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: phys_rok  ! 'physical' array info - see below (lats, lons, areas of grid cells)
@@ -210,9 +208,6 @@ MODULE rokgem_lib
   INTEGER,PARAMETER::ipr_rA                               = 08    ! reciprocal area (to speed up numerics)
 
   ! ocean/atm interface stuff: grids, depth and location of oceans, and tracers
-  INTEGER,PARAMETER                              ::n_io = ilon1_rok
-  INTEGER,PARAMETER                              ::n_jo = ilat1_rok
-  INTEGER,PARAMETER                              ::n_ko = inl1_ocn  ! no. of depth levels in ocean
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: phys_ocnrok    ! 'physical' array info for ocean-atmosphere - see above (lats, lons, areas of grid cells)
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: goldstein_k1  ! taken from goldstein (put this in somewhere: goldstein_k1(:,:) = go_k1(:,:))
 
