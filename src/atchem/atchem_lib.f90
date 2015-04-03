@@ -109,19 +109,16 @@ MODULE atchem_lib
   ! *********************************************************
 
   ! *** PRIMARY ATCHEM ARRAYS ***
-  real,dimension(n_atm,n_i,n_j)::atm                           !
-  real,dimension(n_atm,n_i,n_j)::fatm                          !
-  real,dimension(n_phys_atm,n_i,n_j)::phys_atm                 !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: atm, fatm, phys_atm
 
   ! *** Miscellanenous ***
   !
-  real,dimension(n_atm,n_i,n_j)::atm_slabbiosphere             !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE  :: atm_slabbiosphere
   ! netCDF and netCDF restart parameters
   CHARACTER(len=31)::string_rstid                              !
   CHARACTER(len=7) ::string_ncrunid                            !
   CHARACTER(len=254) ::string_ncrst                            !
   integer::ncrst_ntrec                                         ! count for netcdf datasets
   integer::ncrst_iou                                           ! io for netcdf restart
-
 
 END MODULE atchem_lib

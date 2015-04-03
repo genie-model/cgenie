@@ -21,6 +21,11 @@ CONTAINS
     print*,'======================================================='
     print*,' >>> Initialising ATCHEM atmospheric chem. module ...'
 
+    ALLOCATE(atm(n_atm,n_i,n_j)) ; atm = 0.0
+    ALLOCATE(fatm(n_atm,n_i,n_j)) ; fatm = 0.0
+    ALLOCATE(phys_atm(n_phys_atm,n_i,n_j)) ; phys_atm = 0.0
+    ALLOCATE(atm_slabbiosphere(n_atm,n_i,n_j)) ; atm_slabbiosphere = 0.0
+
     CALL sub_load_goin_atchem()
 
     CALL sub_init_phys_atm()
