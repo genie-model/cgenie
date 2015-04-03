@@ -72,6 +72,7 @@ CONTAINS
   END SUBROUTINE initialise_biogem_wrapper
 
   SUBROUTINE initialise_atchem_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL initialise_atchem (genie_sfxsumatm, genie_sfcatm)
   END SUBROUTINE initialise_atchem_wrapper

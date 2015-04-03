@@ -388,8 +388,9 @@ CONTAINS
   ! *** ATCHEM ***
 
   SUBROUTINE atchem_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL atchem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
+    CALL step_atchem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
          & genie_sfxsumatm, genie_sfcatm)
   END SUBROUTINE atchem_wrapper
 
@@ -423,6 +424,7 @@ CONTAINS
   END SUBROUTINE cpl_comp_atmlnd_wrapper
 
   SUBROUTINE atchem_save_restart_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL atchem_save_rst(genie_clock)
   END SUBROUTINE atchem_save_restart_wrapper

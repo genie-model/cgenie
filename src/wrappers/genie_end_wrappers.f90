@@ -20,6 +20,7 @@ CONTAINS
   END SUBROUTINE end_biogem_wrapper
 
   SUBROUTINE end_atchem_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL end_atchem()
   END SUBROUTINE end_atchem_wrapper
