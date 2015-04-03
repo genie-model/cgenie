@@ -1,6 +1,7 @@
 MODULE embm
 
   USE genie_util, ONLY: check_unit, check_iostat
+
   USE embm_lib
   USE embm_netcdf
   USE embm_data
@@ -243,10 +244,10 @@ CONTAINS
     LOGICAL, INTENT(IN) :: flag_ents
     REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
-    INTEGER :: bmask(maxi,maxj)
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: bmask
     REAL :: z1, tv, tv1, tv2, tv3, tv4, tv5, tatm, relh0_ocean, &
-         & relh0_land, diffamp(2), diffwid, difflin, &
-         & diffend, zro(maxk), zw(0:maxk)
+         & relh0_land, diffamp(2), diffwid, difflin, diffend
+    REAL, DIMENSION(:), ALLOCATABLE :: zro, zw
     REAL :: radfor_scl_co2, radfor_pc_co2_rise
     REAL :: radfor_scl_ch4, radfor_pc_ch4_rise
     REAL :: radfor_scl_n2o, radfor_pc_n2o_rise
@@ -286,8 +287,8 @@ CONTAINS
     REAL :: albedop_scl
 
     ! Seasonal fields
-    REAL :: uatml1(2,maxi,maxj,nmth+1)
-    REAL, DIMENSION(maxi,maxj,nmth+1) :: &
+    REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: uatml1
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
          & usurfl1, tncep1, pncep1, rhncep1, atm_alb1
 
     ! Precipitation timescale and land radiation
@@ -513,6 +514,19 @@ CONTAINS
     ALLOCATE(nclat1(maxj)) ; nclat1 = 0.0
     ALLOCATE(nclat2(maxj)) ; nclat2 = 0.0
     ALLOCATE(nclat3(maxj)) ; nclat3 = 0.0
+
+    ! Local allocations
+
+    ALLOCATE(bmask(maxi,maxj)) ; bmask = 0
+    ALLOCATE(zro(maxk))        ; zro = 0.0
+    ALLOCATE(zw(0:maxk))       ; zw = 0.0
+
+    ALLOCATE(uatml1(2,maxi,maxj,nmth+1)) ; uatml1 = 0.0
+    ALLOCATE(usurfl1(maxi,maxj,nmth+1))  ; usurfl1 = 0.0
+    ALLOCATE(tncep1(maxi,maxj,nmth+1))   ; tncep1 = 0.0
+    ALLOCATE(pncep1(maxi,maxj,nmth+1))   ; pncep1 = 0.0
+    ALLOCATE(rhncep1(maxi,maxj,nmth+1))  ; rhncep1 = 0.0
+    ALLOCATE(atm_alb1(maxi,maxj,nmth+1)) ; atm_alb1 = 0.0
 
     ! Input directory name
     lenin = lnsig1(indir_name)
@@ -1903,6 +1917,16 @@ CONTAINS
          & (par_runoff_tau * syr / 12.0))
     IF (debug_init) PRINT *, 'runoff factor 1 = ', runoff_factor_1
     IF (debug_init) PRINT *, 'runoff factor 2 = ', runoff_factor_2
+
+    DEALLOCATE(bmask)
+    DEALLOCATE(zro)
+    DEALLOCATE(zw)
+    DEALLOCATE(uatml1)
+    DEALLOCATE(usurfl1)
+    DEALLOCATE(tncep1)
+    DEALLOCATE(pncep1)
+    DEALLOCATE(rhncep1)
+    DEALLOCATE(atm_alb1)
 
     PRINT *, ' <<< Initialisation complete'
     PRINT *, '======================================================='
