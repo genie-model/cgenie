@@ -257,15 +257,15 @@ MODULE rokgem_lib
   REAL                                           :: weather_fCaSiO3
 
   ! *** landmask and runoff routing arrays ***
-  INTEGER                                        :: landmask(n_i,n_j)
-  REAL                                           :: runoff_drainage(n_i+2,n_j+2)                   !'+2' comes from fact that *.k1 file is 38x38
+  INTEGER, DIMENSION(:,:), ALLOCATABLE           :: landmask
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: runoff_drainage
   INTEGER                                        :: runoff_detail_i
   INTEGER                                        :: runoff_detail_j
   REAL, DIMENSION(:,:), ALLOCATABLE              :: runoff_detail                                  ! contains n_i*n_j rows, each with a sucession of (lat, long, fraction) data
                                                                                                    ! for each ocean cell corresponding to the land cell in question (each row represents the land
                                                                                                    ! cell given by lat= floor(rownumber/n_i) lon=mod(rownumber,n_i).
-  INTEGER                                        :: runoff_drainto(n_i,n_j,2)                      !'+2' comes from fact that *.k1 file is 38x38
-  REAL                                           :: runoff_coast(n_i,n_j)
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE         :: runoff_drainto
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: runoff_coast
   REAL                                           :: runoff_calib                                   ! calibration faction for routing schemes 2 and 3
 
   ! 2D basic weathering variables
@@ -274,27 +274,19 @@ MODULE rokgem_lib
   CHARACTER(LEN=50), DIMENSION(:), ALLOCATABLE   :: lithology_names
   REAL, DIMENSION(:,:,:), ALLOCATABLE            :: lithology
   REAL, DIMENSION(:,:,:), ALLOCATABLE            :: calcium_flux
-  REAL                                           :: total_calcium_flux(n_i,n_j)                    ! Ca2+ weathering fluxes
-  REAL                                           :: total_calcium_flux_Ca(n_i,n_j)
-  REAL                                           :: total_calcium_flux_Si(n_i,n_j)
-  REAL                                           :: weather_fCaCO3_2D(n_i,n_j)                     ! weathering fluxes after T & P feedbacks
-  REAL                                           :: weather_fCaSiO3_2D(n_i,n_j)
-  REAL                                           :: orogeny(n_i,n_j)                               ! Orogeny Landmask to divide weathering into kinetic and transport limited regimes. Used if opt_weath_regimes=.true.
-  REAL                                           :: regimes_calib(n_i,n_j)                         ! Array for use in calculations involving different weathering regimes.
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: total_calcium_flux     ! Ca2+ weathering fluxes
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: total_calcium_flux_Ca
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: total_calcium_flux_Si
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: weather_fCaCO3_2D      ! weathering fluxes after T & P feedbacks
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: weather_fCaSiO3_2D
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: orogeny                ! Orogeny Landmask to divide weathering into kinetic and transport limited regimes. Used if opt_weath_regimes=.true.
+  REAL, DIMENSION(:,:), ALLOCATABLE              :: regimes_calib          ! Array for use in calculations involving different weathering regimes.
 
   ! Calibration constants and arrays
-  REAL                                           :: calibrate_T_0D
-  REAL                                           :: calibrate_R_0D
-  REAL                                           :: calibrate_P_0D
-  REAL                                           :: ref_T0_2D(n_i,n_j)
-  REAL                                           :: ref_R0_2D(n_i,n_j)
-  REAL                                           :: ref_P0_2D(n_i,n_j)
-  REAL                                           :: data_T_2D(n_i,n_j)
-  REAL                                           :: data_R_2D(n_i,n_j)
-  REAL                                           :: data_P_2D(n_i,n_j)
-  REAL                                           :: calibrate_T_2D(n_i,n_j)
-  REAL                                           :: calibrate_R_2D(n_i,n_j)
-  REAL                                           :: calibrate_P_2D(n_i,n_j)
+  REAL :: calibrate_T_0D, calibrate_R_0D, calibrate_P_0D
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ref_T0_2D, ref_R0_2D, ref_P0_2D
+  REAL, DIMENSION(:,:), ALLOCATABLE :: data_T_2D, data_R_2D, data_P_2D
+  REAL, DIMENSION(:,:), ALLOCATABLE :: calibrate_T_2D, calibrate_R_2D, calibrate_P_2D
 
   ! conversion factors to speed up numerics
   REAL                                           :: conv_GKWM
