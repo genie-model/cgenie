@@ -507,6 +507,13 @@ CONTAINS
     ALLOCATE(iroff(maxi,maxj)) ; iroff = 0
     ALLOCATE(jroff(maxi,maxj)) ; jroff = 0
 
+    ALLOCATE(nclon1(maxi)) ; nclon1 = 0.0
+    ALLOCATE(nclon2(maxi)) ; nclon2 = 0.0
+    ALLOCATE(nclon3(maxi)) ; nclon3 = 0.0
+    ALLOCATE(nclat1(maxj)) ; nclat1 = 0.0
+    ALLOCATE(nclat2(maxj)) ; nclat2 = 0.0
+    ALLOCATE(nclat3(maxj)) ; nclat3 = 0.0
+
     ! Input directory name
     lenin = lnsig1(indir_name)
     IF (indir_name(lenin:lenin) /= '/') THEN

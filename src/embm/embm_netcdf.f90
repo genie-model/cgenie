@@ -10,8 +10,8 @@ MODULE embm_netcdf
   PUBLIC :: end_netcdf_embm
   PUBLIC :: nclon1, nclon2, nclon3, nclat1, nclat2, nclat3
 
-  REAL, DIMENSION(maxi) :: nclon1, nclon2, nclon3
-  REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclon1, nclon2, nclon3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclat1, nclat2, nclat3
 
   INTEGER :: nco(nfiles), iddimo(nall, nfiles), idvaro(nall, nfiles)
 
