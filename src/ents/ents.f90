@@ -508,10 +508,10 @@ CONTAINS
           END IF
 
           DO kk = 1, 10
-             ALLOCATE(var_data(1,jmax,imax))
+             ALLOCATE(var_data(1,maxj,maxi))
              label = labels(kk)
-             DO j = 1, jmax
-                DO i = 1, imax
+             DO j = 1, maxj
+                DO i = 1, maxi
                    SELECT CASE (kk)
                    CASE (1)
                       var_data(1,j,i) = photo(i,j)
@@ -619,8 +619,8 @@ CONTAINS
     OPEN(44,FILE=TRIM(filename),POSITION='APPEND')
 
     ! Sealevel rise due to thermal expansion
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           DO k = 1, ents_kmax
              IF (k >= ents_k1(i,j)) THEN
                 rho1 = (dum_rho(i,j,k) + &
@@ -666,7 +666,7 @@ CONTAINS
          & torog_atm, dum_co2_out, landice_slicemask_lic
     REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: sfxatm_lnd
 
-    REAL, DIMENSION(imax,jmax) :: tair, tlnd, qlnd
+    REAL, DIMENSION(maxi,maxj) :: tair, tlnd, qlnd
     REAL :: k1v, k1s, k1a
     INTEGER :: i, j
 
@@ -677,8 +677,8 @@ CONTAINS
     pco2ld = dum_co2_out(1,1) * rmtp
 
     ! Start land_pts loop
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           ! Only calculate for non-ice land points
           IF (ABS(landice_slicemask_lic(i,j) - 1.0) < 1.0E-19) THEN
              ! Set up temperature and water arrays in Kelvin

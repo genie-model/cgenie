@@ -14,16 +14,16 @@ CONTAINS
 
     INTEGER :: i, j
 
-    READ (unit,*) ((photo(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((respveg(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((leaf(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((respsoil(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((Cveg(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((Csoil(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((fv(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((tqld(1,i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((tqld(2,i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((land_snow_lnd(i,j), i = 1, imax), j = 1, jmax)
+    READ (unit,*) ((photo(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((respveg(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((leaf(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((respsoil(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((Cveg(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((Csoil(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((fv(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((tqld(1,i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((tqld(2,i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((land_snow_lnd(i,j), i = 1, maxi), j = 1, maxj)
     READ (unit,*) pco2ld
 
     ! Initialise water bucket capacity
@@ -109,19 +109,19 @@ CONTAINS
 
     INTEGER :: i, j
 
-    WRITE (unit,*) ((photo(i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((respveg(i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((leaf(i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((respsoil(i,j), i = 1, imax), j = 1, jmax)
+    WRITE (unit,*) ((photo(i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((respveg(i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((leaf(i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((respsoil(i,j), i = 1, maxi), j = 1, maxj)
 
-    WRITE (unit,*) ((Cveg(i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((Csoil(i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((fv(i,j), i = 1, imax), j = 1, jmax)
+    WRITE (unit,*) ((Cveg(i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((Csoil(i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((fv(i,j), i = 1, maxi), j = 1, maxj)
 
-    WRITE (unit,*) ((tqld(1,i,j), i = 1, imax), j = 1, jmax)
-    WRITE (unit,*) ((tqld(2,i,j), i = 1, imax), j = 1, jmax)
+    WRITE (unit,*) ((tqld(1,i,j), i = 1, maxi), j = 1, maxj)
+    WRITE (unit,*) ((tqld(2,i,j), i = 1, maxi), j = 1, maxj)
 
-    WRITE (unit,*) ((land_snow_lnd(i,j), i = 1, imax), j = 1, jmax)
+    WRITE (unit,*) ((land_snow_lnd(i,j), i = 1, maxi), j = 1, maxj)
 
     WRITE (unit,*) pco2ld
   END SUBROUTINE out_ents

@@ -13,7 +13,6 @@ MODULE ents_lib
 
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
   INTEGER, PARAMETER :: maxnyr=220
-  INTEGER, PARAMETER :: imax=GOLDSTEINNLONS, jmax=GOLDSTEINNLATS
   INTEGER :: ents_k1(maxi,maxj), ents_kmax, ents_nyear
   REAL :: ents_lat(maxj)
 
