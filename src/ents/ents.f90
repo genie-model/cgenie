@@ -1,5 +1,6 @@
 MODULE ents
 
+  USE genie_control, ONLY: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS
   USE ents_lib
   USE ents_data
   USE ents_diag
@@ -18,35 +19,33 @@ CONTAINS
        & gn_daysperyear, dum_lat, landice_slicemask_lic, &
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd,  &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
-       & land_moisture_lnd, ntrac_atm, sfcatm_lnd, sfxatm_lnd)
+       & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
     IMPLICIT NONE
     CHARACTER(LEN=13), INTENT(IN) :: dum_lin
     REAL, INTENT(IN) :: dum_rsc, dum_syr
     INTEGER, INTENT(IN) :: dum_nyear
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi
     INTEGER, INTENT(IN) :: dum_kmax
-    INTEGER, DIMENSION(maxi,maxj), INTENT(IN) :: dum_k1
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: dum_k1
     REAL, INTENT(IN) :: dum_rmax, dum_rdtdim
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_tstar_atm, dum_qstar_atm
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: dum_ca
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_tstar_atm, dum_qstar_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: dum_ca
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_lat
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(IN) :: dum_lat
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: land_bcap_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: land_z0_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_temp_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_moisture_lnd
-    INTEGER, INTENT(IN) :: ntrac_atm
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(OUT) :: &
-         & sfcatm_lnd, sfxatm_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: land_bcap_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: land_z0_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_temp_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_moisture_lnd
+    REAL, DIMENSION(:,:,:), INTENT(OUT) :: sfcatm_lnd, sfxatm_lnd
 
-    REAL, DIMENSION(2,maxi,maxj) :: dum_tq
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: dum_tq
     INTEGER :: ios              ! File check flag
 
     ! Namelist declaration for ENTS goin variables
@@ -80,6 +79,9 @@ CONTAINS
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising ENTS land surface module ...'
 
+    maxi = dim_GOLDSTEINNLONS
+    maxj = dim_GOLDSTEINNLATS
+
     OPEN(UNIT=59, FILE='data_ENTS', STATUS='old', IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open ENTS namelist file'
@@ -94,7 +96,7 @@ CONTAINS
        CLOSE(59)
     END IF
 
-    ALLOCATE(ents_k1(maxi,maxj)) ; ents_k1 = 0.0
+    ALLOCATE(ents_k1(maxi,maxj)) ; ents_k1 = 0
     ALLOCATE(ents_lat(maxj))     ; ents_lat = 0.0
 
     ALLOCATE(Cveg(maxi,maxj))     ; Cveg = 0.0
@@ -182,6 +184,7 @@ CONTAINS
     ents_lat=dum_lat
 
     ! Convert tstar_atm & qstar_atm arrays into one tq array
+    ALLOCATE(dum_tq(2,maxi,maxj))
     dum_tq(1,:,:) = REAL(dum_tstar_atm, KIND(dum_tq))
     dum_tq(2,:,:) = REAL(dum_qstar_atm, KIND(dum_tq))
     ents_k1 = dum_k1
@@ -190,6 +193,7 @@ CONTAINS
     call setup_ents(dum_rsc, dum_syr, dum_ds, dum_dphi, dum_ca, dum_tq, &
          & dum_rmax, dum_rdtdim, dum_co2_out, gn_daysperyear, &
          & landice_slicemask_lic, albs_lnd, land_snow_lnd)
+    DEALLOCATE(dum_tq)
 
     ! albedo
     land_albs_nosnow_lnd = (fv * aveg) + ((1.0 - fv) * &

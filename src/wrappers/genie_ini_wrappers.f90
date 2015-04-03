@@ -90,8 +90,7 @@ CONTAINS
          & tstar_atm, surf_qstar_atm, eb_ca, co2_atm, global_daysperyear, &
          & alat1_ocn, landice_slicemask_lic, albs_atm, land_albs_snow_lnd, &
          & land_albs_nosnow_lnd, land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
-         & land_temp_lnd, land_moisture_lnd, intrac_atm_max, &
-         & genie_sfcatm_lnd, genie_sfxatm_lnd)
+         & land_temp_lnd, land_moisture_lnd, genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE initialise_ents_wrapper
 
   SUBROUTINE initialise_rokgem_wrapper

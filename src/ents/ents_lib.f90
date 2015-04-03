@@ -3,15 +3,7 @@ MODULE ents_lib
   IMPLICIT NONE
   SAVE
 
-! For GOLDSTEIN ocean
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-
-  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
+  INTEGER :: maxi, maxj
   INTEGER, PARAMETER :: maxnyr=220
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: ents_k1
   INTEGER :: ents_kmax, ents_nyear
