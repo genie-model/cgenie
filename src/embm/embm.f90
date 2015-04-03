@@ -217,31 +217,31 @@ CONTAINS
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
-    REAL, DIMENSION(maxi), INTENT(OUT) :: alon1, alon2, alon3
-    REAL, DIMENSION(maxj), INTENT(OUT) :: alat1, alat2, alat3
-    REAL, DIMENSION(maxi+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
+    REAL, DIMENSION(:), INTENT(OUT) :: alat1, alat2, alat3
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & aboxedge1_lon, aboxedge2_lon, aboxedge3_lon
-    REAL, DIMENSION(maxj+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & aboxedge1_lat, aboxedge2_lat, aboxedge3_lat
-    INTEGER, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: &
          & ilandmask1, ilandmask2, ilandmask3
-    INTEGER, DIMENSION(maxj), INTENT(IN) :: ias, iaf, ips, ipf
+    INTEGER, DIMENSION(:), INTENT(IN) :: ias, iaf, ips, ipf
     INTEGER, INTENT(IN) :: jsf
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: tstar_ocn
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: co2_out, ch4_out, n2o_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: tstar_ocn
+    REAL, DIMENSION(:,:), INTENT(OUT) :: co2_out, ch4_out, n2o_out
     INTEGER(KIND=8), INTENT(IN) :: totsteps
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
          & tstar_atm, qstar_atm
     REAL, INTENT(OUT) :: atmos_dt_tim
     REAL, INTENT(IN) :: solconst
     REAL, INTENT(OUT) :: eb_rmax, eb_dphi, eb_rdtdim, eb_ca(maxi,maxj)
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & torog_atm, surf_orog_atm, landice_slicemask_lic
     REAL, INTENT(IN) :: syr
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
     INTEGER :: bmask(maxi,maxj)
     REAL :: z1, tv, tv1, tv2, tv3, tv4, tv5, tatm, relh0_ocean, &
