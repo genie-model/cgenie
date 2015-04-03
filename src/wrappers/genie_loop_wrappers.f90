@@ -215,8 +215,9 @@ CONTAINS
   END SUBROUTINE cpl_comp_sedocn_wrapper
 
   SUBROUTINE rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
-    CALL rokgem(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
+    CALL step_rokgem(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & genie_sfcatm1, runoff_land, el_photo, el_respveg, &
          & genie_sfxrok, genie_sfxatm1)
   END SUBROUTINE rokgem_wrapper
@@ -236,6 +237,7 @@ CONTAINS
   END SUBROUTINE cpl_flux_rokatm_gem_wrapper
 
   SUBROUTINE reinit_flux_rokatm_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokatm(genie_sfxsumatm1_gem)
   END SUBROUTINE reinit_flux_rokatm_gem_wrapper
@@ -255,16 +257,19 @@ CONTAINS
   END SUBROUTINE cpl_flux_rokocn_gem_wrapper
 
   SUBROUTINE reinit_flux_rokocn_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokocn(genie_sfxsumrok1)
   END SUBROUTINE reinit_flux_rokocn_wrapper
 
   SUBROUTINE reinit_flux_rokocn_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokocn(genie_sfxsumrok1_gem)
   END SUBROUTINE reinit_flux_rokocn_gem_wrapper
 
   SUBROUTINE rokgem_save_restart_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL rest_rokgem()
   END SUBROUTINE rokgem_save_restart_wrapper

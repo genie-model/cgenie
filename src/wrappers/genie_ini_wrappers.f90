@@ -95,6 +95,7 @@ CONTAINS
   END SUBROUTINE initialise_ents_wrapper
 
   SUBROUTINE initialise_rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL initialise_rokgem (genie_timestep, genie_sfxrok, genie_sfxsumrok1)
   END SUBROUTINE initialise_rokgem_wrapper

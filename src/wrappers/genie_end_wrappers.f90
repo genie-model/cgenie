@@ -50,6 +50,7 @@ CONTAINS
   END SUBROUTINE end_sedgem_wrapper
 
   SUBROUTINE end_rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL end_rokgem()
   END SUBROUTINE end_rokgem_wrapper
