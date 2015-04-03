@@ -1,5 +1,6 @@
 MODULE atchem
 
+  USE genie_control
   USE atchem_lib
   IMPLICIT NONE
 
@@ -20,6 +21,10 @@ CONTAINS
 
     print*,'======================================================='
     print*,' >>> Initialising ATCHEM atmospheric chem. module ...'
+
+    n_i = dim_GENIENX
+    n_j = dim_GENIENY
+    n_phys_atm = 15
 
     ALLOCATE(atm(n_atm,n_i,n_j)) ; atm = 0.0
     ALLOCATE(fatm(n_atm,n_i,n_j)) ; fatm = 0.0
@@ -142,7 +147,6 @@ CONTAINS
 
   ! RESTART AtChem (save data)
   SUBROUTINE atchem_save_rst(dum_genie_clock)
-    USE atchem_lib
     USE atchem_data_netCDF
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock  ! genie clock (milliseconds since start)
@@ -178,8 +182,6 @@ CONTAINS
 
 
   SUBROUTINE end_atchem()
-    USE atchem_lib
-
     print*,'======================================================='
     print*,' >>> Initialising ATCHEM module shutdown ...'
 

@@ -6,7 +6,6 @@
 
 MODULE atchem_lib
 
-  use genie_control
   use gem_util
   use gem_carbchem
   IMPLICIT NONE
@@ -57,10 +56,9 @@ MODULE atchem_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i                                  = ilon1_atm !
-  INTEGER,PARAMETER::n_j                                  = ilat1_atm !
+  INTEGER :: n_i, n_j
   ! grid properties array dimensions
-  INTEGER,PARAMETER::n_phys_atm                           = 15    ! number of grid properties descriptors
+  INTEGER :: n_phys_atm
 
   ! *** array index values ***
   ! atmosperhic 'physics' properties array indices
@@ -81,23 +79,6 @@ MODULE atchem_lib
   INTEGER,PARAMETER::ipa_P                                = 15    ! pressure (atm)
 
   ! *** array index names ***
-  ! atmosphere interface 'physics'
-  CHARACTER(len=16),DIMENSION(n_phys_atm),PARAMETER::string_phys_atm = (/ &
-       & 'lat             ', &
-       & 'lon             ', &
-       & 'dlat            ', &
-       & 'dlon            ', &
-       & 'latn            ', &
-       & 'lone            ', &
-       & 'hmid            ', &
-       & 'dh              ', &
-       & 'hbot            ', &
-       & 'htop            ', &
-       & 'A               ', &
-       & 'rA              ', &
-       & 'V               ', &
-       & 'rV              ', &
-       & 'P               ' /)
 
   ! *** miscellaneous ***
   ! effective thickness of atmosphere (m) in the case of a 1-cell thick atmosphere
