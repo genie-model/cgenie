@@ -126,6 +126,23 @@ CONTAINS
     ALLOCATE(ssnow(maxi,maxj))
     ALLOCATE(sz0(maxi,maxj))
 
+    ALLOCATE(stqld(2,maxi,maxj))
+    ALLOCATE(tqld(2,maxi,maxj))
+    ALLOCATE(tqldavg(2,maxi,maxj))
+
+    ! ALLOCATE(bcap(maxi,maxj))
+    ALLOCATE(bcapavg(maxi,maxj))
+    ALLOCATE(snowavg(maxi,maxj))
+    ALLOCATE(z0avg(maxi,maxj))
+    ALLOCATE(albsavg(maxi,maxj))
+    ALLOCATE(z0(maxi,maxj))
+    ALLOCATE(evapavg(maxi,maxj))
+    ALLOCATE(pptnavg(maxi,maxj))
+    ALLOCATE(runavg(maxi,maxj))
+    ALLOCATE(fvfv(maxi,maxj))
+
+    ALLOCATE(fxavg(7,maxi,maxj))
+
     ! Input directory name
     lenin = lnsig1(indir_name)
     IF (indir_name(lenin:lenin) /= '/') THEN

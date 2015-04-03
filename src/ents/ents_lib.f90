@@ -110,16 +110,18 @@ MODULE ents_lib
        & ssnow,   &          ! summed snow over land
        & sz0                 ! summed roughness length over land
   REAL :: &
-       & pco2ld_tot, &          ! for use in timeseries summing
-       & tot_mass_ocn_c, &      ! for use in timeseries summing
-       & stqld(2,maxi,maxj)     ! summed land temp (1) and water (2)
+       & pco2ld_tot, &       ! for use in timeseries summing
+       & tot_mass_ocn_c      ! for use in timeseries summing
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & stqld               ! summed land temp (1) and water (2)
 
   ! Land radiation and hydrology arrays
-  REAL, DIMENSION(2,maxi,maxj) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        &  tqld, &            ! land temp(1) oC and bucket fullness(2) m
        & tqldavg             ! avg version of above
   REAL, DIMENSION(maxi,maxj) :: &
-       & bcap,    &           ! bucket capacity m
+       & bcap                 ! bucket capacity m
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & bcapavg, &           ! avg bucket capacity (m)
        & snowavg, &           ! avg fractional snow cover
        & z0avg,   &           ! avg roughness length (m)
@@ -129,7 +131,8 @@ MODULE ents_lib
        & pptnavg, &           ! average pptn (m/s)
        & runavg,  &           ! average runoff (m/s)
        & fvfv                 ! vegetation fraction for fixed vegetation
-  REAL :: fxavg(7,maxi,maxj)  ! avg heat fluxes (W/m2)/timescale avg over
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & fxavg                ! avg heat fluxes (W/m2)/timescale avg over
   REAL :: albedol, &          ! land albedo
         & dtdim,   &          ! length of ocean timestep (s)
         & lambda,  &          ! decay timescale for new pptn scheme
