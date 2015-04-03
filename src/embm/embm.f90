@@ -407,6 +407,106 @@ CONTAINS
 
     ALLOCATE(dztav(2,maxi,maxj)) ; dztav = 0.0
 
+    ALLOCATE(rc(0:maxj))     ; rc = 0.0
+    ALLOCATE(rcv(1:maxj-1))  ; rcv = 0.0
+    ALLOCATE(rds(maxj))      ; rds = 0.0
+    ALLOCATE(rdsv(1:maxj-1)) ; rdsv = 0.0
+    ALLOCATE(cv2(1:maxj-1))  ; cv2 = 0.0
+    ALLOCATE(rc2(0:maxj))    ; rc2 = 0.0
+    ALLOCATE(rdz(maxk))      ; rdz = 0.0
+    ALLOCATE(rdza(maxk))     ; rdza = 0.0
+
+    ALLOCATE(rtv(maxi,maxj))  ; rtv = 0.0
+    ALLOCATE(rtv3(maxi,maxj)) ; rtv3 = 0.0
+
+    ALLOCATE(us_dztau(2, maxi, maxj)) ; us_dztau = 0.0
+    ALLOCATE(us_dztav(2, maxi, maxj)) ; us_dztav = 0.0
+
+    ALLOCATE(asurf(maxj)) ; asurf = 0.0
+
+    ALLOCATE(qsata(maxi,maxj)) ; qsata = 0.0
+    ALLOCATE(qsato(maxi,maxj)) ; qsato = 0.0
+    ALLOCATE(co2(maxi,maxj))   ; co2 = 0.0
+    ALLOCATE(ch4(maxi,maxj))   ; ch4 = 0.0
+    ALLOCATE(n2o(maxi,maxj))   ; n2o = 0.0
+
+    ALLOCATE(solfor(maxj,maxnyr)) ; solfor = 0.0
+
+    ALLOCATE(tq(2,maxi,maxj))      ; tq = 0.0
+    ALLOCATE(tq1(2,maxi,maxj))     ; tq1 = 0.0
+    ALLOCATE(varice(2,maxi,maxj))  ; varice = 0.0
+    ALLOCATE(varice1(2,maxi,maxj)) ; varice1 = 0.0
+    ALLOCATE(tqa(2,maxi,maxj))     ; tqa = 0.0
+
+    ALLOCATE(albcl(maxi,maxj))  ; albcl = 0.0
+    ALLOCATE(fxsw(maxi,maxj))   ; fxsw = 0.0
+    ALLOCATE(fxplw(maxi,maxj))  ; fxplw = 0.0
+    ALLOCATE(fx0a(maxi,maxj))   ; fx0a = 0.0
+    ALLOCATE(fx0o(maxi,maxj))   ; fx0o = 0.0
+    ALLOCATE(fxsen(maxi,maxj))  ; fxsen = 0.0
+    ALLOCATE(pmeadj(maxi,maxj)) ; pmeadj = 0.0
+    ALLOCATE(pptn(maxi,maxj))   ; pptn = 0.0
+    ALLOCATE(evap(maxi,maxj))   ; evap = 0.0
+    ALLOCATE(usurf(maxi,maxj))  ; usurf = 0.0
+    ALLOCATE(fxlata(maxi,maxj)) ; fxlata = 0.0
+    ALLOCATE(fxlato(maxi,maxj)) ; fxlato = 0.0
+    ALLOCATE(fxlw(maxi,maxj))   ; fxlw = 0.0
+    ALLOCATE(ca(maxi,maxj))     ; ca = 0.0
+    ALLOCATE(qb(maxi,maxj))     ; qb = 0.0
+    ALLOCATE(qbsic(maxi,maxj))  ; qbsic = 0.0
+
+    ALLOCATE(diffa(2,2,maxj)) ; diffa = 0.0
+
+    ALLOCATE(fx0sic(maxi,maxj))   ; fx0sic = 0.0
+    ALLOCATE(fx0neto(maxi,maxj))  ; fx0neto = 0.0
+    ALLOCATE(fwfxneto(maxi,maxj)) ; fwfxneto = 0.0
+    ALLOCATE(evapsic(maxi,maxj))  ; evapsic = 0.0
+    ALLOCATE(tsfreez(maxi,maxj))  ; tsfreez = 0.0
+
+    ALLOCATE(uatm(2,maxi,maxj)) ; uatm = 0.0
+
+    ALLOCATE(fxlatavg(maxi,maxj)) ; fxlatavg = 0.0
+    ALLOCATE(fxsenavg(maxi,maxj)) ; fxsenavg = 0.0
+    ALLOCATE(fxswavg(maxi,maxj))  ; fxswavg = 0.0
+    ALLOCATE(fxlwavg(maxi,maxj))  ; fxlwavg = 0.0
+    ALLOCATE(fwpptavg(maxi,maxj)) ; fwpptavg = 0.0
+    ALLOCATE(fwevpavg(maxi,maxj)) ; fwevpavg = 0.0
+
+    ALLOCATE(tqavg(2,maxi,maxj))  ; tqavg = 0.0
+    ALLOCATE(fx0avg(4,maxi,maxj)) ; fx0avg = 0.0
+    ALLOCATE(fwavg(2,maxi,maxj))  ; fwavg = 0.0
+
+    ALLOCATE(albo(maxj,maxnyr))  ; albo = 0.0
+    ALLOCATE(palb(maxi,maxj))    ; palb = 0.0
+    ALLOCATE(palbavg(maxi,maxj)) ; palbavg = 0.0
+
+    ALLOCATE(orog_vect(maxi,maxj,en_ntimes_max)) ; orog_vect = 0.0
+
+    ALLOCATE(lice_vect(maxi,maxj,en_ntimes_max)) ; lice_vect = 0.0
+
+    ALLOCATE(d18o_ice_thresh(maxi,maxj)) ; d18o_ice_thresh = 0.0
+    ALLOCATE(d18o_orog_min(maxi,maxj))   ; d18o_orog_min = 0.0
+    ALLOCATE(d18o_orog_grad(maxi,maxj))  ; d18o_orog_grad = 0.0
+
+    ALLOCATE(uatml(2,maxi,maxj,maxnyr)) ; uatml = 0.0
+
+    ALLOCATE(usurfl(maxi,maxj,maxnyr))  ; usurfl = 0.0
+    ALLOCATE(tncep(maxi,maxj,maxnyr))   ; tncep = 0.0
+    ALLOCATE(pncep(maxi,maxj,maxnyr))   ; pncep = 0.0
+    ALLOCATE(rhncep(maxi,maxj,maxnyr))  ; rhncep = 0.0
+    ALLOCATE(atm_alb(maxi,maxj,maxnyr)) ; atm_alb = 0.0
+
+    ALLOCATE(chl(maxi,maxj)) ; chl = 0.0
+    ALLOCATE(cel(maxi,maxj)) ; cel = 0.0
+
+    ALLOCATE(q_pa(maxi,maxj))      ; q_pa = 0.0
+    ALLOCATE(rq_pa(maxi,maxj))     ; rq_pa = 0.0
+    ALLOCATE(q_pa_avg(maxi,maxj))  ; q_pa_avg = 0.0
+    ALLOCATE(rq_pa_avg(maxi,maxj)) ; rq_pa_avg = 0.0
+
+    ALLOCATE(iroff(maxi,maxj)) ; iroff = 0
+    ALLOCATE(jroff(maxi,maxj)) ; jroff = 0
+
     ! Input directory name
     lenin = lnsig1(indir_name)
     IF (indir_name(lenin:lenin) /= '/') THEN
