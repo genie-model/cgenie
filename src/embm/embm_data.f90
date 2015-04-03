@@ -13,7 +13,7 @@ CONTAINS
     INTEGER :: i, j, l
     REAL :: tmp_val(2), area
 
-    READ (unit,*) (((tq(l,i,j), l = 1, 2), i = 1, imax), j = 1, jmax)
+    READ (unit,*) (((tq(l,i,j), l = 1, 2), i = 1, maxi), j = 1, maxj)
 
     IF (debug_init) WRITE (*,220) 'Avg T','Avg Q'
 
@@ -21,8 +21,8 @@ CONTAINS
 
     ! Sum layer state variables and flow field
     area = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           area = area + ds(j)
           tmp_val = tmp_val + tq(:,i,j) * ds(j)
        END DO
@@ -98,8 +98,8 @@ CONTAINS
     WRITE (*,220) 'Avg T', 'Avg Q'
     tmp_val = 0
     area = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           area = area + ds(j)
           tmp_val = tmp_val + tq(:,i,j) * ds(j)
        END DO
@@ -123,8 +123,8 @@ CONTAINS
     IF (debug_loop) WRITE (*,220) 'Avg T','Avg Q'
     tmp_val = 0.0
     area = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           area = area + ds(j)
           tmp_val = tmp_val + tq(:,i,j) * ds(j)
        END DO
@@ -224,8 +224,8 @@ CONTAINS
        WRITE (*,220) 'Avg T','Avg Q'
        tmp_val = 0.0
        area = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              area = area + ds(j)
              tmp_val = tmp_val + tq(:,i,j) * ds(j)
           END DO
@@ -263,7 +263,7 @@ CONTAINS
        & evap_atm, pptn_atm,dhght_sic, darea_sic)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: unit
-    REAL, DIMENSION(imax,jmax), INTENT(IN) :: &
+    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
          & co2_in, usurf_ocn, albedo_ocn, latent_ocn, sensible_ocn, &
          & netsolar_ocn, netlong_ocn, evap_ocn, pptn_ocn, runoff_ocn, &
          & latent_atm, sensible_atm, netsolar_atm, netlong_atm, &

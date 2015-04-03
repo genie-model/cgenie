@@ -16,7 +16,7 @@ MODULE embm_lib
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
   INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=2
   INTEGER, PARAMETER :: maxnyr=400
-  INTEGER :: imax, jmax, kmax, lmax, ntot, intot, k1(0:maxi+1,0:maxj+1)
+  INTEGER :: ntot, intot, k1(0:maxi+1,0:maxj+1)
   INTEGER :: ku(2,maxi,maxj), mk(maxi+1,maxj), nyear
 
   REAL :: dt(maxk), phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &

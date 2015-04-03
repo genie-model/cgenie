@@ -24,10 +24,10 @@ CONTAINS
     ! Calculate averages, minima, maxima, etc.
     area1 = 0.0
     area2 = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Northern/Southern hemisphere averages
-          IF (j > jmax / 2) THEN
+          IF (j > maxj / 2) THEN
              sum1(1) = sum1(1) + tq(1,i,j) * ds(j)
              sum2(1) = sum2(1) + tq(2,i,j) * ds(j)
              area1 = area1 + ds(j)
@@ -100,8 +100,8 @@ CONTAINS
 
     sum1 = 0
     area = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           sum1 = sum1 + tq(1,i,j) * ds(j)
           area = area + ds(j)
        END DO
@@ -141,14 +141,14 @@ CONTAINS
        CALL check_unit(32, __LINE__, __FILE__)
        OPEN(32,FILE=indir_name(1:lenin)//tdatafile(1:lentdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       READ (32,*,IOSTAT=ios) ((tqdata(1,i,j), i = 1, imax), j = 1, jmax)
+       READ (32,*,IOSTAT=ios) ((tqdata(1,i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(32,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CALL check_unit(33, __LINE__, __FILE__)
        OPEN(33,FILE=indir_name(1:lenin)//qdatafile(1:lenqdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       READ (33,*,IOSTAT=ios) ((tqdata(2,i,j), i = 1, imax), j = 1, jmax)
+       READ (33,*,IOSTAT=ios) ((tqdata(2,i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(33,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -160,8 +160,8 @@ CONTAINS
           tqav(l) = SUM(tqdata(l,:,:))
           tqvar(l) = SUM(tqdata(l,:,:) * tqdata(l,:,:))
        END DO
-       tqav = tqav / (imax * jmax)
-       tqvar = tqvar / (imax * jmax) - tqav * tqav
+       tqav = tqav / (maxi * maxj)
+       tqvar = tqvar / (maxi * maxj) - tqav * tqav
 
        ! specify weights
        errwtq = 1.0 / tqvar
@@ -171,8 +171,8 @@ CONTAINS
        OPEN(25,FILE=outdir_name(1:lenout)//'tmp.err',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        err = 0.
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              DO l = 1, 2
                 err = err + errwtq(l) * (tq(l,i,j) - tqdata(l,i,j))**2
              END DO
@@ -183,7 +183,7 @@ CONTAINS
        CLOSE(25,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
-       err = SQRT(err / (imax * jmax * 2))
+       err = SQRT(err / (maxi * maxj * 2))
        IF (debug_init) PRINT *,  'EMBM : weighted r.m.s. model-data error ', err
     ELSE
        IF (debug_init) PRINT *, &
@@ -193,23 +193,23 @@ CONTAINS
             & ' .true.).'
     END IF
 
-    FORALL (i=1:imax) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
-    FORALL (j=1:jmax) lat(j) = 180.0 * ASIN(s(j)) / pi
-    err3 = err_embm(tq(1,1:imax,1:jmax), 1, imax, jmax, indir_name, &
+    FORALL (i=1:maxi) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
+    FORALL (j=1:maxj) lat(j) = 180.0 * ASIN(s(j)) / pi
+    err3 = err_embm(tq(1,1:maxi,1:maxj), 1, maxi, maxj, indir_name, &
          & lenin, tdatafile, lentdata, tdata_scaling, tdata_offset, &
          & tqinterp, tdata_varname, tdata_missing, lon, lat)
     IF (qdata_rhum) THEN
-       err4 = err_embm(rq_pa(1:imax,1:jmax), 2, imax, jmax, indir_name, &
+       err4 = err_embm(rq_pa(1:maxi,1:maxj), 2, maxi, maxj, indir_name, &
             &lenin, qdatafile, lenqdata, qdata_scaling, qdata_offset, &
             & tqinterp, qdata_varname, qdata_missing, lon, lat)
     ELSE
-       err4 = err_embm(tq(2,1:imax,1:jmax), 2, imax, jmax, indir_name, &
+       err4 = err_embm(tq(2,1:maxi,1:maxj), 2, maxi, maxj, indir_name, &
             & lenin, qdatafile, lenqdata, qdata_scaling, qdata_offset, &
             & tqinterp, qdata_varname, qdata_missing, lon, lat)
     END IF
     IF (debug_init) PRINT *, &
-         & 'err_embm composite = ', SQRT(((err3**2 * imax * jmax) + &
-         & (err4**2 * imax * jmax)) / (2 * imax * jmax))
+         & 'err_embm composite = ', SQRT(((err3**2 * maxi * maxj) + &
+         & (err4**2 * maxi * maxj)) / (2 * maxi * maxj))
 
     CALL diagfna
   END SUBROUTINE diagend_embm
@@ -235,11 +235,11 @@ CONTAINS
     CALL check_iostat(ios, __LINE__, __FILE__)
 
     ! 2nd order explicit step
-    DO j = 1, jmax
+    DO j = 1, maxj
        fntot = 0.0
-       DO i = 1, imax
+       DO i = 1, maxi
           l=1
-          IF (j /= jmax) THEN
+          IF (j /= maxj) THEN
              fn(l) = cv(j) * betam(l) * uatm(2,i,j) * &
                   & (tq1(l,i,j+1) + tq1(l,i,j)) * 0.5
              diffextra = 0.0
@@ -250,7 +250,7 @@ CONTAINS
           END IF
           fntot = fntot + fn(1)
        END DO
-       IF (j < jmax) WRITE (43,'(e15.5)') &
+       IF (j < maxj) WRITE (43,'(e15.5)') &
             & dphi * fntot * usc * rhoair * cpa * hatmbl(1) * rsc
     END DO
   END SUBROUTINE diagfna
@@ -271,8 +271,8 @@ CONTAINS
     REAL :: work((maxi+1) * (maxj+1)), lon(maxi), lat(maxj)
 
     rnyear = 1.0 / nyear
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           DO l = 1, 2
              tqavg(l,i,j) = tqavg(l,i,j) + tq(l,i,j) * rnyear
           END DO
@@ -297,10 +297,10 @@ CONTAINS
        WRITE (2,10,IOSTAT=ios) tqavg
        CALL check_iostat(ios, __LINE__, __FILE__)
        WRITE (2,10,IOSTAT=ios) &
-            & (((fx0avg(l,i,j), i = 1, imax), j = 1, jmax), l = 1, 4)
+            & (((fx0avg(l,i,j), i = 1, maxi), j = 1, maxj), l = 1, 4)
        CALL check_iostat(ios, __LINE__, __FILE__)
        WRITE (2,10,IOSTAT=ios) &
-            & (((fwavg(l,i,j), i = 1, imax), j = 1, jmax), l = 1, 2)
+            & (((fwavg(l,i,j), i = 1, maxi), j = 1, maxj), l = 1, 2)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(2,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -318,28 +318,28 @@ CONTAINS
        ! Perform diagnostics on averaged data, either by rewriting other diag
        ! routines to accept data as argument, or by simply copying code,
        ! otherwise diagnose by integrating one (short) step from .avg file.
-       FORALL (i=1:imax) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
-       FORALL (j=1:jmax) lat(j) = 180.0 * ASIN(s(j)) / pi
-       err3 = err_embm(tqavg(1,1:imax,1:jmax), 1, imax, jmax, indir_name, &
+       FORALL (i=1:maxi) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
+       FORALL (j=1:maxj) lat(j) = 180.0 * ASIN(s(j)) / pi
+       err3 = err_embm(tqavg(1,1:maxi,1:maxj), 1, maxi, maxj, indir_name, &
             & lenin, tdatafile, lentdata, tdata_scaling, tdata_offset, &
             & tqinterp, tdata_varname, tdata_missing, lon, lat)
        IF (qdata_rhum) THEN
-          err4 = err_embm(rq_pa_avg, 2, imax, jmax, indir_name, &
+          err4 = err_embm(rq_pa_avg, 2, maxi, maxj, indir_name, &
                & lenin, qdatafile, lenqdata, qdata_scaling, qdata_offset, &
                & tqinterp, qdata_varname, qdata_missing, lon, lat)
        ELSE
-          err4 = err_embm(q_pa_avg, 2, imax, jmax, indir_name, &
+          err4 = err_embm(q_pa_avg, 2, maxi, maxj, indir_name, &
                & lenin, qdatafile, lenqdata, qdata_scaling, qdata_offset, &
                & tqinterp, qdata_varname, qdata_missing, lon, lat)
        END IF
        PRINT *, 'err_embm annual average composite = ', &
-            & SQRT(((err3**2 * imax * jmax) + (err4**2 * imax * jmax)) / &
-            & (2 * imax * jmax))
+            & SQRT(((err3**2 * maxi * maxj) + (err4**2 * maxi * maxj)) / &
+            & (2 * maxi * maxj))
 
        ! Calculate the atmosphere water content, wateratm
        watereb = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              watereb = watereb + tqavg(2,i,j) * ds(j)
           END DO
        END DO
@@ -360,14 +360,14 @@ CONTAINS
 
   ! Return an RMS error value for the specified EMBM model field
   ! compared with the contents of the supplied data file.
-  FUNCTION err_embm(modeldata, tracerid, imax, jmax, indir_name, &
+  FUNCTION err_embm(modeldata, tracerid, maxi, maxj, indir_name, &
        & lenin, obsdatafile, lenobsdata, datascaling, dataoffset, &
        & interpolate, varname, missing, lon, lat)
     IMPLICIT NONE
     REAL :: err_embm
-    REAL :: modeldata(imax,jmax)        ! Model data field
+    REAL :: modeldata(maxi,maxj)        ! Model data field
     INTEGER :: tracerid                 ! Data field type
-    INTEGER :: imax, jmax               ! Grid size
+    INTEGER :: maxi, maxj               ! Grid size
     CHARACTER(LEN=100) :: indir_name    ! EMBM input/output directories
     INTEGER :: lenin
     CHARACTER(LEN=128) :: obsdatafile   ! EMBM T/S data files
@@ -379,14 +379,14 @@ CONTAINS
     LOGICAL :: interpolate
     CHARACTER(LEN=25) :: varname        ! Observation-based dataset
     REAL :: missing
-    REAL :: lon(imax), lat(jmax)        ! EMBM grid
+    REAL :: lon(maxi), lat(maxj)        ! EMBM grid
 
     REAL :: errw
 
     ! Observational data, average and variance
-    REAL :: obsdata(imax,jmax), obsdata_av, obsdata_var
+    REAL :: obsdata(maxi,maxj), obsdata_av, obsdata_var
 
-    CALL read_embm_target_field(tracerid, imax, jmax, indir_name, lenin, &
+    CALL read_embm_target_field(tracerid, maxi, maxj, indir_name, lenin, &
          & obsdatafile, lenobsdata, datascaling, dataoffset, interpolate, &
          & varname, missing, lon, lat, obsdata)
 
@@ -394,25 +394,25 @@ CONTAINS
     ! computational spatial
     obsdata_av = SUM(obsdata)
     obsdata_var = SUM(obsdata**2)
-    obsdata_av = obsdata_av / (imax * jmax)
-    obsdata_var = obsdata_var / (imax * jmax) - obsdata_av * obsdata_av
+    obsdata_av = obsdata_av / (maxi * maxj)
+    obsdata_var = obsdata_var / (maxi * maxj) - obsdata_av * obsdata_av
     errw = 1.0 / obsdata_var
 
     ! Calculate the RMS error
-    err_embm = SQRT(SUM(errw * (modeldata - obsdata)**2) / (imax * jmax))
+    err_embm = SQRT(SUM(errw * (modeldata - obsdata)**2) / (maxi * maxj))
   END FUNCTION err_embm
 
 
   ! Reading in of data-based target fields for comparison with the model's
   ! internal fields.
-  SUBROUTINE read_embm_target_field(tracerid, imax, jmax, indir_name, &
+  SUBROUTINE read_embm_target_field(tracerid, maxi, maxj, indir_name, &
        & lenin, obsdatafile, lenobsdata, datascaling, dataoffset, &
        & interpolate, varname, missing, lon, lat, obsdata)
     USE genie_util, ONLY: check_unit, check_iostat, die
     USE local_netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: tracerid                ! Data field type
-    INTEGER, INTENT(IN) :: imax, jmax              ! Grid size
+    INTEGER, INTENT(IN) :: maxi, maxj              ! Grid size
     CHARACTER(LEN=100), INTENT(IN) :: indir_name   ! EMBM input/output dir.
     INTEGER, INTENT(IN) :: lenin
     CHARACTER(LEN=128), INTENT(IN) :: obsdatafile  ! EMBM T/S data files
@@ -421,8 +421,8 @@ CONTAINS
     LOGICAL, INTENT(IN) :: interpolate
     CHARACTER(LEN=25), INTENT(IN) :: varname
     REAL, INTENT(IN) :: missing
-    REAL, INTENT(INOUT) :: lon(imax), lat(jmax)    ! EMBM grid
-    REAL, INTENT(OUT) :: obsdata(imax,jmax)
+    REAL, INTENT(INOUT) :: lon(maxi), lat(maxj)    ! EMBM grid
+    REAL, INTENT(OUT) :: obsdata(maxi,maxj)
 
     ! Observation-based dataset
     TYPE(real2dVar), DIMENSION(1) :: tq_obs
@@ -432,7 +432,7 @@ CONTAINS
     INTEGER :: ncid_in, ncstatus, i_obs, j_obs, i_obs_min, j_obs_min
     INTEGER :: i0, i1, jtmp, ii, jj, iii, nwidth
     REAL :: obstmp
-    REAL, DIMENSION(2,jmax) :: sinlat
+    REAL, DIMENSION(2,maxj) :: sinlat
 
     ! Interpolation
     INTEGER :: n_int, n_ext
@@ -449,7 +449,7 @@ CONTAINS
        CALL check_unit(32, __LINE__, __FILE__)
        OPEN(32,FILE=indir_name(1:lenin)//obsdatafile(1:lenobsdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       READ (32,*,IOSTAT=ios) ((obsdata(i,j), i = 1, imax), j = 1, jmax)
+       READ (32,*,IOSTAT=ios) ((obsdata(i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(32,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -510,7 +510,7 @@ CONTAINS
           sinlat_obs(2,j) = COS(tq_obs_axis(2)%data(j) * pi / 180.0)
        END DO
        ! for GOLDSTEIN grid
-       DO j = 1, jmax
+       DO j = 1, maxj
           sinlat(1,j) = SIN(lat(j) * pi / 180.0)
           sinlat(2,j) = COS(lat(j) * pi / 180.0)
        END DO
@@ -537,7 +537,7 @@ CONTAINS
           IF (tq_obs_axis(2)%data(j) <= tq_obs_axis(2)%data(j-1)) &
                & CALL die('Non-incremental latitudinal axis')
        END DO
-       DO i = 1, imax
+       DO i = 1, maxi
           DO WHILE (lon(i) <= tq_obs_axis(1)%data(0))
              lon(i) = lon(i) + 360.0
           END DO
@@ -554,8 +554,8 @@ CONTAINS
        distmean = 0.0
        distmax = 0.0
        n_ext = 0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              ! find location of model grid point on observation-based
              ! grid.
              i_obs = 0

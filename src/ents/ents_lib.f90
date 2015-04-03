@@ -4,7 +4,6 @@ MODULE ents_lib
   SAVE
 
   INTEGER :: maxi, maxj
-  INTEGER, PARAMETER :: maxnyr=220
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: ents_k1
   INTEGER :: ents_kmax, ents_nyear
   REAL, DIMENSION(:), ALLOCATABLE :: ents_lat
