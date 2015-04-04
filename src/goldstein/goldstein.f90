@@ -23,7 +23,7 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(imax,jmax), INTENT(INOUT) :: &
+    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
          & latent_ocn, sensible_ocn, netsolar_ocn, netlong_ocn, fx0sic_ocn, &
          & evap_ocn, pptn_ocn, runoff_ocn, fwsic_ocn, stressxu_ocn, &
          & stressyu_ocn, stressxv_ocn, stressyv_ocn, tsval_ocn, ssval_ocn, &
@@ -48,7 +48,7 @@ CONTAINS
     INTEGER iposa(2)
 
     ! Surface flux variables
-    REAL, DIMENSION(imax,jmax) :: fx0neto, fwfxneto
+    REAL, DIMENSION(maxi,maxj) :: fx0neto, fwfxneto
 
     ! Extra fields for flux and wind stress passing
     REAL :: fx0flux(5,maxi,maxj), fwflux(4,maxi,maxj)
@@ -78,9 +78,9 @@ CONTAINS
        vsc = dphi * rsc * rsc
        ini_energy = 0.0
        ini_water = 0.0
-       DO k = 1, kmax
-          DO j = 1, jmax
-             DO i = 1, imax
+       DO k = 1, maxk
+          DO j = 1, maxj
+             DO i = 1, maxi
                 ini_energy = ini_energy + ts(1,i,j,k) * dz(k) * ds(j)
                 ini_water = ini_water - ts(2,i,j,k) * dz(k) * ds(j)
              END DO
@@ -111,19 +111,19 @@ CONTAINS
     ! Wind calculations needed for mld
     IF (imld == 1) THEN
        ! Following code taken from genie-embm/src/fortan/surflux.F
-       ! but min(j,jmax-1): avoids effect of N Pole singularity
-       DO j = 1, jmax
+       ! but min(j,maxj-1): avoids effect of N Pole singularity
+       DO j = 1, maxj
           tv3 = 0.0
-          DO i = 1, imax
+          DO i = 1, maxi
              IF (i == 1) THEN
-                tv4 = (tau(1,i,j) + tau(1,imax,j)) * 0.5
+                tv4 = (tau(1,i,j) + tau(1,maxi,j)) * 0.5
              ELSE
                 tv4 = (tau(1,i,j) + tau(1,i-1,j)) * 0.5
              END IF
              IF (j == 1) THEN
                 tv2 = tau(2,i,j) * 0.5
              ELSE
-                tv2 = (tau(2,i,MIN(j, jmax-1)) + tau(2,i,j-1)) * 0.5
+                tv2 = (tau(2,i,MIN(j, maxj-1)) + tau(2,i,j-1)) * 0.5
              END IF
 
              ! Wind stress used for mld calcs is consistent with that
@@ -132,8 +132,8 @@ CONTAINS
              mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
              tv3 = tv3 + mldketau(i,j)
           END DO
-          DO i = 1, imax
-             IF (j <= 2 .OR. j >= jmax-1) mldketau(i,j) = tv3 / imax
+          DO i = 1, maxi
+             IF (j <= 2 .OR. j >= maxj-1) mldketau(i,j) = tv3 / maxi
           END DO
        END DO
     END IF
@@ -162,25 +162,25 @@ CONTAINS
     fwflux(4,:,:) = fwsic_ocn
 
     ! Put these fluxes into correct array location for tstepo/tstipo
-    ts(1,1:imax,1:jmax,kmax+1) = -fx0neto * rfluxsc
-    ts(2,1:imax,1:jmax,kmax+1) = fwfxneto * rpmesco
-    ts1(1,1:imax,1:jmax,kmax+1) = ts(1,1:imax,1:jmax,kmax+1)
-    ts1(2,1:imax,1:jmax,kmax+1) = ts(2,1:imax,1:jmax,kmax+1)
+    ts(1,1:maxi,1:maxj,maxk+1) = -fx0neto * rfluxsc
+    ts(2,1:maxi,1:maxj,maxk+1) = fwfxneto * rpmesco
+    ts1(1,1:maxi,1:maxj,maxk+1) = ts(1,1:maxi,1:maxj,maxk+1)
+    ts1(2,1:maxi,1:maxj,maxk+1) = ts(2,1:maxi,1:maxj,maxk+1)
 
     ! Input biogeochemical tracers arrays
     ! Don't let anyone ELSE change Temperature and Salinity !!
     ! NO - let BIOGEM change Temperature and Salinity
     ! it will DO it ever so nicely and gently ... ;)
-    ts(:,1:imax,1:jmax,1:kmax)  = go_ts
-    ts1(:,1:imax,1:jmax,1:kmax) = go_ts1
+    ts(:,1:maxi,1:maxj,1:maxk)  = go_ts
+    ts1(:,1:maxi,1:maxj,1:maxk) = go_ts1
 
     ! Create b.c.
     ! NOTE: BIOGEM only passes in/out the core grid array
     !       (no boundaries) and does not update tracers at boundaries
-    DO j = 1, jmax
-       ts1(:,0,j,k1(0,j):kmax) = ts(:,imax,j,k1(0,j):kmax)
-       DO k = k1(imax+1,j), kmax
-          ts1(:,imax+1,j,k) = ts(:,1,j,k)
+    DO j = 1, maxj
+       ts1(:,0,j,k1(0,j):maxk) = ts(:,maxi,j,k1(0,j):maxk)
+       DO k = k1(maxi+1,j), maxk
+          ts1(:,maxi+1,j,k) = ts(:,1,j,k)
        END DO
     END DO
 
@@ -213,16 +213,16 @@ CONTAINS
        psibc(1) = -erisl(1,2) / erisl(1,1)
     END IF
 
-    DO j = 1, jmax
-       DO i = 0, imax+1
+    DO j = 1, maxj
+       DO i = 0, maxi+1
           ub(1,i,j) = ub(1,i,j) + SUM(ubisl(1,i,j,1:isles) * psibc(1:isles))
           ub(2,i,j) = ub(2,i,j) + SUM(ubisl(2,i,j,1:isles) * psibc(1:isles))
        END DO
     END DO
 
     ! Update diagnostic psi, not always necessary
-    DO j = 0, jmax
-       DO i = 0, imax
+    DO j = 0, maxj
+       DO i = 0, maxi
           psi(i,j) = psi(i,j) + SUM(psisl(i,j,1:isles) * psibc(1:isles))
        END DO
     END DO
@@ -242,10 +242,10 @@ CONTAINS
           CALL diag
        END IF
        IF (MOD(istep, npstp) == 0) THEN
-          ts_store = ts(:,1:imax,1:jmax,1:kmax)
+          ts_store = ts(:,1:maxi,1:maxj,1:maxk)
        ELSE IF (MOD(istep, npstp) == 1 .AND. istep > 1) THEN
-          rms = SUM((ts_store - ts(:,1:imax,1:jmax,1:kmax))**2)
-          rms = SQRT(rms / lmax / ntot / dt(kmax) / dt(kmax))
+          rms = SUM((ts_store - ts(:,1:maxi,1:maxj,1:maxk))**2)
+          rms = SQRT(rms / maxl / ntot / dt(maxk) / dt(maxk))
           IF (debug_loop) PRINT *, 'r.m.s. r.o.c.', rms
        END IF
        IF (debug_loop) PRINT *
@@ -277,8 +277,8 @@ CONTAINS
                & 'file at time', istep
           OPEN(2,FILE=outdir_name(1:lenout)//lout//'.psi.'//ext,IOSTAT=ios)
           CALL check_iostat(ios, __LINE__, __FILE__)
-          DO j = 0, jmax
-             DO i = 0, imax
+          DO j = 0, maxj
+             DO i = 0, maxi
                 IF (debug_loop) WRITE (2,*,IOSTAT=ios) psi(i,j)
                 CALL check_iostat(ios, __LINE__, __FILE__)
              END DO
@@ -336,10 +336,10 @@ CONTAINS
        t_area = 0.0
     END IF
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Ocean cells only
-          IF (k1(i,j) <= kmax) THEN
+          IF (k1(i,j) <= maxk) THEN
              ! Global ocean
              fw_flx(1) = fw_flx(1) + (fwfxneto(i,j) * asurf(j))
              fx_flx(1) = fx_flx(1) + (fx0neto(i,j) * asurf(j))
@@ -430,7 +430,7 @@ CONTAINS
           CALL diagopsi(ominp, omaxp, omina, omaxa, opsi, opsia, opsip, iposa)
 
           CALL ini_netcdf_ocn(istep, 1)
-          CALL write_netcdf_ocn(imax, jmax, kmax, k1, ncdepth1, &
+          CALL write_netcdf_ocn(k1, ncdepth1, &
                & opsi, opsia, opsip, ts, u, rho, fx0flux, fwflux, work, &
                & dsc, usc, rsc, saln0, maxi, maxj, maxk, maxl, 1)
           CALL end_netcdf_ocn(1)
@@ -439,11 +439,11 @@ CONTAINS
     END IF
 
     ! Output arguments
-    usval_ocn = REAL(u(1,1:imax,1:jmax,kmax))
-    vsval_ocn = REAL(u(2,1:imax,1:jmax,kmax))
-    WHERE (k1(1:imax,1:jmax) <= kmax)
-       tsval_ocn = REAL(ts(1,1:imax,1:jmax,kmax))
-       ssval_ocn = REAL(ts(2,1:imax,1:jmax,kmax))
+    usval_ocn = REAL(u(1,1:maxi,1:maxj,maxk))
+    vsval_ocn = REAL(u(2,1:maxi,1:maxj,maxk))
+    WHERE (k1(1:maxi,1:maxj) <= maxk)
+       tsval_ocn = REAL(ts(1,1:maxi,1:maxj,maxk))
+       ssval_ocn = REAL(ts(2,1:maxi,1:maxj,maxk))
        albedo_ocn = REAL(albocn)
     ELSEWHERE
        tsval_ocn = 0.0
@@ -454,12 +454,12 @@ CONTAINS
     ! Set values of dummy variables destined for BIOGEM
     ! NOTE: convert precision between GOLDSTEIn (REAL*8) and GENIE
     !       (which can be REAL*4 or REAL* depending on the IGCM)
-    go_ts = REAL(ts(:,1:imax,1:jmax,1:kmax))
-    go_ts1 = REAL(ts1(:,1:imax,1:jmax,1:kmax))
-    go_u = REAL(u(:,1:imax,1:jmax,1:kmax))
-    go_rho = REAL(rho(1:imax,1:jmax,1:kmax))
-    go_cost = REAL(cost(1:imax,1:jmax))
-    go_tau = REAL(tau(:,1:imax,1:jmax))
+    go_ts = REAL(ts(:,1:maxi,1:maxj,1:maxk))
+    go_ts1 = REAL(ts1(:,1:maxi,1:maxj,1:maxk))
+    go_u = REAL(u(:,1:maxi,1:maxj,1:maxk))
+    go_rho = REAL(rho(1:maxi,1:maxj,1:maxk))
+    go_cost = REAL(cost(1:maxi,1:maxj))
+    go_tau = REAL(tau(:,1:maxi,1:maxj))
     go_mldta = REAL(-5000.0 * mld)
     go_psi = 1592.5 * REAL(psi)
 
@@ -473,10 +473,10 @@ CONTAINS
        vsc = dphi * rsc * rsc
        tot_energy = 0.0
        tot_water = 0.0
-       DO k = 1, kmax
-          DO j = 1, jmax
-             tot_energy = tot_energy + SUM(ts(1,1:imax,j,k)) * dz(k) * ds(j)
-             tot_water = tot_water - SUM(ts(2,1:imax,j,k)) * dz(k) * ds(j)
+       DO k = 1, maxk
+          DO j = 1, maxj
+             tot_energy = tot_energy + SUM(ts(1,1:maxi,j,k)) * dz(k) * ds(j)
+             tot_water = tot_water - SUM(ts(2,1:maxi,j,k)) * dz(k) * ds(j)
           END DO
        END DO
        ! The m2mm is because internally, goldstein uses m, but genie
@@ -809,12 +809,7 @@ CONTAINS
     deg_to_rad = pi / 180.0
 
     ! Grid dimensions must be no greater than array dimensions in var.cmn
-    imax = maxi
-    jmax = maxj
-    kmax = maxk
-    lmax = maxl
-
-    dphi = phix / imax
+    dphi = phix / maxi
     rdphi = 1.0 / dphi
 
     ! Set up horizontal grid: sin and cos factors at rho and v points
@@ -825,8 +820,8 @@ CONTAINS
     cv(0) = COS(th0)
     IF (igrid == 1) THEN
        ! Set up const dlat grid
-       dth = (th1 - th0) / jmax
-       DO j = 1, jmax
+       dth = (th1 - th0) / maxj
+       DO j = 1, maxj
           thv = th0 + j * dth
           theta = thv - 0.5 * dth
           sv(j) = SIN(thv)
@@ -835,8 +830,8 @@ CONTAINS
        END DO
     ELSEIF (igrid == 0) THEN
        ! Set up const dsinlat grid
-       dscon = (s1 - s0) / jmax
-       DO j = 1, jmax
+       dscon = (s1 - s0) / maxj
+       DO j = 1, maxj
           sv(j) = s0 + j * dscon
           cv(j) = SQRT(1 - sv(j) * sv(j))
           s(j) = sv(j) - 0.5 * dscon
@@ -846,13 +841,13 @@ CONTAINS
        PRINT *, 'GOLDSTEIN latitudes: velocity; tracers'
        PRINT *, 'j, 180/pi*ASIN(sv(j)), 180/pi*ASIN(s(j))'
     END IF
-    DO j = 1, jmax
+    DO j = 1, maxj
        ds(j) = sv(j) - sv(j-1)
        rds(j) = 1.0 / ds(j)
        c(j) = SQRT(1 - s(j) * s(j))
        rc(j) = 1.0 / c(j)
        rc2(j) = rc(j) * rc(j) * rdphi
-       IF (j < jmax) THEN
+       IF (j < maxj) THEN
           dsv(j) = s(j+1) - s(j)
           rdsv(j) = 1.0 / dsv(j)
           rcv(j) = 1.0 / cv(j)
@@ -863,7 +858,7 @@ CONTAINS
     END DO
 
     ! Area of grid cell (assumes sine(lat) grid)
-    DO j = 1, jmax
+    DO j = 1, maxj
        asurf(j) = rsc * rsc * ds(j) * dphi
        IF (debug_init) &
             & PRINT *, 'j = ', j, 'GOLDSTEIN grid cell area is', asurf(j), 'm2'
@@ -883,39 +878,39 @@ CONTAINS
     ! Set up grid
     ! For variable (exponential) dz use ez0 > 0, ELSE use ez0 < 0
     ez0 = 0.1
-    z1 = ez0 * ((1.0 + 1 / ez0)**(1.0 / kmax) - 1.0)
+    z1 = ez0 * ((1.0 + 1 / ez0)**(1.0 / maxk) - 1.0)
     IF (debug_init) PRINT *, 'z1', z1
     tv4 = ez0 * ((z1 / ez0 + 1)**0.5 - 1)
     tv2 = 0
     tv1 = 0
-    zro(kmax) = -tv4
-    zw(kmax) = tv2
-    DO k = 1, kmax
+    zro(maxk) = -tv4
+    zw(maxk) = tv2
+    DO k = 1, maxk
        IF (ez0 > 0) THEN
           tv3 = ez0 * ((z1 / ez0 + 1)**k - 1)
-          dz(kmax-k+1) = tv3 - tv2
+          dz(maxk-k+1) = tv3 - tv2
           tv2 = tv3
           tv5 = ez0 * ((z1 / ez0 + 1)**(k + 0.5) - 1)
-          IF (k < kmax) dza(kmax-k) = tv5 - tv4
+          IF (k < maxk) dza(maxk-k) = tv5 - tv4
           tv4 = tv5
-          tv1 = tv1 + dz(kmax-k+1)
+          tv1 = tv1 + dz(maxk-k+1)
           ! tv3 is the depth of the kth w level from the top
           ! tv5 is the depth of the k+1th density level from the top
        ELSE
-          dz(k) = REAL(1.0D0 / kmax)
-          dza(k) = REAL(1.0D0 / kmax)
+          dz(k) = REAL(1.0D0 / maxk)
+          dza(k) = REAL(1.0D0 / maxk)
        END IF
     END DO
 
-    DO k = kmax, 1, -1
+    DO k = maxk, 1, -1
        IF (k > 1) zro(k-1) = zro(k) - dza(k-1)
        zw(k-1) = zw(k) - dz(k)
     END DO
 
     ! 2D "depth" grids of difference between each pair of levels
     ! or difference between squares (needed for PE calculation)
-    DO k = kmax, 1, -1
-       DO kk = kmax, 1, -1
+    DO k = maxk, 1, -1
+       DO kk = maxk, 1, -1
           dzg(k,kk) = zw(k) - zw(kk-1)
           z2dzg(k,kk) = -zw(k) * zw(k) + zw(kk-1) * zw(kk-1)
           IF (k /= kk - 1) THEN
@@ -931,10 +926,10 @@ CONTAINS
     IF (debug_init) THEN
        PRINT *, 'layer #, layer top, layer mid, layer thick'
        WRITE (6,'(i4,3e12.4)') &
-            & (k, dsc * zw(k), dsc * zro(k), dsc * dz(k), k = kmax, 1, -1)
+            & (k, dsc * zw(k), dsc * zro(k), dsc * dz(k), k = maxk, 1, -1)
     END IF
 
-    dzz = dz(kmax) * dza(kmax-1) / 2
+    dzz = dz(maxk) * dza(maxk-1) / 2
 
     ! when max/min overturning are calculated for the OPSIT file, they
     ! are usually full water column and include surface, wind-driven
@@ -944,7 +939,7 @@ CONTAINS
     ! overturning is calculated - currently it is set for overturning
     ! values on levels > 500 m deep
     overdep = 8
-    DO k = kmax, 1, -1
+    DO k = maxk, 1, -1
        tv1 = dsc * zw(k)
        IF (tv1 > -500.0) overdep = k - 1
     END DO
@@ -952,14 +947,14 @@ CONTAINS
          & PRINT *, 'depth levels for OPSIT max/min overturning : 1 to', overdep
 
     ! efficiency array
-    DO k = 1, kmax-1
+    DO k = 1, maxk-1
        rdz(k) = 1.0 / dz(k)
        rdza(k) = 1.0 / dza(k)
     END DO
-    rdz(kmax) = 1.0 / dz(kmax)
+    rdz(maxk) = 1.0 / dz(maxk)
 
-    ! dza(kmax) never referenced, set to 0 for Andy's biogeo-code
-    dza(kmax) = 0.0
+    ! dza(maxk) never referenced, set to 0 for Andy's biogeo-code
+    dza(maxk) = 0.0
 
     ! Set up coeffs for state equation following WS 1993
     ec(1) = -0.0559 / rhosc
@@ -1001,8 +996,8 @@ CONTAINS
     sdomg = 2 * pi / 10.0
 
     ! Seabed depth h needed BEFORE forcing if coastlines are non-trivial
-    ! note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
-    ! k1(1,j) - k1(imax+1,j) = 0
+    ! note k1(i,j) must be periodic ; k1(0,j) - k1(maxi,j) = 0 and
+    ! k1(1,j) - k1(maxi+1,j) = 0
     ntot = 0
     intot = 0
 
@@ -1010,18 +1005,18 @@ CONTAINS
     CALL check_unit(13, __LINE__, __FILE__)
     OPEN(13,FILE=indir_name(1:lenin)//world//'.k1',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
-    ! note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
-    ! k1(1,j) - k1(imax+1,j) = 0, as enforced below;
+    ! note k1(i,j) must be periodic ; k1(0,j) - k1(maxi,j) = 0 and
+    ! k1(1,j) - k1(maxi+1,j) = 0, as enforced below;
 
-    DO j = jmax+1, 0, -1
-       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, imax+1)
+    DO j = maxj+1, 0, -1
+       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, maxi+1)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       k1(0,j) = k1(imax,j)
-       k1(imax+1,j) = k1(1,j)
+       k1(0,j) = k1(maxi,j)
+       k1(maxi+1,j) = k1(1,j)
        ! boundary condition
        h(:,:,j) = 0
        rh(:,:,j) = 0
-       IF (debug_init) WRITE (6,'(i4,66i3)')j, (k1(i, j), i = 0, imax+1)
+       IF (debug_init) WRITE (6,'(i4,66i3)')j, (k1(i, j), i = 0, maxi+1)
     END DO
 
     ! read ips etc if possible
@@ -1029,11 +1024,11 @@ CONTAINS
     CALL check_iostat(ios, __LINE__, __FILE__)
 
     ! count wet cells
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax) THEN
-             ntot = ntot + kmax - k1(i,j) + 1
-             intot = intot + kmax - k1(i,j)
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk) THEN
+             ntot = ntot + maxk - k1(i,j) + 1
+             intot = intot + maxk - k1(i,j)
           END IF
        END DO
     END DO
@@ -1044,10 +1039,10 @@ CONTAINS
        CALL check_unit(13, __LINE__, __FILE__)
        OPEN(13,FILE=indir_name(1:lenin)//world//'.bmask',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       DO j = jmax, 1, -1
-          READ (13,*,IOSTAT=ios) (bmask(i, j), i = 1, imax)
+       DO j = maxj, 1, -1
+          READ (13,*,IOSTAT=ios) (bmask(i, j), i = 1, maxi)
           CALL check_iostat(ios, __LINE__, __FILE__)
-          IF (debug_init) WRITE (6,'(i4,66i3)')j, (bmask(i,j), i = 1, imax)
+          IF (debug_init) WRITE (6,'(i4,66i3)')j, (bmask(i,j), i = 1, maxi)
        END DO
        ! basin mask: 0: land
        !             2: Pacific
@@ -1061,8 +1056,8 @@ CONTAINS
        ias = 0
        iaf = 0
        jsf = 1
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (ips(j) == 0 .AND. bmask(i,j) == 2) ips(j) = i
              IF (bmask(i,j) == 2) ipf(j) = i
              IF (ias(j) == 0 .AND. bmask(i,j) == 3) ias(j) = i
@@ -1078,7 +1073,7 @@ CONTAINS
        IF (debug_init) &
             & PRINT *, 'no basin mask available - trying to detect ' // &
             & 'Atlantic and Pacific basins from land mask'
-       WHERE (k1(1:imax,1:jmax) <= kmax)
+       WHERE (k1(1:maxi,1:maxj) <= maxk)
           bmask = 1
        ELSEWHERE
           bmask = 0
@@ -1090,54 +1085,54 @@ CONTAINS
        iaf = 0
        ips = 0
        ipf = 0
-       ias(jmax) = NINT(imax * 24.0 / 36.0)
-       ips(jmax) = NINT(imax * 10.0 / 36.0)
+       ias(maxj) = NINT(maxi * 24.0 / 36.0)
+       ips(maxj) = NINT(maxi * 10.0 / 36.0)
        jsf = 1
        ! For 64x32l grid (15/9/05):
        IF (igrid /= 0) THEN
-          ias(jmax) = 61
-          ips(jmax) = 36
+          ias(maxj) = 61
+          ips(maxj) = 36
           jsf = 10
        END IF
        IF (debug_init) PRINT *, 'ips ipf ias iaf '
-       DO j = 1, jmax
-          ips(j) = ips(jmax)
+       DO j = 1, maxj
+          ips(j) = ips(maxj)
           ipf(j) = ips(j)
-          ias(j) = ias(jmax)
+          ias(j) = ias(maxj)
           iaf(j) = ias(j)
           ! This bit to get the Southern tip of Greenland into the Atlantic
-          IF (j > NINT(jmax * 34.0 / 36.0) .AND. &
-               & j <= NINT(jmax * 35.0 / 36.0)) THEN
-             ias(j) = NINT(imax * 20.0 / 36.0)
+          IF (j > NINT(maxj * 34.0 / 36.0) .AND. &
+               & j <= NINT(maxj * 35.0 / 36.0)) THEN
+             ias(j) = NINT(maxi * 20.0 / 36.0)
           END IF
-          DO i = 1, imax
-             IF (k1(ips(j)-1,j) <= kmax) ips(j) = ips(j) - 1
-             IF (k1(ipf(j)+1,j) <= kmax) ipf(j) = ipf(j) + 1
-             IF (k1(ias(j)-1,j) <= kmax) ias(j) = ias(j) - 1
-             IF (k1(iaf(j)+1,j) <= kmax) iaf(j) = iaf(j) + 1
-             ips(j) = 1 + MOD(ips(j)-1+imax, imax)
-             ipf(j) = 1 + MOD(ipf(j)-1+imax, imax)
-             ias(j) = 1 + MOD(ias(j)-1+imax, imax)
-             iaf(j) = 1 + MOD(iaf(j)-1+imax, imax)
+          DO i = 1, maxi
+             IF (k1(ips(j)-1,j) <= maxk) ips(j) = ips(j) - 1
+             IF (k1(ipf(j)+1,j) <= maxk) ipf(j) = ipf(j) + 1
+             IF (k1(ias(j)-1,j) <= maxk) ias(j) = ias(j) - 1
+             IF (k1(iaf(j)+1,j) <= maxk) iaf(j) = iaf(j) + 1
+             ips(j) = 1 + MOD(ips(j)-1+maxi, maxi)
+             ipf(j) = 1 + MOD(ipf(j)-1+maxi, maxi)
+             ias(j) = 1 + MOD(ias(j)-1+maxi, maxi)
+             iaf(j) = 1 + MOD(iaf(j)-1+maxi, maxi)
           END DO
           IF (igrid == 0) THEN
-             IF (ias(j) >= iaf(j) .AND. j <= jmax / 2) jsf = j
-             IF (ips(j) >= ipf(j) .AND. j <= jmax / 2) jsf = j
+             IF (ias(j) >= iaf(j) .AND. j <= maxj / 2) jsf = j
+             IF (ips(j) >= ipf(j) .AND. j <= maxj / 2) jsf = j
           END IF
        END DO
 
        IF (igrid == 0) THEN
           ! This bit to get the Arctic all Atlantic
-          DO j = 1, jmax
-             IF (j > NINT(jmax * 35.0 / 36.0)) THEN
+          DO j = 1, maxj
+             IF (j > NINT(maxj * 35.0 / 36.0)) THEN
                 ips(j) = 1
                 ipf(j) = 0
                 ias(j) = 1
-                iaf(j) = imax
+                iaf(j) = maxi
              END IF
              ! This bit to get the Southern tip of Greenland out of the Pacific
-             IF (j > NINT(jmax * 34.0 / 36.0) .AND. &
-                  & j <= NINT(jmax * 35.0 / 36.0)) THEN
+             IF (j > NINT(maxj * 34.0 / 36.0) .AND. &
+                  & j <= NINT(maxj * 35.0 / 36.0)) THEN
                 ips(j) = 1
                 ipf(j) = 0
              END IF
@@ -1145,20 +1140,20 @@ CONTAINS
        END IF
 
        IF (igrid /= 0) THEN
-          ips(jmax) = 1
-          ipf(jmax) = 0
-          ips(jmax-1) = 1
-          ipf(jmax-1) = 0
-          ias(jmax) = 1
-          iaf(jmax) = imax
+          ips(maxj) = 1
+          ipf(maxj) = 0
+          ips(maxj-1) = 1
+          ipf(maxj-1) = 0
+          ias(maxj) = 1
+          iaf(maxj) = maxi
        END IF
     END IF
 
     IF (debug_init) PRINT *, 'jsf ', jsf
     IF (debug_init) WRITE (6,'(5i4)') &
-         & (j, ips(j), ipf(j), ias(j), iaf(j), j = jmax, 1, -1)
+         & (j, ips(j), ipf(j), ias(j), iaf(j), j = maxj, 1, -1)
 
-    DO j = 1, jmax
+    DO j = 1, maxj
        ips_out(j) = ips(j)
        ipf_out(j) = ipf(j)
        ias_out(j) = ias(j)
@@ -1176,7 +1171,7 @@ CONTAINS
     ! of their surface area in the latitudinal band between 50N and 70N
     tv1 = SIN(50.0 * pi / 180.0)
     tv2 = SIN(70.0 * pi / 180.0)
-    DO j = 1, jmax
+    DO j = 1, maxj
        ! southern boundary
        IF (tv1 >= sv(j-1) .AND. tv1 <= sv(j)) THEN
           ! at least half of box area has to be in latitudinal band
@@ -1201,19 +1196,19 @@ CONTAINS
     area_hosing = 0.0
     DO j = j_hosing(1), j_hosing(2)
        DO i = ias(j), iaf(j)
-          IF (k1(i,j) <= kmax) area_hosing  = area_hosing + asurf(j)
+          IF (k1(i,j) <= maxk) area_hosing  = area_hosing + asurf(j)
        END DO
     END DO
     DO j = j_hosing(1), j_hosing(2)
        DO i = ias(j), iaf(j)
-          IF (k1(i,j) <= kmax) rhosing(i,j)  = 1e6 / area_hosing
+          IF (k1(i,j) <= maxk) rhosing(i,j)  = 1e6 / area_hosing
        END DO
     END DO
 
     IF (igrid == 2) THEN
        PRINT *, 'rhosing(i,j) for grid 2:'
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              PRINT *, i, j, rhosing(i,j)
           END DO
        END DO
@@ -1237,8 +1232,8 @@ CONTAINS
        CALL check_iostat(ios, __LINE__, __FILE__)
 
        ! get anomalies in units m/y
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              READ (23,100,IOSTAT=ios) fw_anom_in(i,j)
              CALL check_iostat(ios, __LINE__, __FILE__)
           END DO
@@ -1260,10 +1255,10 @@ CONTAINS
     ub = 0
 
     ! seabed depth h
-    DO j = jmax+1, 0, -1
-       DO i = 0, imax+1
-          IF (k1(i,j) <= kmax) THEN
-             DO k = k1(i,j), kmax
+    DO j = maxj+1, 0, -1
+       DO i = 0, maxi+1
+          IF (k1(i,j) <= maxk) THEN
+             DO k = k1(i,j), maxk
                 h(3,i,j) = h(3,i,j) + dz(k)
              END DO
              rh(3,i,j) = 1.0 / h(3,i,j)
@@ -1271,22 +1266,22 @@ CONTAINS
        END DO
     END DO
 
-    DO j = 0, jmax+1
-       DO i = 0, imax
+    DO j = 0, maxj+1
+       DO i = 0, maxi
           h(1,i,j) = MIN(h(3,i,j), h(3,i+1,j))
-          IF (max(k1(i,j), k1(i+1,j)) <= kmax) rh(1,i,j) = 1.0 / h(1,i,j)
+          IF (max(k1(i,j), k1(i+1,j)) <= maxk) rh(1,i,j) = 1.0 / h(1,i,j)
        END DO
     END DO
 
-    DO j = 0, jmax
-       DO i = 0, imax+1
+    DO j = 0, maxj
+       DO i = 0, maxi+1
           h(2,i,j) = MIN(h(3,i,j), h(3,i,j+1))
-          IF (max(k1(i,j), k1(i,j+1)) <= kmax) rh(2,i,j) = 1.0 / h(2,i,j)
+          IF (max(k1(i,j), k1(i,j+1)) <= maxk) rh(2,i,j) = 1.0 / h(2,i,j)
        END DO
     END DO
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ku(1,i,j) = MAX(k1(i,j), k1(i+1,j))
           ku(2,i,j) = MAX(k1(i,j), k1(i,j+1))
        END DO
@@ -1296,21 +1291,21 @@ CONTAINS
     ! set up drag and diffusion values
     ! drag takes the value adrag in the interior, rising twice by factor
     ! drgf per gridpoint close to equator and in regions of
-    ! shallow water (k1>kmxdrg) ie land in the case kmxdrg=kmax
+    ! shallow water (k1>kmxdrg) ie land in the case kmxdrg=maxk
     ! jeb = 1/2 width of equatorial region of maximum drag
 
     adrag = 1.0 / (adrag * 86400 * fsc)
     ! cross equator need * 4 if drag is constant ie if drgf=1
     drgf = 3.0
-    kmxdrg = kmax / 2
+    kmxdrg = maxk / 2
     jeb = 1
     CALL drgset(adrag, drgf, kmxdrg, jeb)
     diff(1) = diff(1) / (rsc * usc)
     diff(2) = diff(2) * rsc / (usc * dsc * dsc)
 
     ! arrays for efficiency
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           rtv(i,j) = 1.0 / (s(j) * s(j) + drag(1,i,j) * drag(1,i,j))
           rtv3(i,j) = 1.0 / (sv(j) * sv(j) + drag(2,i,j) * drag(2,i,j))
        END DO
@@ -1325,20 +1320,20 @@ CONTAINS
 
     IF (dosc) THEN
        ! v2 seasonal. Annual averages
-       tsavg(:,1:imax,1:jmax,1:kmax) = 0.0
-       uavg(:,1:imax,1:jmax,:) = 0.0
-       rhoavg(1:imax,1:jmax,1:kmax) = 0.0
+       tsavg(:,1:maxi,1:maxj,1:maxk) = 0.0
+       uavg(:,1:maxi,1:maxj,:) = 0.0
+       rhoavg(1:maxi,1:maxj,1:maxk) = 0.0
        fx0avg = 0.0
        fwavg = 0.0
     END IF
 
     ! initial conditions
-    DO i = 0, imax+1
-       DO j = 0, jmax+1
-          DO k = 0, kmax+1
+    DO i = 0, maxi+1
+       DO j = 0, maxj+1
+          DO k = 0, maxk+1
              ! initial uniform temperature T0 large favours thermally
              ! direct solutions
-             IF (j <= jmax / 2) THEN
+             IF (j <= maxj / 2) THEN
                 ts(1,i,j,k) = temp0 * 0.5 * (1 + SIGN(1, k-k1(i,j)))
              ELSE
                 ts(1,i,j,k) = temp1 * 0.5 * (1 + SIGN(1, k-k1(i,j)))
@@ -1348,7 +1343,7 @@ CONTAINS
              ts1(1,i,j,k) = ts(1,i,j,k)
              ts1(2,i,j,k) = ts(2,i,j,k)
           END DO
-          DO k = 1, kmax
+          DO k = 1, maxk
              CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), zro(k), ieos, rho(i,j,k))
           END DO
        END DO
@@ -1357,21 +1352,21 @@ CONTAINS
     ! forcing fields and some more initialisation
     cost = 0
     icosd = 0
-    rho(1:imax,1:jmax,0) = 0
+    rho(1:maxi,1:maxj,0) = 0
 
     ! array to determine limit of easy part of double p integral in J term
     ! use INTEGER wetpoint indicator
-    ! (1+SIGN(1,kmax-k1(i,j)))/2
+    ! (1+SIGN(1,maxk-k1(i,j)))/2
     ! mk is largest of surrounding wet k1 values if i,j is wet, ELSE 0
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           mk(i,j) = MAX( &
-               & k1(i,j) * (1+SIGN(1, kmax - k1(i,j))) / 2, &
-               & k1(i+1,j) * (1+SIGN(1, kmax - k1(i+1,j))) / 2, &
-               & k1(i-1,j) * (1+SIGN(1, kmax - k1(i-1,j))) / 2, &
-               & k1(i,j+1) * (1+SIGN(1, kmax - k1(i,j+1))) / 2, &
-               & k1(i,j-1) * (1+SIGN(1, kmax - k1(i,j-1))) / 2)
-          mk(i,j) = mk(i,j) * (1+SIGN(1, kmax - k1(i,j))) / 2
+               & k1(i,j) * (1+SIGN(1, maxk - k1(i,j))) / 2, &
+               & k1(i+1,j) * (1+SIGN(1, maxk - k1(i+1,j))) / 2, &
+               & k1(i-1,j) * (1+SIGN(1, maxk - k1(i-1,j))) / 2, &
+               & k1(i,j+1) * (1+SIGN(1, maxk - k1(i,j+1))) / 2, &
+               & k1(i,j-1) * (1+SIGN(1, maxk - k1(i,j-1))) / 2)
+          mk(i,j) = mk(i,j) * (1+SIGN(1, maxk - k1(i,j))) / 2
        END DO
     END DO
 
@@ -1379,16 +1374,16 @@ CONTAINS
     bp = 0.0
 
     ! periodic b.c. required for Antarctic island integral
-    mk(imax+1,1:jmax) = mk(1,1:jmax)
+    mk(maxi+1,1:maxj) = mk(1,1:maxj)
 
     ! array to avoid J term in flat regions
     ! For non-trivial coasts essential to avoid adding J term at non-Psi points.
     ! Hence first condition ensures (i,j) is a wet Psi point, 2nd that bottom
     ! is not flat.
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           getj(i,j) = (MAX(k1(i,j), k1(i+1,j), &
-               &           k1(i,j+1), k1(i+1,j+1)) <= kmax) .AND. &
+               &           k1(i,j+1), k1(i+1,j+1)) <= maxk) .AND. &
                &      (k1(i,j) /= k1(i,j+1) .OR. &
                &       k1(i,j) /= k1(i+1,j) .OR. &
                &       k1(i,j) /= k1(i+1,j+1))
@@ -1408,11 +1403,11 @@ CONTAINS
     ! many islands (i.e. landmasses-1) there are (maximum number in .psiles
     ! file minus 1)
     isles = 0
-    DO j = jmax, 0, -1
-       READ (23,*,IOSTAT=ios) (gbold(i+j*imax), i = 1, imax)
+    DO j = maxj, 0, -1
+       READ (23,*,IOSTAT=ios) (gbold(i+j*maxi), i = 1, maxi)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       DO i = 1, imax
-          IF (gbold(i+j*imax) > REAL(isles)) isles = INT(gbold(i+j*imax))
+       DO i = 1, maxi
+          IF (gbold(i+j*maxi) > REAL(isles)) isles = INT(gbold(i+j*maxi))
        END DO
     END DO
     CLOSE(23,IOSTAT=ios)
@@ -1449,15 +1444,15 @@ CONTAINS
              IF (ABS(lpisl(j,i)) /= 1 .AND. ABS(lpisl(j,i)) /= 2) THEN
                 CALL die('', __LINE__, __FILE__)
              END IF
-             IF (ipisl(j,i) > imax .OR. ipisl(j,i) < 0) THEN
+             IF (ipisl(j,i) > maxi .OR. ipisl(j,i) < 0) THEN
                 CALL die('bad path', __LINE__, __FILE__)
              END IF
-             IF (jpisl(j,i) > jmax .OR. jpisl(j,i) < 0) THEN
+             IF (jpisl(j,i) > maxj .OR. jpisl(j,i) < 0) THEN
                 CALL die('bad path', __LINE__, __FILE__)
              END IF
-             IF (k1(ipisl(j,i),jpisl(j,i)) > kmax) THEN
+             IF (k1(ipisl(j,i),jpisl(j,i)) > maxk) THEN
                 WRITE (msgStr,*) 'dry path', j, i, ipisl(j, i), jpisl(j, i), &
-                     & k1(ipisl(j, i), jpisl(j, i)), kmax
+                     & k1(ipisl(j, i), jpisl(j, i)), maxk
                 CALL die(msgStr, __LINE__, __FILE__)
              END IF
           END DO
@@ -1491,10 +1486,10 @@ CONTAINS
     ! instead by the surflux.F routines.
 
     ! Climatological albedo (similar to Weaver et al. 2001)
-    DO j = 1, jmax
+    DO j = 1, maxj
        tv = ASIN(s(j))
        tv2 = 0.2 + 0.36 * 0.5 * (1.0 - COS(2.0 * tv))
-       albcl(1:imax,j) = tv2
+       albcl(1:maxi,j) = tv2
     END DO
 
     ! SETTING UP ADDITIONAL PARAMETERS FOR GENIE'S NEW surflux ROUTINE
@@ -1515,7 +1510,7 @@ CONTAINS
     cd = 0.0013
     ! Useful constant proportional to inverse timsecale for surface
     ! freezing.
-    rsictscsf = dsc * dz(kmax) * rho0 * cpo_ice / (17.5 * 86400.0)
+    rsictscsf = dsc * dz(maxk) * rho0 * cpo_ice / (17.5 * 86400.0)
 
     IF (debug_init) THEN
        PRINT *
@@ -1566,12 +1561,12 @@ CONTAINS
     mldwindkedec = mldwindkedec / dsc
 
     ! mld scheme - calculate wind decay efficiency
-    DO k = kmax, 1, -1
+    DO k = maxk, 1, -1
        mlddec(k) = EXP(zro(k) / mldwindkedec)
-       IF (k < kmax) THEN
+       IF (k < maxk) THEN
           mlddecd(k) = mlddec(k) / mlddec(k+1)
        ELSE
-          mlddecd(kmax) = mlddec(kmax)
+          mlddecd(maxk) = mlddec(maxk)
        END IF
     END DO
 
@@ -1653,13 +1648,13 @@ CONTAINS
           IF (debug_init) PRINT *, 'day_rest = ', day_rest
        END IF
 
-       DO k = 1, kmax
-          DO j = 1, jmax
-             DO i = 1, imax
+       DO k = 1, maxk
+          DO j = 1, maxj
+             DO i = 1, maxi
                 ! added option for resetting temperature value
                 ! (code having been copied from initialization avove)
                 IF (rst_reset_t) THEN
-                   IF (j <= jmax / 2) THEN
+                   IF (j <= maxj / 2) THEN
                       ts(1,i,j,k) = temp0 * 0.5 * (1 + SIGN(1, k - k1(i,j)))
                    ELSE
                       ts(1,i,j,k) = temp1 * 0.5 * (1 + SIGN(1, k - k1(i,j)))
@@ -1673,25 +1668,25 @@ CONTAINS
     END IF
 
     ! periodic b.c. (required for implicit code)
-    DO k = 1, kmax
-       DO j = 1, jmax
-          rho(0,j,k) = rho(imax,j,k)
-          rho(imax+1,j,k) = rho(1,j,k)
-          DO l = 1, lmax
-             ts(l,0,j,k) = ts(l,imax,j,k)
-             ts(l,imax+1,j,k) = ts(l,1,j,k)
+    DO k = 1, maxk
+       DO j = 1, maxj
+          rho(0,j,k) = rho(maxi,j,k)
+          rho(maxi+1,j,k) = rho(1,j,k)
+          DO l = 1, maxl
+             ts(l,0,j,k) = ts(l,maxi,j,k)
+             ts(l,maxi+1,j,k) = ts(l,1,j,k)
              ! for cimp /= 1 need
-             ts1(l,0,j,k) = ts(l,imax,j,k)
-             ts1(l,imax+1,j,k) = ts(l,1,j,k)
+             ts1(l,0,j,k) = ts(l,maxi,j,k)
+             ts1(l,maxi+1,j,k) = ts(l,1,j,k)
           END DO
        END DO
     END DO
 
     ! oscillating forcing
     flat = .TRUE.
-    DO i = 1, imax
-       DO j = 1, jmax
-          IF (k1(i,j) > 1 .AND. k1(i,j) <= kmax) flat = .FALSE.
+    DO i = 1, maxi
+       DO j = 1, maxj
+          IF (k1(i,j) > 1 .AND. k1(i,j) <= maxk) flat = .FALSE.
        END DO
     END DO
     IF (flat) THEN
@@ -1704,9 +1699,9 @@ CONTAINS
 
     DO isol = 1, isles
        ! set source term to 1 on the ith island (i+1th landmass) only
-       DO j = 0, jmax
-          DO i = 1, imax
-             k = i + j * imax
+       DO j = 0, maxj
+          DO i = 1, maxi
+             k = i + j * maxi
              IF (INT(gbold(k)) == isol + 1) THEN
                 gb(k) = 1.0
              ELSE
@@ -1757,27 +1752,27 @@ CONTAINS
          & '* Longitude : olon1, olon2, olon3, obox1, obox2, obox3 *'
     IF (igrid == 0 .OR. igrid == 1) THEN
        phi0 = -260.0 * deg_to_rad
-       DO i = 1, imax
-          olon1(i) = REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
-          olon2(i) = REAL(360.0 * i / REAL(imax) + phi0 / deg_to_rad)
-          olon3(i) = REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
+       DO i = 1, maxi
+          olon1(i) = REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
+          olon2(i) = REAL(360.0 * i / REAL(maxi) + phi0 / deg_to_rad)
+          olon3(i) = REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
        END DO
-       DO i = 1, imax+1
+       DO i = 1, maxi+1
           oboxedge1_lon(i) = &
-               & REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+               & REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
           oboxedge2_lon(i) = &
-               & REAL(360.0 * (i - 0.5) / REAL(imax) + phi0 / deg_to_rad)
+               & REAL(360.0 * (i - 0.5) / REAL(maxi) + phi0 / deg_to_rad)
           oboxedge3_lon(i) = &
-               & REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+               & REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
        END DO
     END IF
 
-    DO i = 1, imax+1
-       IF (i < imax+1) THEN
+    DO i = 1, maxi+1
+       IF (i < maxi+1) THEN
           nclon1(i) = olon1(i)
           IF (igrid == 0 .OR. igrid == 1) THEN
              nclon2(i) = &
-                  & REAL(360.0 * (i - 1.0) / REAL(imax) + phi0 / deg_to_rad)
+                  & REAL(360.0 * (i - 1.0) / REAL(maxi) + phi0 / deg_to_rad)
           ELSE
              nclon2(i) = olon2(i)
           END IF
@@ -1793,23 +1788,23 @@ CONTAINS
     IF (debug_init) PRINT *, &
          & '* Latitude : olat1, olat2, olat3, obox1, obox2, obox3 *'
     nclat3(1) = REAL(ASIN(sv(0)) * 180.0 / pi)
-    DO j = 1, jmax
+    DO j = 1, maxj
        olat1(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        olat2(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        olat3(j) = REAL(ASIN(sv(j)) * 180.0 / pi)
        nclat1(j) = olat1(j)
        nclat2(j) = olat2(j)
-       IF (j < jmax) nclat3(j+1) = REAL(ASIN(sv(j)) * 180.0 / pi)
+       IF (j < maxj) nclat3(j+1) = REAL(ASIN(sv(j)) * 180.0 / pi)
     END DO
-    DO j = 1, jmax+1
+    DO j = 1, maxj+1
        oboxedge1_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
        oboxedge2_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
-       IF (j <= jmax) oboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
+       IF (j <= maxj) oboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
     END DO
-    oboxedge3_lat(jmax+1) = REAL(ASIN(sv(jmax)) * 180.0 / pi)
+    oboxedge3_lat(maxj+1) = REAL(ASIN(sv(maxj)) * 180.0 / pi)
 
-    DO j = 1, jmax+1
-       IF (j < jmax+1) THEN
+    DO j = 1, maxj+1
+       IF (j < maxj+1) THEN
           IF (debug_init) WRITE (*,111) j, olat1(j), olat2(j), olat3(j), &
                & oboxedge1_lat(j), oboxedge2_lat(j), oboxedge3_lat(j)
        ELSE
@@ -1819,9 +1814,9 @@ CONTAINS
     END DO
 
     ! This bit is to make the land-sea mask on the genie grid.
-    ! The genie grid is offset from the goldstein grid by imax/4
+    ! The genie grid is offset from the goldstein grid by maxi/4
     ! in the longitudinal direction.
-    WHERE (k1(1:imax,1:jmax) >= 90)
+    WHERE (k1(1:maxi,1:maxj) >= 90)
        ilandmask1 = 1
        ilandmask2 = 1
        ilandmask3 = 1
@@ -1832,16 +1827,16 @@ CONTAINS
     END WHERE
 
     IF (debug_init) PRINT *, '* Depth : depth, depth1 *'
-    DO l = 1, kmax
-       depth(l) = REAL(ABS(dsc * zro(kmax+1-l)))
+    DO l = 1, maxk
+       depth(l) = REAL(ABS(dsc * zro(maxk+1-l)))
        ncdepth(l) = depth(l)
     END DO
-    DO l = 0, kmax
-       depth1(l+1) = REAL(ABS(dsc * zw(kmax-l)))
+    DO l = 0, maxk
+       depth1(l+1) = REAL(ABS(dsc * zw(maxk-l)))
        ncdepth1(l+1) = depth1(l+1)
     END DO
 
-    DO l = 0, kmax
+    DO l = 0, maxk
        IF (l > 0) THEN
           IF (debug_init) WRITE (*,112) l, depth(l), depth1(l+1)
        ELSE
@@ -1927,13 +1922,13 @@ CONTAINS
     ! OUTPUT ARGUMENTS
 
     ! Sea surface temperature [-> surface fluxes]
-    tstar_ocn = REAL(ts(1,1:imax,1:jmax,kmax))
+    tstar_ocn = REAL(ts(1,1:maxi,1:maxj,maxk))
     ! Sea surface salinity [-> surface fluxes]
-    sstar_ocn = REAL(ts(2,1:imax,1:jmax,kmax))
+    sstar_ocn = REAL(ts(2,1:maxi,1:maxj,maxk))
     ! Surface velocity (u component) [-> sea-ice]
-    ustar_ocn = REAL(u(1,1:imax,1:jmax,kmax))
+    ustar_ocn = REAL(u(1,1:maxi,1:maxj,maxk))
     ! Surface velocity (v component) [-> sea-ice]
-    vstar_ocn = REAL(u(2,1:imax,1:jmax,kmax))
+    vstar_ocn = REAL(u(2,1:maxi,1:maxj,maxk))
     ! Ocean albedo
     albedo_ocn = REAL(albocn)
 
@@ -1955,15 +1950,15 @@ CONTAINS
     go_rhosc = REAL(rhosc)
     go_cpsc = REAL(cpsc)
     go_scf = REAL(scf)
-    go_k1 = k1(1:imax,1:jmax)
+    go_k1 = k1(1:maxi,1:maxj)
     go_dz = REAL(dz)
     go_dza = REAL(dza)
     go_c  = REAL(c)
     go_cv = REAL(cv)
     go_s  = REAL(s)
     go_sv = REAL(sv)
-    go_ts = REAL(ts(:,1:imax,1:jmax,1:kmax))
-    go_ts1 = REAL(ts1(:,1:imax,1:jmax,1:kmax))
+    go_ts = REAL(ts(:,1:maxi,1:maxj,1:maxk))
+    go_ts1 = REAL(ts1(:,1:maxi,1:maxj,1:maxk))
 
     ! Choose diapycnal mixing scheme. iediff=0 (needed for tests to pass),
     ! is uniform diffusivity.
@@ -1978,7 +1973,7 @@ CONTAINS
        ssmaxdiff = 0.5 * (LOG(ssmaxsurf) - LOG(ssmaxdeep))
        ssmaxtanhefold = 200 / dsc
        ssmaxtanh0dep = -300 / dsc
-       DO k = 1, kmax-1
+       DO k = 1, maxk-1
           zssmax = (zw(k) - ssmaxtanh0dep) / ssmaxtanhefold
           ssMAX(k) = EXP(ssmaxmid+ssmaxdiff * TANH(zssmax))
        END DO
@@ -2009,7 +2004,7 @@ CONTAINS
 
     REAL :: zpsi(0:maxi,0:maxk), zu(maxi,maxk)
     REAL :: hft(3), hfp(3), hfa(3), phfmax, tv2, tv3
-    REAL :: rhoout(kmax,imax,jmax)
+    REAL :: rhoout(maxk,maxi,maxj)
     INTEGER :: iposa(2)
 
     PRINT *, '======================================================='
@@ -2023,7 +2018,7 @@ CONTAINS
     CALL check_iostat(ios, __LINE__, __FILE__)
     IF (nsteps > 0) THEN
        IF (debug_end) WRITE (3,'(e15.8)',IOSTAT=ios) &
-            & ((cost(i,j), i = 1, imax), j = 1, jmax)
+            & ((cost(i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
     END IF
     CLOSE(3,IOSTAT=ios)
@@ -2032,8 +2027,8 @@ CONTAINS
     ! write out barotropic streamfunction
     OPEN(3,FILE=outdir_name(1:lenout)//lout//'.psi',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
-    DO j = 0, jmax
-       DO i = 0, imax
+    DO j = 0, maxj
+       DO i = 0, maxi
           IF (debug_end) WRITE (3,*,IOSTAT=ios) psi(i,j)
           CALL check_iostat(ios, __LINE__, __FILE__)
        END DO
@@ -2053,7 +2048,7 @@ CONTAINS
     OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opsi',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
     IF (debug_end) &
-         & WRITE (10,100,IOSTAT=ios) ((opsi(j,k), j = 0, jmax), k = 0, kmax)
+         & WRITE (10,100,IOSTAT=ios) ((opsi(j,k), j = 0, maxj), k = 0, maxk)
     CALL check_iostat(ios, __LINE__, __FILE__)
     CLOSE(10,IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
@@ -2061,7 +2056,7 @@ CONTAINS
     OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opsip',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
     IF (debug_end) &
-         & WRITE (10,100,IOSTAT=ios) ((opsip(j,k), j = 0, jmax), k = 0, kmax)
+         & WRITE (10,100,IOSTAT=ios) ((opsip(j,k), j = 0, maxj), k = 0, maxk)
     CALL check_iostat(ios, __LINE__, __FILE__)
     CLOSE(10,IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
@@ -2069,16 +2064,16 @@ CONTAINS
     OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opsia',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
     IF (debug_end) &
-         & WRITE (10,100,IOSTAT=ios) ((opsia(j,k), j = 0, jmax), k = 0, kmax)
+         & WRITE (10,100,IOSTAT=ios) ((opsia(j,k), j = 0, maxj), k = 0, maxk)
     CALL check_iostat(ios, __LINE__, __FILE__)
     CLOSE(10,IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
 
     ! zonal overturning streamfunction
     zpsi = 0
-    DO i = 1, imax-1
-       DO k = 1, kmax-1
-          zu(i,k) = SUM(u(1,i,1:jmax,k) / c(1:jmax) * ds)
+    DO i = 1, maxi-1
+       DO k = 1, maxk-1
+          zu(i,k) = SUM(u(1,i,1:maxj,k) / c(1:maxj) * ds)
           zpsi(i,k) = zpsi(i,k-1) - dz(k) * zu(i,k)
        END DO
     END DO
@@ -2086,7 +2081,7 @@ CONTAINS
     OPEN(10,FILE=outdir_name(1:lenout)//lout//'.zpsi',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
     IF (debug_end) &
-         & WRITE (10,100,IOSTAT=ios) ((zpsi(i,k), i = 0, imax), k = 0, kmax)
+         & WRITE (10,100,IOSTAT=ios) ((zpsi(i,k), i = 0, maxi), k = 0, maxk)
     CALL check_iostat(ios, __LINE__, __FILE__)
     CLOSE(10,IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
@@ -2104,15 +2099,15 @@ CONTAINS
          & ' Pac_dif   ', ' Atl_dif   '
     CALL check_iostat(ios, __LINE__, __FILE__)
     phfmax = 0
-    DO j = 1, jmax-1
+    DO j = 1, maxj-1
        hft = 0
        hfp = 0
        hfa = 0
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax .AND. k1(i,j+1) <= kmax) THEN
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk .AND. k1(i,j+1) <= maxk) THEN
              tv2 = 0
              tv3 = 0
-             DO k = k1(i,j), kmax
+             DO k = k1(i,j), maxk
                 tv2 = tv2 + 0.5 * cv(j) * u(2,i,j,k) * &
                      & (ts(1,i,j+1,k) + ts(1,i,j,k)) * dz(k) * dphi
                 tv3 = tv3 - cv(j) * cv(j) * &
@@ -2151,9 +2146,9 @@ CONTAINS
     OPEN(11,FILE=outdir_name(1:lenout)//lout//'.rho',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
 
-    DO j = 1, jmax
-       DO i = 1, imax
-          DO k = 1, kmax
+    DO j = 1, maxj
+       DO i = 1, maxi
+          DO k = 1, maxk
              IF (k >= k1(i,j)) THEN
                 rhoout(k,i,j) = rho(i,j,k)
              ELSE
@@ -2209,22 +2204,22 @@ CONTAINS
        ! NOTE: for now, all "energies" in this scheme are calculated
        ! in units of density x height^2, or
        ! (Energy/area)/2*acceleration (due to gravity).
-       DO j = 1, jmax
-          DO i = 1, imax
-             mldtstmp(1) = ts(1,i,j,kmax) - ts(1,i,j,kmax+1)
-             mldtstmp(2) = ts(2,i,j,kmax) - ts(2,i,j,kmax+1)
-             CALL eos(ec, mldtstmp(1), mldtstmp(2), zro(kmax), ieos, mldrhotmp)
-             mldpelayer1(i,j) = (mldrhotmp - rho(i,j,kmax)) * z2dzg(kmax,kmax)
+       DO j = 1, maxj
+          DO i = 1, maxi
+             mldtstmp(1) = ts(1,i,j,maxk) - ts(1,i,j,maxk+1)
+             mldtstmp(2) = ts(2,i,j,maxk) - ts(2,i,j,maxk+1)
+             CALL eos(ec, mldtstmp(1), mldtstmp(2), zro(maxk), ieos, mldrhotmp)
+             mldpelayer1(i,j) = (mldrhotmp - rho(i,j,maxk)) * z2dzg(maxk,maxk)
           END DO
        END DO
     END IF
 
-    ts_t1 = ts(:,1:imax,1:jmax,1:kmax)
-    ts1_t1 = ts1(:,1:imax,1:jmax,1:kmax)
-    ts_t2 = ts(:,1:imax,1:jmax,1:kmax)
-    ts1_t2 = ts1(:,1:imax,1:jmax,1:kmax)
-    rho_t1 = rho(1:imax,1:jmax,1:kmax)
-    rho_t2 = rho(1:imax,1:jmax,1:kmax)
+    ts_t1 = ts(:,1:maxi,1:maxj,1:maxk)
+    ts1_t1 = ts1(:,1:maxi,1:maxj,1:maxk)
+    ts_t2 = ts(:,1:maxi,1:maxj,1:maxk)
+    ts1_t2 = ts1(:,1:maxi,1:maxj,1:maxk)
+    rho_t1 = rho(1:maxi,1:maxj,1:maxk)
+    rho_t2 = rho(1:maxi,1:maxj,1:maxk)
     CALL tstepo_flux()
 
     IF (imld == 1) THEN
@@ -2233,10 +2228,10 @@ CONTAINS
        ! are compared (energy released due to eg bottom mixed layers is
        ! excluded, although surface plumes from coshuffle are accounted for),
        ! but T and S remembered everywhere.
-       DO i = 1, imax
-          DO j = 1, jmax
-             IF (k1(i,j) <= kmax) THEN
-                mldtsold(:,i,j,:) = ts(:,i,j,1:kmax)
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k1(i,j) <= maxk) THEN
+                mldtsold(:,i,j,:) = ts(:,i,j,1:maxk)
              END IF
           END DO
        END DO
@@ -2247,11 +2242,11 @@ CONTAINS
        ! calculate PE released and multiply it by efficiency
        ! of recycling of PE. Need to check non-linearities properly
        ! represented before any commit??!!
-       DO i = 1, imax
-          DO j = 1, jmax
-             IF (k1(i,j) <= kmax) THEN
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k1(i,j) <= maxk) THEN
                 mldpeconv(i,j) = 0
-                k = kmax
+                k = maxk
                 DO WHILE (k > 0)
                    CALL eos(ec, mldtsold(1,i,j,k), mldtsold(2,i,j,k), &
                         & zro(k), ieos, mldrhoold(i,j,k))
@@ -2266,7 +2261,7 @@ CONTAINS
                    mldpebuoy(i,j) = mldpebuoy(i,j) * mldpebuoycoeff
                 END IF
                 ! Add wind energy
-                mldemix(i,j) = mldpebuoy(i,j) + mldketau(i,j) * mlddec(kmax)
+                mldemix(i,j) = mldpebuoy(i,j) + mldketau(i,j) * mlddec(maxk)
              END IF
           END DO
        END DO
@@ -2275,12 +2270,12 @@ CONTAINS
        ! driven convection  has already been done in co, and will differ from
        ! standard KT if iconv == 1. krausturner uses PE released
        ! in co and KE from the wind to deepen the mixed layer further.
-       DO i = 1, imax
-          DO j = 1, jmax
-             IF (k1(i,j) <= kmax) THEN
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k1(i,j) <= maxk) THEN
                 IF (mldemix(i,j) > 0.0) THEN
                    ! Apply krausturner
-                   CALL krausturner(ts(1:lmax,i,j,1:kmax), mldpebuoy(i,j), &
+                   CALL krausturner(ts(1:maxl,i,j,1:maxk), mldpebuoy(i,j), &
                         & mldketau(i,j), mldpk(1,i,j), mld(i,j), &
                         & mldk(i,j), k1(i,j))
                 ELSE
@@ -2288,12 +2283,12 @@ CONTAINS
                    ! layer. The first layer *is* still homogeneous for
                    ! all tracers, but an mld shallower than the first
                    ! cell is output as a diagnostic
-                   mldk(i,j) = kmax
+                   mldk(i,j) = maxk
                    IF (mldpelayer1(i,j) < 0) THEN
                       mld(i,j) = &
-                           & zw(kmax-1) * (1 - mldemix(i,j) / mldpelayer1(i,j))
+                           & zw(maxk-1) * (1 - mldemix(i,j) / mldpelayer1(i,j))
                    ELSE
-                      mld(i,j) = zw(kmax-1)
+                      mld(i,j) = zw(maxk-1)
                    END IF
                 END IF
              END IF
@@ -2306,10 +2301,10 @@ CONTAINS
 
     ! if thermobaricity is on, make sure rho calculation is vertically local
     IF (ieos /= 0) THEN
-       DO i = 1, imax
-          DO j = 1, jmax
-             IF (k1(i,j) <= kmax) THEN
-                DO k = 1,kmax
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k1(i,j) <= maxk) THEN
+                DO k = 1,maxk
                    CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), &
                         & zro(k), ieos, rho(i,j,k))
                 END DO
@@ -2320,21 +2315,21 @@ CONTAINS
 
     ! periodic b.c. for rho (required at wet points)
     ! isoneutral code also needs ts1 bc.
-    DO j = 1, jmax
-       DO k = k1(0,j), kmax
-          rho(0,j,k) = rho(imax,j,k)
-          ts1(:,0,j,k) = ts(:,imax,j,k)
+    DO j = 1, maxj
+       DO k = k1(0,j), maxk
+          rho(0,j,k) = rho(maxi,j,k)
+          ts1(:,0,j,k) = ts(:,maxi,j,k)
        END DO
-       DO k = k1(imax+1,j), kmax
-          rho(imax+1,j,k) = rho(1,j,k)
-          ts1(:,imax+1,j,k) = ts(:,1,j,k)
+       DO k = k1(maxi+1,j), maxk
+          rho(maxi+1,j,k) = rho(1,j,k)
+          ts1(:,maxi+1,j,k) = ts(:,1,j,k)
        END DO
     END DO
 
-    DO k = 1, kmax
-       DO j = 1, jmax
-          DO i = 1, imax
-             DO l = 1, lmax
+    DO k = 1, maxk
+       DO j = 1, maxj
+          DO i = 1, maxi
+             DO l = 1, maxl
                 IF (k >= k1(i,j)) ts1(l,i,j,k) = ts(l,i,j,k)
              END DO
           END DO
@@ -2374,31 +2369,31 @@ CONTAINS
     ! lower boundary fluxes
     fb = 0
 
-    DO k = 1, kmax
+    DO k = 1, maxk
        ! southern boundary fluxes
        j = 1
        fs = 0
-       DO j = 1, jmax
+       DO j = 1, maxj
           ! western boundary fluxes
           i = 1
-          pec(1) = u(1,imax,j,k) * dphi / diff(1)
+          pec(1) = u(1,maxi,j,k) * dphi / diff(1)
           ups(1) = pec(1) / (2.0 + ABS(pec(1)))
-          DO l = 1, lmax
-             IF (k >= MAX(k1(imax,j), k1(1,j))) THEN
+          DO l = 1, maxl
+             IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
                 ! western doorway
-                fw(l) = u(1,imax,j,k) * rc(j) * &
+                fw(l) = u(1,maxi,j,k) * rc(j) * &
                      & ((1.0 - ups(1)) * ts1(l,1,j,k) + &
-                     &  (1.0 + ups(1)) * ts1(l,imax,j,k)) * 0.5
-                fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,imax,j,k)) * &
+                     &  (1.0 + ups(1)) * ts1(l,maxi,j,k)) * 0.5
+                fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,maxi,j,k)) * &
                      & rc2(j) * diff(1)
              ELSE
                 fw(l) = 0
              END IF
              fwsave(l) = fw(l)
           END DO
-          DO i = 1, imax
+          DO i = 1, maxi
              ! calculate local vertical diffusivity
-             IF (k >= k1(i,j) .AND. k < kmax) THEN
+             IF (k >= k1(i,j) .AND. k < maxk) THEN
                 ! First get vertical density gradient (also needed for
                 ! isopycnal diff)
                 CALL eosd(ec, ts1(1,i,j,k), ts1(1,i,j,k+1), &
@@ -2427,14 +2422,14 @@ CONTAINS
              END IF
              pec(1) = u(1,i,j,k) * dphi / diff(1)
              ups(1) = pec(1) / (2.0 + ABS(pec(1)))
-             ! rather untidy mask to avoid undefined dsv at jmax nre
-             pec(2) = u(2,i,j,k) * dsv(MIN(j, jmax-1)) / diff(1)
+             ! rather untidy mask to avoid undefined dsv at maxj nre
+             pec(2) = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
              ups(2) = pec(2) / (2.0 + ABS(pec(2)))
              pec(3) = u(3,i,j,k) * dza(k) / diffv
              ups(3) = pec(3) / (2.0 + ABS(pec(3)))
-             DO l = 1, lmax
+             DO l = 1, maxl
                 ! flux to east
-                IF (i == imax) THEN
+                IF (i == maxi) THEN
                    ! eastern edge(doorway or wall)
                    fe(l) = fwsave(l)
                 ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
@@ -2459,8 +2454,8 @@ CONTAINS
                 ! flux above
                 IF (k < k1(i,j)) THEN
                    fa(l) = 0
-                ELSEIF (k == kmax) THEN
-                   fa(l) = ts(l,i,j,kmax+1)
+                ELSEIF (k == maxk) THEN
+                   fa(l) = ts(l,i,j,maxk+1)
                 ELSE
                    fa(l) = u(3,i,j,k) * &
                         & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
@@ -2471,7 +2466,7 @@ CONTAINS
              END DO
              IF (diso) THEN
                 ! isoneutral diffusion
-                IF (k >= k1(i,j) .AND. k < kmax) THEN
+                IF (k >= k1(i,j) .AND. k < maxk) THEN
                    IF (dzrho < -1.0E-12) THEN
                       tv1 = 0.0
                       ! tracer loop
@@ -2479,7 +2474,7 @@ CONTAINS
                          DO nnp = 0, 1
                             ina = 1+nnp + 2 * knp
                             ! phi derivatives
-                            DO l = 1, lmax
+                            DO l = 1, maxl
                                IF (k+knp >= k1(i-1+2*nnp,j)) THEN
                                   dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
                                        & ts1(l,i+nnp-1,j,k+knp)) * rc(j) * rdphi
@@ -2517,7 +2512,7 @@ CONTAINS
                       IF (tv > dmax) THEN
                          dmax = tv
                       END IF
-                      DO l = 1, lmax
+                      DO l = 1, maxl
                          dzts(l) = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
                          ! add isoneutral vertical flux
                          tv = 0
@@ -2533,7 +2528,7 @@ CONTAINS
                    END IF
                 END IF
              END IF
-             DO l = 1, lmax
+             DO l = 1, maxl
                 tv = 0
                 IF (k >= k1(i,j)) THEN
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
@@ -2559,7 +2554,7 @@ CONTAINS
   ! at the top of each mixed region
   ! if cost is 2-d it counts the average number of convecting points at
   ! each horizontal point (divide by nsteps in mains.f)
-  ! 22/5/2 lmax > 2 allowed
+  ! 22/5/2 maxl > 2 allowed
   ! 10/6/2 ts array passed as argument
   ! 16/5/5 coshuffle from Simon Mueller's Bern version added with edits nre
   ! 1/8/06 old/new convection scheme option added (rma)
@@ -2582,24 +2577,24 @@ CONTAINS
        CALL coshuffle(tv, mldpk)
     END IF
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! initialize the index array k and mixed region sizes dzm
           ! wet points only
-          IF (k1(i,j) <= kmax) THEN
+          IF (k1(i,j) <= maxk) THEN
              IF (iconv == 1) icond = 0
 
              k(k1(i,j)-1) = 0
-             DO m = k1(i,j), kmax
+             DO m = k1(i,j), maxk
                 k(m) = m
                 dzm(m) = dz(m)
              END DO
 
-             m = kmax
+             m = maxk
              lastmix = 0
 
              ! main loop 'normally' decreasing in m
-             DO WHILE (k(m-1) > 0 .OR. (lastmix /= 0 .AND. k(m) /= kmax))
+             DO WHILE (k(m-1) > 0 .OR. (lastmix /= 0 .AND. k(m) /= maxk))
                 ! added code for thermobaricity
                 IF (ieos /= 0) THEN
                    CALL eos(ec, tv(1,i,j,k(m)), tv(2,i,j,k(m)), &
@@ -2610,7 +2605,7 @@ CONTAINS
 
                 IF (rho(i,j,k(m)) < rho(i,j,k(m-1)) .OR. k(m-1) == 0) THEN
                    ! this may need changing, unless as rho(i,j,0) dimensioned
-                   IF (lastmix == 0 .OR. k(m) == kmax) THEN
+                   IF (lastmix == 0 .OR. k(m) == maxk) THEN
                       m = m - 1
                    ELSE
                       m = m + 1
@@ -2658,8 +2653,8 @@ CONTAINS
              END DO
 
              ! fill in T,S values in mixed regions
-             m = kmax - 1
-             DO n = kmax-1, k1(i,j), -1
+             m = maxk - 1
+             DO n = maxk-1, k1(i,j), -1
                 IF (n > k(m)) THEN
                    tv(:,i,j,n) = tv(:,i,j,k(m+1))
                    CALL eos(ec, tv(1,i,j,n), tv(2,i,j,n), &
@@ -2677,7 +2672,7 @@ CONTAINS
              IF (iconv == 1) THEN
                 icosd(i,j) = MAX(icosd(i,j), icond)
                 ! Fix for convection diagnostic needed by biogem
-                cost(i,j) = dsc * zw(kmax-1-icosd(i,j))
+                cost(i,j) = dsc * zw(maxk-1-icosd(i,j))
              END IF
 
              mldpk(1,i,j) = k(m+1)
@@ -2696,54 +2691,54 @@ CONTAINS
     INTEGER :: mldpk(2,maxi,maxj)
     INTEGER :: i, j, k, k0, l, ipass, maxpass
 
-    maxpass = kmax
+    maxpass = maxk
 
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk) THEN
              icosd(i,j) = 0
              k0 = 0
              ipass = 0
-             DO WHILE (k0 < kmax .AND. ipass < maxpass)
+             DO WHILE (k0 < maxk .AND. ipass < maxpass)
                 ipass = ipass + 1
-                k = kmax-1
+                k = maxk-1
 
                 ! added code for thermobaricity
                 IF (ieos /= 0) THEN
-                   CALL eos(ec, tv(1,i,j,kmax), tv(2,i,j,kmax), &
-                        & zw(k), ieos, rho(i,j,kmax))
+                   CALL eos(ec, tv(1,i,j,maxk), tv(2,i,j,maxk), &
+                        & zw(k), ieos, rho(i,j,maxk))
                    CALL eos(ec, tv(1,i,j,k), tv(2,i,j,k), &
                         & zw(k), ieos, rho(i,j,k))
                 END IF
 
-                DO while((rho(i,j,kmax) > rho(i,j,k)) .AND. (k >= k1(i,j)))
+                DO while((rho(i,j,maxk) > rho(i,j,k)) .AND. (k >= k1(i,j)))
                    k = k-1
                    ! added code for thermobaricity
                    IF (ieos /= 0) THEN
-                      CALL eos(ec, tv(1,i,j,kmax), tv(2,i,j,kmax), &
-                           & zw(k), ieos, rho(i,j,kmax))
+                      CALL eos(ec, tv(1,i,j,maxk), tv(2,i,j,maxk), &
+                           & zw(k), ieos, rho(i,j,maxk))
                       CALL eos(ec, tv(1,i,j,k), tv(2,i,j,k), &
                            & zw(k), ieos, rho(i,j,k))
                    END IF
                 END DO
                 mldpk(2,i,j) = k0
                 k0 = k+1
-                IF (k0 < kmax) THEN
-                   DO l = 1, lmax
-                      tv_temp = tv(l,i,j,kmax)
-                      DO k = kmax, k0+1, -1
+                IF (k0 < maxk) THEN
+                   DO l = 1, maxl
+                      tv_temp = tv(l,i,j,maxk)
+                      DO k = maxk, k0+1, -1
                          tv(l,i,j,k) = &
-                              & ((dz(k) - dz(kmax)) * tv(l,i,j,k) + &
-                              & dz(kmax) * tv(l,i,j,k-1)) * rdz(k)
+                              & ((dz(k) - dz(maxk)) * tv(l,i,j,k) + &
+                              & dz(maxk) * tv(l,i,j,k-1)) * rdz(k)
                       END DO
-                      tv(l,i,j,k0) = ((dz(k0) - dz(kmax)) * tv(l,i,j,k0) + &
-                           & dz(kmax) * tv_temp) * rdz(k0)
+                      tv(l,i,j,k0) = ((dz(k0) - dz(maxk)) * tv(l,i,j,k0) + &
+                           & dz(maxk) * tv_temp) * rdz(k0)
                    END DO
-                   DO k = k0, kmax
+                   DO k = k0, maxk
                       CALL eos(ec, tv(1,i,j,k), tv(2,i,j,k), &
-                           & zw(kmax-1), ieos, rho(i,j,k))
+                           & zw(maxk-1), ieos, rho(i,j,k))
                    END DO
-                   icosd(i,j) = MAX(icosd(i,j), kmax-k0)
+                   icosd(i,j) = MAX(icosd(i,j), maxk-k0)
                 END IF
              END DO
           END IF
@@ -2765,19 +2760,19 @@ CONTAINS
     ! first find if there is shallow water (k1>kmxdrg) in
     ! 2x2 cell neighbourhood then in 4x4 nbhd.
     ! Increase drag near equator, assuming domain is symmetric
-    DO j = 0, jmax
-       DO i = 0, imax
+    DO j = 0, maxj
+       DO i = 0, maxi
           kloc2 = MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1))
           kloc4 = k1(i,j)
-          DO j1 = MAX(0, j-1), MIN(jmax+1, j+2)
+          DO j1 = MAX(0, j-1), MIN(maxj+1, j+2)
              DO i1 = i-1, i+2
-                i1p = 1 + MOD(imax + i1-1, imax)
+                i1p = 1 + MOD(maxi + i1-1, maxi)
                 kloc4 = MAX(kloc4, k1(i1p,j1))
              END DO
           END DO
-          IF (kloc2 > kmxdrg .OR. ABS(j - jmax / 2) <= jeb) THEN
+          IF (kloc2 > kmxdrg .OR. ABS(j - maxj / 2) <= jeb) THEN
              tmpdrg(i,j) = adrag * drgf * drgf
-          ELSE IF (kloc4 > kmxdrg .OR. ABS(j - jmax / 2) == jeb + 1) THEN
+          ELSE IF (kloc4 > kmxdrg .OR. ABS(j - maxj / 2) == jeb + 1) THEN
              tmpdrg(i,j) = adrag * drgf
           ELSE
              tmpdrg(i,j) = adrag
@@ -2786,13 +2781,13 @@ CONTAINS
     END DO
 
     ! interpolate to velocity points
-    DO j = 1, jmax
-       drag(1,1:imax,j) = 0.5 * (tmpdrg(1:imax,j) + tmpdrg(1:imax,j-1))
-       drag(2,1:imax,j) = 0.5 * (tmpdrg(1:imax,j) + tmpdrg(0:imax-1,j))
+    DO j = 1, maxj
+       drag(1,1:maxi,j) = 0.5 * (tmpdrg(1:maxi,j) + tmpdrg(1:maxi,j-1))
+       drag(2,1:maxi,j) = 0.5 * (tmpdrg(1:maxi,j) + tmpdrg(0:maxi-1,j))
     END DO
 
     ! boundary conditions, assuming no flow out of N or S bdy
-    drag(2,imax+1,:) = drag(2,1,:)
+    drag(2,maxi+1,:) = drag(2,1,:)
   END SUBROUTINE drgset
 
 
@@ -2829,7 +2824,7 @@ CONTAINS
   ! the diffusivity at 2500 m when dzrho=dzrho_lev.
 
   ! Additional spatial variability may be added by creating an
-  ! imax*jmax*(kmax-1) file ediffvargrid.dat. If ediffvar is
+  ! maxi*maxj*(maxk-1) file ediffvargrid.dat. If ediffvar is
   ! different from zero, ediff is then modified according to:
 
   ! ediff1=ediff0+(ediff1p-ediff0)*(1+ediffvar*(ediffvargrid-1))
@@ -2847,8 +2842,8 @@ CONTAINS
   SUBROUTINE ediff
     IMPLICIT NONE
 
-    REAL :: ediff10, dzrho_lev(kmax), ediffk0(kmax), ediff1p(kmax)
-    REAL :: ediffvargrid(imax,jmax,kmax), ediffvartemp(imax), ediffklim
+    REAL :: ediff10, dzrho_lev(maxk), ediffk0(maxk), ediff1p(maxk)
+    REAL :: ediffvargrid(maxi,maxj,maxk), ediffvartemp(maxi), ediffklim
     INTEGER :: i, j, k
 
     IF (iediff > 0 .AND. iediff < 3) THEN
@@ -2863,7 +2858,7 @@ CONTAINS
        END IF
 
        ! Create Levitus global mean density profile, dzrho_lev
-       DO k = 1, kmax-1
+       DO k = 1, maxk-1
           dzrho_lev(k) = (-5.5E-3 / rhosc * dsc) * EXP(zw(k) * (dsc / 650.0))
        END DO
 
@@ -2871,7 +2866,7 @@ CONTAINS
        IF (iediff == 1) THEN
           ! Use exponential growth profile, roughly consistent with observations
           ! (see papers by e.g. Polzin, Naveira Garabato).
-          DO k = 1, kmax-1
+          DO k = 1, maxk-1
              ediffk0(k) = EXP(-(zw(k) + 2500.0 / dsc) * (dsc / 700.0))
              ! 08/07/08 However, the profile is limited to a maximum that is
              ! 1/ediffklim=3 times greater than the diffusivity at 2500 m.
@@ -2884,7 +2879,7 @@ CONTAINS
           ! exact profile used by Bryan & Lewis is recovered using
           ! diff(2)=0.8e-4 and ediff0=0.275e-4, with ediffpow2 and ediffvar set
           ! to zero and ediffpow1=1.
-          DO k = 1, kmax-1
+          DO k = 1, maxk-1
              ediffk0(k) = 1 + (2 / pi) * &
                   & ATAN(-(zw(k) + 2500.0 / dsc) * (4.5E-3 * dsc))
           END DO
@@ -2892,7 +2887,7 @@ CONTAINS
 
        ! Create precursor (before any manual mods from ediffvargrid)
        ! of profile to be used in tstepo.F
-       DO k = 1, kmax-1
+       DO k = 1, maxk-1
           ediff1p(k) = ediff10 * &
                & (ediffk0(k)**ediffpow1) * ((-dzrho_lev(k))**ediffpow2)
        END DO
@@ -2907,17 +2902,17 @@ CONTAINS
           ! create new file.
           OPEN(unit=87,FILE=indir_name(1:lenin)//'ediffvargrid.dat', &
                & STATUS='old')
-          DO k = 1, kmax-1
-             DO j = 1, jmax
+          DO k = 1, maxk-1
+             DO j = 1, maxj
                 READ (87,*) ediffvartemp
                 ediffvargrid(:,j,k) = ediffvartemp
              END DO
           END DO
           CLOSE(unit=87)
           ! Apply mods
-          DO i = 1, imax
-             DO j = 1, jmax
-                DO k = 1, kmax-1
+          DO i = 1, maxi
+             DO j = 1, maxj
+                DO k = 1, maxk-1
                    ediff1(i,j,k) = ediff1p(k) * &
                         & (1 + ediffvar * (ediffvargrid(i,j,k) - 1))
                 END DO
@@ -2925,7 +2920,7 @@ CONTAINS
           END DO
        ELSE
           ! No mods needed....
-          DO k = 1, kmax-1
+          DO k = 1, maxk-1
              ediff1(:,:,k) = ediff1p(k)
           END DO
        END IF
@@ -3009,7 +3004,7 @@ CONTAINS
     !${go_nyears_hosing:=0}    time period of hosing (yr)
 
     ! Update extra freshwater forcing
-    hosing = hosing + hosing_trend * tsc * dt(kmax)
+    hosing = hosing + hosing_trend * tsc * dt(maxk)
 
     IF (MOD(istep, itstp) < 1) THEN
        CALL check_unit(44, __LINE__, __FILE__)
@@ -3022,8 +3017,8 @@ CONTAINS
        CALL check_iostat(ios, __LINE__, __FILE__)
     END IF
 
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           ! update fw_hosing Sv
           ! over gridboxes within convective regions (50-70N) in N.Atlantic
           ! and scaling as other freshwater fluxes:
@@ -3034,7 +3029,7 @@ CONTAINS
           END IF
 
           ! FW flux anomaly (from CMIP/PMIP model)
-          fw_anom(i,j) = fw_anom(i,j) + fw_anom_rate(i,j) * tsc * dt(kmax)
+          fw_anom(i,j) = fw_anom(i,j) + fw_anom_rate(i,j) * tsc * dt(maxk)
        END DO
     END DO
   END SUBROUTINE get_hosing
@@ -3052,17 +3047,17 @@ CONTAINS
     INTEGER :: i, j, k, l, n, m, im
     REAL :: tv, tv1, rat
 
-    n = imax
-    m = jmax + 1
+    n = maxi
+    m = maxj + 1
     gap = 0
 
     ! Set equation at Psi points, assuming periodic b.c. in i.
-    ! Cannot solve at both i=0 and i=imax as periodicity => would
+    ! Cannot solve at both i=0 and i=maxi as periodicity => would
     ! have singular matrix. At dry points equation is trivial.
-    DO i = 1, imax
-       DO j = 0, jmax
+    DO i = 1, maxi
+       DO j = 0, maxj
           k = i + j * n
-          IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= kmax) THEN
+          IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= maxk) THEN
              tv = (s(j+1) * rh(1,i,j+1) - s(j) * rh(1,i,j)) / &
                   & (2.0 * dsv(j) * dphi)
              tv1 = (sv(j) * rh(2,i+1,j) - sv(j) * rh(2,i,j)) / &
@@ -3087,7 +3082,7 @@ CONTAINS
 
              l = n + 3
              ! for periodic boundary in i
-             IF (i == imax) l = 3
+             IF (i == maxi) l = 3
 
              gap(k,l) = drag(2,i+1,j) * rh(2,i+1,j) / &
                   & (cv(j) * cv(j) * dphi * dphi) + tv
@@ -3121,7 +3116,7 @@ CONTAINS
   ! error corrected 14/6/97, split in two 9/2/1
   ! altered for non-trivial islands 17/2/2, should give same answers
   ! slower with old code (not yet checked)
-  ! uninitialised bottom pressures where k1=kmax could cause loss of
+  ! uninitialised bottom pressures where k1=maxk could cause loss of
   ! significance, although they exactly cancel, hence bp now defined
   ! at all wet points 16/6/3
   ! updated for generalised grid (RMA, 10/5/05)
@@ -3131,13 +3126,13 @@ CONTAINS
     INTEGER :: i, j, k, l, n, ip1
     REAL :: tv1, tv2, tv3, tv4
 
-    n = imax
+    n = maxi
 
     ! calculate easy part of double p integral
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax) THEN
-             DO k = k1(i,j)+1, kmax
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk) THEN
+             DO k = k1(i,j)+1, maxk
                 bp(i,j,k) = bp(i,j,k-1) - &
                      & (rho(i,j,k) + rho(i,j,k-1)) * dza(k-1) * 0.5
              END DO
@@ -3146,11 +3141,11 @@ CONTAINS
     END DO
 
     ! sbp now defined if mk > 0 ie all wet points
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (mk(i,j) > 0) THEN
              sbp(i,j) = 0
-             DO k = mk(i,j)+1, kmax
+             DO k = mk(i,j)+1, maxk
                 sbp(i,j) = sbp(i,j) + bp(i,j,k) * dz(k)
              END DO
           END IF
@@ -3159,23 +3154,23 @@ CONTAINS
 
     ! periodic b.c. required for Antarctic island integral
     ! (if bp was defined everywhere would not need ifs)
-    DO j = 1, jmax
-       IF (k1(1,j) < kmax) THEN
-          DO k = k1(1,j), kmax
-             bp(imax+1,j,k) = bp(1,j,k)
+    DO j = 1, maxj
+       IF (k1(1,j) < maxk) THEN
+          DO k = k1(1,j), maxk
+             bp(maxi+1,j,k) = bp(1,j,k)
           END DO
        END IF
-       IF (k1(1,j) <= kmax) THEN
-          sbp(imax+1,j) = sbp(1,j)
+       IF (k1(1,j) <= maxk) THEN
+          sbp(maxi+1,j) = sbp(1,j)
        END IF
     END DO
 
     ! calc tricky bits and add to source term for Psi, ip1 copes with
     ! periodicity in i, j bdy points are ignored assuming no flow out
     ! of north or south of domain.
-    DO j = 1, jmax-1
-       DO i = 1, imax
-          ip1 = MOD(i, imax) + 1
+    DO j = 1, maxj-1
+       DO i = 1, maxi
+          ip1 = MOD(i, maxi) + 1
           l = i + j * n
           IF (getj(i,j)) THEN
              tv1 = 0
@@ -3259,7 +3254,7 @@ CONTAINS
     INTEGER :: k, l, n, partmix
 
     ! delete following line (more efficient) once mldpk calc sorted
-    mldpk = kmax
+    mldpk = maxk
     ! initialise variables
     k = mldpk
     empe = pebuoy
@@ -3277,9 +3272,9 @@ CONTAINS
           ! apply mixing from last step if complete
           qmix(1) = tmix
           qmix(2) = smix
-          DO l = 3, lmax
-             qmix(l) = rdzg(kmax,k) * &
-                  & (qmix(l) * dzg(kmax,k+1) + tv(l,1,1,k) * dz(k))
+          DO l = 3, maxl
+             qmix(l) = rdzg(maxk,k) * &
+                  & (qmix(l) * dzg(maxk,k+1) + tv(l,1,1,k) * dz(k))
           END DO
        END IF
        IF (k == tvkl) THEN
@@ -3288,9 +3283,9 @@ CONTAINS
           mldt = zw(k-1)
           partmix = 0
           em = -1.0E-8
-          IF (k < kmax) THEN
-             DO l = 1, lmax
-                DO n = k, kmax
+          IF (k < maxk) THEN
+             DO l = 1, maxl
+                DO n = k, maxk
                    tv(l,1,1,n) = qmix(l)
                 END DO
              END DO
@@ -3308,13 +3303,13 @@ CONTAINS
           ELSE
              rhou = rhomix
           END IF
-          tmix = rdzg(kmax,k) * (tmix * dzg(kmax,k+1) + tv(1,1,1,k) * dz(k))
-          smix = rdzg(kmax,k) * (smix * dzg(kmax,k+1) + tv(2,1,1,k) * dz(k))
+          tmix = rdzg(maxk,k) * (tmix * dzg(maxk,k+1) + tv(1,1,1,k) * dz(k))
+          smix = rdzg(maxk,k) * (smix * dzg(maxk,k+1) + tv(2,1,1,k) * dz(k))
           CALL eos(ec, tv(1,1,1,k), tv(2,1,1,k), zw(k), ieos, rhol)
           CALL eos(ec, tmix, smix, zw(k), ieos, rhomix)
           ! Energy needed to completely mix layer
-          eneed = z2dzg(kmax,k+1) * rhou+z2dzg(k,k) * rhol - &
-               & z2dzg(kmax,k) * rhomix
+          eneed = z2dzg(maxk,k+1) * rhou+z2dzg(k,k) * rhol - &
+               & z2dzg(maxk,k) * rhomix
        END IF
     END DO
 
@@ -3325,19 +3320,19 @@ CONTAINS
        ! (24) is the key equation, but it should read
        ! a=(h_(n-1)/h_n)*(M/E_mix).
        mldkt = k
-       mlda = dzg(kmax,k+1) * rdzg(kmax,k) * em / eneed
-       mldb = (dzg(kmax,k) * rdzg(kmax,k+1)-1) * mlda
-       DO l = 1, lmax
-          tv(l,1,1,kmax) = (1 - mldb) * qmix(l) + mldb * tv(l,1,1,k)
-          DO n = k+1, kmax-1
-             tv(l,1,1,n) = tv(l,1,1,kmax)
+       mlda = dzg(maxk,k+1) * rdzg(maxk,k) * em / eneed
+       mldb = (dzg(maxk,k) * rdzg(maxk,k+1)-1) * mlda
+       DO l = 1, maxl
+          tv(l,1,1,maxk) = (1 - mldb) * qmix(l) + mldb * tv(l,1,1,k)
+          DO n = k+1, maxk-1
+             tv(l,1,1,n) = tv(l,1,1,maxk)
           END DO
           tv(l,1,1,k) = mlda * qmix(l) + (1 - mlda) * tv(l,1,1,k)
        END DO
        ! Actual mixed layer depth. The key equation is (26), but
        ! again the eqn is wrong (see above ref). It should read
        ! d = 2M / (g h_(n-1) (rho_n - rho_mix) )
-       IF (k < kmax) THEN
+       IF (k < maxk) THEN
           mldtadd = em / (zw(k) * (rhol - rhou))
           mldt = zw(k) + mldtadd
        ELSE
@@ -3346,7 +3341,7 @@ CONTAINS
           PRINT *, 'Warning: inconsistent result in mixed layer' // &
                & 'scheme surface layer partmixed: see krausturner.f'
        END IF
-    ELSE IF (partmix == 1 .AND. k < kmax) THEN
+    ELSE IF (partmix == 1 .AND. k < maxk) THEN
        mldkt = k + 1
        mldt = zw(k)
     END IF
@@ -3415,8 +3410,8 @@ CONTAINS
 
     INTEGER :: i, j, k, n, m, km, im
 
-    n = imax
-    m = jmax + 1
+    n = maxi
+    m = maxj + 1
 
     ! solve Psi equation
     DO i = 1, n*m-1
@@ -3435,44 +3430,44 @@ CONTAINS
     END DO
 
     ! write to Psi for convenience (useful if ACC)
-    DO j = 0, jmax
-       DO i = 1, imax
+    DO j = 0, maxj
+       DO i = 1, maxi
           k = i + j * n
           psiloc(i,j) = gb(k)
        END DO
-       psiloc(0,j) = psiloc(imax,j)
+       psiloc(0,j) = psiloc(maxi,j)
     END DO
 
     ! calculate barotropic vely where Psi (and ub) defined
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ubloc(1,i,j) = -rh(1,i,j) * c(j) * &
                & (psiloc(i,j) - psiloc(i,j-1)) * rds(j)
        END DO
     END DO
 
-    DO j = 1, jmax-1
-       DO i = 1, imax
+    DO j = 1, maxj-1
+       DO i = 1, maxi
           ubloc(2,i,j) = rh(2,i,j) * &
                & (psiloc(i,j) - psiloc(i-1,j)) * rcv(j) * rdphi
        END DO
     END DO
 
     ! set velocity to zero at N and S boundaries
-    DO i = 1, imax
-       ubloc(2,i,jmax) = 0.0
+    DO i = 1, maxi
+       ubloc(2,i,maxj) = 0.0
        ubloc(2,i,0) = 0.0
     END DO
 
     ! periodic b.c. for ub(2) required only for island integral
-    DO j = 1, jmax
-       ubloc(2,imax+1,j) = ubloc(2,1,j)
-       ubloc(1,0,j) = ubloc(1,imax,j)
-       ubloc(1,imax+1,j) = ubloc(1,1,j)
-       ubloc(2,0,j) = ubloc(2,imax,j)
+    DO j = 1, maxj
+       ubloc(2,maxi+1,j) = ubloc(2,1,j)
+       ubloc(1,0,j) = ubloc(1,maxi,j)
+       ubloc(1,maxi+1,j) = ubloc(1,1,j)
+       ubloc(2,0,j) = ubloc(2,maxi,j)
     END DO
-    ubloc(2,imax+1,0) = ubloc(2,1,0)
-    ubloc(2,0,0) = ubloc(2,imax,0)
+    ubloc(2,maxi+1,0) = ubloc(2,1,0)
+    ubloc(2,0,0) = ubloc(2,maxi,0)
   END SUBROUTINE ubarsolv
 
 
@@ -3482,11 +3477,11 @@ CONTAINS
     REAL :: tv, tv1, tv2, tv4, tv5, sum(2)
     INTEGER :: i, j, k, l
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           sum = 0
           ! u calc
-          DO k = k1(i,j), kmax
+          DO k = k1(i,j), maxk
              IF (k1(i+1,j) > k) THEN
                 tv1 = 0
                 tv2 = 0
@@ -3529,7 +3524,7 @@ CONTAINS
              END IF
 
              ! add wind
-             IF (k == kmax) THEN
+             IF (k == maxk) THEN
                 IF (k1(i+1,j) <= k) THEN
                    tv1 = tv1 - dztau(2,i,j)
                    tv2 = tv2 - dztau(1,i,j)
@@ -3552,7 +3547,7 @@ CONTAINS
                 END IF
              END DO
           END DO
-          DO k = k1(i,j), kmax
+          DO k = k1(i,j), maxk
              ! add barotropic part and relax
              IF (k1(i+1,j) <= k) THEN
                 u(1,i,j,k) = u(1,i,j,k) - sum(1) * rh(1,i,j) + ub(1,i,j)
@@ -3569,17 +3564,17 @@ CONTAINS
     END DO
 
     ! set boundary conditions
-    DO j = 1, jmax
-       DO k = k1(1,j), kmax
-          u(1,0,j,k) = u(1,imax,j,k)
+    DO j = 1, maxj
+       DO k = k1(1,j), maxk
+          u(1,0,j,k) = u(1,maxi,j,k)
        END DO
     END DO
 
     ! calculate w
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           tv = 0
-          DO k = k1(i,j), kmax-1
+          DO k = k1(i,j), maxk-1
              tv1 = (u(1,i,j,k) - u(1,i-1,j,k)) * rdphi * rc(j)
              tv2 = (u(2,i,j,k) * cv(j) - u(2,i,j-1,k) * cv(j-1)) * rds(j)
              u(3,i,j,k) = tv           - dz(k) * (tv1 + tv2)
@@ -3598,16 +3593,16 @@ CONTAINS
 
     INTEGER :: i, j, k, n, ip1
 
-    n = imax
+    n = maxi
 
     ! calculate constant wind stress part of forcing
     ! noting that tau not currently defined outside domain
-    DO i = 1, imax
-       DO j = 0, jmax
-          ip1 = MOD(i, imax) + 1
+    DO i = 1, maxi
+       DO j = 0, maxj
+          ip1 = MOD(i, maxi) + 1
           k = i + j * n
-          IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= kmax) THEN
-             IF (j == jmax .OR. j == 0) &
+          IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= maxk) THEN
+             IF (j == maxj .OR. j == 0) &
                   & STOP 'wind stress not defined outside domain'
              gb(k) = (tau(2,ip1,j) * rh(2,i+1,j) - &
                   &   tau(2,i,j) * rh(2,i,j)) * rdphi * rcv(j) - &

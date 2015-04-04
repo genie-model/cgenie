@@ -18,11 +18,11 @@ CONTAINS
     sum=0
     avn = 0
     avs = 0
-    DO k = 1, kmax
-       DO j = 1, jmax
-          DO i = 1, imax
+    DO k = 1, maxk
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j)) THEN
-                ndep = (2 * k - 1) / kmax
+                ndep = (2 * k - 1) / maxk
                 IF (j <= jsf) THEN
                    mo = 4
                 ELSEIF (i >= ips(j) .AND. i <= ipf(j)) THEN
@@ -34,13 +34,13 @@ CONTAINS
                 ELSE
                    mo = 3
                 END IF
-                DO l = 1, lmax
+                DO l = 1, maxl
                    sum(mo+4*ndep+8*(l-1)) = sum(mo+4*ndep+8*(l-1)) + &
                         & ts(l,i,j,k) * dphi * ds(j) * dz(k)
                 END DO
                 IF (first) &
                      & vol(mo+4*ndep) = vol(mo+4*ndep) + dphi * ds(j) * dz(k)
-                IF (k < kmax) &
+                IF (k < maxk) &
                      & avn = avn + ABS(rho(i,j,k) - rho(i,j,k+1)) / dza(k)
                 avs = avs + u(1,i,j,k)**2 + u(2,i,j,k)**2
              END IF
@@ -57,7 +57,7 @@ CONTAINS
     END IF
 
     DO i = 1, 8
-       DO l = 1, lmax
+       DO l = 1, maxl
           IF (vol(i) /=  0.0) THEN
              sum(i+8*(l-1)) = sum(i+8*(l-1)) / vol(i)
           END IF
@@ -88,12 +88,12 @@ CONTAINS
     avs = 0
     cnmax = 0
     ubmax = 0
-    DO k = 1, kmax
-       DO j = 1, jmax
-          DO i = 1, imax
+    DO k = 1, maxk
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j)) THEN
                 vol = vol + dphi * ds(j) * dz(k)
-                DO l = 1, lmax
+                DO l = 1, maxl
                    sum(l) = sum(l) + ts(l,i,j,k) * dphi * ds(j) * dz(k)
                    sumsq(l) = sumsq(l) + ts(l,i,j,k)**2 * dphi * ds(j) * dz(k)
                 END DO
@@ -108,7 +108,7 @@ CONTAINS
 
                 tv = MAX(ABS(u(1,i,j,k)) * rc(j) * rdphi, &
                      &   ABS(u(3,i,j,k)) * rdz(k)) * dt(k)
-                IF (j < jmax) &
+                IF (j < maxj) &
                      & tv = MAX(tv, ABS(u(2,i,j,k)) * cv(j) * rdsv(j) * dt(k))
                 cnmax = MAX(cnmax, tv)
 
@@ -120,8 +120,8 @@ CONTAINS
 
     tmax1 = -1.0E10
     tmin1 = 1.0E10
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           IF (k1(i,j) == 1) THEN
              IF (ts(1,i,j,1) > tmax1) tmax1 = ts(1,i,j,1)
              IF (ts(1,i,j,1) < tmin1) tmin1 = ts(1,i,j,1)
@@ -131,18 +131,18 @@ CONTAINS
 
     tmax = -1.0E10
     tmin = 1.0E10
-    DO i = 1, imax
-       DO j = 1, jmax
-          IF (k1(i,j) <= kmax) THEN
-             IF (ts(1,i,j,kmax) > tmax) tmax = ts(1,i,j,kmax)
-             IF (ts(1,i,j,kmax) < tmin) tmin = ts(1,i,j,kmax)
+    DO i = 1, maxi
+       DO j = 1, maxj
+          IF (k1(i,j) <= maxk) THEN
+             IF (ts(1,i,j,maxk) > tmax) tmax = ts(1,i,j,maxk)
+             IF (ts(1,i,j,maxk) < tmin) tmin = ts(1,i,j,maxk)
           END IF
        END DO
     END DO
 
     ! Find max barotropic velocity components
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           DO l = 1, 2
              IF (ABS(ub(l,i,j)) > ubmax(l)) ubmax(l) = ABS(ub(l,i,j))
           END DO
@@ -155,11 +155,11 @@ CONTAINS
     tv1 = 0.0
     tv2 = 0.0
     area = 0.0
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax) THEN
-             tv1 = tv1 + ts(1,i,j,kmax) * ds(j)
-             tv2 = tv2 + ts(2,i,j,kmax) * ds(j)
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk) THEN
+             tv1 = tv1 + ts(1,i,j,maxk) * ds(j)
+             tv2 = tv2 + ts(2,i,j,maxk) * ds(j)
              area = area + ds(j)
           END IF
        END DO
@@ -169,10 +169,10 @@ CONTAINS
     WRITE (6,*) 'average SST', tv1
     WRITE (6,*) 'average SSS', tv2
 
-    PRINT *, 'max and min T at kmax ', tmax, tmin
+    PRINT *, 'max and min T at maxk ', tmax, tmin
     PRINT *, 'max and min T at k=1  ', tmax1, tmin1
     PRINT *, '<T>, <S> ..., <T**2>, <S**2> ...', &
-         & (sum(l) / vol, l = 1, lmax), (sumsq(l) / vol, l = 1, lmax)
+         & (sum(l) / vol, l = 1, maxl), (sumsq(l) / vol, l = 1, maxl)
     PRINT *, 'ts(1,1,1,1)', ts(1,1,1,1)
     PRINT *, 'Cn ', cnmax
     PRINT *, 'Dmax', dmax
@@ -215,7 +215,7 @@ CONTAINS
        OPEN(30,FILE=indir_name(1:lenin)//tdatafile(1:lentdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        READ (30,*,IOSTAT=ios) &
-            & (((tsdata(1,i,j,k), k = 1, kmax), i = 1, imax), j = 1, jmax)
+            & (((tsdata(1,i,j,k), k = 1, maxk), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(30,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -224,7 +224,7 @@ CONTAINS
        OPEN(31,FILE=indir_name(1:lenin)//sdatafile(1:lensdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        READ (31,*,IOSTAT=ios) &
-            & (((tsdata(2,i,j,k), k = 1, kmax), i = 1, imax), j = 1, jmax)
+            & (((tsdata(2,i,j,k), k = 1, maxk), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(31,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -232,9 +232,9 @@ CONTAINS
 
        ! Calculate weights based on variance of data NB not real spatial but
        ! computational spatial
-       DO k = 1, kmax
-          DO j = 1, jmax
-             DO i = 1, imax
+       DO k = 1, maxk
+          DO j = 1, maxj
+             DO i = 1, maxi
                 IF (k >= k1(i,j)) THEN
                    DO l = 1, 2
                       IF (tsdata(l,i,j,k) > nullvalue) THEN
@@ -260,9 +260,9 @@ CONTAINS
        OPEN(25,FILE=outdir_name(1:lenout)//'tmp.err',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        err = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
-             DO k = 1, kmax
+       DO j = 1, maxj
+          DO i = 1, maxi
+             DO k = 1, maxk
                 IF (k >= k1(i,j)) THEN
                    DO l = 1, 2
                       IF (tsdata(l,i,j,k) > nullvalue) THEN
@@ -291,17 +291,17 @@ CONTAINS
             & " '.true.')."
     END IF
 
-    FORALL (i=1:imax) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
-    FORALL (j=1:jmax) lat(j) = 180.0 * ASIN(s(j)) / pi
-    FORALL (k=1:kmax) depth(k) = ABS(zro(kmax+1-k) * dsc)
+    FORALL (i=1:maxi) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
+    FORALL (j=1:maxj) lat(j) = 180.0 * ASIN(s(j)) / pi
+    FORALL (k=1:maxk) depth(k) = ABS(zro(maxk+1-k) * dsc)
     ntot1 = 0
-    err1 = err_gold(ts(1,1:imax,1:jmax,1:kmax), 1, k1, ntot1, &
-         & imax, jmax, kmax, indir_name, lenin, tdatafile, lentdata, &
+    err1 = err_gold(ts(1,1:maxi,1:maxj,1:maxk), 1, k1, ntot1, &
+         & maxi, maxj, maxk, indir_name, lenin, tdatafile, lentdata, &
          & tdata_scaling, tdata_offset, tsinterp, tdata_varname, &
          & tdata_missing, lon, lat, depth)
     ntot2 = 0
-    err2 = err_gold(ts(2,1:imax,1:jmax,1:kmax), 2, k1, ntot2, &
-         & imax, jmax, kmax, indir_name, lenin, sdatafile, lensdata, &
+    err2 = err_gold(ts(2,1:maxi,1:maxj,1:maxk), 2, k1, ntot2, &
+         & maxi, maxj, maxk, indir_name, lenin, sdatafile, lensdata, &
          & sdata_scaling, sdata_offset + saln0, tsinterp, &
          & sdata_varname, sdata_missing, lon, lat, depth)
     PRINT *, 'err_gold composite = ', &
@@ -319,7 +319,7 @@ CONTAINS
 
     tv4 = 0.0
     tv5 = 0.0
-    DO k = 1, kmax
+    DO k = 1, maxk
        ! First calculate average temp at this depth and lat.
        tv2 = 0.0
        tv3 = 0.0
@@ -360,9 +360,9 @@ CONTAINS
     opsi = 0
     opsia = 0
     opsip = 0
-    DO j = 1, jmax-1
-       DO k = 1, kmax-1
-          ou(j,k) = SUM(cv(j) * u(2,1:imax,j,k) * dphi)
+    DO j = 1, maxj-1
+       DO k = 1, maxk-1
+          ou(j,k) = SUM(cv(j) * u(2,1:maxi,j,k) * dphi)
           opsi(j,k) = opsi(j,k-1) - dz(k) * ou(j,k)
        END DO
     END DO
@@ -371,8 +371,8 @@ CONTAINS
 
     ominp = 0
     omaxp = 0
-    DO j=  jsf+1, jmax-1
-       DO k = 1, kmax-1
+    DO j=  jsf+1, maxj-1
+       DO k = 1, maxk-1
           ou(j,k) = SUM(cv(j) * u(2,ips(j):ipf(j),j,k) * dphi)
           opsip(j,k) = opsip(j,k-1) - dz(k) * ou(j,k)
           IF (opsip(j,k) < ominp .AND. k <= overdep) ominp = opsip(j,k)
@@ -382,12 +382,12 @@ CONTAINS
 
     omina = 0
     omaxa = 0
-    DO j = jsf+1, jmax-1
-       DO k = 1, kmax-1
+    DO j = jsf+1, maxj-1
+       DO k = 1, maxk-1
           ou(j,k) = 0
           ! Conditionality to take care of "split Atlantic" (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             DO i=ias(j), imax
+             DO i=ias(j), maxi
                 ou(j,k) = ou(j,k) + cv(j) * u(2,i,j,k) * dphi
              END DO
              DO i = 1, iaf(j)
@@ -432,8 +432,8 @@ CONTAINS
     REAL, SAVE :: opsipavg(0:maxj,0:maxk) = 0.0
     REAL, SAVE :: opsiaavg(0:maxj,0:maxk) = 0.0
 
-    REAL :: outputfile(lmax+3,kmax,imax,jmax)
-    REAL :: outfx0(5,imax,jmax), outfw(4,imax,jmax)
+    REAL :: outputfile(maxl+3,maxk,maxi,maxj)
+    REAL :: outfx0(5,maxi,maxj), outfw(4,maxi,maxj)
 
     REAL :: lon(maxi), lat(maxj), depth(maxk)
 
@@ -461,41 +461,41 @@ CONTAINS
        OPEN(2,FILE=outdir_name(1:lenout)//lout//'.'//'osc.'//ext,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
-       DO j = 1, jmax
-          DO i = 1, imax
-             DO k = 1, kmax
-                DO l = 1, lmax
+       DO j = 1, maxj
+          DO i = 1, maxi
+             DO k = 1, maxk
+                DO l = 1, maxl
                    IF (k >= k1(i,j)) outputfile(l,k,i,j) = tsavg(l,i,j,k)
                 END DO
                 DO l = 1, 2
-                   outputfile(lmax+l,k,i,j) = uavg(l,i,j,k)
+                   outputfile(maxl+l,k,i,j) = uavg(l,i,j,k)
                 END DO
-                outputfile(lmax+3,k,i,j) = rhoavg(i,j,k)
+                outputfile(maxl+3,k,i,j) = rhoavg(i,j,k)
              END DO
           END DO
        END DO
        WRITE (2,10,IOSTAT=ios) outputfile
        CALL check_iostat(ios, __LINE__, __FILE__)
        ! Heat fluxes
-       outfx0 = fx0avg(1:5,1:imax,1:jmax)
+       outfx0 = fx0avg(1:5,1:maxi,1:maxj)
        DO l = 1, 5
-          DO j = 1, jmax
-             DO i = 1, imax
+          DO j = 1, maxj
+             DO i = 1, maxi
                 IF (k1(i,j) >= 90) outfx0(l,i,j) = 0.0
              END DO
           END DO
        END DO
        WRITE (2,10,IOSTAT=ios) &
-            & (((outfx0(l,i,j), i = 1, imax), j = 1, jmax), l = 1, 5)
+            & (((outfx0(l,i,j), i = 1, maxi), j = 1, maxj), l = 1, 5)
        CALL check_iostat(ios, __LINE__, __FILE__)
        ! Freshwater fluxes
-       outfw = fwavg(1:4,1:imax,1:jmax)
+       outfw = fwavg(1:4,1:maxi,1:maxj)
        WRITE (2,10,IOSTAT=ios) &
-            & (((outfw(l,i,j), i = 1, imax), j = 1, jmax), l = 1, 4)
+            & (((outfw(l,i,j), i = 1, maxi), j = 1, maxj), l = 1, 4)
        CALL check_iostat(ios, __LINE__, __FILE__)
        ! Wind stresses (u-point x, u-point y, v-point x, v-point y)
        WRITE (2,10,IOSTAT=ios) &
-            & (((windavg(l,i,j), i = 1, imax), j = 1, jmax), l = 1, 4)
+            & (((windavg(l,i,j), i = 1, maxi), j = 1, maxj), l = 1, 4)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(2,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -503,21 +503,21 @@ CONTAINS
        CALL check_unit(10, __LINE__, __FILE__)
        OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opav',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       WRITE (10,10,IOSTAT=ios) ((opsiavg(j,k), j=0, jmax), k=0, kmax)
+       WRITE (10,10,IOSTAT=ios) ((opsiavg(j,k), j=0, maxj), k=0, maxk)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(10,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
        OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opavp',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       WRITE (10,10,IOSTAT=ios) ((opsipavg(j,k), j=0, jmax), k=0, kmax)
+       WRITE (10,10,IOSTAT=ios) ((opsipavg(j,k), j=0, maxj), k=0, maxk)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(10,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
        OPEN(10,FILE=outdir_name(1:lenout)//lout//'.opava',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       WRITE (10,10,IOSTAT=ios) ((opsiaavg(j,k), j=0, jmax), k=0, kmax)
+       WRITE (10,10,IOSTAT=ios) ((opsiaavg(j,k), j=0, maxj), k=0, maxk)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(10,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -525,7 +525,7 @@ CONTAINS
        PRINT *,  'Writing GOLDSTEIN mean annual netCDF file at time',  istep
 
        CALL ini_netcdf_ocn(istep, 2)
-       CALL write_netcdf_ocn(imax, jmax, kmax, k1, ncdepth1, &
+       CALL write_netcdf_ocn(k1, ncdepth1, &
             & opsiavg, opsiaavg, opsipavg, tsavg, uavg, rhoavg, &
             & fx0avg, fwavg, work, dsc, usc, rsc, saln0, &
             & maxi, maxj, maxk, maxl, 2)
@@ -539,17 +539,17 @@ CONTAINS
        ! routines to accept data as argument, or by simply copying code,
        ! otherwise diagnose by integrating one (short) step from .avg file.
 
-       FORALL (i=1:imax) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
-       FORALL (j=1:jmax) lat(j) = 180.0 * ASIN(s(j)) / pi
-       FORALL (k=1:kmax) depth(k) = ABS(zro(kmax+1-k) * dsc)
+       FORALL (i=1:maxi) lon(i) = 180.0 * (phi0 + (i - 0.5) * dphi) / pi
+       FORALL (j=1:maxj) lat(j) = 180.0 * ASIN(s(j)) / pi
+       FORALL (k=1:maxk) depth(k) = ABS(zro(maxk+1-k) * dsc)
        ntot1 = 0
-       err1 = err_gold(tsavg(1,1:imax,1:jmax,1:kmax), 1, k1, ntot1, &
-            & imax, jmax, kmax, indir_name, lenin, tdatafile, lentdata, &
+       err1 = err_gold(tsavg(1,1:maxi,1:maxj,1:maxk), 1, k1, ntot1, &
+            & maxi, maxj, maxk, indir_name, lenin, tdatafile, lentdata, &
             & tdata_scaling, tdata_offset, tsinterp, tdata_varname, &
             & tdata_missing, lon, lat, depth)
        ntot2 = 0
-       err2 = err_gold(tsavg(2,1:imax,1:jmax,1:kmax), 2, k1, ntot2, &
-            & imax, jmax, kmax, indir_name, lenin, sdatafile, lensdata, &
+       err2 = err_gold(tsavg(2,1:maxi,1:maxj,1:maxk), 2, k1, ntot2, &
+            & maxi, maxj, maxk, indir_name, lenin, sdatafile, lensdata, &
             & sdata_scaling, sdata_offset + saln0, tsinterp, sdata_varname, &
             & sdata_missing, lon, lat, depth)
        PRINT *,  'err_gold annual average composite = ', &
@@ -577,17 +577,17 @@ CONTAINS
 
   ! Return an RMS error value for the specified GOLDSTEIN model field
   ! compared with the contents of the supplied data file.
-  FUNCTION err_gold(modeldata, tracerid, k1, ntot, imax, jmax, kmax, &
+  FUNCTION err_gold(modeldata, tracerid, k1, ntot, maxi, maxj, maxk, &
        & indir_name, lenin, obsdatafile, lenobsdata, datascaling, &
        & dataoffset, interpolate, varname, missing, lon, lat, z)
     IMPLICIT NONE
     REAL :: err_gold
 
-    REAL :: modeldata(imax,jmax,kmax)      ! Model data field
+    REAL :: modeldata(maxi,maxj,maxk)      ! Model data field
     INTEGER :: tracerid                    ! Data field type
-    INTEGER :: k1(0:imax+1,0:jmax+1)       ! Topography
+    INTEGER :: k1(0:maxi+1,0:maxj+1)       ! Topography
     INTEGER :: ntot                        ! Number of wet grid cells
-    INTEGER :: imax, jmax, kmax            ! Grid size
+    INTEGER :: maxi, maxj, maxk            ! Grid size
     CHARACTER(LEN=200) :: indir_name       ! GOLD input/output directories
     INTEGER :: lenin
     CHARACTER(LEN=128) :: obsdatafile      ! GOLD T/S data files
@@ -596,7 +596,7 @@ CONTAINS
     LOGICAL :: interpolate                 ! Interpolate obs. data?
     CHARACTER(LEN=25) :: varname           ! Observation-based dataset
     REAL :: missing
-    REAL :: lon(imax), lat(jmax), z(kmax)  ! GOLDSTEIN grid
+    REAL :: lon(maxi), lat(maxj), z(maxk)  ! GOLDSTEIN grid
 
     ! Weighting factor (reciprocal of obs. data variance)
     REAL :: errw
@@ -605,12 +605,12 @@ CONTAINS
     INTEGER :: i, j, k
 
     ! Observational data, average and variance
-    REAL :: obsdata(imax,jmax,kmax), obsdata_av, obsdata_var
+    REAL :: obsdata(maxi,maxj,maxk), obsdata_av, obsdata_var
 
     ! Error value.
     REAL :: err
 
-    CALL read_gold_target_field(tracerid, k1, imax, jmax, kmax, indir_name, &
+    CALL read_gold_target_field(tracerid, k1, maxi, maxj, maxk, indir_name, &
          & lenin, obsdatafile, lenobsdata, datascaling, dataoffset, &
          & interpolate, varname, missing, lon, lat, z, obsdata)
 
@@ -619,9 +619,9 @@ CONTAINS
     obsdata_av = 0.0
     obsdata_var = 0.0
     ntot = 0
-    DO k = 1, kmax
-       DO j = 1, jmax
-          DO i = 1, imax
+    DO k = 1, maxk
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j) .AND. obsdata(i,j,k) > -1.0E10) THEN
                 obsdata_av = obsdata_av + obsdata(i,j,k)
                 obsdata_var= obsdata_var + obsdata(i,j,k) * obsdata(i,j,k)
@@ -636,9 +636,9 @@ CONTAINS
 
     ! Calculate the RMS error
     err = 0.
-    DO j = 1, jmax
-       DO i = 1, imax
-          DO k = 1, kmax
+    DO j = 1, maxj
+       DO i = 1, maxi
+          DO k = 1, maxk
              IF (k >= k1(i,j) .AND. obsdata(i,j,k) > -1.0E10) THEN
                 err = err + errw * (modeldata(i,j,k) - obsdata(i,j,k))**2
              END IF
@@ -655,15 +655,15 @@ CONTAINS
 
   ! Read in data-based target fields for comparison with the model's
   ! internal fields.
-  SUBROUTINE read_gold_target_field(tracerid, k1, imax, jmax, kmax, &
+  SUBROUTINE read_gold_target_field(tracerid, k1, maxi, maxj, maxk, &
        & indir_name, lenin, obsdatafile, lenobsdata, datascaling, &
        & dataoffset, interpolate, varname, missing, lon, lat, z, obsdata)
     USE genie_util, ONLY: check_unit, check_iostat, die
     USE local_netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: tracerid
-    INTEGER, INTENT(in) :: k1(0:imax+1,0:jmax+1)
-    INTEGER, INTENT(IN) :: imax, jmax, kmax
+    INTEGER, INTENT(in) :: k1(0:maxi+1,0:maxj+1)
+    INTEGER, INTENT(IN) :: maxi, maxj, maxk
     CHARACTER(LEN=200), INTENT(IN) :: indir_name
     INTEGER, INTENT(IN) :: lenin
     CHARACTER(LEN=128), INTENT(IN) :: obsdatafile
@@ -672,9 +672,9 @@ CONTAINS
     LOGICAL, INTENT(IN) :: interpolate
     CHARACTER(LEN=25), INTENT(IN) :: varname
     REAL, INTENT(IN) :: missing
-    REAL, INTENT(INOUT) :: lon(imax)
-    REAL, INTENT(IN) :: lat(jmax), z(kmax)
-    REAL, INTENT(OUT) :: obsdata(imax,jmax,kmax)
+    REAL, INTENT(INOUT) :: lon(maxi)
+    REAL, INTENT(IN) :: lat(maxj), z(maxk)
+    REAL, INTENT(OUT) :: obsdata(maxi,maxj,maxk)
 
 
     ! Observation-based dataset
@@ -684,7 +684,7 @@ CONTAINS
     REAL, POINTER, DIMENSION(:,:) :: sinlat_obs
     INTEGER :: ncid_in, ncstatus, i_obs, j_obs, k_obs, i_obs_min, j_obs_min
     INTEGER :: i0, i1, jtmp, ii, jj, iii, nwidth
-    REAL :: obstmp, sinlat(2,jmax)
+    REAL :: obstmp, sinlat(2,maxj)
 
     ! Interpolation
     INTEGER :: n_int, n_ext
@@ -706,7 +706,7 @@ CONTAINS
        OPEN(30,FILE=indir_name(1:lenin)//obsdatafile(1:lenobsdata),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        READ (30,*,IOSTAT=ios) &
-            & (((obsdata(i,j,k), k = 1, kmax), i = 1, imax), j = 1, jmax)
+            & (((obsdata(i,j,k), k = 1, maxk), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(30,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -776,7 +776,7 @@ CONTAINS
           sinlat_obs(2,j) = COS(ts_obs_axis(2)%data(j) * pi / 180.0)
        END DO
        ! For GOLDSTEIN grid
-       DO j = 1, jmax
+       DO j = 1, maxj
           sinlat(1,j) = SIN(lat(j) * pi / 180.0)
           sinlat(2,j) = COS(lat(j) * pi / 180.0)
        END DO
@@ -832,7 +832,7 @@ CONTAINS
              CALL die("Non-incremental depth axis")
           END IF
        END DO
-       DO i = 1, imax
+       DO i = 1, maxi
           DO WHILE (lon(i) <= ts_obs_axis(1)%data(0))
              lon(i) = lon(i) + 360.0
           END DO
@@ -848,10 +848,10 @@ CONTAINS
        distmean = 0.0
        distmax = 0.0
        n_ext = 0
-       DO k = 1, kmax
-          DO j = 1, jmax
-             DO i = 1, imax
-                IF (k1(i,j) <= (kmax+1-k)) THEN
+       DO k = 1, maxk
+          DO j = 1, maxj
+             DO i = 1, maxi
+                IF (k1(i,j) <= (maxk+1-k)) THEN
                    ! Find location of model grid point on
                    ! observation-based grid.
                    i_obs = 0
@@ -899,7 +899,7 @@ CONTAINS
                    ! Interpolate if no land at corners of cube
                    ! encompassing the model grid location
                    IF (testmask < 1.0E10) THEN
-                      obsdata(i,j,kmax+1-k) = &
+                      obsdata(i,j,maxk+1-k) = &
                            & (1.0 - rz) * &
                            &  ((1.0 - rlon) * &
                            &   ((1.0 - rlat) * &
@@ -1099,7 +1099,7 @@ CONTAINS
                       END DO
                       ! Vertically interpolate at point with shortest
                       ! distance from target point
-                      obsdata(i,j,kmax+1-k) = &
+                      obsdata(i,j,maxk+1-k) = &
                            & (1.0-rz) * &
                            &  ts_obs(1)%data(i_obs_min,j_obs_min,k_obs-1) + &
                            & rz * ts_obs(1)%data(i_obs_min,j_obs_min,k_obs)
@@ -1108,7 +1108,7 @@ CONTAINS
                       n_ext = n_ext + 1
                    END IF
                 ELSE
-                   obsdata(i,j,kmax+1-k) = -99.9999E19
+                   obsdata(i,j,maxk+1-k) = -99.9999E19
                 END IF
              END DO
           END DO
@@ -1134,9 +1134,9 @@ CONTAINS
        IF (status /= 0) CALL die("Could not allocate memory")
        CALL closeNetCDF(ncid_in)
 
-       DO j = 1, jmax
-          DO i = 1, imax
-             DO k = 1, kmax
+       DO j = 1, maxj
+          DO i = 1, maxi
+             DO k = 1, maxk
                 obsdata(i,j,k) = obsdata(i,j,k) / datascaling - dataoffset
              END DO
           END DO

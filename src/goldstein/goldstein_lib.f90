@@ -25,8 +25,7 @@ MODULE goldstein_lib
   INTEGER, PARAMETER :: mpxi=maxi, mpxj=maxj+1
   INTEGER, PARAMETER :: maxisles=GOLDSTEINMAXISLES, mpi=2 * (maxi + maxj)
 
-  INTEGER :: isles
-  INTEGER :: imax, jmax, kmax, lmax, ntot, intot, nyear
+  INTEGER :: isles, ntot, intot, nyear
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk
   INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: ku
   INTEGER :: jsf

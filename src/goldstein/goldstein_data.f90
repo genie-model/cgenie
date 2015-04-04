@@ -15,19 +15,19 @@ CONTAINS
     REAL :: tmp_val(4)
 
     READ (unit,*) ((((ts(l,i,j,k), l = 1, 2), (u1(l,i,j,k), l = 1, 2), &
-         & k = 1, kmax), i = 1, imax), j = 1, jmax)
+         & k = 1, maxk), i = 1, maxi), j = 1, maxj)
 
     ! Write out layer averages for restart checks
     IF (debug_init) &
          & WRITE (*,120) 'Layer','Avg T','Avg S','Avg U','Avg V','Cells'
-    DO k = 1, kmax
+    DO k = 1, maxk
        ! Clear temporary variables
        tmp_val = 0
        icell = 0
 
        ! Sum layer state variables and flow field
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j)) icell = icell + 1
              DO l = 1, 2
                 IF (k >= k1(i,j)) tmp_val(l) = tmp_val(l) + ts(l,i,j,k)
@@ -43,7 +43,7 @@ CONTAINS
        IF (debug_init) &
             & WRITE (*,110) k, tmp_val(1) / icell, &
             & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (imax * jmax), tmp_val(4) / (imax * jmax), icell
+            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
     END DO
 
 110 FORMAT(i5,2f13.9,2e17.9,i4)
@@ -133,16 +133,16 @@ CONTAINS
     ! compilation time in the 64x32 case for a
     ! reason I can't work out.  DJL 27/10/2005
     IF (lrestart_genie) THEN
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              evap_save2(i,j) = evap_read(i,j)
              late_save2(i,j) = late_read(i,j)
              sens_save2(i,j) = sens_read(i,j)
           END DO
        END DO
     ELSE
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              evap_save2(i,j) = 0.0
              late_save2(i,j) = 0.0
              sens_save2(i,j) = 0.0
@@ -153,14 +153,14 @@ CONTAINS
     ! Write out layer averages for restart checks
     IF (debug_init) &
          & WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
-    DO k = 1, kmax
+    DO k = 1, maxk
        ! Clear temporary variables
        tmp_val = 0
        icell = 0
 
        ! Sum layer state variables and flow field
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j)) icell = icell + 1
              DO l = 1, 2
                 IF (k >= k1(i,j)) THEN
@@ -177,8 +177,8 @@ CONTAINS
        ! Print average values out
        IF (debug_init) &
             & WRITE (*,110) k, tmp_val(1) / icell, &
-            & (tmp_val(2) / icell) + saln0, tmp_val(3) / (imax * jmax), &
-            & tmp_val(4) / (imax * jmax), icell
+            & (tmp_val(2) / icell) + saln0, tmp_val(3) / (maxi * maxj), &
+            & tmp_val(4) / (maxi * maxj), icell
     END DO
 
 110 FORMAT(i5,2f13.9,2e17.9,i4)
@@ -192,11 +192,11 @@ CONTAINS
     INTEGER, INTENT(IN) :: unit
 
     INTEGER :: i, j, k, l, icell
-    REAL :: tmp_val(4), out_file(4,kmax,imax,jmax)
+    REAL :: tmp_val(4), out_file(4,maxk,maxi,maxj)
 
-    DO j = 1, jmax
-       DO i = 1, imax
-          DO k = 1, kmax
+    DO j = 1, maxj
+       DO i = 1, maxi
+          DO k = 1, maxk
              DO l = 1, 2
                 IF (k >= k1(i,j)) THEN
                    out_file(l,k,i,j) = ts(l,i,j,k)
@@ -215,14 +215,14 @@ CONTAINS
     ! Write out layer averages for restart checks
     IF (debug_loop) &
          & WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
-    DO k = 1, kmax
+    DO k = 1, maxk
        ! Clear temporary variables
        tmp_val = 0
        icell = 0
 
        ! Sum layer state variables and flow field
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (k >= k1(i,j)) icell = icell + 1
              DO l = 1, 2
                 IF (k >= k1(i,j)) THEN
@@ -240,7 +240,7 @@ CONTAINS
        IF (debug_loop) &
             & WRITE (*,110) k, tmp_val(1) / icell, &
             & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (imax * jmax), tmp_val(4) / (imax * jmax), icell
+            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
     END DO
 
 110 FORMAT(i5,2f13.9,2e17.9,i4)
@@ -394,14 +394,14 @@ CONTAINS
 
        ! Write out layer averages for restart checks
        WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
-       DO k = 1, kmax
+       DO k = 1, maxk
           ! Clear temporary variables
           tmp_val = 0
           icell = 0
 
           ! Sum layer state variables and flow field
-          DO j = 1, jmax
-             DO i = 1, imax
+          DO j = 1, maxj
+             DO i = 1, maxi
                 IF (k >= k1(i,j)) icell = icell + 1
                 DO l = 1, 2
                    IF (k >= k1(i,j)) THEN
@@ -415,7 +415,7 @@ CONTAINS
           ! Print average values out
           WRITE (*,110) k, tmp_val(1) / icell, &
                & (tmp_val(2) / icell) + saln0, &
-               & tmp_val(3) / (imax * jmax), tmp_val(4) / (imax * jmax), icell
+               & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
        END DO
 
 110    FORMAT(i5,2f13.9,2e17.9,i4)

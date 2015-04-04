@@ -35,7 +35,7 @@ CONTAINS
          & 'imonth', imonth, 'rtime', rtime
     CALL ini_netcdf_ocn1(outdir_name, lenout, lout, imonth, iyear, rtime, &
          & nclon1, nclat1, nclon2, nclat2, nclon3, nclat3, &
-         & ncdepth, ncdepth1, imax, jmax, kmax, imode)
+         & ncdepth, ncdepth1, maxi, maxj, maxk, imode)
   END SUBROUTINE ini_netcdf_ocn
 
 
@@ -61,8 +61,8 @@ CONTAINS
     INTEGER :: vadims(nmaxdims,nall)
     CHARACTER(LEN=200), DIMENSION(nall) :: dimname, varname
     CHARACTER(LEN=200), DIMENSION(2,nmaxdims,nall) :: attdimname, attvarname
-    INTEGER, PARAMETER :: imax=100, jmax=100, kmax=100, lmax=10000
-    REAL :: ycoord(jmax)
+    INTEGER, PARAMETER :: maxi=100, maxj=100, maxk=100, maxl=10000
+    REAL :: ycoord(maxj)
     INTEGER :: itime, ifname1
     CHARACTER(LEN=200) :: fname1
     CHARACTER(LEN=10) :: cyear
@@ -450,12 +450,11 @@ CONTAINS
   END SUBROUTINE setup_nc_ocn
 
   ! Write data to NetCDF file
-  SUBROUTINE write_netcdf_ocn(imax, jmax, kmax, k1, depth1, &
+  SUBROUTINE write_netcdf_ocn(k1, depth1, &
        & opsi, opsia, opsip, ts, u, rho, fx0flux, fwflux, &
        & work, dsc, usc, rsc, saln0, maxi, maxj, maxk, maxl, imode)
     USE writenc6
     IMPLICIT NONE
-    INTEGER, INTENT(IN) :: imax, jmax, kmax
     INTEGER, INTENT(IN) :: k1(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: depth1(maxk+1)
     REAL, DIMENSION(0:maxj,0:maxk), INTENT(IN) :: opsi, opsia, opsip
@@ -473,125 +472,125 @@ CONTAINS
     work = 0.0
 
     ! Global streamfunction
-    CALL flip_vert(opsi, work(1,:,:), jmax, kmax, dsc * usc * rsc * 1e-6)
+    CALL flip_vert(opsi, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
     CALL writevar(nco(imode), idvaro(1, imode), work(1,:,:))
 
     ! Atlantic streamfunction
-    CALL flip_vert(opsia, work(1,:,:), jmax, kmax, dsc * usc * rsc * 1e-6)
+    CALL flip_vert(opsia, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
     CALL writevar(nco(imode), idvaro(2, imode), work(1,:,:))
 
     ! Pacific streamfunction
-    CALL flip_vert(opsip, work(1,:,:), jmax, kmax, dsc * usc * rsc * 1e-6)
+    CALL flip_vert(opsip, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
     CALL writevar(nco(imode), idvaro(3, imode), work(1,:,:))
 
     ! Temperature (i.e. final argument = 1)
-    CALL flip_both1(ts(1,:,:,:), work(1:imax,1:jmax,1:kmax), &
-         & imax, jmax, kmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(4,imode), work(1:imax,1:jmax,1:kmax))
+    CALL flip_both1(ts(1,:,:,:), work(1:maxi,1:maxj,1:maxk), &
+         & maxi, maxj, maxk, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(4,imode), work(1:maxi,1:maxj,1:maxk))
 
     ! Salinity (i.e. final argument = 2)
-    CALL flip_both1(ts(2,:,:,:), work(1:imax,1:jmax,1:kmax), &
-         & imax, jmax, kmax, k1, 1.0)
+    CALL flip_both1(ts(2,:,:,:), work(1:maxi,1:maxj,1:maxk), &
+         & maxi, maxj, maxk, k1, 1.0)
     ! Correct salinity to PSU
     WHERE (work > -99999.0)
        work = work + REAL(saln0)
     END WHERE
-    CALL writevar(nco(imode), idvaro(5,imode), work(1:imax,1:jmax,1:kmax))
+    CALL writevar(nco(imode), idvaro(5,imode), work(1:maxi,1:maxj,1:maxk))
 
     ! Density
-    CALL flip_both1(rho, work(1:imax,1:jmax,1:kmax), &
-         & imax, jmax, kmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(6,imode), work(1:imax,1:jmax,1:kmax))
+    CALL flip_both1(rho, work(1:maxi,1:maxj,1:maxk), &
+         & maxi, maxj, maxk, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(6,imode), work(1:maxi,1:maxj,1:maxk))
 
     ! Ocean velocity (component 1)
-    CALL flip_both2(u(1,:,:,:), work(1:imax,1:jmax,1:kmax), &
-         & imax, jmax, kmax, imax, jmax, kmax, k1, usc)
-    CALL writevar(nco(imode), idvaro(7,imode), work(1:imax,1:jmax,1:kmax))
+    CALL flip_both2(u(1,:,:,:), work(1:maxi,1:maxj,1:maxk), &
+         & maxi, maxj, maxk, maxi, maxj, maxk, k1, usc)
+    CALL writevar(nco(imode), idvaro(7,imode), work(1:maxi,1:maxj,1:maxk))
 
     ! Ocean velocity (component 2)
-    CALL flip_both2(u(2,:,:,:), work(1:imax,1:jmax+1,1:kmax), &
-         & imax, jmax, kmax, imax, jmax+1, kmax, k1, usc)
-    CALL writevar(nco(imode), idvaro(8,imode), work(1:imax,1:jmax+1,1:kmax))
+    CALL flip_both2(u(2,:,:,:), work(1:maxi,1:maxj+1,1:maxk), &
+         & maxi, maxj, maxk, maxi, maxj+1, maxk, k1, usc)
+    CALL writevar(nco(imode), idvaro(8,imode), work(1:maxi,1:maxj+1,1:maxk))
 
     ! Ocean velocity (component 3)
-    CALL prep_netcdf_ocn_w(imax, jmax, kmax, u, work(1:imax,1:jmax,0:kmax), &
+    CALL prep_netcdf_ocn_w(maxi, maxj, maxk, u, work(1:maxi,1:maxj,0:maxk), &
          & k1, usc * dsc / rsc)
-    CALL writevar(nco(imode), idvaro(9,imode), work(1:imax,1:jmax,0:kmax))
+    CALL writevar(nco(imode), idvaro(9,imode), work(1:maxi,1:maxj,0:maxk))
 
     ! Latent heat flux
-    CALL twodee_tracer2(fx0flux(4,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(10,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fx0flux(4,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(10,imode), work(1:maxi,1:maxj,1))
 
     ! Sensible heat flux
-    CALL twodee_tracer2(fx0flux(2,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(11,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fx0flux(2,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(11,imode), work(1:maxi,1:maxj,1))
 
     ! Net solar heat flux
-    CALL twodee_tracer2(fx0flux(1,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(12,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fx0flux(1,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(12,imode), work(1:maxi,1:maxj,1))
 
     ! Net longwave heat flux
-    CALL twodee_tracer2(fx0flux(3,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(13,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fx0flux(3,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(13,imode), work(1:maxi,1:maxj,1))
 
     ! Sea-ice heat flux
-    CALL twodee_tracer2(fx0flux(5,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(14,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fx0flux(5,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(14,imode), work(1:maxi,1:maxj,1))
 
     ! Evaporation
-    CALL twodee_tracer2(fwflux(2,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(15,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fwflux(2,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(15,imode), work(1:maxi,1:maxj,1))
 
     ! Precipitation
-    CALL twodee_tracer2(fwflux(1,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(16,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fwflux(1,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(16,imode), work(1:maxi,1:maxj,1))
 
     ! Runoff
-    CALL twodee_tracer2(fwflux(3,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(17,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fwflux(3,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(17,imode), work(1:maxi,1:maxj,1))
 
     ! Sea-ice freshwater flux
-    CALL twodee_tracer2(fwflux(4,:,:), work(1:imax,1:jmax,1), &
-         & imax, jmax, k1, 1.0)
-    CALL writevar(nco(imode), idvaro(18,imode), work(1:imax,1:jmax,1))
+    CALL twodee_tracer2(fwflux(4,:,:), work(1:maxi,1:maxj,1), &
+         & maxi, maxj, k1, 1.0)
+    CALL writevar(nco(imode), idvaro(18,imode), work(1:maxi,1:maxj,1))
 
     ! Ocean bathymetry
-    CALL twodee_bathy(work(1:imax,1:jmax,1), depth1, imax, jmax, kmax, &
-         & imax, jmax, k1)
-    CALL writevar(nco(imode), idvaro(19,imode), work(1:imax,1:jmax,1))
+    CALL twodee_bathy(work(1:maxi,1:maxj,1), depth1, maxi, maxj, maxk, &
+         & maxi, maxj, k1)
+    CALL writevar(nco(imode), idvaro(19,imode), work(1:maxi,1:maxj,1))
   END SUBROUTINE write_netcdf_ocn
 
 
-  SUBROUTINE prep_netcdf_ocn_w(imax, jmax, kmax, data_i, data_o, iland, scale)
+  SUBROUTINE prep_netcdf_ocn_w(maxi, maxj, maxk, data_i, data_o, iland, scale)
     IMPLICIT NONE
-    INTEGER, INTENT(IN) ::imax, jmax, kmax
-    REAL, INTENT(IN) :: data_i(3,0:imax,0:jmax,1:kmax)
-    REAL, INTENT(OUT) :: data_o(imax, jmax, kmax+1)
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
+    INTEGER, INTENT(IN) ::maxi, maxj, maxk
+    REAL, INTENT(IN) :: data_i(3,0:maxi,0:maxj,1:maxk)
+    REAL, INTENT(OUT) :: data_o(maxi, maxj, maxk+1)
+    INTEGER, INTENT(IN) :: iland(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: scale
 
     INTEGER :: i, j, k
 
-    DO k = 1, kmax
-       DO j = 1, jmax
-          DO i = 1, imax
-             IF (iland(i,j) >= 90 .OR. iland(i,j) > (kmax+1-k)) THEN
+    DO k = 1, maxk
+       DO j = 1, maxj
+          DO i = 1, maxi
+             IF (iland(i,j) >= 90 .OR. iland(i,j) > (maxk+1-k)) THEN
                 data_o(i,j,k) = -99999.0
              ELSE
-                data_o(i,j,k) = REAL(scale * data_i(3,i,j,kmax+1-k))
+                data_o(i,j,k) = REAL(scale * data_i(3,i,j,maxk+1-k))
              END IF
           END DO
        END DO
     END DO
-    data_o(1:imax,1:jmax,kmax+1) = -99999.0
+    data_o(1:maxi,1:maxj,maxk+1) = -99999.0
   END SUBROUTINE prep_netcdf_ocn_w
 
 
@@ -614,34 +613,34 @@ CONTAINS
 
 
   ! Flip 3D arrays so that low k values are shallower (tracer arrays)
-  SUBROUTINE flip_both1(temper, temp1, imax, jmax, kmax, iland, scale)
+  SUBROUTINE flip_both1(temper, temp1, maxi, maxj, maxk, iland, scale)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: temper(0:imax+1,0:jmax+1,0:kmax+1)
-    REAL, INTENT(OUT) :: temp1(imax,jmax,kmax)
-    INTEGER, INTENT(IN) :: imax, jmax, kmax
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
+    REAL, INTENT(IN) :: temper(0:maxi+1,0:maxj+1,0:maxk+1)
+    REAL, INTENT(OUT) :: temp1(maxi,maxj,maxk)
+    INTEGER, INTENT(IN) :: maxi, maxj, maxk
+    INTEGER, INTENT(IN) :: iland(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: scale
 
     INTEGER :: k
 
-    DO k = 1, kmax
-       WHERE (iland(1:imax,1:jmax) >= 90 .OR. iland(1:imax,1:jmax) > k)
-          temp1(:,:,kmax+1-k) = -99999.0
+    DO k = 1, maxk
+       WHERE (iland(1:maxi,1:maxj) >= 90 .OR. iland(1:maxi,1:maxj) > k)
+          temp1(:,:,maxk+1-k) = -99999.0
        ELSEWHERE
-          temp1(:,:,kmax+1-k) = REAL(scale * temper(1:imax,1:jmax,k))
+          temp1(:,:,maxk+1-k) = REAL(scale * temper(1:maxi,1:maxj,k))
        END WHERE
     END DO
   END SUBROUTINE flip_both1
 
 
   ! Flip 3D arrays so that low k values are shallower (velocity arrays)
-  SUBROUTINE flip_both2(temper, temp1, imax, jmax, kmax, ix, iy, iz, &
+  SUBROUTINE flip_both2(temper, temp1, maxi, maxj, maxk, ix, iy, iz, &
        & iland, scale)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: temper(0:imax,0:jmax,kmax)
+    REAL, INTENT(IN) :: temper(0:maxi,0:maxj,maxk)
     REAL, INTENT(OUT) :: temp1(ix,iy,iz)
-    INTEGER, INTENT(IN) ::  imax, jmax, kmax, ix, iy, iz
-    INTEGER, INTENT(IN) ::  iland(0:imax+1,0:jmax+1)
+    INTEGER, INTENT(IN) ::  maxi, maxj, maxk, ix, iy, iz
+    INTEGER, INTENT(IN) ::  iland(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) ::  scale
 
     INTEGER :: i, j, k, jj
@@ -650,11 +649,11 @@ CONTAINS
        jj = 0
        DO j = 1, iy
           jj = jj + 1
-          DO i = 1, imax
+          DO i = 1, maxi
              IF (iland(i,j) >= 90 .OR. iland(i,j) > k) THEN
-                temp1(i,jj,kmax+1-k) = -99999.0
+                temp1(i,jj,maxk+1-k) = -99999.0
              ELSE
-                temp1(i,jj,kmax+1-k) = REAL(scale * temper(i,j,k))
+                temp1(i,jj,maxk+1-k) = REAL(scale * temper(i,j,k))
              END IF
           END DO
        END DO
@@ -663,15 +662,15 @@ CONTAINS
 
 
   ! Organise a two-dimensional array that's on the tracer grid
-  SUBROUTINE twodee_tracer2(temper, temp1, imax, jmax, iland, scale)
+  SUBROUTINE twodee_tracer2(temper, temp1, maxi, maxj, iland, scale)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: temper(imax, jmax)
-    REAL, INTENT(OUT) :: temp1(imax,jmax)
-    INTEGER, INTENT(IN) :: imax, jmax
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
+    REAL, INTENT(IN) :: temper(maxi, maxj)
+    REAL, INTENT(OUT) :: temp1(maxi,maxj)
+    INTEGER, INTENT(IN) :: maxi, maxj
+    INTEGER, INTENT(IN) :: iland(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: scale
 
-    WHERE (iland(1:imax,1:jmax) >= 90)
+    WHERE (iland(1:maxi,1:maxj) >= 90)
        temp1 = -99999.0
     ELSEWHERE
        temp1 = REAL(scale * temper)
@@ -680,23 +679,23 @@ CONTAINS
 
 
   ! Organise a two-dimensional bathymetry array on the tracer grid
-  SUBROUTINE twodee_bathy(temp1, depth1, imax, jmax, kmax, ix, iy, iland)
+  SUBROUTINE twodee_bathy(temp1, depth1, maxi, maxj, maxk, ix, iy, iland)
     IMPLICIT NONE
     REAL, INTENT(OUT) :: temp1(ix,iy)
-    REAL, INTENT(IN) :: depth1(kmax+1)
-    INTEGER, INTENT(IN) :: imax, jmax, kmax, ix, iy
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
+    REAL, INTENT(IN) :: depth1(maxk+1)
+    INTEGER, INTENT(IN) :: maxi, maxj, maxk, ix, iy
+    INTEGER, INTENT(IN) :: iland(0:maxi+1,0:maxj+1)
 
     INTEGER :: i, j, here_dep
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (iland(i,j) >= 90) THEN
              temp1(i,j) = -99999.0
           ELSE
-             here_dep = kmax - iland(i,j) + 2
+             here_dep = maxk - iland(i,j) + 2
              IF (here_dep < 1) PRINT *, 'bathymetry too shallow'
-             IF (here_dep > kmax+1) PRINT *, 'bathymetry too deep'
+             IF (here_dep > maxk+1) PRINT *, 'bathymetry too deep'
              temp1(i,j) = depth1(here_dep)
           END IF
        END DO
