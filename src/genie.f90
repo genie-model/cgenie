@@ -21,6 +21,7 @@ PROGRAM GENIE
   ! *** INITIALIZE ***
 
   CALL initialise_genie
+  CALL allocate_genie_global
   IF (flag_goldsteinocean) CALL initialise_goldocean_wrapper
   IF (flag_ebatmos) CALL initialise_embm_wrapper
   IF (flag_goldsteinseaice) CALL ini_goldsteinseaice_wrapper
