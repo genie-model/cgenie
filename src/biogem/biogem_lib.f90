@@ -4,16 +4,13 @@
 ! LIBRARY MODULE
 ! ******************************************************************************************************************************** !
 
-
 MODULE biogem_lib
-
 
   use genie_control
   USE gem_util
   use gem_carbchem
   IMPLICIT NONE
   SAVE
-
 
   ! ****************************************************************************************************************************** !
   ! *** NAMELIST DEFINITIONS ***************************************************************************************************** !
@@ -784,35 +781,35 @@ MODULE biogem_lib
 
 
   ! *** GOLDSTEIN interface with BioGeM ***
-  real,dimension(n_ocn)::tstoocn_offset                          ! tracer units offset (GOLDSTEIN <-> BIOGEM conversion)
+  REAL, DIMENSION(n_ocn) :: tstoocn_offset                 ! tracer units offset (GOLDSTEIN <-> BIOGEM conversion)
   ! ocean
   ! NOTE: ocean tracers (dissolved and particulate) are stored as concentrations (mol kg-1)
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::ocn                         ! ocean tracer array
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: ocn             ! ocean tracer array
   ! atmosphere
-  logical,DIMENSION(n_atm)::ocnatm_airsea_eqm                    !
-  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_pv                !
-  real,DIMENSION(n_atm,n_i,n_j)::ocnatm_airsea_solconst          !
+  LOGICAL, DIMENSION(n_atm) :: ocnatm_airsea_eqm
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_pv
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_solconst
   ! 'biology'
-  REAL,DIMENSION(n_sed,n_i,n_j,n_k)::bio_part                    ! ocean tracer particle field (NOTE: <n_sed> tracers)
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::bio_remin                   ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
-  REAL,DIMENSION(n_sed,n_i,n_j,n_k)::bio_settle                  ! ocean tracer particle settling field (NOTE: <n_sed> tracers)
-  REAL,DIMENSION(n_sed,n_sed,n_i,n_j)::bio_part_red              ! 'Redfield' ratios
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part        ! ocean tracer particle field (NOTE: <n_sed> tracers)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_settle      ! ocean tracer particle settling field (NOTE: <n_sed> tracers)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part_red    ! 'Redfield' ratios
   ! 'physics'
-  REAL,DIMENSION(n_phys_ocn,n_i,n_j,n_k)::phys_ocn               !
-  REAL,DIMENSION(n_phys_ocnatm,n_i,n_j)::phys_ocnatm             !
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: phys_ocn
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: phys_ocnatm
   ! aqueous carbonate system
-  REAL,DIMENSION(n_carb,n_i,n_j,n_k)::carb                       !
-  REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::carbconst             !
-  REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::carbalk                 !
-  REAL,DIMENSION(n_carbisor,n_i,n_j,n_k)::carbisor               ! carbonate (carbon) isotopic properties array
-  REAL,DIMENSION(3,n_i,n_j,n_k)::carb_TSn                        !
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: carb
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: carbconst
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: carbalk
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: carbisor        ! carbonate (carbon) isotopic properties array
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: carb_TSn
   ! diagnostics
-  REAL,DIMENSION(n_diag_bio,n_i,n_j)::diag_bio                   ! biology diagnostics
-  REAL,DIMENSION(n_diag_geochem,n_i,n_j,n_k)::diag_geochem       ! geochemistry diagnostics
-  REAL,DIMENSION(n_atm,n_i,n_j)::diag_airsea                     ! air-sea gas exchange diagnostics
-  REAL,DIMENSION(n_atm,n_i,n_j)::diag_forcing                    ! atmospheric forcing diagnostics
-  REAL,DIMENSION(n_diag_misc_2D,n_i,n_j)::diag_misc_2D           !
-  REAL,DIMENSION(0:n_i,0:n_j)::diag_misc_psi                     !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: diag_bio          ! biology diagnostics
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: diag_geochem    ! geochemistry diagnostics
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: diag_airsea       ! air-sea gas exchange diagnostics
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: diag_forcing      ! atmospheric forcing diagnostics
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: diag_misc_2D
+  REAL, DIMENSION(:,:), ALLOCATABLE :: diag_misc_psi
 
   ! *** integrated (time-averaged) time-series storage scalars and vectors ***
   !
@@ -857,33 +854,33 @@ MODULE biogem_lib
 
   ! *** integrated (time-averaged) time-slice arrays ***
   ! integrated time slice storage arrays - ocean
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::int_ocn_timeslice           !
-  REAL,DIMENSION(n_sed,n_i,n_j,n_k)::int_bio_part_timeslice      !
-  REAL,DIMENSION(n_sed,n_i,n_j,n_k)::int_bio_settle_timeslice    !
-  REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::int_bio_remin_timeslice     !
-  REAL,DIMENSION(n_phys_ocn,n_i,n_j,n_k)::int_phys_ocn_timeslice !
-  REAL,DIMENSION(n_phys_ocnatm,n_i,n_j)::int_phys_ocnatm_timeslice   !
-  REAL,DIMENSION(n_carb,n_i,n_j,n_k)::int_carb_timeslice         !
-  REAL,DIMENSION(n_carbconst,n_i,n_j,n_k)::int_carbconst_timeslice   !
-  REAL,DIMENSION(n_carbisor,n_i,n_j,n_k)::int_carbisor_timeslice !
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_ocn_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_part_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_settle_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_remin_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_phys_ocn_timeslice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_phys_ocnatm_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_carb_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_carbconst_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_carbisor_timeslice
   !  integrated time slice storage arrays - ocean-atmosphere interface
-  REAL,DIMENSION(n_atm,n_i,n_j)::int_sfcatm1_timeslice           !
-  REAL,DIMENSION(n_atm,n_i,n_j)::int_focnatm_timeslice           !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_sfcatm1_timeslice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_focnatm_timeslice
   !  integrated time slice storage arrays - ocean-sediment interface
-  REAL,DIMENSION(n_sed,n_i,n_j)::int_sfcsed1_timeslice           !
-  REAL,DIMENSION(n_sed,n_i,n_j)::int_focnsed_timeslice           !
-  REAL,DIMENSION(n_ocn,n_i,n_j)::int_fsedocn_timeslice           !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_sfcsed1_timeslice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_focnsed_timeslice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_fsedocn_timeslice
   !  integrated time slice storage arrays - GOLDSTEIn
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsi_timeslice                !
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsia_timeslice               !
-  REAL,DIMENSION(0:n_j,0:n_k)::int_opsip_timeslice               !
-  REAL,DIMENSION(0:n_j,0:n_k)::int_zpsi_timeslice                !
-  REAL,DIMENSION(3,n_i,n_j,n_k)::int_u_timeslice                 !
-  REAL,DIMENSION(0:n_i,0:n_j)::int_psi_timeslice                 !
-  REAL,DIMENSION(n_diag_bio,n_i,n_j)::int_diag_bio_timeslice             ! biology diagnostics
-  REAL,DIMENSION(n_diag_geochem,n_i,n_j,n_k)::int_diag_geochem_timeslice ! geochemistry diagnostics
-  REAL,DIMENSION(n_ocn,n_i,n_j)::int_diag_weather_timeslice      ! weathering diagnostics
-  REAL,DIMENSION(n_atm,n_i,n_j)::int_diag_airsea_timeslice       ! air-sea gas exchange diagnostics
+  REAL, DIMENSION(:,:), ALLOCATABLE :: int_opsi_timeslice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: int_opsia_timeslice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: int_opsip_timeslice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: int_zpsi_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_u_timeslice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: int_psi_timeslice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_diag_bio_timeslice          ! biology diagnostics
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_diag_geochem_timeslice    ! geochemistry diagnostics
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_diag_weather_timeslice      ! weathering diagnostics
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_diag_airsea_timeslice       ! air-sea gas exchange diagnostics
   ! ### ADD ADDITIONAL TIME-SLICE ARRAY DEFINITIONS HERE ######################################################################### !
   !
   ! ############################################################################################################################## !

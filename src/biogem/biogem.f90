@@ -53,6 +53,53 @@ CONTAINS
     PRINT *, ' >>> Initialising BIOGEM ocean biogeochem. module ...'
     ! ---------------------------------------------------------- ! load GOIN
     call sub_load_goin_biogem()
+
+    ALLOCATE(ocn(n_ocn,n_i,n_j,n_k))                   ; ocn = 0.0
+    ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j))          ; ocnatm_airsea_pv = 0.0
+    ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j))    ; ocnatm_airsea_solconst = 0.0
+    ALLOCATE(bio_part(n_sed,n_i,n_j,n_k))              ; bio_part = 0.0
+    ALLOCATE(bio_remin(n_ocn,n_i,n_j,n_k))             ; bio_remin = 0.0
+    ALLOCATE(bio_settle(n_sed,n_i,n_j,n_k))            ; bio_settle = 0.0
+    ALLOCATE(bio_part_red(n_sed,n_sed,n_i,n_j))        ; bio_part_red = 0.0
+    ALLOCATE(phys_ocn(n_phys_ocn,n_i,n_j,n_k))         ; phys_ocn = 0.0
+    ALLOCATE(phys_ocnatm(n_phys_ocnatm,n_i,n_j))       ; phys_ocnatm = 0.0
+    ALLOCATE(carb(n_carb,n_i,n_j,n_k))                 ; carb = 0.0
+    ALLOCATE(carbconst(n_carbconst,n_i,n_j,n_k))       ; carbconst = 0.0
+    ALLOCATE(carbalk(n_carbalk,n_i,n_j,n_k))           ; carbalk = 0.0
+    ALLOCATE(carbisor(n_carbisor,n_i,n_j,n_k))         ; carbisor = 0.0
+    ALLOCATE(carb_TSn(3,n_i,n_j,n_k))                  ; carb_TSn = 0.0
+    ALLOCATE(diag_bio(n_diag_bio,n_i,n_j))             ; diag_bio = 0.0
+    ALLOCATE(diag_geochem(n_diag_geochem,n_i,n_j,n_k)) ; diag_geochem = 0.0
+    ALLOCATE(diag_airsea(n_atm,n_i,n_j))               ; diag_airsea = 0.0
+    ALLOCATE(diag_forcing(n_atm,n_i,n_j))              ; diag_forcing = 0.0
+    ALLOCATE(diag_misc_2D(n_diag_misc_2D,n_i,n_j))     ; diag_misc_2D = 0.0
+    ALLOCATE(diag_misc_psi(0:n_i,0:n_j))               ; diag_misc_psi = 0.0
+
+    ALLOCATE(int_ocn_timeslice(n_ocn,n_i,n_j,n_k))                   ; int_ocn_timeslice = 0.0
+    ALLOCATE(int_bio_part_timeslice(n_sed,n_i,n_j,n_k))              ; int_bio_part_timeslice = 0.0
+    ALLOCATE(int_bio_settle_timeslice(n_sed,n_i,n_j,n_k))            ; int_bio_settle_timeslice = 0.0
+    ALLOCATE(int_bio_remin_timeslice(n_ocn,n_i,n_j,n_k))             ; int_bio_remin_timeslice = 0.0
+    ALLOCATE(int_phys_ocn_timeslice(n_phys_ocn,n_i,n_j,n_k))         ; int_phys_ocn_timeslice = 0.0
+    ALLOCATE(int_phys_ocnatm_timeslice(n_phys_ocnatm,n_i,n_j))       ; int_phys_ocnatm_timeslice = 0.0
+    ALLOCATE(int_carb_timeslice(n_carb,n_i,n_j,n_k))                 ; int_carb_timeslice = 0.0
+    ALLOCATE(int_carbconst_timeslice(n_carbconst,n_i,n_j,n_k))       ; int_carbconst_timeslice = 0.0
+    ALLOCATE(int_carbisor_timeslice(n_carbisor,n_i,n_j,n_k))         ; int_carbisor_timeslice = 0.0
+    ALLOCATE(int_sfcatm1_timeslice(n_atm,n_i,n_j))                   ; int_sfcatm1_timeslice = 0.0
+    ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j))                   ; int_focnatm_timeslice = 0.0
+    ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j))                   ; int_sfcsed1_timeslice = 0.0
+    ALLOCATE(int_focnsed_timeslice(n_sed,n_i,n_j))                   ; int_focnsed_timeslice = 0.0
+    ALLOCATE(int_fsedocn_timeslice(n_ocn,n_i,n_j))                   ; int_fsedocn_timeslice = 0.0
+    ALLOCATE(int_opsi_timeslice(0:n_j,0:n_k))                        ; int_opsi_timeslice = 0.0
+    ALLOCATE(int_opsia_timeslice(0:n_j,0:n_k))                       ; int_opsia_timeslice = 0.0
+    ALLOCATE(int_opsip_timeslice(0:n_j,0:n_k))                       ; int_opsip_timeslice = 0.0
+    ALLOCATE(int_zpsi_timeslice(0:n_j,0:n_k))                        ; int_zpsi_timeslice = 0.0
+    ALLOCATE(int_u_timeslice(3,n_i,n_j,n_k))                         ; int_u_timeslice = 0.0
+    ALLOCATE(int_psi_timeslice(0:n_i,0:n_j))                         ; int_psi_timeslice = 0.0
+    ALLOCATE(int_diag_bio_timeslice(n_diag_bio,n_i,n_j))             ; int_diag_bio_timeslice = 0.0
+    ALLOCATE(int_diag_geochem_timeslice(n_diag_geochem,n_i,n_j,n_k)) ; int_diag_geochem_timeslice = 0.0
+    ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j))              ; int_diag_weather_timeslice = 0.0
+    ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j))               ; int_diag_airsea_timeslice = 0.0
+
     ! ---------------------------------------------------------- ! set time
     ! NOTE: modify 'par_misc_t_start' according to the run-time accumulated in any requested restart,
     !       so that the time that BioGeM starts with is the same as the requested start time
