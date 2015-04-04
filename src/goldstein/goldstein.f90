@@ -538,31 +538,31 @@ CONTAINS
        & go_ec, go_istep0)
     USE genie_util, ONLY: check_unit, check_iostat, message, die
     IMPLICIT NONE
-    REAL, DIMENSION(maxi), INTENT(OUT) :: olon1, olon2, olon3
-    REAL, DIMENSION(maxj), INTENT(OUT) :: olat1, olat2, olat3
-    REAL, DIMENSION(maxi+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: olon1, olon2, olon3
+    REAL, DIMENSION(:), INTENT(OUT) :: olat1, olat2, olat3
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & oboxedge1_lon, oboxedge2_lon, oboxedge3_lon
-    REAL, DIMENSION(maxj+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & oboxedge1_lat, oboxedge2_lat, oboxedge3_lat
     REAL, INTENT(OUT) :: depth(maxk), depth1(maxk+1)
-    INTEGER, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: &
          & ilandmask1, ilandmask2, ilandmask3
     INTEGER(KIND=8), INTENT(IN) :: totsteps
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & tstar_ocn, sstar_ocn, ustar_ocn, vstar_ocn, albedo_ocn
-    INTEGER, DIMENSION(maxj), INTENT(OUT) :: ias_out, iaf_out, ips_out, ipf_out
+    INTEGER, DIMENSION(:), INTENT(OUT) :: ias_out, iaf_out, ips_out, ipf_out
     INTEGER, INTENT(OUT) :: jsf_out
     LOGICAL, INTENT(IN) :: lrestart_genie
     REAL, INTENT(OUT) :: go_saln0, go_rhoair, go_cd, go_ds(maxj), go_dphi
-    INTEGER, DIMENSION(maxj), INTENT(OUT) :: go_ips, go_ipf
+    INTEGER, DIMENSION(:), INTENT(OUT) :: go_ips, go_ipf
     REAL, INTENT(OUT) :: &
          & go_usc, go_dsc, go_fsc, go_rh0sc, go_rhosc, go_cpsc, go_scf
-    INTEGER, DIMENSION(maxi,maxj), INTENT(OUT) :: go_k1
-    REAL, DIMENSION(maxk), INTENT(OUT) :: go_dz, go_dza
-    INTEGER, DIMENSION(maxj), INTENT(OUT) :: go_ias, go_iaf
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: go_k1
+    REAL, DIMENSION(:), INTENT(OUT) :: go_dz, go_dza
+    INTEGER, DIMENSION(:), INTENT(OUT) :: go_ias, go_iaf
     INTEGER, INTENT(OUT) :: go_jsf
-    REAL, DIMENSION(0:maxj), INTENT(OUT) :: go_c, go_cv, go_s, go_sv
-    REAL, DIMENSION(maxl,maxi,maxj,maxk), INTENT(OUT) :: go_ts, go_ts1
+    REAL, DIMENSION(:), INTENT(OUT) :: go_c, go_cv, go_s, go_sv
+    REAL, DIMENSION(:,:,:,:), INTENT(OUT) :: go_ts, go_ts1
     REAL, INTENT(OUT) :: go_rsc, go_syr
     INTEGER, INTENT(OUT) :: go_nyear
     CHARACTER(LEN=13), INTENT(OUT) :: go_lin
