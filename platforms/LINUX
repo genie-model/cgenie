@@ -9,7 +9,7 @@ f90 = {
                   '-msse', '-Wall' ],
 
     # Debug flags.
-    'debug': ['-g'],
+    'debug': ['-g', '-ffpe-trap=invalid,overflow'],
 
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops'],

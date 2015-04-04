@@ -225,14 +225,14 @@ CONTAINS
        & landice_slicemask_lic, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_rsc, dum_syr, dum_dphi
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: dum_ca
-    REAL, DIMENSION(2,maxi,maxj), INTENT(IN) :: dum_tq
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: dum_ca
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_tq
     REAL, INTENT(IN) :: dum_rmax, dum_rdtdim
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd, land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd, land_snow_lnd
 
     REAL :: Cveg_ini, Csoil_ini, fv_ini, photo_ini, fws, fta, fco2, rland_pts
     REAL :: z0_ini

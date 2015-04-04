@@ -548,7 +548,7 @@ CONTAINS
          & oboxedge1_lon, oboxedge2_lon, oboxedge3_lon
     REAL, DIMENSION(:), INTENT(OUT) :: &
          & oboxedge1_lat, oboxedge2_lat, oboxedge3_lat
-    REAL, INTENT(OUT) :: depth(maxk), depth1(maxk+1)
+    REAL, DIMENSION(:), INTENT(OUT) :: depth, depth1
     INTEGER, DIMENSION(:,:), INTENT(OUT) :: &
          & ilandmask1, ilandmask2, ilandmask3
     INTEGER(KIND=8), INTENT(IN) :: totsteps
@@ -557,7 +557,8 @@ CONTAINS
     INTEGER, DIMENSION(:), INTENT(OUT) :: ias_out, iaf_out, ips_out, ipf_out
     INTEGER, INTENT(OUT) :: jsf_out
     LOGICAL, INTENT(IN) :: lrestart_genie
-    REAL, INTENT(OUT) :: go_saln0, go_rhoair, go_cd, go_ds(maxj), go_dphi
+    REAL, DIMENSION(:), INTENT(OUT) :: go_ds
+    REAL, INTENT(OUT) :: go_saln0, go_rhoair, go_cd, go_dphi
     INTEGER, DIMENSION(:), INTENT(OUT) :: go_ips, go_ipf
     REAL, INTENT(OUT) :: &
          & go_usc, go_dsc, go_fsc, go_rh0sc, go_rhosc, go_cpsc, go_scf
