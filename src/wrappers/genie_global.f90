@@ -291,43 +291,41 @@ MODULE genie_global
   ! parameter(go_tsc=go_rsc/go_usc)
   REAL :: go_dsc=5.0E3, go_fsc=2*7.2921E-5, go_rh0sc=1.0E3
   REAL :: go_rhosc, go_cpsc, go_solconst, go_scf
-  INTEGER, DIMENSION(ilat1_ocn) :: go_ips, go_ipf, go_ias, go_iaf
+  INTEGER, DIMENSION(:), ALLOCATABLE :: go_ips, go_ipf, go_ias, go_iaf
   INTEGER :: go_jsf
-  INTEGER, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_k1
-  REAL, DIMENSION(1:inl1_ocn) :: go_dz, go_dza
-  REAL, DIMENSION(0:ilat1_ocn) :: go_c, go_cv, go_s, go_sv
-  REAL, DIMENSION(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn) :: go_ts, go_ts1
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_cost
-  REAL, DIMENSION(1:3,ilon1_ocn,ilat1_ocn,1:inl1_ocn) :: go_uvw
-  REAL, DIMENSION(1:2,ilon1_ocn,ilat1_ocn) :: go_tau
-  REAL, DIMENSION(1:2,ilon1_ocn,ilat1_ocn) :: eb_uv
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: eb_usurf
-  REAL, DIMENSION(ilat1_ocn) :: go_solfor
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_fxsw
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_mldta
-  REAL, DIMENSION(0:ilon1_ocn,0:ilat1_ocn) :: go_psi
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: go_k1
+  REAL, DIMENSION(:), ALLOCATABLE :: go_dz, go_dza
+  REAL, DIMENSION(:), ALLOCATABLE :: go_c, go_cv, go_s, go_sv
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: go_ts, go_ts1
+  REAL, DIMENSION(:,:), ALLOCATABLE :: go_cost
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: go_uvw
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: go_tau
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: eb_uv
+  REAL, DIMENSION(:,:), ALLOCATABLE :: eb_usurf
+  REAL, DIMENSION(:), ALLOCATABLE :: go_solfor
+  REAL, DIMENSION(:,:), ALLOCATABLE :: go_fxsw
+  REAL, DIMENSION(:,:), ALLOCATABLE :: go_mldta
+  REAL, DIMENSION(:,:), ALLOCATABLE :: go_psi
 
   ! genie-ents variables
   INTEGER :: go_istep0, go_nyear
   REAL :: go_rsc, go_syr, eb_dphi, eb_rmax, eb_rdtdim
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: eb_ca
+  REAL, DIMENSION(:,:), ALLOCATABLE :: eb_ca
   CHARACTER(LEN=13) :: go_lin
-  REAL :: ea_co2(ilon1_ocn,ilat1_ocn)
-  REAL :: ea_fxplw(ilon1_ocn,ilat1_ocn)
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ea_co2, ea_fxplw
   REAL, DIMENSION(5) :: go_ec
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn,inl1_ocn) :: go_rho
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: go_rho
 
   ! Variables for surflux_ents
   INTEGER, PARAMETER :: en_ntimes_max=50
   INTEGER :: en_t_orog, en_norog, en_orogsteps
   INTEGER :: en_t_lice, en_nlice, en_licesteps
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn,en_ntimes_max) :: &
-       & en_orog_vect, en_lice_vect
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: en_orog_vect, en_lice_vect
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, eb_evap, eb_pptn, eb_relh
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: torog_atm, albs_atm
-  REAL, DIMENSION(ilon1_lic,ilat1_lic) :: landice_slicemask_lic
-  REAL, DIMENSION(ilon1_lnd,ilat1_lnd) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: torog_atm, albs_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: landice_slicemask_lic
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & land_albs_snow_lnd, land_albs_nosnow_lnd, land_snow_lnd, &
        & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd
 
@@ -670,35 +668,54 @@ CONTAINS
 
     ALLOCATE(go_ds(ilat1_ocn)) ; go_ds = 0.0
 
-  ! INTEGER, DIMENSION(ilat1_ocn) :: go_ips, go_ipf, go_ias, go_iaf
-  ! INTEGER, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_k1
-  ! REAL, DIMENSION(1:inl1_ocn) :: go_dz, go_dza
-  ! REAL, DIMENSION(0:ilat1_ocn) :: go_c, go_cv, go_s, go_sv
-  ! REAL, DIMENSION(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn) :: go_ts, go_ts1
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_cost
-  ! REAL, DIMENSION(1:3,ilon1_ocn,ilat1_ocn,1:inl1_ocn) :: go_uvw
-  ! REAL, DIMENSION(1:2,ilon1_ocn,ilat1_ocn) :: go_tau
-  ! REAL, DIMENSION(1:2,ilon1_ocn,ilat1_ocn) :: eb_uv
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: eb_usurf
-  ! REAL, DIMENSION(ilat1_ocn) :: go_solfor
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_fxsw
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_mldta
-  ! REAL, DIMENSION(0:ilon1_ocn,0:ilat1_ocn) :: go_psi
+    ALLOCATE(go_ips(ilat1_ocn))          ; go_ips = 0
+    ALLOCATE(go_ipf(ilat1_ocn))          ; go_ipf = 0
+    ALLOCATE(go_ias(ilat1_ocn))          ; go_ias = 0
+    ALLOCATE(go_iaf(ilat1_ocn))          ; go_iaf = 0
+    ALLOCATE(go_k1(ilon1_ocn,ilat1_ocn)) ; go_k1 = 0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: eb_ca
-  ! REAL :: ea_co2(ilon1_ocn,ilat1_ocn)
-  ! REAL :: ea_fxplw(ilon1_ocn,ilat1_ocn)
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn,inl1_ocn) :: go_rho
+    ALLOCATE(go_dz(1:inl1_ocn))                               ; go_dz = 0.0
+    ALLOCATE(go_dza(1:inl1_ocn))                              ; go_dza = 0.0
+    ALLOCATE(go_c(0:ilat1_ocn))                               ; go_c = 0.0
+    ALLOCATE(go_cv(0:ilat1_ocn))                              ; go_cv = 0.0
+    ALLOCATE(go_s(0:ilat1_ocn))                               ; go_s = 0.0
+    ALLOCATE(go_sv(0:ilat1_ocn))                              ; go_sv = 0.0
+    ALLOCATE(go_ts(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn))  ; go_ts = 0.0
+    ALLOCATE(go_ts1(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn)) ; go_ts1 = 0.0
+    ALLOCATE(go_cost(ilon1_ocn,ilat1_ocn))                    ; go_cost = 0.0
+    ALLOCATE(go_uvw(1:3,ilon1_ocn,ilat1_ocn,1:inl1_ocn))      ; go_uvw = 0.0
+    ALLOCATE(go_tau(1:2,ilon1_ocn,ilat1_ocn))                 ; go_tau = 0.0
+    ALLOCATE(eb_uv(1:2,ilon1_ocn,ilat1_ocn))                  ; eb_uv = 0.0
+    ALLOCATE(eb_usurf(ilon1_ocn,ilat1_ocn))                   ; eb_usurf = 0.0
+    ALLOCATE(go_solfor(ilat1_ocn))                            ; go_solfor = 0.0
+    ALLOCATE(go_fxsw(ilon1_ocn,ilat1_ocn))                    ; go_fxsw = 0.0
+    ALLOCATE(go_mldta(ilon1_ocn,ilat1_ocn))                   ; go_mldta = 0.0
+    ALLOCATE(go_psi(0:ilon1_ocn,0:ilat1_ocn))                 ; go_psi = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn,en_ntimes_max) :: &
-  !      & en_orog_vect, en_lice_vect
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, eb_evap, eb_pptn, eb_relh
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: torog_atm, albs_atm
-  ! REAL, DIMENSION(ilon1_lic,ilat1_lic) :: landice_slicemask_lic
-  ! REAL, DIMENSION(ilon1_lnd,ilat1_lnd) :: &
-  !      & land_albs_snow_lnd, land_albs_nosnow_lnd, land_snow_lnd, &
-  !      & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd
+    ALLOCATE(eb_ca(ilon1_ocn,ilat1_ocn))           ; eb_ca = 0.0
+    ALLOCATE(ea_co2(ilon1_ocn,ilat1_ocn))          ; ea_co2 = 0.0
+    ALLOCATE(ea_fxplw(ilon1_ocn,ilat1_ocn))        ; ea_fxplw = 0.0
+    ALLOCATE(go_rho(ilon1_ocn,ilat1_ocn,inl1_ocn)) ; go_rho = 0.0
+
+    ALLOCATE(en_orog_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max)) ; en_orog_vect = 0.0
+    ALLOCATE(en_lice_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max)) ; en_lice_vect = 0.0
+    ALLOCATE(eb_fx0a(ilon1_ocn,ilat1_ocn))                    ; eb_fx0a = 0.0
+    ALLOCATE(eb_fx0o(ilon1_ocn,ilat1_ocn))                    ; eb_fx0o = 0.0
+    ALLOCATE(eb_fxsen(ilon1_ocn,ilat1_ocn))                   ; eb_fxsen = 0.0
+    ALLOCATE(eb_fxlw(ilon1_ocn,ilat1_ocn))                    ; eb_fxlw = 0.0
+    ALLOCATE(eb_evap(ilon1_ocn,ilat1_ocn))                    ; eb_evap = 0.0
+    ALLOCATE(eb_pptn(ilon1_ocn,ilat1_ocn))                    ; eb_pptn = 0.0
+    ALLOCATE(eb_relh(ilon1_ocn,ilat1_ocn))                    ; eb_relh = 0.0
+    ALLOCATE(torog_atm(ilon1_atm,ilat1_atm))                  ; torog_atm = 0.0
+    ALLOCATE(albs_atm(ilon1_atm,ilat1_atm))                   ; albs_atm = 0.0
+    ALLOCATE(landice_slicemask_lic(ilon1_lic,ilat1_lic))      ; landice_slicemask_lic = 0.0
+    ALLOCATE(land_albs_snow_lnd(ilon1_lnd,ilat1_lnd))         ; land_albs_snow_lnd = 0.0
+    ALLOCATE(land_albs_nosnow_lnd(ilon1_lnd,ilat1_lnd))       ; land_albs_nosnow_lnd = 0.0
+    ALLOCATE(land_snow_lnd(ilon1_lnd,ilat1_lnd))              ; land_snow_lnd = 0.0
+    ALLOCATE(land_bcap_lnd(ilon1_lnd,ilat1_lnd))              ; land_bcap_lnd = 0.0
+    ALLOCATE(land_z0_lnd(ilon1_lnd,ilat1_lnd))                ; land_z0_lnd = 0.0
+    ALLOCATE(land_temp_lnd(ilon1_lnd,ilat1_lnd))              ; land_temp_lnd = 0.0
+    ALLOCATE(land_moisture_lnd(ilon1_lnd,ilat1_lnd))          ; land_moisture_lnd = 0.0
 
   ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
   !      & el_leaf, el_respveg, el_respsoil, el_photo
