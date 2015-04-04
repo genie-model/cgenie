@@ -755,6 +755,15 @@ CONTAINS
 
     ALLOCATE(getj(maxi,maxj)) ; getj = .FALSE.
 
+    ALLOCATE(nclon1(maxi))     ; nclon1 = 0.0
+    ALLOCATE(nclon2(maxi))     ; nclon2 = 0.0
+    ALLOCATE(nclon3(maxi))     ; nclon3 = 0.0
+    ALLOCATE(nclat1(maxj))     ; nclat1 = 0.0
+    ALLOCATE(nclat2(maxj))     ; nclat2 = 0.0
+    ALLOCATE(nclat3(maxj))     ; nclat3 = 0.0
+    ALLOCATE(ncdepth(maxk))    ; ncdepth = 0.0
+    ALLOCATE(ncdepth1(maxk+1)) ; ncdepth1 = 0.0
+
     ! Local allocations
     ALLOCATE(bmask(maxi,maxj))       ; bmask = 0
     ALLOCATE(h(3,0:maxi+1,0:maxj+1)) ; h = 0.0
