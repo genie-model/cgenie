@@ -78,6 +78,7 @@ CONTAINS
   END SUBROUTINE initialise_atchem_wrapper
 
   SUBROUTINE initialise_sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL initialise_sedgem (genie_timestep, genie_sfxsumsed, genie_sfcsumocn, &
          & genie_sfcsed, genie_sfxocn)

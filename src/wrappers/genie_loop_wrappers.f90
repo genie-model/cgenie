@@ -438,26 +438,30 @@ CONTAINS
   ! *** SEDGEM ***
 
   SUBROUTINE sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
+    CALL step_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
          & .TRUE.)
   END SUBROUTINE sedgem_wrapper
 
   SUBROUTINE sedgem_glt_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
+    CALL step_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
          & .FALSE.)
   END SUBROUTINE sedgem_glt_wrapper
 
   SUBROUTINE sedgem_dsedage_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL sedgem_dsedage(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed)
   END SUBROUTINE sedgem_dsedage_wrapper
 
   SUBROUTINE sedgem_save_restart_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL sedgem_save_rst(genie_clock, genie_sfxocn)
   END SUBROUTINE sedgem_save_restart_wrapper

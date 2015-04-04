@@ -44,6 +44,7 @@ CONTAINS
   END SUBROUTINE end_embm_wrapper
 
   SUBROUTINE end_sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL end_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
                   & genie_sfcsumocn)
