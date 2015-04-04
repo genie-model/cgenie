@@ -81,49 +81,49 @@ MODULE genie_global
   REAL, DIMENSION(:,:), ALLOCATABLE :: surf_stressx3_atm, surf_stressy3_atm
   REAL, DIMENSION(:,:), ALLOCATABLE :: trest_ocn, srest_ocn
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-       & land_latent_atm=0.0, land_sensible_atm=0.0, land_stressx_atm=0.0, &
-       & land_stressy_atm=0.0, land_evap_atm=0.0
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-       & ocean_latent_atm=0.0, ocean_sensible_atm=0.0, ocean_stressx_atm=0.0, &
-       & ocean_stressy_atm=0.0, ocean_evap_atm=0.0
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & land_latent_atm, land_sensible_atm, land_stressx_atm, &
+       & land_stressy_atm, land_evap_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & ocean_latent_atm, ocean_sensible_atm, ocean_stressx_atm, &
+       & ocean_stressy_atm, ocean_evap_atm
   ! BEWARE!!! I HAVE CHANGED THIS A BIT....
   ! WHY WAS RUNOFF_OCN ON THE ATM GRID??!!
 
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & ocean_lowestlu2_ocn, ocean_lowestlu3_ocn, &
        & ocean_lowestlv2_ocn, ocean_lowestlv3_ocn, &
        & ocean_stressx2_ocn, ocean_stressx3_ocn, &
        & ocean_stressy2_ocn, ocean_stressy3_ocn
-  REAL, DIMENSION(2,ilon1_ocn,ilat1_ocn) :: stressx_ocn, stressy_ocn
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: stressx_ocn, stressy_ocn
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & surf_orog_atm, zonwind_atm, merwind_atm
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: runoff_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: runoff_ocn
   ! Runoff on land before routing to ocean, for use in rokgem
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: runoff_land
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: runoff_sic
+  REAL, DIMENSION(:,:), ALLOCATABLE :: runoff_land
+  REAL, DIMENSION(:,:), ALLOCATABLE :: runoff_sic
 
   ! For the seaice on the goldstein grid....
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: seaicefrac_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: seaicefrac_ocn
 
   ! This variable is so that the stressx_atm and stressy_atm for
   ! goldstein can be passed sensibly.  The atmos one is a dummy
   ! variable for returning the temp and albedo
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: dummy_ocn
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: dummy_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: dummy_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: dummy_atm
 
   ! Need a variable for the interp mask
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: interpmask_atm
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: interpmask_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: interpmask_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: interpmask_ocn
 
   REAL :: weighttot_atm, weighttot_ocn
 
   ! Extra fluxes for new c-GOLDSTEIN modules
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: evap_ocn, precip_ocn
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: evap_atm
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: evap_sic, precip_atm, precip_sic
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: ustar_ocn, vstar_ocn, sstar_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: evap_ocn, precip_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: evap_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: evap_sic, precip_atm, precip_sic
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ustar_ocn, vstar_ocn, sstar_ocn
 
   ! Extra fields for c-GOLDSTEIN sea-ice module
   REAL, DIMENSION(ilon1_sic,ilat1_sic) :: &
@@ -492,39 +492,48 @@ CONTAINS
     ALLOCATE(trest_ocn(ilon1_ocn,ilat1_ocn))         ; trest_ocn = 0.0
     ALLOCATE(srest_ocn(ilon1_ocn,ilat1_ocn))         ; srest_ocn = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & land_latent_atm=0.0, land_sensible_atm=0.0, land_stressx_atm=0.0, &
-  !      & land_stressy_atm=0.0, land_evap_atm=0.0
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & ocean_latent_atm=0.0, ocean_sensible_atm=0.0, ocean_stressx_atm=0.0, &
-  !      & ocean_stressy_atm=0.0, ocean_evap_atm=0.0
+    ALLOCATE(land_latent_atm(ilon1_atm,ilat1_atm))    ; land_latent_atm = 0.0
+    ALLOCATE(land_sensible_atm(ilon1_atm,ilat1_atm))  ; land_sensible_atm = 0.0
+    ALLOCATE(land_stressx_atm(ilon1_atm,ilat1_atm))   ; land_stressx_atm = 0.0
+    ALLOCATE(land_stressy_atm(ilon1_atm,ilat1_atm))   ; land_stressy_atm = 0.0
+    ALLOCATE(land_evap_atm(ilon1_atm,ilat1_atm))      ; land_evap_atm = 0.0
+    ALLOCATE(ocean_latent_atm(ilon1_atm,ilat1_atm))   ; ocean_latent_atm = 0.0
+    ALLOCATE(ocean_sensible_atm(ilon1_atm,ilat1_atm)) ; ocean_sensible_atm = 0.0
+    ALLOCATE(ocean_stressx_atm(ilon1_atm,ilat1_atm))  ; ocean_stressx_atm = 0.0
+    ALLOCATE(ocean_stressy_atm(ilon1_atm,ilat1_atm))  ; ocean_stressy_atm = 0.0
+    ALLOCATE(ocean_evap_atm(ilon1_atm,ilat1_atm))     ; ocean_evap_atm = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & ocean_lowestlu2_ocn, ocean_lowestlu3_ocn, &
-  !      & ocean_lowestlv2_ocn, ocean_lowestlv3_ocn, &
-  !      & ocean_stressx2_ocn, ocean_stressx3_ocn, &
-  !      & ocean_stressy2_ocn, ocean_stressy3_ocn
-  ! REAL, DIMENSION(2,ilon1_ocn,ilat1_ocn) :: stressx_ocn, stressy_ocn
+    ALLOCATE(ocean_lowestlu2_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlu2_ocn = 0.0
+    ALLOCATE(ocean_lowestlu3_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlu3_ocn = 0.0
+    ALLOCATE(ocean_lowestlv2_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlv2_ocn = 0.0
+    ALLOCATE(ocean_lowestlv3_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlv3_ocn = 0.0
+    ALLOCATE(ocean_stressx2_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressx2_ocn = 0.0
+    ALLOCATE(ocean_stressx3_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressx3_ocn = 0.0
+    ALLOCATE(ocean_stressy2_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressy2_ocn = 0.0
+    ALLOCATE(ocean_stressy3_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressy3_ocn = 0.0
+    ALLOCATE(stressx_ocn(2,ilon1_ocn,ilat1_ocn))       ; stressx_ocn = 0.0
+    ALLOCATE(stressy_ocn(2,ilon1_ocn,ilat1_ocn))       ; stressy_ocn = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & surf_orog_atm, zonwind_atm, merwind_atm
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: runoff_ocn
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: runoff_land
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: runoff_sic
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: seaicefrac_ocn
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: dummy_ocn
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: dummy_atm
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: interpmask_atm
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: interpmask_ocn
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: evap_ocn, precip_ocn
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: evap_atm
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: evap_sic, precip_atm, precip_sic
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: ustar_ocn, vstar_ocn, sstar_ocn
+    ALLOCATE(surf_orog_atm(ilon1_atm,ilat1_atm))  ; surf_orog_atm = 0.0
+    ALLOCATE(zonwind_atm(ilon1_atm,ilat1_atm))    ; zonwind_atm = 0.0
+    ALLOCATE(merwind_atm(ilon1_atm,ilat1_atm))    ; merwind_atm = 0.0
+    ALLOCATE(runoff_ocn(ilon1_ocn,ilat1_ocn))     ; runoff_ocn = 0.0
+    ALLOCATE(runoff_land(ilon1_ocn,ilat1_ocn))    ; runoff_land = 0.0
+    ALLOCATE(runoff_sic(ilon1_atm,ilat1_atm))     ; runoff_sic = 0.0
+    ALLOCATE(seaicefrac_ocn(ilon1_ocn,ilat1_ocn)) ; seaicefrac_ocn = 0.0
+    ALLOCATE(dummy_ocn(ilon1_ocn,ilat1_ocn))      ; dummy_ocn = 0.0
+    ALLOCATE(dummy_atm(ilon1_atm,ilat1_atm))      ; dummy_atm = 0.0
+    ALLOCATE(interpmask_atm(ilon1_atm,ilat1_atm)) ; interpmask_atm = 0.0
+    ALLOCATE(interpmask_ocn(ilon1_ocn,ilat1_ocn)) ; interpmask_ocn = 0.0
+    ALLOCATE(evap_ocn(ilon1_ocn,ilat1_ocn))       ; evap_ocn = 0.0
+    ALLOCATE(precip_ocn(ilon1_ocn,ilat1_ocn))     ; precip_ocn = 0.0
+    ALLOCATE(evap_atm(ilon1_atm,ilat1_atm))       ; evap_atm = 0.0
+    ALLOCATE(evap_sic(ilon1_atm,ilat1_atm))       ; evap_sic = 0.0
+    ALLOCATE(precip_atm(ilon1_atm,ilat1_atm))     ; precip_atm = 0.0
+    ALLOCATE(precip_sic(ilon1_atm,ilat1_atm))     ; precip_sic = 0.0
+    ALLOCATE(ustar_ocn(ilon1_ocn,ilat1_ocn))      ; ustar_ocn = 0.0
+    ALLOCATE(vstar_ocn(ilon1_ocn,ilat1_ocn))      ; vstar_ocn = 0.0
+    ALLOCATE(sstar_ocn(ilon1_ocn,ilat1_ocn))      ; sstar_ocn = 0.0
 
   ! REAL, DIMENSION(ilon1_sic,ilat1_sic) :: &
   !      & hght_sic, frac_sic, temp_sic, albd_sic, dhght_sic, dfrac_sic
