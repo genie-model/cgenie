@@ -3,27 +3,7 @@ MODULE goldstein_lib
   IMPLICIT NONE
   SAVE
 
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
-#ifndef GOLDSTEINNTRACS
-#define GOLDSTEINNTRACS 2
-#endif
-#ifndef GOLDSTEINMAXISLES
-#define GOLDSTEINMAXISLES 5
-#endif
-
-  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=GOLDSTEINNTRACS
-  INTEGER, PARAMETER :: maxnyr=720
-  INTEGER, PARAMETER :: mpxi=maxi, mpxj=maxj+1
-  INTEGER, PARAMETER :: maxisles=GOLDSTEINMAXISLES, mpi=2 * (maxi + maxj)
+  INTEGER :: maxi, maxj, maxk, maxl, maxnyr, mpxi, mpxj, maxisles, mpi
 
   INTEGER :: isles, ntot, intot, nyear
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk
@@ -36,16 +16,19 @@ MODULE goldstein_lib
   REAL :: phi0, dphi, ez0
   REAL, DIMENSION(:), ALLOCATABLE :: dt, ds, dsv, rds2, dz, s, c, sv
   REAL, DIMENSION(:,:), ALLOCATABLE :: dzu, ratm, gap, cost
-  REAL, DIMENSION(:,:,:), ALLOCATABLE :: tau, drag, dztau, dztav, ub, rho, dztva, rh
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & tau, drag, dztau, dztav, ub, rho, dztva, rh
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: u, ts, ts1, u1
   REAL :: diff(2), ec(5), cn
 
   REAL, DIMENSION(:), ALLOCATABLE :: cv, dza, gb, gbold, tsa0, zro, zw
-  REAL, DIMENSION(:,:), ALLOCATABLE :: tau0, dztav0, tau1, dztav1, fw_hosing, rhosing
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & tau0, dztav0, tau1, dztav1, fw_hosing, rhosing
 
   REAL :: sda1, sdomg, dzz, t0, rel, rdphi
 
-  REAL, DIMENSION(:,:), ALLOCATABLE :: dzg, z2dzg, rdzg, fw_anom, fw_anom_rate, psi
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & dzg, z2dzg, rdzg, fw_anom, fw_anom_rate, psi
 
   REAL, DIMENSION(:), ALLOCATABLE :: rc, rc2, rcv, rdsv, cv2, rds, rdz, rdza
   REAL, DIMENSION(:,:), ALLOCATABLE :: rtv, rtv3

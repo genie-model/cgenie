@@ -421,7 +421,7 @@ CONTAINS
 
     REAL :: rnyear, err1, err2
     INTEGER :: ntot1, ntot2, ios, i, j, k, l
-    REAL :: work((maxi+1)*(maxj+1)*(maxk+1))
+    REAL :: work((maxi+2)*(maxj+2)*(maxk+2))
 
     ! Stream function variables
     REAL, DIMENSION(0:maxj,0:maxk) :: opsi, opsia, opsip

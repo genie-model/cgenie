@@ -537,6 +537,10 @@ CONTAINS
        & go_s, go_sv, go_ts, go_ts1, go_rsc, go_syr, go_nyear, go_lin, &
        & go_ec, go_istep0)
     USE genie_util, ONLY: check_unit, check_iostat, message, die
+    USE genie_control, ONLY: &
+         & dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, &
+         & dim_GOLDSTEINNTRACS, dim_GOLDSTEINMAXISLES
+
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: olon1, olon2, olon3
     REAL, DIMENSION(:), INTENT(OUT) :: olat1, olat2, olat3
@@ -636,6 +640,16 @@ CONTAINS
 
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising GOLDSTEIN ocean module ...'
+
+    maxi = dim_GOLDSTEINNLONS
+    maxj = dim_GOLDSTEINNLATS
+    maxk = dim_GOLDSTEINNLEVS
+    maxl = dim_GOLDSTEINNTRACS
+    maxnyr = 720
+    mpxi = maxi
+    mpxj = maxj + 1
+    maxisles = dim_GOLDSTEINMAXISLES
+    mpi = 2 * (maxi + maxj)
 
     IF (debug_init) PRINT *
 
