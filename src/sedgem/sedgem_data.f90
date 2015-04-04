@@ -2070,6 +2070,23 @@ CONTAINS
     REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_preservation
     REAL,DIMENSION(n_i,n_j)::loc_ij
     real::loc_tot,loc_frac,loc_standard
+    ! *** array index names ***
+    CHARACTER(len=16),DIMENSION(14),PARAMETER::string_phys_sed = (/ &
+       & 'lat             ', &
+       & 'lon             ', &
+       & 'dlat            ', &
+       & 'dlon            ', &
+       & 'latn            ', &
+       & 'lone            ', &
+       & 'D               ', &
+       & 'A               ', &
+       & 'rA              ', &
+       & 'mask_sed        ', &
+       & 'mask_sed_reef   ', &
+       & 'mask_sed_muds   ', &
+       & 'poros           ', &
+       & 'misc_k0         ' /)
+
     ! calculate core-top sediment composition data
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! calculate local sediment preservation (%)

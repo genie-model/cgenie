@@ -16,6 +16,8 @@ CONTAINS
        & dum_sfcsumocn, dum_sfcsed, dum_sfxocn)
     USE sedgem_data
     USE genie_util, ONLY: check_iostat
+    USE genie_control, ONLY: dim_SEDGEMNLONS, dim_SEDGEMNLATS
+
     IMPLICIT NONE
     REAL, INTENT(in) :: dum_genie_timestep                       ! genie time-step (in seconds)
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumsed
@@ -35,6 +37,12 @@ CONTAINS
     ! ---------------------------------------------------------- ! load goin information
     IF (ctrl_misc_debug2) print*, 'load goin information'
     CALL sub_load_goin_sedgem()
+
+    n_i = dim_SEDGEMNLONS
+    n_j = dim_SEDGEMNLATS
+    n_phys_sed = 14
+    n_opt_sed = 26
+
     ! ---------------------------------------------------------- ! initialize interface arrays
     IF (ctrl_misc_debug2) print*, 'initialize interface arrays'
     dum_sfxsumsed(:,:,:) = 0.0   !
@@ -81,6 +89,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sed_fdis_OLD(n_sed,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(opt_sed(n_opt_sed),STAT=alloc_error) ; opt_sed = .FALSE.
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
     ! ---------------------------------------------------------- ! initialize allocated arrays
     IF (ctrl_misc_debug2) print*, 'initialize allocated arrays'
     ! initialize dynamically-allocated arrays (those not done elsewhere)

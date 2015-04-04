@@ -7,8 +7,6 @@
 
 MODULE sedgem_lib
 
-
-  use genie_control
   USE gem_cmn
   USE gem_util
   use gem_carbchem
@@ -199,14 +197,10 @@ MODULE sedgem_lib
   ! MODEL CONFIGURATION CONSTANTS - ARRAY DIMENSIONS
   ! ****************************************************************************************************************************** !
 
-
   ! grid dimensions
-  INTEGER,PARAMETER::n_i = ilon1_sed                           ! max i dimension copied from genie_control
-  INTEGER,PARAMETER::n_j = ilat1_sed                           ! max j dimension copied from genie_control
+  INTEGER :: n_i, n_j
   ! grid properties array dimensions
-  INTEGER,PARAMETER::n_phys_sed     = 14                       ! # grid properties descriptors
-  ! options array dimensions
-  INTEGER,PARAMETER::n_opt_sed      = 26                       !
+  INTEGER :: n_phys_sed, n_opt_sed
 
   ! *** array index values ***
   ! sediment grid properties array indices
@@ -265,25 +259,6 @@ MODULE sedgem_lib
   REAL,PARAMETER::lookup_T_max            = 280.0              ! D(T)      = 1 K
   REAL,PARAMETER::lookup_KSi0_max         = 1.000 / conv_yr_s  ! D(KSi0)   = 0.010 yr-1
   REAL,PARAMETER::lookup_opaltorefrac_max = 10.0               ! D(opaltorefrac) = 1.0
-
-  ! *** array index names ***
-  ! sediment 'physics' (grid)
-  CHARACTER(len=16),DIMENSION(n_phys_sed),PARAMETER::string_phys_sed = (/ &
-       & 'lat             ', &
-       & 'lon             ', &
-       & 'dlat            ', &
-       & 'dlon            ', &
-       & 'latn            ', &
-       & 'lone            ', &
-       & 'D               ', &
-       & 'A               ', &
-       & 'rA              ', &
-       & 'mask_sed        ', &
-       & 'mask_sed_reef   ', &
-       & 'mask_sed_muds   ', &
-       & 'poros           ', &
-       & 'misc_k0         ' /)
-
 
   ! ****************************************************************************************************************************** !
   ! GLOBAL VARIABLE AND RUN-TIME SET PARAMETER ARRAYS
@@ -350,7 +325,7 @@ MODULE sedgem_lib
   real,DIMENSION(n_sed)::conv_sed_g_cm3                        ! convert mass to solids volume
   real,DIMENSION(n_sed)::conv_sed_mask                         ! mask for which sediment tracers contribute to total solids volume
   ! misc
-  LOGICAL,DIMENSION(n_opt_sed) :: opt_sed                      ! options arrays
+  LOGICAL,ALLOCATABLE,DIMENSION(:) :: opt_sed                  ! options arrays
 
   ! *** sedcore array definition ***
   !
