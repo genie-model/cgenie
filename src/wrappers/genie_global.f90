@@ -126,11 +126,11 @@ MODULE genie_global
   REAL, DIMENSION(:,:), ALLOCATABLE :: ustar_ocn, vstar_ocn, sstar_ocn
 
   ! Extra fields for c-GOLDSTEIN sea-ice module
-  REAL, DIMENSION(ilon1_sic,ilat1_sic) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & hght_sic, frac_sic, temp_sic, albd_sic, dhght_sic, dfrac_sic
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: waterflux_ocn
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: waterflux_atm
-  REAL, DIMENSION(ilon1_sic,ilat1_sic) :: waterflux_sic
+  REAL, DIMENSION(:,:), ALLOCATABLE :: waterflux_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: waterflux_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: waterflux_sic
 
   ! CO2 concentration field for c-GOLDSTEIN surface flux routine -
   ! will be unnecessary in final version of genie.F (when AtCheM is a
@@ -138,24 +138,23 @@ MODULE genie_global
   ! Added methane and N2O.
   ! Also now essential for use with the igcm.
   ! With the igcm, these gases are given by genie-fixedchem.
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: co2_atm, n2o_atm, ch4_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: co2_atm, n2o_atm, ch4_atm
 
   ! 14co2 used in igcm and ichem modules
-  REAL, DIMENSION(ilon1_atm,ilat1_atm,inl1_atm) :: &
-       & mass14co2, ddtmass14co2, massair
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: mass14co2, ddtmass14co2, massair
 
   ! Parameters storing the information about the ocean basins
   ! that needs to be passed from GOLDSTEIN to the EMBM
-  INTEGER, DIMENSION(ilat1_ocn) :: ips_out, ipf_out, ias_out, iaf_out
+  INTEGER, DIMENSION(:), ALLOCATABLE :: ips_out, ipf_out, ias_out, iaf_out
   INTEGER jsf_out
 
   ! Extra fields of "average" ocean cell temperature and roughness
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: tavg_ocn, rough_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: tavg_ocn, rough_ocn
 
   ! These are the fluxes out of the atmosphere once they have been
   ! averaged onto the seaice (*_atm_meanseaice) or ocean
   ! (*_atm_meanocn) timestep.
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & latent_atm_meanocn, latent_atm_meansic, sensible_atm_meanocn, &
        & sensible_atm_meansic, netsolar_atm_meanocn, netsolar_atm_meansic, &
        & netlong_atm_meanocn, netlong_atm_meansic, stressx_atm_meanocn, &
@@ -164,46 +163,46 @@ MODULE genie_global
        & evap_atm_meansic
 
   ! Extra meanocn fields for GOLDOCN-GOLDSIC surflux
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & lowestlt_atm_meanocn, lowestlq_atm_meanocn, lowestlp_atm_meanocn, &
        & lowestlh_atm_meanocn, lowestlu_atm_meanocn, lowestlv_atm_meanocn
 
   ! EXTRA FIELDS:
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: runoff_atm_meanocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: runoff_atm_meanocn
 
   ! These are the fluxes out of the seaice once they have been
   ! averaged onto the ocean
   ! (*_atm_meanocn) timestep.
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & seaicefrac_atm_meanocn, conductflux_atm_meanocn, waterflux_atm_meanocn
 
   ! This is the sea-ice fraction (=1 or 0 fo the slab case)
   ! Should REALly be renamed seaicefrac_seaice seen as it's on the
   ! seaice grid (this just happens to be the same as the atmos grid
   ! at the moment)
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: seaicefrac_atm, conductflux_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: seaicefrac_atm, conductflux_atm
 
   ! These are the carry-over from ocean to seaice (*_ocn_seaice)
   ! or from seaice to ocean (*_seaice_ocn)
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & dtcarry_ocn_sic, energycarry_ocn_sic, energycarry_sic_ocn
 
   ! This is the albedo.  In the slab and fixed case, it is calculated
   ! in the ocean or seaice modules.  It could be calculated by the
   ! atmosphere instead, in which case it would not need to be in
   ! genie.f.
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: albedo_atm
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: albedo_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: albedo_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: albedo_ocn
 
   ! This is the temperture of the uppermost layer of the ocean,
   ! and its thickness.  This is output from the ocean, and
   ! used in the seaice module to calculate the ocean-seaice heat flux.
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: temptop_atm, thicktop_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: temptop_atm, thicktop_atm
 
   ! Extra files
-  REAL, DIMENSION (ilon1_sic,ilat1_sic) :: conductflux_sic
-  REAL, DIMENSION (ilon1_ocn,ilat1_ocn) :: conductflux_ocn
-  REAL, DIMENSION (ilon1_sic,ilat1_sic) :: seaicefrac_sic
+  REAL, DIMENSION (:,:), ALLOCATABLE :: conductflux_sic
+  REAL, DIMENSION (:,:), ALLOCATABLE :: conductflux_ocn
+  REAL, DIMENSION (:,:), ALLOCATABLE :: seaicefrac_sic
 
   REAL, DIMENSION(ilon1_atm,ilat1_atm) :: atmos_lowestlu_atm
   REAL, DIMENSION(ilon2_atm,ilat2_atm) :: atmos_lowestlu2_atm
@@ -535,51 +534,68 @@ CONTAINS
     ALLOCATE(vstar_ocn(ilon1_ocn,ilat1_ocn))      ; vstar_ocn = 0.0
     ALLOCATE(sstar_ocn(ilon1_ocn,ilat1_ocn))      ; sstar_ocn = 0.0
 
-  ! REAL, DIMENSION(ilon1_sic,ilat1_sic) :: &
-  !      & hght_sic, frac_sic, temp_sic, albd_sic, dhght_sic, dfrac_sic
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: waterflux_ocn
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: waterflux_atm
-  ! REAL, DIMENSION(ilon1_sic,ilat1_sic) :: waterflux_sic
+    ALLOCATE(hght_sic(ilon1_sic,ilat1_sic))              ; hght_sic = 0.0
+    ALLOCATE(frac_sic(ilon1_sic,ilat1_sic))              ; frac_sic = 0.0
+    ALLOCATE(temp_sic(ilon1_sic,ilat1_sic))              ; temp_sic = 0.0
+    ALLOCATE(albd_sic(ilon1_sic,ilat1_sic))              ; albd_sic = 0.0
+    ALLOCATE(dhght_sic(ilon1_sic,ilat1_sic))             ; dhght_sic = 0.0
+    ALLOCATE(dfrac_sic(ilon1_sic,ilat1_sic))             ; dfrac_sic = 0.0
+    ALLOCATE(waterflux_ocn(ilon1_ocn,ilat1_ocn))         ; waterflux_ocn = 0.0
+    ALLOCATE(waterflux_atm(ilon1_atm,ilat1_atm))         ; waterflux_atm = 0.0
+    ALLOCATE(waterflux_sic(ilon1_sic,ilat1_sic))         ; waterflux_sic = 0.0
+    ALLOCATE(co2_atm(ilon1_atm,ilat1_atm))               ; co2_atm = 0.0
+    ALLOCATE(n2o_atm(ilon1_atm,ilat1_atm))               ; n2o_atm = 0.0
+    ALLOCATE(ch4_atm(ilon1_atm,ilat1_atm))               ; ch4_atm = 0.0
+    ALLOCATE(mass14co2(ilon1_atm,ilat1_atm,inl1_atm))    ; mass14co2 = 0.0
+    ALLOCATE(ddtmass14co2(ilon1_atm,ilat1_atm,inl1_atm)) ; ddtmass14co2 = 0.0
+    ALLOCATE(massair(ilon1_atm,ilat1_atm,inl1_atm))      ; massair = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: co2_atm, n2o_atm, ch4_atm
+    ALLOCATE(ips_out(ilat1_ocn)) ; ips_out = 0
+    ALLOCATE(ipf_out(ilat1_ocn)) ; ipf_out = 0
+    ALLOCATE(ias_out(ilat1_ocn)) ; ias_out = 0
+    ALLOCATE(iaf_out(ilat1_ocn)) ; iaf_out = 0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm,inl1_atm) :: &
-  !      & mass14co2, ddtmass14co2, massair
+    ALLOCATE(tavg_ocn(ilon1_ocn,ilat1_ocn))             ; tavg_ocn = 0.0
+    ALLOCATE(rough_ocn(ilon1_ocn,ilat1_ocn))            ; rough_ocn = 0.0
+    ALLOCATE(latent_atm_meanocn(ilon1_atm,ilat1_atm))   ; latent_atm_meanocn = 0.0
+    ALLOCATE(latent_atm_meansic(ilon1_atm,ilat1_atm))   ; latent_atm_meansic = 0.0
+    ALLOCATE(sensible_atm_meanocn(ilon1_atm,ilat1_atm)) ; sensible_atm_meanocn = 0.0
+    ALLOCATE(sensible_atm_meansic(ilon1_atm,ilat1_atm)) ; sensible_atm_meansic = 0.0
+    ALLOCATE(netsolar_atm_meanocn(ilon1_atm,ilat1_atm)) ; netsolar_atm_meanocn = 0.0
+    ALLOCATE(netsolar_atm_meansic(ilon1_atm,ilat1_atm)) ; netsolar_atm_meansic = 0.0
+    ALLOCATE(netlong_atm_meanocn(ilon1_atm,ilat1_atm))  ; netlong_atm_meanocn = 0.0
+    ALLOCATE(netlong_atm_meansic(ilon1_atm,ilat1_atm))  ; netlong_atm_meansic = 0.0
+    ALLOCATE(stressx_atm_meanocn(ilon1_atm,ilat1_atm))  ; stressx_atm_meanocn = 0.0
+    ALLOCATE(stressx_atm_meansic(ilon1_atm,ilat1_atm))  ; stressx_atm_meansic = 0.0
+    ALLOCATE(stressy_atm_meanocn(ilon1_atm,ilat1_atm))  ; stressy_atm_meanocn = 0.0
+    ALLOCATE(stressy_atm_meansic(ilon1_atm,ilat1_atm))  ; stressy_atm_meansic = 0.0
+    ALLOCATE(precip_atm_meanocn(ilon1_atm,ilat1_atm))   ; precip_atm_meanocn = 0.0
+    ALLOCATE(precip_atm_meansic(ilon1_atm,ilat1_atm))   ; precip_atm_meansic = 0.0
+    ALLOCATE(evap_atm_meanocn(ilon1_atm,ilat1_atm))     ; evap_atm_meanocn = 0.0
+    ALLOCATE(evap_atm_meansic(ilon1_atm,ilat1_atm))     ; evap_atm_meansic = 0.0
+    ALLOCATE(lowestlt_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlt_atm_meanocn = 0.0
+    ALLOCATE(lowestlq_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlq_atm_meanocn = 0.0
+    ALLOCATE(lowestlp_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlp_atm_meanocn = 0.0
+    ALLOCATE(lowestlh_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlh_atm_meanocn = 0.0
+    ALLOCATE(lowestlu_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlu_atm_meanocn = 0.0
+    ALLOCATE(lowestlv_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlv_atm_meanocn = 0.0
+    ALLOCATE(runoff_atm_meanocn(ilon1_atm,ilat1_atm))   ; runoff_atm_meanocn = 0.0
 
-  ! INTEGER, DIMENSION(ilat1_ocn) :: ips_out, ipf_out, ias_out, iaf_out
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: tavg_ocn, rough_ocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & latent_atm_meanocn, latent_atm_meansic, sensible_atm_meanocn, &
-  !      & sensible_atm_meansic, netsolar_atm_meanocn, netsolar_atm_meansic, &
-  !      & netlong_atm_meanocn, netlong_atm_meansic, stressx_atm_meanocn, &
-  !      & stressx_atm_meansic, stressy_atm_meanocn, stressy_atm_meansic, &
-  !      & precip_atm_meanocn, precip_atm_meansic, evap_atm_meanocn, &
-  !      & evap_atm_meansic
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & lowestlt_atm_meanocn, lowestlq_atm_meanocn, lowestlp_atm_meanocn, &
-  !      & lowestlh_atm_meanocn, lowestlu_atm_meanocn, lowestlv_atm_meanocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: runoff_atm_meanocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & seaicefrac_atm_meanocn, conductflux_atm_meanocn, waterflux_atm_meanocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: seaicefrac_atm, conductflux_atm
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & dtcarry_ocn_sic, energycarry_ocn_sic, energycarry_sic_ocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: albedo_atm
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: albedo_ocn
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: temptop_atm, thicktop_atm
-
-  ! REAL, DIMENSION (ilon1_sic,ilat1_sic) :: conductflux_sic
-  ! REAL, DIMENSION (ilon1_ocn,ilat1_ocn) :: conductflux_ocn
-  ! REAL, DIMENSION (ilon1_sic,ilat1_sic) :: seaicefrac_sic
+    ALLOCATE(seaicefrac_atm_meanocn(ilon1_atm,ilat1_atm))  ; seaicefrac_atm_meanocn = 0.0
+    ALLOCATE(conductflux_atm_meanocn(ilon1_atm,ilat1_atm)) ; conductflux_atm_meanocn = 0.0
+    ALLOCATE(waterflux_atm_meanocn(ilon1_atm,ilat1_atm))   ; waterflux_atm_meanocn = 0.0
+    ALLOCATE(seaicefrac_atm(ilon1_atm,ilat1_atm))          ; seaicefrac_atm = 0.0
+    ALLOCATE(conductflux_atm(ilon1_atm,ilat1_atm))         ; conductflux_atm = 0.0
+    ALLOCATE(dtcarry_ocn_sic(ilon1_atm,ilat1_atm))         ; dtcarry_ocn_sic = 0.0
+    ALLOCATE(energycarry_ocn_sic(ilon1_atm,ilat1_atm))     ; energycarry_ocn_sic = 0.0
+    ALLOCATE(energycarry_sic_ocn(ilon1_atm,ilat1_atm))     ; energycarry_sic_ocn = 0.0
+    ALLOCATE(albedo_atm(ilon1_atm,ilat1_atm))              ; albedo_atm = 0.0
+    ALLOCATE(albedo_ocn(ilon1_ocn,ilat1_ocn))              ; albedo_ocn = 0.0
+    ALLOCATE(temptop_atm(ilon1_atm,ilat1_atm))             ; temptop_atm = 0.0
+    ALLOCATE(thicktop_atm(ilon1_atm,ilat1_atm))            ; thicktop_atm = 0.0
+    ALLOCATE(conductflux_sic(ilon1_sic,ilat1_sic))         ; conductflux_sic = 0.0
+    ALLOCATE(conductflux_ocn(ilon1_ocn,ilat1_ocn))         ; conductflux_ocn = 0.0
+    ALLOCATE(seaicefrac_sic(ilon1_sic,ilat1_sic))          ; seaicefrac_sic = 0.0
 
   ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: atmos_lowestlu_atm
   ! REAL, DIMENSION(ilon2_atm,ilat2_atm) :: atmos_lowestlu2_atm
