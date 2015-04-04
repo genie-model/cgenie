@@ -100,6 +100,35 @@ CONTAINS
     ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j))              ; int_diag_weather_timeslice = 0.0
     ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j))               ; int_diag_airsea_timeslice = 0.0
 
+    ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j)) ; force_restore_ocn_k1 = 0
+    ALLOCATE(force_restore_atm(n_atm,n_i,n_j))    ; force_restore_atm = 0.0
+    ALLOCATE(force_restore_atm_I(n_atm,n_i,n_j))  ; force_restore_atm_I = 0.0
+    ALLOCATE(force_restore_atm_II(n_atm,n_i,n_j)) ; force_restore_atm_II = 0.0
+
+    ALLOCATE(force_flux_ocn_k1(n_ocn,n_i,n_j)) ; force_flux_ocn_k1 = 0
+    ALLOCATE(force_flux_atm(n_atm,n_i,n_j))    ; force_flux_atm = 0.0
+    ALLOCATE(force_flux_atm_I(n_atm,n_i,n_j))  ; force_flux_atm_I = 0.0
+    ALLOCATE(force_flux_atm_II(n_atm,n_i,n_j)) ; force_flux_atm_II = 0.0
+
+    ALLOCATE(force_flux_sed(n_sed,n_i,n_j))    ; force_flux_sed = 0.0
+    ALLOCATE(force_flux_sed_I(n_sed,n_i,n_j))  ; force_flux_sed_I = 0.0
+    ALLOCATE(force_flux_sed_II(n_sed,n_i,n_j)) ; force_flux_sed_II = 0.0
+
+    ALLOCATE(par_phys_seaice(n_i,n_j))             ; par_phys_seaice = 0.0
+    ALLOCATE(par_phys_windspeed(n_i,n_j))          ; par_phys_windspeed = 0.0
+    ALLOCATE(par_bio_CaCO3toPOCrainratio(n_i,n_j)) ; par_bio_CaCO3toPOCrainratio = 0.0
+    ALLOCATE(par_bio_Cd_alpha(n_i,n_j))            ; par_bio_Cd_alpha = 0.0
+    ALLOCATE(par_bio_POCdtoPOCrainratio(n_i,n_j))  ; par_bio_POCdtoPOCrainratio = 0.0
+    ALLOCATE(par_bio_remin_kc(n_i,n_j))            ; par_bio_remin_kc = 0.0
+    ALLOCATE(par_bio_remin_ko(n_i,n_j))            ; par_bio_remin_ko = 0.0
+    ALLOCATE(par_bio_remin_kl(n_i,n_j))            ; par_bio_remin_kl = 0.0
+    ALLOCATE(par_scav_fpart_POC(n_i,n_j,n_k))      ; par_scav_fpart_POC = 0.0
+    ALLOCATE(par_scav_fpart_CaCO3(n_i,n_j,n_k))    ; par_scav_fpart_CaCO3 = 0.0
+    ALLOCATE(par_scav_fpart_opal(n_i,n_j,n_k))     ; par_scav_fpart_opal = 0.0
+    ALLOCATE(par_scav_fpart_det(n_i,n_j,n_k))      ; par_scav_fpart_det = 0.0
+    ALLOCATE(par_bio_remin_b(n_i,n_j))             ; par_bio_remin_b = 0.0
+    ALLOCATE(par_misc_2D(n_i,n_j))                 ; par_misc_2D = 0.0
+
     ! ---------------------------------------------------------- ! set time
     ! NOTE: modify 'par_misc_t_start' according to the run-time accumulated in any requested restart,
     !       so that the time that BioGeM starts with is the same as the requested start time

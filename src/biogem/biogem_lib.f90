@@ -912,10 +912,10 @@ MODULE biogem_lib
   INTEGER,DIMENSION(n_ocn,2)::force_restore_ocn_sig_i             !
   LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_select              !
   LOGICAL,DIMENSION(n_ocn)::force_restore_ocn_sur                 !
-  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_restore_ocn_k1          !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm                !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_I              !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_restore_atm_II             !
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_ocn_k1
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm_I
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm_II
   REAL,DIMENSION(n_atm,2,n_data_max)::force_restore_atm_sig       !
   REAL,DIMENSION(n_atm)::force_restore_atm_sig_x                  !
   REAL,DIMENSION(n_atm)::force_restore_atm_tconst                 !
@@ -930,18 +930,18 @@ MODULE biogem_lib
   INTEGER,DIMENSION(n_ocn,2)::force_flux_ocn_sig_i               !
   LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_select                !
   LOGICAL,DIMENSION(n_ocn)::force_flux_ocn_scale                 !
-  INTEGER,DIMENSION(n_ocn,n_i,n_j)::force_flux_ocn_k1            !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm                  !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_I                !
-  REAL,DIMENSION(n_atm,n_i,n_j)::force_flux_atm_II               !
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_ocn_k1
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm_I
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm_II
   REAL,DIMENSION(n_atm,2,n_data_max)::force_flux_atm_sig         !
   REAL,DIMENSION(n_atm)::force_flux_atm_sig_x                    !
   INTEGER,DIMENSION(n_atm,2)::force_flux_atm_sig_i               !
   LOGICAL,DIMENSION(n_atm)::force_flux_atm_select                !
   LOGICAL,DIMENSION(n_atm)::force_flux_atm_scale                 !
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed                  !
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_I                !
-  REAL,DIMENSION(n_sed,n_i,n_j)::force_flux_sed_II               !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_I
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_II
   REAL,DIMENSION(n_sed,2,n_data_max)::force_flux_sed_sig         !
   REAL,DIMENSION(n_sed)::force_flux_sed_sig_x                    !
   INTEGER,DIMENSION(n_sed,2)::force_flux_sed_sig_i               !
@@ -964,20 +964,20 @@ MODULE biogem_lib
   !
   ! ############################################################################################################################## !
   ! misc
-  REAL,DIMENSION(n_i,n_j)::par_phys_seaice                       !
-  REAL,DIMENSION(n_i,n_j)::par_phys_windspeed                    !
-  REAL,DIMENSION(n_i,n_j)::par_bio_CaCO3toPOCrainratio           !
-  REAL,DIMENSION(n_i,n_j)::par_bio_Cd_alpha                      !
-  REAL,DIMENSION(n_i,n_j)::par_bio_POCdtoPOCrainratio            !
-  REAL,DIMENSION(n_i,n_j)::par_bio_remin_kc                      !
-  REAL,DIMENSION(n_i,n_j)::par_bio_remin_ko                      !
-  REAL,DIMENSION(n_i,n_j)::par_bio_remin_kl                      !
-  REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_POC                !
-  REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_CaCO3              !
-  REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_opal               !
-  REAL,DIMENSION(n_i,n_j,n_k)::par_scav_fpart_det                !
-  REAL,DIMENSION(n_i,n_j)::par_bio_remin_b                       !
-  REAL,DIMENSION(n_i,n_j)::par_misc_2D                           !
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_phys_seaice
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_phys_windspeed
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_CaCO3toPOCrainratio
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_Cd_alpha
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_POCdtoPOCrainratio
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_remin_kc
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_remin_ko
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_remin_kl
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: par_scav_fpart_POC
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: par_scav_fpart_CaCO3
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: par_scav_fpart_opal
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: par_scav_fpart_det
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_bio_remin_b
+  REAL, DIMENSION(:,:), ALLOCATABLE :: par_misc_2D
 
 
   ! ****************************************************************************************************************************** !
