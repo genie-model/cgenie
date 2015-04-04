@@ -497,9 +497,7 @@ MODULE biogem_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i = ilon1_ocn                           !
-  INTEGER,PARAMETER::n_j = ilat1_ocn                           !
-  INTEGER,PARAMETER::n_k = inl1_ocn                            !
+  INTEGER :: n_i, n_j, n_k
   ! misc arrays dimensions
   INTEGER,PARAMETER::n_phys_ocn                           = 21 ! number of ocean box physical descriptors
   INTEGER,PARAMETER::n_phys_ocnatm                        = 25 ! number of ocean-atmosphere interface physical descriptors

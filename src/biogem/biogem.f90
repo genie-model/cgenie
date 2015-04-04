@@ -52,6 +52,11 @@ CONTAINS
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising BIOGEM ocean biogeochem. module ...'
     ! ---------------------------------------------------------- ! load GOIN
+
+    n_i = dim_GOLDSTEINNLONS
+    n_j = dim_GOLDSTEINNLATS
+    n_k = dim_GOLDSTEINNLEVS
+
     call sub_load_goin_biogem()
 
     ALLOCATE(ocn(n_ocn,n_i,n_j,n_k))                   ; ocn = 0.0
