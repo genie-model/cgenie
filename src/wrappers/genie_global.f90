@@ -204,40 +204,41 @@ MODULE genie_global
   REAL, DIMENSION (:,:), ALLOCATABLE :: conductflux_ocn
   REAL, DIMENSION (:,:), ALLOCATABLE :: seaicefrac_sic
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: atmos_lowestlu_atm
-  REAL, DIMENSION(ilon2_atm,ilat2_atm) :: atmos_lowestlu2_atm
-  REAL, DIMENSION(ilon3_atm,ilat3_atm) :: atmos_lowestlv3_atm
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: atmos_lowestlu_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: atmos_lowestlu2_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: atmos_lowestlv3_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & atmos_lowestlv_atm, atmos_lowestlq_atm, atmos_lowestlt_atm, &
        & atmos_lowestlp_atm, atmos_lowestlh_atm
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-       & land_lowestlu_atm=0.0, land_lowestlv_atm=0.0, &
-       & land_lowestlq_atm=0.0, land_lowestlt_atm=0.0
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & land_lowestlu_atm, land_lowestlv_atm, &
+       & land_lowestlq_atm, land_lowestlt_atm
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-       & ocean_lowestlu_atm=0.0, ocean_lowestlv_atm=0.0, &
-       & ocean_lowestlq_atm=0.0, ocean_lowestlt_atm=0.0, &
-       & ocean_lowestlp_atm=0.0, ocean_lowestlh_atm=0.0
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & ocean_lowestlu_atm, ocean_lowestlv_atm, &
+       & ocean_lowestlq_atm, ocean_lowestlt_atm, &
+       & ocean_lowestlp_atm, ocean_lowestlh_atm
 
-  REAL :: surfsigma, surfdsigma, psigma(inl1_atm)
+  REAL :: surfsigma, surfdsigma
+  REAL, DIMENSION(:), ALLOCATABLE :: psigma
 
   ! For the fixedatmos grid.  1=igcm, 2=goldstein
   INTEGER :: grid_type_fixedatmos
 
   ! Inputs to c-GOLDSTEIN surflux routines
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & ocean_lowestlt_ocn, ocean_lowestlq_ocn, ocean_lowestlp_ocn, &
        & ocean_lowestlh_ocn, ocean_atm_netsolar_ocn, ocean_atm_netlong_ocn
 
   ! Outputs from c-GOLDSTEIN surflux routines
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & ocean_latent_ocn, ocean_sensible_ocn, ocean_netsolar_ocn, &
        & ocean_netlong_ocn, ocean_evap_ocn, ocean_precip_ocn, ocean_runoff_ocn
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & atmos_latent_ocn, atmos_sensible_ocn, atmos_netsolar_ocn, &
        & atmos_netlong_ocn, atmos_evap_ocn, atmos_precip_ocn
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & atmos_latent_atm, atmos_sensible_atm, atmos_netsolar_atm, &
        & atmos_netlong_atm, atmos_evap_atm, atmos_precip_atm
 
@@ -247,23 +248,23 @@ MODULE genie_global
   ! average fields of temperature and albedo out (i.e. slab sea-ice
   ! vs. GOLDSTEIN sea-ice)
 
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: albavg_ocn
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: weight_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: albavg_ocn
+  REAL, DIMENSION(:,:), ALLOCATABLE :: weight_ocn
 
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: surf_qstar_atm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: surf_qstar_atm
 
   REAL :: atmos_dt_tim
   REAL :: test_energy_seaice, test_energy_ocean
   REAL :: test_water_seaice, test_water_ocean, test_water_land
 
   ! Temporary genie-land variable
-  REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & tstar_gb_land, albedo_land, evap_land, fx_le_land, fx_sen_land, &
        & fx_momx_land, fx_momy_land, land_fxco2_atm, ice_icefrac_atm, &
        & land_tice_ice, land_albice_ice
 
   ! For temporary water-fix.  To be removed.....
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & evap_save1, evap_save2, late_save1, late_save2, sens_save1, sens_save2
 
   ! This is for the standard genie timestep.
@@ -286,7 +287,7 @@ MODULE genie_global
   ! This will not be hard-wired soon!!!!!!
   ! Also, to be renamed!!
   REAL :: go_dt, go_saln0, go_rhoair=1.25, go_cd=1.3E-3, go_dphi, go_usc
-  REAL, DIMENSION(ilat1_ocn) :: go_ds
+  REAL, DIMENSION(:), ALLOCATABLE :: go_ds
   ! parameter(go_tsc=go_rsc/go_usc)
   REAL :: go_dsc=5.0E3, go_fsc=2*7.2921E-5, go_rh0sc=1.0E3
   REAL :: go_rhosc, go_cpsc, go_solconst, go_scf
@@ -597,52 +598,78 @@ CONTAINS
     ALLOCATE(conductflux_ocn(ilon1_ocn,ilat1_ocn))         ; conductflux_ocn = 0.0
     ALLOCATE(seaicefrac_sic(ilon1_sic,ilat1_sic))          ; seaicefrac_sic = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: atmos_lowestlu_atm
-  ! REAL, DIMENSION(ilon2_atm,ilat2_atm) :: atmos_lowestlu2_atm
-  ! REAL, DIMENSION(ilon3_atm,ilat3_atm) :: atmos_lowestlv3_atm
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & atmos_lowestlv_atm, atmos_lowestlq_atm, atmos_lowestlt_atm, &
-  !      & atmos_lowestlp_atm, atmos_lowestlh_atm
+    ALLOCATE(atmos_lowestlu_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlu_atm = 0.0
+    ALLOCATE(atmos_lowestlu2_atm(ilon2_atm,ilat2_atm)) ; atmos_lowestlu2_atm = 0.0
+    ALLOCATE(atmos_lowestlv3_atm(ilon3_atm,ilat3_atm)) ; atmos_lowestlv3_atm = 0.0
+    ALLOCATE(atmos_lowestlv_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlv_atm = 0.0
+    ALLOCATE(atmos_lowestlq_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlq_atm = 0.0
+    ALLOCATE(atmos_lowestlt_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlt_atm = 0.0
+    ALLOCATE(atmos_lowestlp_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlp_atm = 0.0
+    ALLOCATE(atmos_lowestlh_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlh_atm = 0.0
+    ALLOCATE(land_lowestlu_atm(ilon1_atm,ilat1_atm))   ; land_lowestlu_atm = 0.0
+    ALLOCATE(land_lowestlv_atm(ilon1_atm,ilat1_atm))   ; land_lowestlv_atm = 0.0
+    ALLOCATE(land_lowestlq_atm(ilon1_atm,ilat1_atm))   ; land_lowestlq_atm = 0.0
+    ALLOCATE(land_lowestlt_atm(ilon1_atm,ilat1_atm))   ; land_lowestlt_atm = 0.0
+    ALLOCATE(ocean_lowestlu_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlu_atm = 0.0
+    ALLOCATE(ocean_lowestlv_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlv_atm = 0.0
+    ALLOCATE(ocean_lowestlq_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlq_atm = 0.0
+    ALLOCATE(ocean_lowestlt_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlt_atm = 0.0
+    ALLOCATE(ocean_lowestlp_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlp_atm = 0.0
+    ALLOCATE(ocean_lowestlh_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlh_atm = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & land_lowestlu_atm=0.0, land_lowestlv_atm=0.0, &
-  !      & land_lowestlq_atm=0.0, land_lowestlt_atm=0.0
+    ALLOCATE(psigma(inl1_atm)) ; psigma = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & ocean_lowestlu_atm=0.0, ocean_lowestlv_atm=0.0, &
-  !      & ocean_lowestlq_atm=0.0, ocean_lowestlt_atm=0.0, &
-  !      & ocean_lowestlp_atm=0.0, ocean_lowestlh_atm=0.0
+    ALLOCATE(ocean_lowestlt_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlt_ocn = 0.0
+    ALLOCATE(ocean_lowestlq_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlq_ocn = 0.0
+    ALLOCATE(ocean_lowestlp_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlp_ocn = 0.0
+    ALLOCATE(ocean_lowestlh_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlh_ocn = 0.0
+    ALLOCATE(ocean_atm_netsolar_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_atm_netsolar_ocn = 0.0
+    ALLOCATE(ocean_atm_netlong_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_atm_netlong_ocn = 0.0
+    ALLOCATE(ocean_latent_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_latent_ocn = 0.0
+    ALLOCATE(ocean_sensible_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_sensible_ocn = 0.0
+    ALLOCATE(ocean_netsolar_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_netsolar_ocn = 0.0
+    ALLOCATE(ocean_netlong_ocn(ilon1_ocn,ilat1_ocn))      ; ocean_netlong_ocn = 0.0
+    ALLOCATE(ocean_evap_ocn(ilon1_ocn,ilat1_ocn))         ; ocean_evap_ocn = 0.0
+    ALLOCATE(ocean_precip_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_precip_ocn = 0.0
+    ALLOCATE(ocean_runoff_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_runoff_ocn = 0.0
+    ALLOCATE(atmos_latent_ocn(ilon1_ocn,ilat1_ocn))       ; atmos_latent_ocn = 0.0
+    ALLOCATE(atmos_sensible_ocn(ilon1_ocn,ilat1_ocn))     ; atmos_sensible_ocn = 0.0
+    ALLOCATE(atmos_netsolar_ocn(ilon1_ocn,ilat1_ocn))     ; atmos_netsolar_ocn = 0.0
+    ALLOCATE(atmos_netlong_ocn(ilon1_ocn,ilat1_ocn))      ; atmos_netlong_ocn = 0.0
+    ALLOCATE(atmos_evap_ocn(ilon1_ocn,ilat1_ocn))         ; atmos_evap_ocn = 0.0
+    ALLOCATE(atmos_precip_ocn(ilon1_ocn,ilat1_ocn))       ; atmos_precip_ocn = 0.0
+    ALLOCATE(atmos_latent_atm(ilon1_atm,ilat1_atm))       ; atmos_latent_atm = 0.0
+    ALLOCATE(atmos_sensible_atm(ilon1_atm,ilat1_atm))     ; atmos_sensible_atm = 0.0
+    ALLOCATE(atmos_netsolar_atm(ilon1_atm,ilat1_atm))     ; atmos_netsolar_atm = 0.0
+    ALLOCATE(atmos_netlong_atm(ilon1_atm,ilat1_atm))      ; atmos_netlong_atm = 0.0
+    ALLOCATE(atmos_evap_atm(ilon1_atm,ilat1_atm))         ; atmos_evap_atm = 0.0
+    ALLOCATE(atmos_precip_atm(ilon1_atm,ilat1_atm))       ; atmos_precip_atm = 0.0
 
-  ! REAL :: psigma(inl1_atm)
+    ALLOCATE(albavg_ocn(ilon1_ocn,ilat1_ocn)) ; albavg_ocn = 0.0
+    ALLOCATE(weight_ocn(ilon1_atm,ilat1_atm)) ; weight_ocn = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & ocean_lowestlt_ocn, ocean_lowestlq_ocn, ocean_lowestlp_ocn, &
-  !      & ocean_lowestlh_ocn, ocean_atm_netsolar_ocn, ocean_atm_netlong_ocn
+    ALLOCATE(surf_qstar_atm(ilon1_atm,ilat1_atm))  ; surf_qstar_atm = 0.0
+    ALLOCATE(tstar_gb_land(ilon1_atm,ilat1_atm))   ; tstar_gb_land = 0.0
+    ALLOCATE(albedo_land(ilon1_atm,ilat1_atm))     ; albedo_land = 0.0
+    ALLOCATE(evap_land(ilon1_atm,ilat1_atm))       ; evap_land = 0.0
+    ALLOCATE(fx_le_land(ilon1_atm,ilat1_atm))      ; fx_le_land = 0.0
+    ALLOCATE(fx_sen_land(ilon1_atm,ilat1_atm))     ; fx_sen_land = 0.0
+    ALLOCATE(fx_momx_land(ilon1_atm,ilat1_atm))    ; fx_momx_land = 0.0
+    ALLOCATE(fx_momy_land(ilon1_atm,ilat1_atm))    ; fx_momy_land = 0.0
+    ALLOCATE(land_fxco2_atm(ilon1_atm,ilat1_atm))  ; land_fxco2_atm = 0.0
+    ALLOCATE(ice_icefrac_atm(ilon1_atm,ilat1_atm)) ; ice_icefrac_atm = 0.0
+    ALLOCATE(land_tice_ice(ilon1_atm,ilat1_atm))   ; land_tice_ice = 0.0
+    ALLOCATE(land_albice_ice(ilon1_atm,ilat1_atm)) ; land_albice_ice = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & ocean_latent_ocn, ocean_sensible_ocn, ocean_netsolar_ocn, &
-  !      & ocean_netlong_ocn, ocean_evap_ocn, ocean_precip_ocn, ocean_runoff_ocn
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & atmos_latent_ocn, atmos_sensible_ocn, atmos_netsolar_ocn, &
-  !      & atmos_netlong_ocn, atmos_evap_ocn, atmos_precip_ocn
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & atmos_latent_atm, atmos_sensible_atm, atmos_netsolar_atm, &
-  !      & atmos_netlong_atm, atmos_evap_atm, atmos_precip_atm
+    ALLOCATE(evap_save1(ilon1_ocn,ilat1_ocn)) ; evap_save1 = 0.0
+    ALLOCATE(evap_save2(ilon1_ocn,ilat1_ocn)) ; evap_save2 = 0.0
+    ALLOCATE(late_save1(ilon1_ocn,ilat1_ocn)) ; late_save1 = 0.0
+    ALLOCATE(late_save2(ilon1_ocn,ilat1_ocn)) ; late_save2 = 0.0
+    ALLOCATE(sens_save1(ilon1_ocn,ilat1_ocn)) ; sens_save1 = 0.0
+    ALLOCATE(sens_save2(ilon1_ocn,ilat1_ocn)) ; sens_save2 = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: albavg_ocn
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: weight_ocn
+    ALLOCATE(go_ds(ilat1_ocn)) ; go_ds = 0.0
 
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: surf_qstar_atm
-
-  ! REAL, DIMENSION(ilon1_atm,ilat1_atm) :: &
-  !      & tstar_gb_land, albedo_land, evap_land, fx_le_land, fx_sen_land, &
-  !      & fx_momx_land, fx_momy_land, land_fxco2_atm, ice_icefrac_atm, &
-  !      & land_tice_ice, land_albice_ice
-
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & evap_save1, evap_save2, late_save1, late_save2, sens_save1, sens_save2
-
-  ! REAL, DIMENSION(ilat1_ocn) :: go_ds
   ! INTEGER, DIMENSION(ilat1_ocn) :: go_ips, go_ipf, go_ias, go_iaf
   ! INTEGER, DIMENSION(ilon1_ocn,ilat1_ocn) :: go_k1
   ! REAL, DIMENSION(1:inl1_ocn) :: go_dz, go_dza
