@@ -62,8 +62,9 @@ CONTAINS
   END SUBROUTINE initialise_gem_wrapper
 
   SUBROUTINE initialise_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL initialise_biogem(go_saln0, go_rhoair, go_cd, go_ds, go_dphi, go_usc, &
+    CALL initialise_biogem(go_saln0, go_rhoair, go_cd, go_ds(1), go_dphi, go_usc, &
          & go_dsc, go_fsc, go_rh0sc, go_rhosc, go_cpsc, genie_solar_constant, &
          & go_scf, go_ips, go_ipf, go_ias, go_iaf, go_jsf, &
          & go_k1, go_dz, go_dza, go_c, go_cv, go_s, go_sv, go_ts, go_ts1, &

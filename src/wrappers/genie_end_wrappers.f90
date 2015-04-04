@@ -15,6 +15,7 @@ CONTAINS
   END SUBROUTINE end_gem_wrapper
 
   SUBROUTINE end_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL end_biogem()
   END SUBROUTINE end_biogem_wrapper

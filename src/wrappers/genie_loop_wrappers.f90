@@ -278,23 +278,27 @@ CONTAINS
   ! *** BIOGEM ***
 
   SUBROUTINE biogem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL biogem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
+    CALL step_biogem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
          & genie_clock, genie_sfcatm1, genie_sfxatm1, genie_sfcocn1, &
          & genie_sfxocn1, genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1)
   END SUBROUTINE biogem_wrapper
 
   SUBROUTINE biogem_tracercoupling_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_tracercoupling(go_ts, go_ts1)
   END SUBROUTINE biogem_tracercoupling_wrapper
 
   SUBROUTINE biogem_forcing_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_forcing(genie_clock)
   END SUBROUTINE biogem_forcing_wrapper
 
   SUBROUTINE biogem_climate_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_climate(hght_sic, frac_sic, go_cost, go_solfor, go_fxsw, &
          & go_uvw, go_tau, go_psi, eb_uv, eb_usurf, go_mldta, eb_evap, &
@@ -302,26 +306,31 @@ CONTAINS
   END SUBROUTINE biogem_climate_wrapper
 
   SUBROUTINE biogem_climate_sol_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_climate_sol(go_solfor, go_fxsw, genie_solar_constant)
   END SUBROUTINE biogem_climate_sol_wrapper
 
   SUBROUTINE diag_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem(genie_clock, genie_sfcatm1, .FALSE.)
   END SUBROUTINE diag_biogem_wrapper
 
   SUBROUTINE diag_biogem_gem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem(genie_clock, genie_sfcatm1, .TRUE.)
   END SUBROUTINE diag_biogem_gem_wrapper
 
   SUBROUTINE diag_biogem_pCO2_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_pCO2(genie_sfcatm1, gem_pCO2)
   END SUBROUTINE diag_biogem_pCO2_wrapper
 
   SUBROUTINE diag_biogem_timeslice_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeslice(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -331,6 +340,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_timeslice_wrapper
 
   SUBROUTINE diag_biogem_gem_timeslice_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeslice(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -340,6 +350,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_gem_timeslice_wrapper
 
   SUBROUTINE diag_biogem_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -349,6 +360,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_timeseries_wrapper
 
   SUBROUTINE diag_biogem_force_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -358,6 +370,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_force_timeseries_wrapper
 
   SUBROUTINE diag_biogem_gem_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -385,6 +398,7 @@ CONTAINS
   END SUBROUTINE cpl_comp_gematm1_wrapper
 
   SUBROUTINE biogem_save_restart_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_save_restart(genie_clock)
   END SUBROUTINE biogem_save_restart_wrapper
