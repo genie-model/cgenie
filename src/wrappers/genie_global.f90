@@ -331,53 +331,50 @@ MODULE genie_global
 
   ! Carbon variables from var_ents (for rokgem)
   ! prefix denotes module name - ENTS Land
-  REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & el_leaf, el_respveg, el_respsoil, el_photo
 
   ! Ocean-atmosphere tracer interface arrays
-  REAL, DIMENSION(intrac_atm_max,ilon1_atm,ilat1_atm) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfcatm, &      ! atmosphere-surface tracer composition; atm grid
        & genie_sfxsumatm      ! atmosphere-surface fluxes; integrated, atm grid
-  REAL, DIMENSION(intrac_atm_max,ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfcatm1, &     ! atmosphere-surface tracer composition; ocn grid
        & genie_sfxatm1        ! atmosphere-surface fluxes; ocn grid
-  REAL, DIMENSION(intrac_atm_max,ilon1_lnd,ilat1_lnd) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfcatm_lnd, &  ! atmosphere-surface tracer composition; lnd grid
        & genie_sfxatm_lnd     ! land-atmosphere fluxes; lnd grid
 
   ! Ocean-rock tracer interface arrays (for purposes of getting
   ! weathering flux from rockgem grid into biogem)
-  REAL, DIMENSION(intrac_ocn_max,ilon1_rok,ilat1_rok) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfxrok         ! rock-surface(coastal ocean) fluxes; rok grid
-  REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfxsumrok1, &  ! rock-surf.(coastal ocean); integrated ocn grid
        & genie_sfxsumrok1_gem ! (version of above for GEMlite)
-  REAL,DIMENSION(intrac_atm_max,ilon1_ocn,ilat1_ocn) :: &
-       & genie_sfxsumatm1_gem
+  REAL,DIMENSION(:,:,:), ALLOCATABLE :: genie_sfxsumatm1_gem
 
   ! atmosphere-rock tracer interface arrays (for purposes of getting
   ! temp and runoff into rokgem)
 
   ! oecan-sediment tracer interface arrays
-  REAL, DIMENSION(intrac_sed_max,ilon1_sed,ilat1_sed) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfcsed, &  ! sed.-surface sediment composition; sed grid
        & genie_sfxsumsed  ! sed.-surface (ocn->sed) fluxes; integrated, sed grid
-  REAL, DIMENSION(intrac_sed_max,ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfxsumsed1, & ! sed.-surface (ocn->sed) fluxes; integ., ocn grid
        & genie_sfcsed1, &    ! sediment-surface sediment composition; ocn grid
        & genie_sfxsed1       ! sediment-surface (ocn->sed) fluxes; ocn grid
-  REAL, DIMENSION(intrac_ocn_max,ilon1_sed,ilat1_sed) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfcsumocn, & ! sed.-surface ocean tracer comp; integ., sed grid
        & genie_sfxocn       ! sediment-surface (sed->ocn) fluxes; sed grid
-  REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & genie_sfxocn1, &   ! sediment-surface (sed->ocn) fluxes; ocn grid
        & genie_sfcocn1      ! sed.-surface ocean tracer composition; ocn grid
 
   ! Temporary tracer arrays (for passing to/from GEMlite)
-  REAL, DIMENSION(intrac_atm_max,ilon1_atm,ilat1_atm) :: &
-       & genie_atm1 = 0.0   ! atmosphere tracers; ocn grid
-  REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn) :: &
-       & genie_ocn = 0.0 ! ocean tracers; ocn grid
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: genie_atm1   ! atmosphere tracers; ocn grid
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: genie_ocn  ! ocean tracers; ocn grid
 
   ! These are for whether we have a restart run or not
   LOGICAL :: lrestart_genie
@@ -717,45 +714,35 @@ CONTAINS
     ALLOCATE(land_temp_lnd(ilon1_lnd,ilat1_lnd))              ; land_temp_lnd = 0.0
     ALLOCATE(land_moisture_lnd(ilon1_lnd,ilat1_lnd))          ; land_moisture_lnd = 0.0
 
-  ! REAL, DIMENSION(ilon1_ocn,ilat1_ocn) :: &
-  !      & el_leaf, el_respveg, el_respsoil, el_photo
+    ALLOCATE(el_leaf(ilon1_ocn,ilat1_ocn))     ; el_leaf = 0.0
+    ALLOCATE(el_respveg(ilon1_ocn,ilat1_ocn))  ; el_respveg = 0.0
+    ALLOCATE(el_respsoil(ilon1_ocn,ilat1_ocn)) ; el_respsoil = 0.0
+    ALLOCATE(el_photo(ilon1_ocn,ilat1_ocn))    ; el_photo = 0.0
 
-  ! REAL, DIMENSION(intrac_atm_max,ilon1_atm,ilat1_atm) :: &
-  !      & genie_sfcatm, &
-  !      & genie_sfxsumatm
-  ! REAL, DIMENSION(intrac_atm_max,ilon1_ocn,ilat1_ocn) :: &
-  !      & genie_sfcatm1, &
-  !      & genie_sfxatm1
-  ! REAL, DIMENSION(intrac_atm_max,ilon1_lnd,ilat1_lnd) :: &
-  !      & genie_sfcatm_lnd, &
-  !      & genie_sfxatm_lnd
+    ALLOCATE(genie_sfcatm(intrac_atm_max,ilon1_atm,ilat1_atm))     ; genie_sfcatm = 0.0
+    ALLOCATE(genie_sfxsumatm(intrac_atm_max,ilon1_atm,ilat1_atm))  ; genie_sfxsumatm = 0.0
+    ALLOCATE(genie_sfcatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcatm1 = 0.0
+    ALLOCATE(genie_sfxatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxatm1 = 0.0
+    ALLOCATE(genie_sfcatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd)) ; genie_sfcatm_lnd = 0.0
+    ALLOCATE(genie_sfxatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd)) ; genie_sfxatm_lnd = 0.0
 
-  ! REAL, DIMENSION(intrac_ocn_max,ilon1_rok,ilat1_rok) :: &
-  !      & genie_sfxrok
-  ! REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn) :: &
-  !      & genie_sfxsumrok1, &
-  !      & genie_sfxsumrok1_gem
-  ! REAL,DIMENSION(intrac_atm_max,ilon1_ocn,ilat1_ocn) :: &
-  !      & genie_sfxsumatm1_gem
+    ALLOCATE(genie_sfxrok(intrac_ocn_max,ilon1_rok,ilat1_rok))         ; genie_sfxrok = 0.0
+    ALLOCATE(genie_sfxsumrok1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))     ; genie_sfxsumrok1 = 0.0
+    ALLOCATE(genie_sfxsumrok1_gem(intrac_ocn_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumrok1_gem = 0.0
+    ALLOCATE(genie_sfxsumatm1_gem(intrac_atm_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumatm1_gem = 0.0
 
-  ! REAL, DIMENSION(intrac_sed_max,ilon1_sed,ilat1_sed) :: &
-  !      & genie_sfcsed, &
-  !      & genie_sfxsumsed
-  ! REAL, DIMENSION(intrac_sed_max,ilon1_ocn,ilat1_ocn) :: &
-  !      & genie_sfxsumsed1, &
-  !      & genie_sfcsed1, &
-  !      & genie_sfxsed1
-  ! REAL, DIMENSION(intrac_ocn_max,ilon1_sed,ilat1_sed) :: &
-  !      & genie_sfcsumocn, &
-  !      & genie_sfxocn
-  ! REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn) :: &
-  !      & genie_sfxocn1, &
-  !      & genie_sfcocn1
+    ALLOCATE(genie_sfcsed(intrac_sed_max,ilon1_sed,ilat1_sed))     ; genie_sfcsed = 0.0
+    ALLOCATE(genie_sfxsumsed(intrac_sed_max,ilon1_sed,ilat1_sed))  ; genie_sfxsumsed = 0.0
+    ALLOCATE(genie_sfxsumsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumsed1 = 0.0
+    ALLOCATE(genie_sfcsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcsed1 = 0.0
+    ALLOCATE(genie_sfxsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxsed1 = 0.0
+    ALLOCATE(genie_sfcsumocn(intrac_ocn_max,ilon1_sed,ilat1_sed))  ; genie_sfcsumocn = 0.0
+    ALLOCATE(genie_sfxocn(intrac_ocn_max,ilon1_sed,ilat1_sed))     ; genie_sfxocn = 0.0
+    ALLOCATE(genie_sfxocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxocn1 = 0.0
+    ALLOCATE(genie_sfcocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcocn1 = 0.0
 
-  ! REAL, DIMENSION(intrac_atm_max,ilon1_atm,ilat1_atm) :: &
-  !      & genie_atm1 = 0.0
-  ! REAL, DIMENSION(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn) :: &
-  !      & genie_ocn = 0.0
+    ALLOCATE(genie_atm1(intrac_atm_max,ilon1_atm,ilat1_atm))         ; genie_atm1 = 0.0
+    ALLOCATE(genie_ocn(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn)) ; genie_ocn = 0.0
 
   END SUBROUTINE allocate_genie_global
 END MODULE genie_global
