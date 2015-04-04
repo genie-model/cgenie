@@ -111,4 +111,36 @@ SUBROUTINE initialise_genie()
   IF (debug_init > 1) CALL message("read values for genie_control_nml:", 3)
   IF (verbosity >= 3) WRITE (UNIT=6,NML=genie_control_nml)
   IF (debug_init > 1) CALL message("read namelist: genie_control_nml", 1)
+
+  ilon1_atm = dim_GENIENX
+  ilat1_atm = dim_GENIENY
+  ilon2_atm = dim_GENIENX
+  ilat2_atm = dim_GENIENY
+  ilon3_atm = dim_GENIENX
+  ilat3_atm = dim_GENIENY
+  inl1_atm = dim_GENIENL
+  ilon1_ocn = dim_GOLDSTEINNLONS
+  ilat1_ocn = dim_GOLDSTEINNLATS
+  ilon2_ocn = dim_GOLDSTEINNLONS
+  ilat2_ocn = dim_GOLDSTEINNLATS
+  ilon3_ocn = dim_GOLDSTEINNLONS
+  ilat3_ocn = dim_GOLDSTEINNLATS
+  inl1_ocn = dim_GOLDSTEINNLEVS
+  inl2_ocn = inl1_ocn + 1
+  intrac_ocn = dim_GOLDSTEINNTRACS
+  ilon1_sic = dim_GOLDSTEINNLONS
+  ilat1_sic = dim_GOLDSTEINNLATS
+  ilon2_sic = dim_GOLDSTEINNLONS
+  ilat2_sic = dim_GOLDSTEINNLATS
+  ilon3_sic = dim_GOLDSTEINNLONS
+  ilat3_sic = dim_GOLDSTEINNLATS
+  ilon1_lic = dim_GOLDSTEINNLONS
+  ilat1_lic = dim_GOLDSTEINNLATS
+  ilon1_lnd = dim_GOLDSTEINNLONS
+  ilat1_lnd = dim_GOLDSTEINNLATS
+  ilon1_sed = dim_SEDGEMNLONS
+  ilat1_sed = dim_SEDGEMNLATS
+  ilon1_rok = dim_ROKGEMNLONS
+  ilat1_rok = dim_ROKGEMNLATS
+
 END SUBROUTINE initialise_genie
