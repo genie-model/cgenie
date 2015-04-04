@@ -223,9 +223,9 @@ def file_compare(f1, f2, logfp):
 # *exactly* the same mechanisms that one would use to run these jobs
 # by hand!
 
-def do_run(t, rdir, logfp):
+def do_run(t, rdir, logfp, i, n):
     os.chdir(U.cgenie_root)
-    print('Running test "' + t + '"')
+    print('Running test "' + t + '" [' + str(i) + '/' + str(n) + ']')
     print('Running test "' + t + '"', file=logfp)
     t = t.replace('\\', '\\\\')
 
@@ -376,8 +376,12 @@ def run_tests(tests):
     # sort of restart dependency graph.
     rtests = topological_sort(restarts)
 
+    summ = { }
     with open(os.path.join(rdir, 'test.log'), 'w') as logfp:
-        summ = { t : do_run(t, rdir, logfp) for t in rtests }
+        i = 1
+        for t in rtests:
+            summ[t] = do_run(t, rdir, logfp, i, len(rtests))
+            i += 1
     if len(summ.keys()) == 0:
         print('NO TESTS RUN')
     else:
