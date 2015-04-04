@@ -200,13 +200,6 @@ if not full_config:
     configs = [base, tsopts, rstopts, user]
 
 
-# Create job.py SCons file for job.
-
-with open(os.path.join(job_cfg_dir, 'job.py'), 'w') as fp:
-    print("# Coordinate definitions.", file=fp)
-    for l in deflines: print(l, file=fp)
-
-
 # Create model version file for build.
 
 with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:

@@ -29,7 +29,7 @@ CONTAINS
 
     INTEGER :: iflen, lnsig, ii, iii
 
-    INTEGER :: iret, idebug
+    INTEGER :: idebug
     INTEGER :: tempdims(200), dimdim(200)
     REAL :: realval(1)
 

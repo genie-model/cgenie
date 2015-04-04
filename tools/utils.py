@@ -77,28 +77,22 @@ class ModelConfig:
                 self.model_version = 'DEVELOPMENT'
         self.platform = discover_platform()
         self.build_type = build_type
-        with open(os.path.join('config', 'job.py')) as fp:
-            cs = re.search('coordvars\s*=\s*{([^}]+)}', fp.read()).group(1)
-            cs = filter(lambda c: not str.isspace(c), cs).split(',')
-            cs = ','.join(sorted(cs))
-            self.job_hash = hashlib.sha1(cs).hexdigest()
 
     # Determine the model directory for this configuration: these all
     # live under cgenie_jobs/MODELS.
     def directory(self):
         return os.path.join(cgenie_jobs, 'MODELS',
-                            self.model_version, self.platform,
-                            self.job_hash, self.build_type)
+                            self.model_version, self.platform, self.build_type)
 
     # Clean out model builds for a given model configuration -- this
     # removes all build types for this model configuration, just to
     # avoid surprises.
     def clean(self):
         # Go up one level to catch all build type directories.
-        hashd = os.path.abspath(os.path.join(self.directory(), os.pardir))
-        for d in glob.iglob(os.path.join(hashd, '*')):
+        platd = os.path.abspath(os.path.join(self.directory(), os.pardir))
+        for d in glob.iglob(os.path.join(platd, '*')):
             shutil.rmtree(d)
-        if os.path.exists(hashd): os.removedirs(hashd)
+        if os.path.exists(platd): os.removedirs(platd)
 
     # Set up model build directory.
     def setup(self):
@@ -122,9 +116,6 @@ class ModelConfig:
                 print("scriptdir = '" + scriptdir + "'\n", file=fp)
                 print('# Build type', file=fp)
                 print("build_type = '" + self.build_type + "'\n", file=fp)
-        jfile = os.path.join(d, 'job.py')
-        if not os.path.exists(jfile):
-            shutil.copy(os.path.join('config', 'job.py'), jfile)
         sfile = os.path.join(d, 'SConstruct')
         if not os.path.exists(sfile):
             shutil.copy(os.path.join(scons_dir, 'SConstruct'), sfile)
