@@ -1001,19 +1001,19 @@ MODULE biogem_lib
   real::goldstein_scf                                            !
   real::phys_solar_constant = 0.0                                !
   ! depth and location of oceans
-  INTEGER,DIMENSION(n_i,n_j)::goldstein_k1                       !
-  INTEGER::goldstein_jsf                                         !
-  INTEGER,DIMENSION(n_j)::goldstein_ips                          !
-  INTEGER,DIMENSION(n_j)::goldstein_ipf                          !
-  INTEGER,DIMENSION(n_j)::goldstein_ias                          !
-  INTEGER,DIMENSION(n_j)::goldstein_iaf                          !
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: goldstein_k1
+  INTEGER :: goldstein_jsf
+  INTEGER, DIMENSION(:), ALLOCATABLE :: goldstein_ips
+  INTEGER, DIMENSION(:), ALLOCATABLE :: goldstein_ipf
+  INTEGER, DIMENSION(:), ALLOCATABLE :: goldstein_ias
+  INTEGER, DIMENSION(:), ALLOCATABLE :: goldstein_iaf
   ! miscellaneous
-  REAL,DIMENSION(n_k)::goldstein_dz                              !
-  REAL,DIMENSION(n_k)::goldstein_dza                             !
-  REAL,DIMENSION(0:n_j)::goldstein_c                             !
-  REAL,DIMENSION(0:n_j)::goldstein_cv                            !
-  REAL,DIMENSION(0:n_j)::goldstein_s                             !
-  REAL,DIMENSION(0:n_j)::goldstein_sv                            !
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_dz
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_dza
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_c
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_cv
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_s
+  REAL, DIMENSION(:), ALLOCATABLE :: goldstein_sv
 
   ! *** I/O ***
   ! string formation associated variables

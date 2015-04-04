@@ -129,6 +129,18 @@ CONTAINS
     ALLOCATE(par_bio_remin_b(n_i,n_j))             ; par_bio_remin_b = 0.0
     ALLOCATE(par_misc_2D(n_i,n_j))                 ; par_misc_2D = 0.0
 
+    ALLOCATE(goldstein_k1(n_i,n_j)) ; goldstein_k1 = 0
+    ALLOCATE(goldstein_ips(n_j))    ; goldstein_ips = 0
+    ALLOCATE(goldstein_ipf(n_j))    ; goldstein_ipf = 0
+    ALLOCATE(goldstein_ias(n_j))    ; goldstein_ias = 0
+    ALLOCATE(goldstein_iaf(n_j))    ; goldstein_iaf = 0
+    ALLOCATE(goldstein_dz(n_k))     ; goldstein_dz = 0.0
+    ALLOCATE(goldstein_dza(n_k))    ; goldstein_dza = 0.0
+    ALLOCATE(goldstein_c(0:n_j))    ; goldstein_c = 0.0
+    ALLOCATE(goldstein_cv(0:n_j))   ; goldstein_cv = 0.0
+    ALLOCATE(goldstein_s(0:n_j))    ; goldstein_s = 0.0
+    ALLOCATE(goldstein_sv(0:n_j))   ; goldstein_sv = 0.0
+
     ! ---------------------------------------------------------- ! set time
     ! NOTE: modify 'par_misc_t_start' according to the run-time accumulated in any requested restart,
     !       so that the time that BioGeM starts with is the same as the requested start time
