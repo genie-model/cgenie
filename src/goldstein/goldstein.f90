@@ -569,11 +569,12 @@ CONTAINS
     REAL, INTENT(OUT) :: go_ec(5)
     INTEGER, INTENT(OUT) :: go_istep0
 
-    INTEGER :: lenrst, bmask(maxi,maxj)
+    INTEGER :: lenrst
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: bmask
     INTEGER :: i, j, k, l, kmxdrg, jeb, isol, isl, kk
     REAL :: phix, th0, th1, z1, tv, tv1, tv2, tv3, tv4, tv5
     REAL :: temp0, temp1, adrag, drgf, s0, s1
-    REAL :: h(3,0:maxi+1,0:maxj+1)
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: h
     REAL :: theta, thv, dth, dscon, deg_to_rad
 
     ! Extras for hosing.
@@ -581,7 +582,7 @@ CONTAINS
     INTEGER :: nyears_hosing, j_hosing(2)
 
     ! Extra for freshwater flux anomalies.
-    REAL :: fw_anom_in(maxi,maxj)
+    REAL, DIMENSION(:,:), ALLOCATABLE :: fw_anom_in
     CHARACTER(LEN=13) :: lin
     CHARACTER ans, fwanomin
 
@@ -753,6 +754,11 @@ CONTAINS
     ALLOCATE(ssmax(maxk-1))                          ; ssmax = 0.0
 
     ALLOCATE(getj(maxi,maxj)) ; getj = .FALSE.
+
+    ! Local allocations
+    ALLOCATE(bmask(maxi,maxj))       ; bmask = 0
+    ALLOCATE(h(3,0:maxi+1,0:maxj+1)) ; h = 0.0
+    ALLOCATE(fw_anom_in(maxi,maxj))  ; fw_anom_in = 0.0
 
     ! syr re-defined here
     syr = yearlen * 86400
@@ -1984,6 +1990,10 @@ CONTAINS
     go_nyear = nyear
     go_syr = REAL(syr)
     go_lin = lin
+
+    DEALLOCATE(bmask)
+    DEALLOCATE(h)
+    DEALLOCATE(fw_anom_in)
 
     PRINT *, ' <<< Initialisation complete'
     PRINT *, '======================================================='
