@@ -428,14 +428,18 @@ CONTAINS
     REAL :: omina, omaxa, ominp, omaxp
     INTEGER :: iposa(2)
 
-    REAL, SAVE :: opsiavg(0:maxj,0:maxk) = 0.0
-    REAL, SAVE :: opsipavg(0:maxj,0:maxk) = 0.0
-    REAL, SAVE :: opsiaavg(0:maxj,0:maxk) = 0.0
+    REAL, DIMENSION(:,:), ALLOCATABLE, SAVE :: opsiavg, opsipavg, opsiaavg
 
     REAL :: outputfile(maxl+3,maxk,maxi,maxj)
     REAL :: outfx0(5,maxi,maxj), outfw(4,maxi,maxj)
 
     REAL :: lon(maxi), lat(maxj), depth(maxk)
+
+    IF (.NOT. ALLOCATED(opsiavg)) THEN
+       ALLOCATE(opsiavg(0:maxj,0:maxk))  ; opsiavg = 0.0
+       ALLOCATE(opsipavg(0:maxj,0:maxk)) ; opsipavg = 0.0
+       ALLOCATE(opsiaavg(0:maxj,0:maxk)) ; opsiaavg= 0.0
+    END IF
 
     rnyear = 1.0 / nyear
     tsavg = tsavg + ts * rnyear
