@@ -515,16 +515,19 @@ CONTAINS
   END SUBROUTINE gemlite_gltts_wrapper
 
   SUBROUTINE cpl_comp_gemglt_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL cpl_comp_gemglt(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gemglt_wrapper
 
   SUBROUTINE cpl_comp_gltgem_d_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL cpl_comp_gltgem_d(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_d_wrapper
 
   SUBROUTINE cpl_comp_gltgem_dsum_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL cpl_comp_gltgem_dsum(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_dsum_wrapper

@@ -464,7 +464,7 @@ CONTAINS
     REAL, INTENT(IN) :: dsc, usc, rsc
     REAL, INTENT(IN) :: u(3,0:maxi,0:maxj,maxk)
     REAL, INTENT(IN) :: saln0
-    REAL, INTENT(INOUT) :: work(0:maxi, 0:maxj, 0:maxk)
+    REAL, INTENT(INOUT) :: work(0:maxi+1, 0:maxj+1, 0:maxk+1)
     INTEGER, INTENT(IN) :: maxi, maxj, maxk, maxl
     INTEGER, INTENT(IN) :: imode
 
@@ -472,16 +472,16 @@ CONTAINS
     work = 0.0
 
     ! Global streamfunction
-    CALL flip_vert(opsi, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
-    CALL writevar(nco(imode), idvaro(1, imode), work(1,:,:))
+    CALL flip_vert(opsi, work(1,0:maxj,0:maxk), maxj, maxk, dsc * usc * rsc * 1e-6)
+    CALL writevar(nco(imode), idvaro(1, imode), work(1,0:maxj,0:maxk))
 
     ! Atlantic streamfunction
-    CALL flip_vert(opsia, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
-    CALL writevar(nco(imode), idvaro(2, imode), work(1,:,:))
+    CALL flip_vert(opsia, work(1,0:maxj,0:maxk), maxj, maxk, dsc * usc * rsc * 1e-6)
+    CALL writevar(nco(imode), idvaro(2, imode), work(1,0:maxj,0:maxk))
 
     ! Pacific streamfunction
-    CALL flip_vert(opsip, work(1,:,:), maxj, maxk, dsc * usc * rsc * 1e-6)
-    CALL writevar(nco(imode), idvaro(3, imode), work(1,:,:))
+    CALL flip_vert(opsip, work(1,0:maxj,0:maxk), maxj, maxk, dsc * usc * rsc * 1e-6)
+    CALL writevar(nco(imode), idvaro(3, imode), work(1,0:maxj,0:maxk))
 
     ! Temperature (i.e. final argument = 1)
     CALL flip_both1(ts(1,:,:,:), work(1:maxi,1:maxj,1:maxk), &

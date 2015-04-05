@@ -54,7 +54,7 @@ CONTAINS
     REAL :: fx0flux(5,maxi,maxj), fwflux(4,maxi,maxj)
     REAL :: wstress(4,maxi,maxj)
 
-    REAL :: work((maxi+1)*(maxj+1)*(maxk+1))
+    REAL :: work(0:maxi+1, 0:maxj+1, 0:maxk+1)
 
     ! Heat and freshwater time-series fluxes
     REAL :: fw_flx(5), fx_flx(5), t_area(5), r_itstp
