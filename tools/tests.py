@@ -163,7 +163,7 @@ def float_compare(x, y):
 # Compare ASCII files.
 
 fp_re_str = '[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
-fpline_re_str = '^(' + fp_re_str + ')(\s*,?\s*' + fp_re_str + ')*$'
+fpline_re_str = '^(' + fp_re_str + ')((\s*,\s*|\s+)' + fp_re_str + ')*$'
 fpline_re = re.compile(fpline_re_str)
 
 def compare_ascii(f1, f2, logfp):
@@ -176,21 +176,23 @@ def compare_ascii(f1, f2, logfp):
             # If the lines match, carry on.
             if l1 == l2: continue
             # If both lines are comma or space seperated strings of
-            # floating point numbers, then extac the numbers for
+            # floating point numbers, then extract the numbers for
             # comparison.
-            if fpline_re.match(l1) and fpline_re.match(l2):
-                xs1 = map(float, l1.replace(',', ' ').split())
-                xs2 = map(float, l2.replace(',', ' ').split())
-                if len(xs1) != len(xs2): break
-                max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
-                max_reldiff = max(map(float_compare, xs1, xs2))
-                if max_absdiff > abstol:
-                    if max_reldiff < reltol:
-                        print('Max abs. diff. = ' + str(max_absdiff) +
-                              ' but max. rel. diff. = ' + str(max_reldiff) +
-                              ' < ' + str(reltol),
-                              file=logfp)
-                    else: break
+            m1 = fpline_re.match(l1)
+            m2 = fpline_re.match(l2)
+            if not m1 or not m2: break
+            xs1 = map(float, l1.replace(',', ' ').split())
+            xs2 = map(float, l2.replace(',', ' ').split())
+            if len(xs1) != len(xs2): break
+            max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
+            max_reldiff = max(map(float_compare, xs1, xs2))
+            if max_absdiff > abstol:
+                if max_reldiff < reltol:
+                    print('Max abs. diff. = ' + str(max_absdiff) +
+                          ' but max. rel. diff. = ' + str(max_reldiff) +
+                          ' < ' + str(reltol),
+                          file=logfp)
+                else: break
         if l1 == '' and l2 != '' or l1 != '' and l2 == '':
             print('Files ' + f1 + ' and ' + f2 + ' differ in length',
                   file=logfp)
