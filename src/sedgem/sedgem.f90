@@ -9,6 +9,11 @@ MODULE sedgem
   PUBLIC :: end_sedgem
   PUBLIC :: sedgem_save_rst
   PUBLIC :: sedgem_dsedage
+  PUBLIC :: cpl_comp_ocnsed
+  PUBLIC :: cpl_comp_sedocn
+  PUBLIC :: cpl_flux_ocnsed
+  PUBLIC :: cpl_flux_sedsed1
+  PUBLIC :: cpl_flux_sedocn
 
 CONTAINS
 
@@ -876,5 +881,289 @@ CONTAINS
     PRINT *, ' <<< Shutdown complete'
     PRINT *, '======================================================='
   END SUBROUTINE end_sedgem
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE INTERFACE COMPOSITION: OCN->SED
+  ! NOTE: the running sum should 'auto-zero' in creating (e.g. annual) averages
+  SUBROUTINE cpl_comp_ocnsed(      &
+       & dum_ocnstep,              &
+       & dum_mbiogem,dum_msedgem,  &
+       & dum_n_i_ocn,dum_n_j_ocn,  &
+       & dum_n_i_sed,dum_n_j_sed,  &
+       & dum_sfcocn1,              &
+       & dum_sfcsumocn             &
+       & )
+    IMPLICIT NONE
+    ! dummy arguments
+    integer,intent(in)::dum_ocnstep                               !
+    integer,intent(in)::dum_mbiogem,dum_msedgem                   !
+    integer,intent(in)::dum_n_i_ocn,dum_n_j_ocn                   !
+    integer,intent(in)::dum_n_i_sed,dum_n_j_sed                   !
+    real,dimension(:,:,:),intent(in)::dum_sfcocn1 !
+    real,dimension(:,:,:),intent(inout)::dum_sfcsumocn !
+    ! local variables
+    integer::i,j                                                  !
+    integer::i1,j1                                                !
+    integer::loc_scalei,loc_scalej                                !
+    ! initialize local variables
+    loc_scalei = dum_n_i_sed/dum_n_i_ocn
+    loc_scalej = dum_n_j_sed/dum_n_j_ocn
+    ! set ambient bottom-water environmental conditions
+    ! NOTE: grid transformation currently assumes;
+    !       (i) that the origin of both grids co-incide
+    !       (ii) the number of elements counted along either i or j axes of the sedgem grid is
+    !            an integer multiple of that of the biogem grid
+    !       (iii) within each grid, grid points all have equal area
+    !       (iv) the grid masks correspond between biogem and sedgem grids
+    !            (i.e., loc_scalei x loc_scalej valid sediment grid points correspond to each valid biogem grid point
+    DO i=1,dum_n_i_sed
+       i1 = int((real(i) - 0.5)/loc_scalei) + 1
+       DO j=1,dum_n_j_sed
+          j1 = int((real(j) - 0.5)/loc_scalej) + 1
+          dum_sfcsumocn(:,i,j) =  &
+               & ( &
+               &   real(int(MOD(dum_ocnstep - dum_mbiogem,dum_msedgem)/dum_mbiogem))*dum_sfcsumocn(:,i,j) + &
+               &   dum_sfcocn1(:,i1,j1) &
+               & ) / &
+               & real(int(MOD(dum_ocnstep - dum_mbiogem,dum_msedgem)/dum_mbiogem) + 1)
+       end DO
+    end DO
+  end SUBROUTINE cpl_comp_ocnsed
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE INRTERFACE COMPOSITION: SED->OCN
+  SUBROUTINE cpl_comp_sedocn(     &
+       & dum_n_i_ocn,dum_n_j_ocn, &
+       & dum_n_i_sed,dum_n_j_sed, &
+       & dum_sfcsed1,             &
+       & dum_sfcsed               &
+       & )
+    USE sedgem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    integer,intent(in)::dum_n_i_ocn,dum_n_j_ocn                   !
+    integer,intent(in)::dum_n_i_sed,dum_n_j_sed                   !
+    real,dimension(:,:,:),intent(out)::dum_sfcsed1 !
+    real,dimension(:,:,:),intent(in)::dum_sfcsed !
+    ! local variables
+    INTEGER::l,is
+    integer::i,j                                                  !
+    integer::i1,j1                                                !
+    integer::di,dj                                                !
+    integer::loc_scalei,loc_scalej                                !
+    real::loc_rscale                                               !
+    ! initialize local variables
+    loc_scalei = dum_n_i_sed/dum_n_i_ocn
+    loc_scalej = dum_n_j_sed/dum_n_j_ocn
+    ! integrate sediment composition
+    ! NOTE: units of fractional abundance
+    ! NOTE: grid transformation currently assumes;
+    !       (i) that the origin of both grids co-incide
+    !       (ii) the number of elements counted along either i or j axes of the sedgem grid is
+    !            an integer multiple of that of the biogem grid
+    !       (iii) within each grid, grid points all have equal area
+    !       (iv) the grid masks correspond between biogem and sedgem grids
+    !            (i.e., loc_scalei x loc_scalej valid sediment grid points correspond to each valid biogem grid point
+    ! NOTE: screen out zero wt% bulk locations from associated age and isotope tracer saving
+    ! NOTE: weight averaging by number of sub grid points(!) (whcih may not necessarily be e.g. 4!)
+    DO i1=1,dum_n_i_ocn
+       DO j1=1,dum_n_j_ocn
+          DO l=1,n_l_sed
+             is = conv_iselected_is(l)
+             SELECT CASE (sed_type(is))
+             case (par_sed_type_age,11:20)
+                loc_rscale = 0.0
+                dum_sfcsed1(is,i1,j1) = 0.0
+                do di=1,loc_scalei
+                   i = loc_scalei*(i1 - 1) + di
+                   do dj=1,loc_scalej
+                      j = loc_scalei*(j1 - 1) + dj
+                      IF (sed_mask(i,j)) THEN
+                         IF (dum_sfcsed(sed_dep(is),i,j) > const_real_nullsmall) THEN
+                            loc_rscale = loc_rscale + 1.0
+                            dum_sfcsed1(is,i1,j1) = dum_sfcsed1(is,i1,j1) + dum_sfcsed(is,i,j)
+                         end IF
+                      end IF
+                   end do
+                end do
+                if (loc_rscale > const_real_nullsmall) then
+                   dum_sfcsed1(is,i1,j1) = (1.0/(loc_rscale))*dum_sfcsed1(is,i1,j1)
+                else
+                   dum_sfcsed1(is,i1,j1) = const_real_null
+                endif
+             case default
+                loc_rscale = 0.0
+                dum_sfcsed1(is,i1,j1) = 0.0
+                do di=1,loc_scalei
+                   i = loc_scalei*(i1 - 1) + di
+                   do dj=1,loc_scalej
+                      j = loc_scalei*(j1 - 1) + dj
+                      IF (sed_mask(i,j)) THEN
+                         loc_rscale = loc_rscale + 1.0
+                         dum_sfcsed1(is,i1,j1) = dum_sfcsed1(is,i1,j1) + dum_sfcsed(is,i,j)
+                      end IF
+                   end do
+                end do
+                if (loc_rscale > const_real_nullsmall) then
+                   dum_sfcsed1(is,i1,j1) = (1.0/(loc_rscale))*dum_sfcsed1(is,i1,j1)
+                else
+                   dum_sfcsed1(is,i1,j1) = 0.0
+                endif
+             end SELECT
+          end DO
+       end DO
+    end DO
+  end SUBROUTINE cpl_comp_sedocn
+  ! ******************************************************************************************************************************** !
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE FLUXES: OCN->SED
+  SUBROUTINE cpl_flux_ocnsed(     &
+       & dum_dts,                 &
+       & dum_n_maxsed,            &
+       & dum_n_maxi,dum_n_maxj,   &
+       & dum_ns_maxi,dum_ns_maxj, &
+       & dum_sfxsed1,             &
+       & dum_sfxsumsed            &
+       & )
+    IMPLICIT NONE
+    ! dummy arguments
+    real,intent(in)::dum_dts
+    integer,intent(in)::dum_n_maxsed
+    integer,intent(in)::dum_n_maxi,dum_n_maxj
+    integer,intent(in)::dum_ns_maxi,dum_ns_maxj
+    real,dimension(dum_n_maxsed,dum_n_maxi,dum_n_maxj),intent(inout)::dum_sfxsed1
+    real,dimension(dum_n_maxsed,dum_ns_maxi,dum_ns_maxj),intent(inout)::dum_sfxsumsed
+    ! local variables
+    integer::i,j
+    integer::i1,j1
+    integer::loc_scalei,loc_scalej
+    ! initialize local variables
+    loc_scalei = dum_ns_maxi/dum_n_maxi
+    loc_scalej = dum_ns_maxj/dum_n_maxj
+    ! ocn->sed flux <dum_sfxsed1> in units of (mol m-2 s-1)
+    ! NOTE: integrated sediment flux array <dum_sfxsumsed> in units of (mol m-2)
+    ! NOTE: grid transformation currently assumes;
+    !       (i) that the origin of both grids co-incide
+    !       (ii) the number of elements counted along either i or j axes of the sedgem grid is
+    !            an integer multiple of that of the biogem grid
+    !       (iii) within each grid, grid points all have equal area
+    !       (iv) the grid masks correspond between biogem and sedgem grids
+    !            (i.e., loc_scalei x loc_scalej valid sediment grid points correspond to each valid biogem grid point
+    DO i=1,dum_ns_maxi
+       i1 = int((real(i) - 0.5)/loc_scalei) + 1
+       DO j=1,dum_ns_maxj
+          j1 = int((real(j) - 0.5)/loc_scalej) + 1
+          dum_sfxsumsed(:,i,j) = dum_sfxsumsed(:,i,j) + dum_dts*dum_sfxsed1(:,i1,j1)
+       end DO
+    end DO
+  end SUBROUTINE cpl_flux_ocnsed
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE FLUXES: SED->SED1
+  SUBROUTINE cpl_flux_sedsed1(    &
+       & dum_n_maxsed,            &
+       & dum_n_maxi,dum_n_maxj,   &
+       & dum_ns_maxi,dum_ns_maxj, &
+       & dum_sfxsumsed,           &
+       & dum_sfxsumsed1           &
+       & )
+    IMPLICIT NONE
+    ! dummy arguments
+    integer,intent(in)::dum_n_maxsed
+    integer,intent(in)::dum_n_maxi,dum_n_maxj
+    integer,intent(in)::dum_ns_maxi,dum_ns_maxj
+    real,dimension(dum_n_maxsed,dum_ns_maxi,dum_ns_maxj),intent(inout)::dum_sfxsumsed
+    real,dimension(dum_n_maxsed,dum_n_maxi,dum_n_maxj),intent(inout)::dum_sfxsumsed1
+    ! local variables
+    integer::i,j
+    integer::i1,j1
+    integer::di,dj
+    integer::loc_scalei,loc_scalej
+    real::loc_scale
+    ! initialize local variables
+    loc_scalei = dum_ns_maxi/dum_n_maxi
+    loc_scalej = dum_ns_maxj/dum_n_maxj
+    loc_scale = 1.0/real(loc_scalei*loc_scalej)
+    ! convert between grids
+    ! NOTE: integrated sediment flux array <dum_sfxsumsed> in units of (mol m-2)
+    ! NOTE: integrated sediment flux array <dum_sfxsumsed1> in units of (mol m-2)
+    ! NOTE: grid transformation currently assumes;
+    !       (i) that the origin of both grids co-incide
+    !       (ii) the number of elements counted along either i or j axes of the sedgem grid is
+    !            an integer multiple of that of the biogem grid
+    !       (iii) within each grid, grid points all have equal area
+    !       (iv) the grid masks correspond between biogem and sedgem grids
+    !            (i.e., loc_scalei x loc_scalej valid sediment grid points correspond to each valid biogem grid point
+    DO i1=1,dum_n_maxi
+       DO j1=1,dum_n_maxj
+          dum_sfxsumsed1(:,i1,j1) = 0.0
+          do di=1,loc_scalei
+             i = loc_scalei*(i1 - 1) + di
+             do dj=1,loc_scalej
+                j = loc_scalei*(j1 - 1) + dj
+                dum_sfxsumsed1(:,i1,j1) = dum_sfxsumsed1(:,i1,j1) + loc_scale*dum_sfxsumsed(:,i,j)
+             end do
+          end do
+       end DO
+    end DO
+  end SUBROUTINE cpl_flux_sedsed1
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE FLUXES: SED->OCN
+  SUBROUTINE cpl_flux_sedocn(     &
+       & dum_n_maxocn,            &
+       & dum_n_maxi,dum_n_maxj,   &
+       & dum_ns_maxi,dum_ns_maxj, &
+       & dum_sfxocn1,             &
+       & dum_sfxocn               &
+       & )
+    IMPLICIT NONE
+    ! dummy arguments
+    integer,intent(in)::dum_n_maxocn
+    integer,intent(in)::dum_n_maxi,dum_n_maxj
+    integer,intent(in)::dum_ns_maxi,dum_ns_maxj
+    real,dimension(dum_n_maxocn,dum_n_maxi,dum_n_maxj),intent(inout)::dum_sfxocn1
+    real,dimension(dum_n_maxocn,dum_ns_maxi,dum_ns_maxj),intent(in)::dum_sfxocn
+    ! local variables
+    integer::i,j
+    integer::i1,j1
+    integer::di,dj
+    integer::loc_scalei,loc_scalej
+    real::loc_scale
+    ! initialize local variables
+    loc_scalei = dum_ns_maxi/dum_n_maxi
+    loc_scalej = dum_ns_maxj/dum_n_maxj
+    loc_scale = 1.0/real(loc_scalei*loc_scalej)
+    ! set return (dissolution) flux to ocean
+    ! NOTE: sed->ocn flux (sed grid) <dum_sfxocn> in units of (mol m-2 s-1)
+    ! NOTE: sed->ocn flux (ocn grid) <dum_sfxocn1> in units of (mol m-2 s-1)
+    ! NOTE: grid transformation currently assumes;
+    !       (i) that the origin of both grids co-incide
+    !       (ii) the number of elements counted along either i or j axes of the sedgem grid is
+    !            an integer multiple of that of the biogem grid
+    !       (iii) within each grid, grid points all have equal area
+    !       (iv) the grid masks correspond between biogem and sedgem grids
+    !            (i.e., loc_scalei x loc_scalej valid sediment grid points correspond to each valid biogem grid point
+    DO i1=1,dum_n_maxi
+       DO j1=1,dum_n_maxj
+          dum_sfxocn1(:,i1,j1) = 0.0
+          do di=1,loc_scalei
+             i = loc_scalei*(i1 - 1) + di
+             do dj=1,loc_scalej
+                j = loc_scalei*(j1 - 1) + dj
+                dum_sfxocn1(:,i1,j1) = dum_sfxocn1(:,i1,j1) + loc_scale*dum_sfxocn(:,i,j)
+             end do
+          end do
+       end DO
+    end DO
+  end SUBROUTINE cpl_flux_sedocn
+  ! ******************************************************************************************************************************** !
 
 END MODULE sedgem

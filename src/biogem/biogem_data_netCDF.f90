@@ -50,6 +50,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     loc_c0 = 0.0
     loc_c1 = 1.0
+    loc_lon_e = 0.0 ; loc_lat_e = 0.0 ; loc_zt_e = 0.0
+    loc_ijk = 0.0 ; loc_ijk_mask = 0.0
     ! -------------------------------------------------------- !
     ! WRITE TO FILE
     ! -------------------------------------------------------- !
@@ -486,6 +488,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout3d_iou
     loc_ntrec = ncout3d_ntrec
+    loc_ijk = 0.0
     loc_mask(:,:,:) = phys_ocn(ipo_mask_ocn,:,:,:)
     !-----------------------------------------------------------------------
     !       pH FIELD
@@ -899,6 +902,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     loc_mask_surf(:,:) = phys_ocnatm(ipoa_mask_ocn,:,:)
     !-----------------------------------------------------------------------
     !       CaCO3:POC surface ocean export 'rain ratio'
@@ -1150,6 +1154,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     loc_mask_surf(:,:)     = phys_ocnatm(ipoa_mask_ocn,:,:)
     loc_mask_surf_ALL(:,:) = 1.0
     !-----------------------------------------------------------------------
@@ -1562,6 +1567,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0 ; loc_ij_1 = 0.0 ; loc_ij_2 = 0.0
     loc_sed_mask(:,:) = phys_ocn(ipo_mask_ocn,:,:,n_k)
     !----------------------------------------------------------------
     !       save ocn->sed interface flux data
@@ -1894,6 +1900,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     !----------------------------------------------------------------
     !                  <fseaair_*>
     !       save flux density data
@@ -1966,6 +1973,8 @@ CONTAINS
     loc_iou = ncout3d_iou
     loc_ntrec = ncout3d_ntrec
     loc_mask = phys_ocn(ipo_mask_ocn,:,:,:)
+    loc_ijk = 0.0
+    loc_sed_mask = 0.0
     !----------------------------------------------------------------
     !       SAVE OCEAN TRACER FIELD
     !----------------------------------------------------------------
@@ -2321,6 +2330,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout3dsig_iou
     loc_ntrec = ncout3dsig_ntrec
+    loc_ijk = 0.0
     loc_mask  = phys_ocn(ipo_mask_ocn,:,:,:)
     !----------------------------------------------------------------
     !       SAVE OCEAN TRACER FIELD
@@ -2474,6 +2484,8 @@ CONTAINS
     loc_ntrec = ncout3d_ntrec
     loc_c0 = 0.0
     loc_mask = phys_ocn(ipo_mask_ocn,:,:,:)
+    loc_colbminusr = 0.0 ; loc_colboverr = 0.0
+    loc_colroverrplusb = 0.0 ; loc_colboverrplusb = 0.0
     !-----------------------------------------------------------------------
     !       CALCULATE DERIVED COLOR TRACER PROPERTIES
     !-----------------------------------------------------------------------

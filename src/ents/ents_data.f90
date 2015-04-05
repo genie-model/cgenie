@@ -10,7 +10,7 @@ CONTAINS
   SUBROUTINE in_ents_ascii(unit, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: unit
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_snow_lnd
 
     INTEGER :: i, j
 
@@ -40,7 +40,7 @@ CONTAINS
     USE netcdf
     IMPLICIT NONE
     CHARACTER(LEN=*), INTENT(IN) :: fname
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_snow_lnd
 
     INTEGER :: i, j
     CHARACTER(LEN=20), DIMENSION(11) :: labels = &
@@ -105,7 +105,7 @@ CONTAINS
   SUBROUTINE out_ents(unit, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: unit
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(IN) :: land_snow_lnd
 
     INTEGER :: i, j
 

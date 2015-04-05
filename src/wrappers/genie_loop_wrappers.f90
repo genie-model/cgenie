@@ -49,7 +49,7 @@ CONTAINS
          & evap_ocn, precip_ocn, runoff_ocn, runoff_land, surf_latent_atm, &
          & surf_sensible_atm, netsolar_atm, netlong_atm, evap_atm, precip_atm, &
          & dhght_sic, dfrac_sic, atmos_lowestlh_atm, go_solfor, go_fxsw, &
-         & intrac_atm_max, genie_sfcatm1, eb_ca, global_daysperyear, &
+         & genie_sfcatm1, eb_ca, global_daysperyear, &
          & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, eb_evap, eb_pptn, eb_relh, &
          & eb_uv, eb_usurf, genie_solar_constant, co2_atm, ch4_atm, n2o_atm, &
          & surf_orog_atm, landice_slicemask_lic, albs_atm, land_albs_snow_lnd, &
@@ -147,30 +147,30 @@ CONTAINS
          & el_respsoil, el_leaf, landice_slicemask_lic, albs_atm, &
          & land_albs_snow_lnd, land_albs_nosnow_lnd, land_snow_lnd, &
          & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd, &
-         & intrac_atm_max, genie_sfcatm_lnd, genie_sfxatm_lnd)
+         & genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE ents_wrapper
 
   SUBROUTINE cpl_flux_ocnatm_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL cpl_flux_ocnatm(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_atm, ilat1_atm, ilon1_ocn, ilat1_ocn, &
          & genie_sfxatm1, genie_sfxsumatm)
   END SUBROUTINE cpl_flux_ocnatm_wrapper
 
   SUBROUTINE cpl_flux_lndatm_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_flux_lndatm(REAL(klnd_loop) * genie_timestep, intrac_atm_max, &
-         & ilon1_atm, ilat1_atm, ilon1_lnd, ilat1_lnd, &
-         & genie_sfxatm_lnd, genie_sfxsumatm)
+    CALL cpl_flux_lndatm(REAL(klnd_loop) * genie_timestep, genie_sfxatm_lnd, genie_sfxsumatm)
   END SUBROUTINE cpl_flux_lndatm_wrapper
 
   SUBROUTINE cpl_comp_lndEMBM_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_EMBM(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_lnd, ilat1_lnd, tstar_atm, surf_qstar_atm, genie_sfcatm_lnd)
+    CALL cpl_comp_EMBM(tstar_atm, surf_qstar_atm, genie_sfcatm_lnd)
   END SUBROUTINE cpl_comp_lndEMBM_wrapper
 
   SUBROUTINE cpl_flux_ocnsed_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_ocnsed(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
          & intrac_sed_max, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
@@ -178,22 +178,25 @@ CONTAINS
   END SUBROUTINE cpl_flux_ocnsed_wrapper
 
   SUBROUTINE cpl_flux_sedocn_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_sedocn(intrac_ocn_max, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfxocn1, genie_sfxocn)
   END SUBROUTINE cpl_flux_sedocn_wrapper
 
   SUBROUTINE cpl_flux_sedsed1_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_sedsed1(intrac_sed_max, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfxsumsed, genie_sfxsumsed1)
   END SUBROUTINE cpl_flux_sedsed1_wrapper
 
   SUBROUTINE cpl_comp_ocnsed_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_comp_ocnsed(INT(koverall / kocn_loop), &
          & conv_kocn_kbiogem, conv_kocn_ksedgem, &
-         & intrac_ocn_max, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
+         & ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
          & genie_sfcocn1, genie_sfcsumocn)
   END SUBROUTINE cpl_comp_ocnsed_wrapper
 
@@ -202,15 +205,17 @@ CONTAINS
   !       (no e.g. annual averaging of the ocean array is needed in
   !       the case of the annual GEMlite tiem-step)
   SUBROUTINE cpl_comp_ocnsed_gem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_comp_ocnsed(conv_kocn_ksedgem, conv_kocn_ksedgem, &
-         & conv_kocn_ksedgem, intrac_ocn_max, ilon1_ocn, ilat1_ocn, &
+         & conv_kocn_ksedgem, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfcocn1, genie_sfcsumocn)
   END SUBROUTINE cpl_comp_ocnsed_gem_wrapper
 
   SUBROUTINE cpl_comp_sedocn_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL cpl_comp_sedocn(intrac_sed_max, ilon1_ocn, ilat1_ocn, &
+    CALL cpl_comp_sedocn(ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfcsed1, genie_sfcsed)
   END SUBROUTINE cpl_comp_sedocn_wrapper
 
@@ -380,21 +385,21 @@ CONTAINS
   END SUBROUTINE diag_biogem_gem_timeseries_wrapper
 
   SUBROUTINE cpl_comp_ocngem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_ocngem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
-         & intrac_ocn_max, ilon1_ocn, ilat1_ocn, inl1_ocn, genie_ocn)
+    CALL cpl_comp_ocngem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, genie_ocn)
   END SUBROUTINE cpl_comp_ocngem_wrapper
 
   SUBROUTINE cpl_comp_gemocn_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_gemocn(intrac_ocn_max, ilon1_ocn, ilat1_ocn, inl1_ocn, &
-         & genie_ocn)
+    CALL cpl_comp_gemocn(genie_ocn)
   END SUBROUTINE cpl_comp_gemocn_wrapper
 
   SUBROUTINE cpl_comp_gematm1_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_gematm1(intrac_atm_max, ilon1_ocn, ilat1_ocn, &
-         & genie_atm1, genie_sfcatm1)
+    CALL cpl_comp_gematm1(genie_atm1, genie_sfcatm1)
   END SUBROUTINE cpl_comp_gematm1_wrapper
 
   SUBROUTINE biogem_save_restart_wrapper
@@ -414,32 +419,33 @@ CONTAINS
   END SUBROUTINE atchem_wrapper
 
   SUBROUTINE cpl_comp_atmgem_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmgem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_ocn, ilat1_ocn, genie_atm1)
+    CALL cpl_comp_atmgem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, genie_atm1)
   END SUBROUTINE cpl_comp_atmgem_wrapper
 
   SUBROUTINE cpl_comp_gematm_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_gematm(intrac_atm_max, ilon1_ocn, ilat1_ocn, genie_atm1)
+    CALL cpl_comp_gematm(genie_atm1)
   END SUBROUTINE cpl_comp_gematm_wrapper
 
   SUBROUTINE cpl_comp_atmocn_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmocn(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_ocn, ilat1_ocn, genie_sfcatm, genie_sfcatm1)
+    CALL cpl_comp_atmocn(intrac_atm_max, genie_sfcatm, genie_sfcatm1)
   END SUBROUTINE cpl_comp_atmocn_wrapper
 
   SUBROUTINE cpl_comp_EMBM_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_EMBM(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_ocn, ilat1_ocn, tstar_atm, surf_qstar_atm, genie_sfcatm1)
+    CALL cpl_comp_EMBM(tstar_atm, surf_qstar_atm, genie_sfcatm1)
   END SUBROUTINE cpl_comp_EMBM_wrapper
 
   SUBROUTINE cpl_comp_atmlnd_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmlnd(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_lnd, ilat1_lnd, genie_sfcatm, genie_sfcatm_lnd)
+    CALL cpl_comp_atmlnd(intrac_atm_max, genie_sfcatm, genie_sfcatm_lnd)
   END SUBROUTINE cpl_comp_atmlnd_wrapper
 
   SUBROUTINE atchem_save_restart_wrapper
@@ -510,20 +516,17 @@ CONTAINS
 
   SUBROUTINE cpl_comp_gemglt_wrapper
     IMPLICIT NONE
-    CALL cpl_comp_gemglt(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gemglt(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gemglt_wrapper
 
   SUBROUTINE cpl_comp_gltgem_d_wrapper
     IMPLICIT NONE
-    CALL cpl_comp_gltgem_d(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gltgem_d(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_d_wrapper
 
   SUBROUTINE cpl_comp_gltgem_dsum_wrapper
     IMPLICIT NONE
-    CALL cpl_comp_gltgem_dsum(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gltgem_dsum(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_dsum_wrapper
 
 END MODULE genie_loop_wrappers

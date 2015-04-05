@@ -26,17 +26,17 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & latent_atm, sensible_atm, netsolar_atm, &
          & netlong_atm, pptn_atm, evap_atm
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
          & tstar_atm, qstar_atm
     INTEGER(kind=8), INTENT(IN) :: koverall
     REAL, INTENT(OUT) :: torog_atm(maxi,maxj)
     REAL, INTENT(IN) :: surf_orog_atm(maxi,maxj)
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
     INTEGER :: i, j, itv, iout, ios
     REAL :: sum1(4), sum2(4)
@@ -2072,7 +2072,7 @@ CONTAINS
   SUBROUTINE field_interp(uatml1, usurfl1, tncep1, pncep1, rhncep1, atm_alb1)
     IMPLICIT NONE
     REAL, INTENT(IN) :: uatml1(2,maxi,maxj,nmth+1)
-    REAL, DIMENSION(maxi,maxj,nmth+1), INTENT(IN) :: &
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: &
          & usurfl1, tncep1, pncep1, rhncep1, atm_alb1
 
     REAL :: invmat(nmth,nmth)
@@ -2472,7 +2472,7 @@ CONTAINS
        & stressxv_ocn, stressyv_ocn, albedo, fxlho, fxsho, fxswo, fxlwo, &
        & evap_ocn, pptn_ocn, runoff_ocn, runoff_land, fxlha, fxsha, &
        & fxswa, fxlwa, evap_atm, pptn_atm, dthsic, dtareasic, &
-       & atmos_lowestlh_atm, go_solfor, go_fxsw, dum_n_atm, dum_sfcatm, &
+       & atmos_lowestlh_atm, go_solfor, go_fxsw, dum_sfcatm, &
        & eb_ca, gn_daysperyear, eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
        & eb_evap, eb_pptn, eb_relh, eb_uv, eb_usurf, solconst, &
        & co2_out, ch4_out, n2o_out, surf_orog_atm, landice_slicemask_lic, &
@@ -2482,35 +2482,34 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
+    REAL, DIMENSION(:,:), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
          & stressxu_ocn, stressyu_ocn, stressxv_ocn, stressyv_ocn
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: ashum, tice, albice, &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: ashum, tice, albice, &
          & albedo, fxlho, fxsho, fxswo, fxlwo, pptn_ocn, &
          & runoff_ocn, runoff_land, fxlha, fxsha, fxswa, fxlwa, &
          & dthsic, dtareasic, co2_out, ch4_out, n2o_out, &
          & evap_ocn, evap_atm, pptn_atm, atmos_lowestlh_atm
     REAL, INTENT(OUT) :: go_solfor(maxj), go_fxsw(maxi,maxj)
-    INTEGER, INTENT(IN) :: dum_n_atm
-    REAL, INTENT(IN), DIMENSION(dum_n_atm,maxi,maxj) :: dum_sfcatm
+    REAL, INTENT(IN), DIMENSION(:,:,:) :: dum_sfcatm
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: eb_ca
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: eb_ca
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
          & eb_evap, eb_pptn, eb_relh, eb_usurf
     REAL, INTENT(OUT) :: eb_uv(2,maxi,maxj)
     REAL, INTENT(IN) :: solconst
     REAL, INTENT(INOUT) :: surf_orog_atm(maxi,maxj)
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & albs_atm, land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
          & land_temp_lnd, land_moisture_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
 
-    REAL, DIMENSION(maxi,maxj) :: orog_exact, lice_exact(maxi,maxj)
+    REAL, DIMENSION(maxi,maxj) :: orog_exact, lice_exact
 
     ! For interpolation between time series d18o input
     REAL :: d18o_exact, surf_orog_atm_previous(maxi,maxj)

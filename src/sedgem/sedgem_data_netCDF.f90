@@ -30,7 +30,7 @@ CONTAINS
     character(LEN=*),INTENT(IN)::dum_name                      !
     REAL,INTENT(in)::dum_yr                                    !
     INTEGER,INTENT(OUT)::dum_iou                               !
-    real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfxocn       ! sediment dissolution flux interface array
+    real,DIMENSION(:,:,:),intent(in)::dum_sfxocn       ! sediment dissolution flux interface array
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -1224,7 +1224,7 @@ CONTAINS
   SUBROUTINE sub_save_netcdf_sed2d(dum_dtyr,dum_sfcsumocn)
     ! dummy valiables
     real,INTENT(in)::dum_dtyr
-    real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfcsumocn
+    real,DIMENSION(:,:,:),intent(in)::dum_sfcsumocn
     ! local variables
     INTEGER::i,j,l,io,is,ic
     CHARACTER(len=255)::loc_unitsname

@@ -444,33 +444,32 @@ CONTAINS
        & dum_el_respveg, dum_el_respsoil, dum_el_leaf, landice_slicemask_lic, &
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
-       & land_moisture_lnd, ntrac_atm, sfcatm_lnd, sfxatm_lnd)
+       & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
     USE netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, nyear
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: torog_atm
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: torog_atm
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(:), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
-    REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_rho
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, dum_relh
     INTEGER, INTENT(INOUT) :: dum_istep0
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & dum_el_photo, dum_el_respveg, dum_el_respsoil, dum_el_leaf
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
          & land_temp_lnd, land_moisture_lnd
-    INTEGER, INTENT(IN) :: ntrac_atm
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(IN) :: sfcatm_lnd
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(INOUT) :: sfxatm_lnd
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: sfcatm_lnd
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: sfxatm_lnd
 
     INTEGER :: itv, iout, i, j, istot
     CHARACTER(LEN=200) :: filename, fname, label
@@ -648,11 +647,11 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(:), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
-    REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_rho
 
     REAL :: vol, sumrho, avrho, mass, rho1, deltah
     REAL :: diagtime, vol1, areas
@@ -715,15 +714,16 @@ CONTAINS
   SUBROUTINE carbon(torog_atm, dum_co2_out, landice_slicemask_lic, &
        & sfxatm_lnd)
     IMPLICIT NONE
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & torog_atm, dum_co2_out, landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: sfxatm_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: sfxatm_lnd
 
     REAL, DIMENSION(maxi,maxj) :: tair, tlnd, qlnd
     REAL :: k1v, k1s, k1a
     INTEGER :: i, j
 
     ! Work out CO2 conc according to atchem (ppmv)
+    tair = 0.0 ; tlnd = 0.0 ; qlnd = 0.0
 
     ! The following statement assumes spatially uniform pCO2 in the atmosphere
     ! TODO: compute global average pCO2

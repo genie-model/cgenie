@@ -456,6 +456,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
+    loc_conv_iselected_io = 0 ; loc_conv_iselected_is = 0
+    loc_ocn = 0.0 ; loc_part = 0.0
     ! -------------------------------------------------------- ! set filename
     IF (ctrl_ncrst) THEN
        loc_filename = TRIM(par_rstdir_name)//par_ncrst_name
@@ -729,7 +731,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! INITIALIZE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    loc_conv_sed_ocn(:,:) = 0.0
+    loc_conv_sed_ocn = 0.0
     loc_tracerrelationships = 0
     ! -------------------------------------------------------- !
     ! UPDATE REDFIELD RELATIONSHIPS
@@ -1092,10 +1094,9 @@ CONTAINS
     INTEGER::i,j,k
     REAL,DIMENSION(0:n_k+1)::loc_grid_dz,loc_grid_dza
     ! initialize local variables
-    loc_grid_dz(0:n_k+1)  = 0.0
-    loc_grid_dz(1:n_k)    = goldstein_dz(:)
-    loc_grid_dza(0:n_k+1) = 0.0
-    loc_grid_dza(1:n_k)   = goldstein_dza(:); loc_grid_dza(n_k) = loc_grid_dz(n_k)/2.0
+    loc_grid_dz = 0.0 ; loc_grid_dza = 0.0
+    loc_grid_dz(1:n_k) = goldstein_dz(:)
+    loc_grid_dza(1:n_k) = goldstein_dza(:); loc_grid_dza(n_k) = loc_grid_dz(n_k)/2.0
     ! zero array
     phys_ocn(:,:,:,:) = 0.0
     ! initialize array values
@@ -1180,10 +1181,9 @@ CONTAINS
     integer::loc_n,loc_k1
     REAL,DIMENSION(0:n_k+1)::loc_grid_dz,loc_grid_dza
     ! initialize local variables
-    loc_grid_dz(0:n_k+1)  = 0.0
-    loc_grid_dz(1:n_k)    = goldstein_dz(:)
-    loc_grid_dza(0:n_k+1) = 0.0
-    loc_grid_dza(1:n_k)   = goldstein_dza(:); loc_grid_dza(n_k) = loc_grid_dz(n_k)/2.0
+    loc_grid_dz = 0.0 ; loc_grid_dza = 0.0
+    loc_grid_dz(1:n_k) = goldstein_dz(:)
+    loc_grid_dza(1:n_k) = goldstein_dza(:); loc_grid_dza(n_k) = loc_grid_dz(n_k)/2.0
     ! initialize array values
     ! NOTE: depth in in unit of m BELOW sealevel (i.e., a +ve scale)
     ! NOTE: set default rho
@@ -2591,6 +2591,7 @@ CONTAINS
     real,DIMENSION(n_i,n_j)::loc_ij
     real,DIMENSION(n_i,n_j,n_k)::loc_ijk
     real,DIMENSION(2)::loc_data_scale
+    loc_ij = 0.0 ; loc_ijk = 0.0
     ! LOOP
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
@@ -2703,6 +2704,7 @@ CONTAINS
     integer::l,i,j,ia
     real,DIMENSION(n_i,n_j)::loc_ij
     real,DIMENSION(2)::loc_data_scale
+    loc_ij = 0.0
     ! LOOP
     DO l=3,n_l_atm
        ia = conv_iselected_ia(l)
@@ -2794,6 +2796,7 @@ CONTAINS
     real,DIMENSION(n_i,n_j)::loc_ij
     real,DIMENSION(n_i,n_j,n_k)::loc_ijk
     real,DIMENSION(2)::loc_data_scale
+    loc_ij = 0.0 ; loc_ijk = 0.0
     ! LOOP
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
@@ -2920,6 +2923,7 @@ CONTAINS
     integer::l,i,j,ia
     real,DIMENSION(n_i,n_j)::loc_ij
     real,DIMENSION(2)::loc_data_scale
+    loc_ij = 0.0
     ! LOOP
     DO l=3,n_l_atm
        ia = conv_iselected_ia(l)
@@ -3009,6 +3013,7 @@ CONTAINS
     integer::l,i,j,is
     real,DIMENSION(n_i,n_j)::loc_ij
     real,DIMENSION(2)::loc_data_scale
+    loc_ij = 0.0
     ! LOOP
     DO l=1,n_l_sed
        is = conv_iselected_is(l)

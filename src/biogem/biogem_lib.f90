@@ -1150,7 +1150,7 @@ CONTAINS
   !
   function fun_lib_conv_ocnTOvocn(dum_ocn)
     ! dummy valiables
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k),INTENT(in)::dum_ocn        !
+    REAL,DIMENSION(:,:,:,:),INTENT(in)::dum_ocn        !
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_ocnTOvocn !
     ! local variables
@@ -1191,7 +1191,7 @@ CONTAINS
   !
   function fun_lib_conv_sedTOvsed(dum_sed)
     ! dummy valiables
-    REAL,DIMENSION(n_sed,n_i,n_j,n_k),INTENT(in)::dum_sed           !
+    REAL,DIMENSION(:,:,:,:),INTENT(in)::dum_sed           !
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_sedTOvsed !
     ! local variables
@@ -1290,7 +1290,7 @@ CONTAINS
   !
   function fun_lib_conv_tsTOvocn(dum_ts)
     ! dummy valiables
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(in)::dum_ts    !
+    REAL,DIMENSION(:,:,:,:),INTENT(in)::dum_ts    !
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_tsTOvocn !
     ! local variables
@@ -1362,7 +1362,7 @@ CONTAINS
     ! dummy variables
     CHARACTER(len=*),INTENT(in)::dum_filename
     REAL,INTENT(in),DIMENSION(2)::dum_data_scale
-    REAL,INTENT(inout),DIMENSION(2,n_data_max)::dum_data
+    REAL,INTENT(inout),DIMENSION(:,:)::dum_data
     INTEGER,INTENT(inout)::dum_n_elements
     ! local variables
     INTEGER::n
@@ -1428,7 +1428,7 @@ CONTAINS
     ! dummy variables
     CHARACTER(len=*),INTENT(in)::dum_filename
     REAL,INTENT(in)::dum_data_scale
-    REAL,INTENT(inout),DIMENSION(n_data_max)::dum_data
+    REAL,INTENT(inout),DIMENSION(:)::dum_data
     INTEGER,INTENT(inout)::dum_n_elements
     ! local variables
     INTEGER::n

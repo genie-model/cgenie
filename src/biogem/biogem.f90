@@ -16,7 +16,9 @@ MODULE biogem
   PUBLIC :: biogem_climate_sol
   PUBLIC :: biogem_forcing
   PUBLIC :: biogem_tracercoupling
-
+  PUBLIC :: cpl_comp_ocngem
+  PUBLIC :: cpl_comp_gemocn
+  PUBLIC :: cpl_comp_gematm1
 CONTAINS
 
   SUBROUTINE initialise_biogem(dum_saln0, dum_rhoair, dum_cd, dum_ds, &
@@ -510,26 +512,16 @@ CONTAINS
     end do
 
     ! *** INITIALIZE LOCAL ARRAYS ***
-    ! NOTE: only bother initializing for selected tracers
-    DO l=3,n_l_atm
-       ia = conv_iselected_ia(l)
-       locij_fatm(:,:,:)    = 0.0
-       locij_focnatm(:,:,:) = 0.0
-    end do
-    DO l=1,n_l_ocn
-       io = conv_iselected_io(l)
-       locijk_ocn(io,:,:,:)  = 0.0
-       locijk_focn(io,:,:,:) = 0.0
-       locij_fsedocn(io,:,:) = 0.0
-       locij_frokocn(io,:,:) = 0.0
-    end do
-    DO l=1,n_l_sed
-       is = conv_iselected_is(l)
-       locij_focnsed(is,:,:)  = 0.0
-       locijk_fpart(is,:,:,:) = 0.0
-    end do
+    locij_fatm = 0.0
+    locij_focnatm = 0.0
+    locijk_ocn = 0.0
+    locijk_focn = 0.0
+    locij_fsedocn = 0.0
+    locij_frokocn = 0.0
+    locij_focnsed = 0.0
+    locijk_fpart = 0.0
     ! initialize local tracer arrays
-    loc_conv_ls_lo(:,:)   = 0.0
+    loc_conv_ls_lo = 0.0
 
     ! *** CALCULATE GEM TIME ***
     ! update model time
@@ -2034,6 +2026,7 @@ CONTAINS
     real,dimension(n_i,n_j)::locij_seaice_V_old                    ! sea-ice volume
 
     ! *** INITIALIZE ***
+    locij_seaice_V_old = 0.0
     ! calculate local variables
     loc_tau_scale = goldstein_rh0sc*goldstein_dsc*goldstein_usc*goldstein_fsc/goldstein_scf
     ! calculate sea-ice volume at previous (BIOGEM) time-step
@@ -2249,6 +2242,7 @@ CONTAINS
     real::loc_opsi_scale                                                  !
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax                  !
 
+    loc_opsi = 0.0 ; loc_opsia = 0.0 ; loc_opsip = 0.0 ; loc_zpsi = 0.0
     ! calculate local variables
     loc_t = par_misc_t_runtime - real(dum_genie_clock)/(1000.0*conv_yr_s)
     ! calculate actual year (counting years Before Present or otherwise)
@@ -2315,6 +2309,8 @@ CONTAINS
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
+
+    loc_opsi = 0.0 ; loc_zpsi = 0.0 ; loc_opsia = 0.0 ; loc_opsip = 0.0
 
     ! *** TIME-SLICE DATA UPDATE ***
     IF (ctrl_debug_lvl1) print*, '*** TIME-SLICE DATA UPDATE ***'
@@ -2609,6 +2605,12 @@ CONTAINS
     real::loc_sig                                                  !
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
     real::loc_opsi_scale                                           !
+
+    ! Initialise automatic variables.
+    loc_opsi = 0.0 ; loc_zpsi = 0.0
+    loc_opsia = 0.0 ; loc_opsip = 0.0
+    locij_focnatm = 0.0 ; locij_focnsed = 0.0 ; locij_fsedocn = 0.0
+    locij_ocn_ben = 0.0 ; locij_mask_ben = 0.0
 
     ! *** TIME-SERIES DATA UPDATE ***
     IF (ctrl_debug_lvl1) print*, '*** RUN-TIME DATA UPDATE ***'
@@ -3084,5 +3086,58 @@ CONTAINS
     PRINT *, ' <<< Shutdown complete'
     PRINT *, '======================================================='
   END SUBROUTINE end_biogem
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE TRACER FIELDS: OCN->GEM(GENIE)
+  SUBROUTINE cpl_comp_ocngem(dum_dts, dum_genie_ocn)
+    use genie_global
+    use biogem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    real,intent(in)::dum_dts
+    REAL, DIMENSION(:,:,:,:), INTENT(OUT) :: dum_genie_ocn
+    ! copy tracer array
+    ! NOTE: currently, the GENIE arrays are defiend with the max number of ocn tracers (not selected number)
+    dum_genie_ocn = dum_genie_ocn + dum_dts * ocn / conv_yr_s
+  end SUBROUTINE cpl_comp_ocngem
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE TRACER FIELDS: GEM(GENIE)->OCN
+  SUBROUTINE cpl_comp_gemocn(dum_genie_docn)
+    use genie_global
+    use biogem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    REAL, DIMENSION(:,:,:,:), INTENT(INOUT) :: dum_genie_docn
+    ! update tracer array
+    ! NOTE: currently, the GENIE arrays are defiend with the max number of ocn tracers (not selected number)
+    ! NOTE: <dum_genie_docn> is passed in as an ANOMALY
+    ocn = ocn + dum_genie_docn
+    ! reset anomoly array
+    dum_genie_docn = 0.0
+  end SUBROUTINE cpl_comp_gemocn
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE TRACER FIELDS: GEM(GENIE)->ATM
+  SUBROUTINE cpl_comp_gematm1(dum_genie_datm1, dum_sfcatm1)
+    use genie_global
+    use biogem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_genie_datm1 ! atm anomoly; ocn grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm1 ! atmosphere-surface tracer composition; ocn grid
+    ! update atm interface tracer array
+    ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
+    ! NOTE: <dum_genie_datm1> is passed in as an ANOMALY
+    dum_sfcatm1 = dum_sfcatm1 + dum_genie_datm1
+    ! reset anomoly array
+    dum_genie_datm1 = 0.0
+  end SUBROUTINE cpl_comp_gematm1
+  ! ******************************************************************************************************************************** !
 
 END MODULE biogem

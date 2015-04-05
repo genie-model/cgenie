@@ -23,7 +23,7 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & latent_ocn, sensible_ocn, netsolar_ocn, netlong_ocn, fx0sic_ocn, &
          & evap_ocn, pptn_ocn, runoff_ocn, fwsic_ocn, stressxu_ocn, &
          & stressyu_ocn, stressxv_ocn, stressyv_ocn, tsval_ocn, ssval_ocn, &
@@ -31,8 +31,8 @@ CONTAINS
     REAL, INTENT(OUT) :: test_energy_ocean, test_water_ocean
     INTEGER(KIND=8), INTENT(IN) :: koverall
     ! Dummy variables to be passed to/from BIOGEM via genie.F
-    REAL, DIMENSION(maxl,maxi,maxj,maxk), INTENT(INOUT) :: go_ts, go_ts1
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: go_cost, go_mldta
+    REAL, DIMENSION(:,:,:,:), INTENT(INOUT) :: go_ts, go_ts1
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: go_cost, go_mldta
     REAL, INTENT(INOUT) :: go_u(3,maxi,maxj,maxk)
     REAL, INTENT(INOUT) :: go_tau(2,maxi,maxj)
     REAL, INTENT(INOUT) :: go_psi(0:maxi,0:maxj)
@@ -65,6 +65,9 @@ CONTAINS
     REAL :: tot_energy, tot_water, vsc
     REAL, SAVE :: ini_energy, ini_water
     LOGICAL :: lfirst=.TRUE.
+
+    opsi = 0.0 ; opsia = 0.0 ; opsip = 0.0
+    fx0neto = 0.0 ; fwfxneto = 0.0
 
     ! This bit just calculates the inital diagnostic of the total ocean
     !   thermal energy and water.  It is simply the temperature/density of

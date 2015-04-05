@@ -200,8 +200,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(n_sed,n_i,n_j),intent(inout)::dum_sfxsumsed
-    real,DIMENSION(n_ocn,n_i,n_j),intent(inout)::dum_sfxocn    ! sediment dissolution flux interface array
+    real,dimension(:,:,:),intent(inout)::dum_sfxsumsed
+    real,DIMENSION(:,:,:),intent(inout)::dum_sfxocn    ! sediment dissolution flux interface array
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -223,6 +223,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! INITIALIZE LOCAL VARIABLES
     ! -------------------------------------------------------- !
+    loc_conv_iselected_is = 0
+    loc_ij = 0.0
     IF (ctrl_misc_debug3) print*, 'INITIALIZE LOCAL VARIABLES'
     ! -------------------------------------------------------- ! set filename
     IF (ctrl_misc_debug4) print*, 'set filename'
@@ -969,10 +971,10 @@ CONTAINS
     ! dummy variables
     REAL,INTENT(in)::dum_dtyr                                    ! time-step (years)
     integer,INTENT(in)::dum_i,dum_j                              !
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed                    !
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed_fsed,dum_sed_fdis  !
-    real,intent(in),DIMENSION(n_ocn)::dum_ocn                    ! ocean composition
-    REAL,INTENT(in),DIMENSION(n_carb)::dum_sed_carb              !
+    REAL,INTENT(in),DIMENSION(:)::dum_sed                    !
+    REAL,INTENT(in),DIMENSION(:)::dum_sed_fsed,dum_sed_fdis  !
+    real,intent(in),DIMENSION(:)::dum_ocn                    ! ocean composition
+    REAL,INTENT(in),DIMENSION(:)::dum_sed_carb              !
     ! local variables
     CHARACTER(len=255)::loc_filename                             !
     real::loc_age                                                !
@@ -983,6 +985,7 @@ CONTAINS
     real::loc_sed_fdis_POC_d13C,loc_sed_fdis_CaCO3_d13C          !
     integer::ios                                                 ! file checks
     ! calculate sediment comcposition (weight fraction)
+    loc_sed = 0.0
     loc_sed_tot_wt = fun_calc_sed_mass(dum_sed(:))
     IF (loc_sed_tot_wt > const_real_nullsmall) THEN
        loc_sed(:) = conv_sed_cm3_g(:)*dum_sed(:)/loc_sed_tot_wt
@@ -1110,7 +1113,7 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     ! dummy valiables
     real,INTENT(in)::dum_dtyr                                  !
-    real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfcsumocn    !
+    real,DIMENSION(:,:,:),intent(in)::dum_sfcsumocn    !
     ! local variables
     INTEGER::i,j,l,is
     integer::ios  ! for file checks
@@ -2062,7 +2065,7 @@ CONTAINS
   SUBROUTINE sub_data_save_seddiag_2D(dum_dtyr,dum_sfcsumocn)
     ! dummy valiables
     real,INTENT(in)::dum_dtyr
-    real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfcsumocn
+    real,DIMENSION(:,:,:),intent(in)::dum_sfcsumocn
     ! local variables
     INTEGER::i,j,l,io,is,ic,ips          !
     CHARACTER(len=255)::loc_filename

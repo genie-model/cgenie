@@ -428,7 +428,7 @@ CONTAINS
   SUBROUTINE reinit_flux_rokatm(dum_sfxsumatm1)
     USE rokgem_lib
     IMPLICIT NONE
-    REAL, DIMENSION(n_atm,n_i,n_j), INTENT(INOUT) :: dum_sfxsumatm1
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm1
 
     ! *** RE-INITIALIZE VARIABLES ***
     ! reset cumulative weathering array
@@ -442,7 +442,7 @@ CONTAINS
   SUBROUTINE reinit_flux_rokocn(dum_sfxsumrok1)
     USE rokgem_lib
     IMPLICIT NONE
-    REAL, DIMENSION(n_ocn,n_i,n_j), INTENT(INOUT) :: dum_sfxsumrok1
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumrok1
 
     ! *** RE-INITIALIZE VARIABLES ***
     ! reset cumulative weathering array

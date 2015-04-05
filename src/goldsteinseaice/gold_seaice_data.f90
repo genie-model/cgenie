@@ -375,7 +375,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, iout
     CHARACTER(LEN=3), INTENT(IN) :: ext
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: fx_delta, fw_delta
+    REAL, DIMENSION(:,:), INTENT(IN) :: fx_delta, fw_delta
 
     INTEGER :: ios, l
     REAL :: rnyear, work((maxi+1) * (maxj+1))

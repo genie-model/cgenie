@@ -51,8 +51,8 @@ CONTAINS
     INTEGER, INTENT(IN) :: imonth, iyear, imode
     REAL, INTENT(IN) :: rtime
     REAL, INTENT(IN) :: depth(nl), depth1(nl+1)
-    REAL, DIMENSION(mg), INTENT(IN) :: alon1, alon2, alon3
-    REAL, DIMENSION(jgg), INTENT(IN) :: alat1, alat2, alat3
+    REAL, DIMENSION(:), INTENT(IN) :: alon1, alon2, alon3
+    REAL, DIMENSION(:), INTENT(IN) :: alat1, alat2, alat3
     INTEGER, INTENT(IN) :: mg, jgg, nl
 
     INTEGER, PARAMETER :: nmaxdims=4
@@ -457,7 +457,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: k1(0:maxi+1,0:maxj+1)
     REAL, INTENT(IN) :: depth1(maxk+1)
-    REAL, DIMENSION(0:maxj,0:maxk), INTENT(IN) :: opsi, opsia, opsip
+    REAL, DIMENSION(:,:), INTENT(IN) :: opsi, opsia, opsip
     REAL, INTENT(IN) :: ts(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
     REAL, INTENT(IN) :: rho(0:maxi+1,0:maxj+1,0:maxk)
     REAL, INTENT(IN) :: fx0flux(5,maxi,maxj), fwflux(4,maxi,maxj)

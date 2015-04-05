@@ -9,7 +9,13 @@ MODULE atchem
   PUBLIC :: step_atchem
   PUBLIC :: end_atchem
   PUBLIC :: atchem_save_rst
-
+  PUBLIC :: cpl_comp_atmgem
+  PUBLIC :: cpl_comp_gematm
+  PUBLIC :: cpl_comp_atmocn
+  PUBLIC :: cpl_comp_EMBM
+  PUBLIC :: cpl_comp_atmlnd
+  PUBLIC :: cpl_flux_ocnatm
+  PUBLIC :: cpl_flux_lndatm
 CONTAINS
 
   SUBROUTINE initialise_atchem(dum_sfxsumatm, dum_sfcatm)
@@ -52,8 +58,8 @@ CONTAINS
     USE atchem_box
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts
-    real,dimension(n_atm,n_i,n_j),intent(inout)::dum_sfxsumatm
-    real,dimension(n_atm,n_i,n_j),intent(out)::dum_sfcatm
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm
+    REAL, DIMENSION(:,:,:), INTENT(OUT) :: dum_sfcatm
 
     integer::ia,l,i,j
     real::loc_dtyr
@@ -64,7 +70,8 @@ CONTAINS
     REAL,DIMENSION(n_atm)::loc_fracdecay_atm                   ! local reduction factor for decaying atmospheric tracers
 
     ! *** INITIALIZE LOCAL VARIABLES ***
-    locij_fatm = 0.0
+    loc_atm_tot = 0.0 ; loc_conv_atm_mol = 0.0 ; loc_conv_mol_atm = 0.0
+    locij_fatm = 0.0 ; loc_fracdecay_atm = 0.0
 
     ! *** CALCULATE LOCAL CONSTANTS ***
     ! local constants for converting between partial pressure and molar quantity
@@ -188,5 +195,138 @@ CONTAINS
     print*,' <<< Shutdown complete'
     print*,'======================================================='
   END SUBROUTINE end_atchem
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE TRACER FIELDS: ATM->GEM(GENIE)
+  SUBROUTINE cpl_comp_atmgem(dum_dts, dum_genie_atm1)
+    USE genie_global
+    USE atchem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    real,intent(in)::dum_dts
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_genie_atm1
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! create time-averaged tracer array
+    ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
+    dum_genie_atm1 = dum_genie_atm1 + dum_dts * atm / conv_yr_s
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  end SUBROUTINE cpl_comp_atmgem
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE TRACER FIELDS: GEM(GENIE)->ATM
+  SUBROUTINE cpl_comp_gematm(dum_genie_datm1)
+    USE genie_global
+    USE atchem_lib
+    IMPLICIT NONE
+    ! dummy arguments
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_genie_datm1
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! update tracer array
+    ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
+    ! NTOE: <dum_genie_atm1> is passed as an ANOMALY
+    atm = atm + dum_genie_datm1
+    ! reset anomaly array
+    dum_genie_datm1 = 0.0
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  end SUBROUTINE cpl_comp_gematm
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE AtChem atmospheric composition
+  SUBROUTINE cpl_comp_atmocn(dum_n_atm, dum_sfcatm, dum_sfcatm1)
+    IMPLICIT NONE
+    ! dummy arguments
+    INTEGER, INTENT(IN) :: dum_n_atm
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_sfcatm     ! atmosphere-surface tracer composition; atm grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm1 ! atmosphere-surface tracer composition; ocn grid
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! NOTE: currently no summation done!
+    ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
+    dum_sfcatm1(3:dum_n_atm,:,:) = dum_sfcatm(3:dum_n_atm,:,:)
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  end SUBROUTINE cpl_comp_atmocn
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE EMBM TRACERS
+  SUBROUTINE cpl_comp_EMBM(dum_t, dum_q, dum_sfcatm1)
+    IMPLICIT NONE
+    ! dummy arguments
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_t
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_q
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm1 ! atmosphere-surface tracer composition; ocn grid
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! NOTE: currently no summation done!
+    dum_sfcatm1(1,:,:) = dum_t
+    dum_sfcatm1(2,:,:) = dum_q
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  end SUBROUTINE cpl_comp_EMBM
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE AtChem atmospheric composition
+  SUBROUTINE cpl_comp_atmlnd(dum_n_atm, dum_sfcatm, dum_sfcatm_lnd)
+    IMPLICIT NONE
+    ! dummy arguments
+    integer,intent(in)::dum_n_atm
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_sfcatm        ! atmosphere-surface tracer composition; atm grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm_lnd ! atmosphere-surface tracer composition; lnd grid
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! NOTE: currently no summation done!
+    ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
+    dum_sfcatm_lnd(3:dum_n_atm,:,:) = dum_sfcatm(3:dum_n_atm,:,:)
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  end SUBROUTINE cpl_comp_atmlnd
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE AtChem fluxes
+  SUBROUTINE cpl_flux_ocnatm(dum_dts, dum_sfxatm1, dum_sfxsumatm)
+    IMPLICIT NONE
+    ! dummy arguments
+    real,intent(in)::dum_dts
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxatm1   ! atmosphere-surface fluxes; ocn grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! integrate flux to atmosphere <dum_sfxatm1> (mol m-2 s-1)
+    ! running total <dum_sfxsumatm> is in units of (mol m-2)
+    dum_sfxsumatm = dum_sfxsumatm + dum_dts * dum_sfxatm1
+    ! zero flux
+    dum_sfxatm1 = 0.0
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  END SUBROUTINE cpl_flux_ocnatm
+  ! ******************************************************************************************************************************** !
+
+
+  ! ******************************************************************************************************************************** !
+  ! COUPLE AtChem fluxes
+  SUBROUTINE cpl_flux_lndatm(dum_dts, dum_sfxatm_lnd, dum_sfxsumatm)
+    IMPLICIT NONE
+    ! dummy arguments
+    real,intent(in)::dum_dts
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxatm_lnd   ! atmosphere-surface fluxes; lnd grid
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
+    ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
+    ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
+    ! integrate flux to atmosphere <dum_sfxatm_lnd> (mol m-2 s-1)
+    ! running total <dum_sfxsumatm> is in units of (mol m-2)
+    dum_sfxsumatm = dum_sfxsumatm + dum_dts * dum_sfxatm_lnd
+    ! zero flux
+    dum_sfxatm_lnd = 0.0
+    ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
+  END SUBROUTINE cpl_flux_lndatm
+  ! ******************************************************************************************************************************** !
 
 END MODULE atchem

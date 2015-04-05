@@ -14,7 +14,7 @@ CONTAINS
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: istep, iout
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, &
          & dum_relh, albs_lnd, land_snow_lnd
 
@@ -383,7 +383,7 @@ CONTAINS
        & albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, &
          & dum_relh, albs_lnd, land_snow_lnd
 
@@ -477,8 +477,8 @@ CONTAINS
        & iamin, iamax, jamin, jamax)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: maxi, maxj, ents_kmax
-    INTEGER, DIMENSION(maxi,maxj), INTENT(IN) :: k1
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: a
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: k1
+    REAL, DIMENSION(:,:), INTENT(IN) :: a
     REAL, INTENT(OUT) :: amin, amax
     INTEGER, INTENT(OUT) :: iamin, iamax, jamin, jamax
 
@@ -539,7 +539,7 @@ CONTAINS
   SUBROUTINE entsdiagosc(nyear, istep, iout, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: nyear, istep, iout
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: albs_lnd, land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(IN) :: albs_lnd, land_snow_lnd
 
     REAL :: rnyear
     INTEGER :: i, j

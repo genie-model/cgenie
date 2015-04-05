@@ -139,11 +139,11 @@ CONTAINS
     USE gemlite_lib
     IMPLICIT NONE
     ! DUMMY ARGUMENTS
-    real,dimension(n_ocn,n_i,n_j),intent(out)::dum_sfcocn1                ! sediment-interface ocean tracer composition; ocn grid
-    real,DIMENSION(n_sed,n_i,n_j),intent(in)::dum_sfxsumsed1              ! sediment rain flux (mol m-2 per time-step)
-    real,DIMENSION(n_ocn,n_i,n_j),intent(in)::dum_sfxocn1                 ! sediment dissolution flux (mol m-2 s-1)
-    real,dimension(n_ocn,n_i,n_j),intent(inout)::dum_sfxsumrok1_gem       ! coastal (weathering) flux (mol per time-step)
-    real,dimension(n_atm,n_i,n_j),intent(inout)::dum_sfxsumatm1_gem       ! atmospheric fluxes: outgassing and weathering
+    real,dimension(:,:,:),intent(out)::dum_sfcocn1                ! sediment-interface ocean tracer composition; ocn grid
+    real,DIMENSION(:,:,:),intent(in)::dum_sfxsumsed1              ! sediment rain flux (mol m-2 per time-step)
+    real,DIMENSION(:,:,:),intent(in)::dum_sfxocn1                 ! sediment dissolution flux (mol m-2 s-1)
+    real,dimension(:,:,:),intent(inout)::dum_sfxsumrok1_gem       ! coastal (weathering) flux (mol per time-step)
+    real,dimension(:,:,:),intent(inout)::dum_sfxsumatm1_gem       ! atmospheric fluxes: outgassing and weathering
     ! LOCAL VARIABLES
     INTEGER::i,j,k                                                        ! counting indices
     INTEGER::l,ia,io,is                                                      ! counting indices
@@ -178,7 +178,7 @@ CONTAINS
 
     ! *** INITIALIZE LOCAL VARIABLES ***
     ! physics
-    loc_ocn_mask(:,:) = 0.0
+    loc_ocn_mask = 0.0
     ! initialize local arrays
     loc_tot_fdis(:)        = 0.0
     loc_tot_fsed (:)       = 0.0
@@ -188,6 +188,10 @@ CONTAINS
     loc_datm_pCO2_13C(:,:) = 0.0
     loc_datm_pO2(:,:)      = 0.0
     loc_r13C_as(:,:) = 0.0
+    loc_DCO2 = 0.0
+    loc_DCO2_13C = 0.0
+    loc_conv_atm_mol = 0.0
+
     ! initialize GEMlite anomoly arrays
     datm(:,:,:)   = 0.0
     docn(:,:,:,:) = 0.0
@@ -592,7 +596,7 @@ CONTAINS
     USE gemlite_lib
     IMPLICIT NONE
     ! DUMMY ARGUMENTS
-    real,dimension(n_i,n_j),INTENT(in)::dum_frac_sic                      ! sea-ice fractional cover (2-D)
+    real,dimension(:,:),INTENT(in)::dum_frac_sic                      ! sea-ice fractional cover (2-D)
 
     ! *** UPDATE CLIMATE PROPERTIES ***
     phys_ocnatm_seaice(:,:) = dum_frac_sic(:,:)
@@ -625,8 +629,8 @@ CONTAINS
     USE gemlite_lib
     IMPLICIT NONE
     ! DUMMY ARGUMENTS
-    real,intent(inout),dimension(intrac_ocn,n_i,n_j,n_k)::dum_ts          ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
-    real,intent(inout),dimension(intrac_ocn,n_i,n_j,n_k)::dum_ts1         ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    real,intent(inout),dimension(:,:,:,:)::dum_ts          ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    real,intent(inout),dimension(:,:,:,:)::dum_ts1         ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
     ! LOCAL VARIABLES
     integer::i,j,k                                                        !
     integer::l,io                                                         !
