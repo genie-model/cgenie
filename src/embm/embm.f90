@@ -303,7 +303,7 @@ CONTAINS
     ! module is active
     LOGICAL :: flag_wind
 
-    REAL :: orbitall_vect(en_ntimes_max,5)
+    REAL :: orbitall_vect(5)
 
     INTEGER, EXTERNAL :: lnsig1
 
@@ -483,10 +483,6 @@ CONTAINS
 
     ALLOCATE(palb(maxi,maxj))    ; palb = 0.0
     ALLOCATE(palbavg(maxi,maxj)) ; palbavg = 0.0
-
-    ALLOCATE(orog_vect(maxi,maxj,en_ntimes_max)) ; orog_vect = 0.0
-
-    ALLOCATE(lice_vect(maxi,maxj,en_ntimes_max)) ; lice_vect = 0.0
 
     ALLOCATE(d18o_ice_thresh(maxi,maxj)) ; d18o_ice_thresh = 0.0
     ALLOCATE(d18o_orog_min(maxi,maxj))   ; d18o_orog_min = 0.0
@@ -868,6 +864,7 @@ CONTAINS
        IF (debug_init) PRINT *,  'co2 defined from ', TRIM(filenameco2)
        IF (debug_init) PRINT *, 't_co2,nco2,co2steps', t_co2, nco2, co2steps
        OPEN(729,FILE=TRIM(filenameco2))
+       ALLOCATE(co2_vect(nco2))
        DO i = 1, nco2
           READ (729,*) co2_vect(i)
        END DO
@@ -1404,16 +1401,18 @@ CONTAINS
     ! read in time varying orbital forcing
     IF (orbit_radfor == 'y' .OR. orbit_radfor == 'Y') THEN
        OPEN(UNIT=729,FILE=indir_name(1:lenin)//TRIM(filenameorbit),IOSTAT=ios)
+       ALLOCATE(orbitecc_vect(norbit))
+       ALLOCATE(orbitobl_vect(norbit))
+       ALLOCATE(orbitpre_vect(norbit))
+       ALLOCATE(orbittau_vect(norbit))
        DO i = 1, norbit
-          READ (729,*,IOSTAT=ios) (orbitall_vect(i,n), n = 1, 5)
+          READ (729,*,IOSTAT=ios) (orbitall_vect(n), n = 1, 5)
+          orbitecc_vect(norbit-i+1) = orbitall_vect(2)
+          orbitobl_vect(norbit-i+1) = orbitall_vect(3)
+          orbitpre_vect(norbit-i+1) = orbitall_vect(4)
+          orbittau_vect(norbit-i+1) = orbitall_vect(5)
        END DO
        CLOSE(729)
-       DO i = 1, norbit
-          orbitecc_vect(norbit-i+1) = orbitall_vect(i,2)
-          orbitobl_vect(norbit-i+1) = orbitall_vect(i,3)
-          orbitpre_vect(norbit-i+1) = orbitall_vect(i,4)
-          orbittau_vect(norbit-i+1) = orbitall_vect(i,5)
-       END DO
     END IF
 
     ! v2 seasonal. Calculate radiative forcing
@@ -1619,6 +1618,7 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenameorog))
+       ALLOCATE(orog_vect(maxi,maxj,norog))
        DO l = 1, norog
           DO i = 1, maxi
              DO j = 1, maxj
@@ -1634,6 +1634,7 @@ CONTAINS
        ! See holden et al 2009 Clim Past Disc
        ! d18o time series
        OPEN(77,FILE=TRIM(filenamed18o))
+       ALLOCATE(d18o_vect(nd18o))
        READ (77,*) (d18o_vect(l), l = 1, nd18o)
        CLOSE(77)
        ! Threshold value of d18o at which cell is ice covered
@@ -1716,6 +1717,7 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenamelice))
+       ALLOCATE(lice_vect(maxi,maxj,nlice)) ; lice_vect = 0.0
        DO l = 1, nlice
           DO i = 1, maxi
              DO j = 1, maxj

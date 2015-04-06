@@ -166,16 +166,15 @@ MODULE embm_lib
   CHARACTER(LEN=1) :: atchem_radfor, orbit_radfor
 
   ! Orbital parameters for albedo calculation
-  INTEGER, PARAMETER :: en_ntimes_max=2000
   CHARACTER(LEN=200) :: filenameorbit
   INTEGER :: t_orbit, norbit,orbitsteps
-  REAL, DIMENSION(en_ntimes_max) :: &
+  REAL, DIMENSION(:), ALLOCATABLE :: &
        & orbitecc_vect, orbitobl_vect, orbitpre_vect, orbittau_vect
 
   ! CO2 time series
   CHARACTER(LEN=200) :: filenameco2
   INTEGER :: t_co2, nco2, co2steps
-  REAL :: co2_vect(en_ntimes_max)
+  REAL, DIMENSION(:), ALLOCATABLE :: co2_vect
 
   ! Albedo paramters from ENTS
   REAL, DIMENSION(:,:), ALLOCATABLE :: albo, palb, palbavg
@@ -199,7 +198,7 @@ MODULE embm_lib
   CHARACTER(LEN=200) :: filenamed18o, filenamed18oicethresh, &
        & filenamed18oorogmin, filenamed18ooroggrad
   INTEGER :: t_d18o, nd18o, d18osteps
-  REAL :: d18o_vect(en_ntimes_max)
+  REAL, DIMENSION(:), ALLOCATABLE :: d18o_vect
   REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & d18o_ice_thresh, d18o_orog_min, d18o_orog_grad
   REAL :: d18o_k, scale_mwfx
