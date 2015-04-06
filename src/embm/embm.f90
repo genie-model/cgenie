@@ -359,7 +359,6 @@ CONTAINS
     maxi = dim_GOLDSTEINNLONS
     maxj = dim_GOLDSTEINNLATS
     maxk = dim_GOLDSTEINNLEVS
-    maxnyr = 400
 
     IF (debug_init) PRINT *
 
@@ -438,8 +437,6 @@ CONTAINS
     ALLOCATE(ch4(maxi,maxj))   ; ch4 = 0.0
     ALLOCATE(n2o(maxi,maxj))   ; n2o = 0.0
 
-    ALLOCATE(solfor(maxj,maxnyr)) ; solfor = 0.0
-
     ALLOCATE(tq(2,maxi,maxj))      ; tq = 0.0
     ALLOCATE(tq1(2,maxi,maxj))     ; tq1 = 0.0
     ALLOCATE(varice(2,maxi,maxj))  ; varice = 0.0
@@ -484,7 +481,6 @@ CONTAINS
     ALLOCATE(fx0avg(4,maxi,maxj)) ; fx0avg = 0.0
     ALLOCATE(fwavg(2,maxi,maxj))  ; fwavg = 0.0
 
-    ALLOCATE(albo(maxj,maxnyr))  ; albo = 0.0
     ALLOCATE(palb(maxi,maxj))    ; palb = 0.0
     ALLOCATE(palbavg(maxi,maxj)) ; palbavg = 0.0
 
@@ -495,14 +491,6 @@ CONTAINS
     ALLOCATE(d18o_ice_thresh(maxi,maxj)) ; d18o_ice_thresh = 0.0
     ALLOCATE(d18o_orog_min(maxi,maxj))   ; d18o_orog_min = 0.0
     ALLOCATE(d18o_orog_grad(maxi,maxj))  ; d18o_orog_grad = 0.0
-
-    ALLOCATE(uatml(2,maxi,maxj,maxnyr)) ; uatml = 0.0
-
-    ALLOCATE(usurfl(maxi,maxj,maxnyr))  ; usurfl = 0.0
-    ALLOCATE(tncep(maxi,maxj,maxnyr))   ; tncep = 0.0
-    ALLOCATE(pncep(maxi,maxj,maxnyr))   ; pncep = 0.0
-    ALLOCATE(rhncep(maxi,maxj,maxnyr))  ; rhncep = 0.0
-    ALLOCATE(atm_alb(maxi,maxj,maxnyr)) ; atm_alb = 0.0
 
     ALLOCATE(chl(maxi,maxj)) ; chl = 0.0
     ALLOCATE(cel(maxi,maxj)) ; cel = 0.0
@@ -662,9 +650,17 @@ CONTAINS
     ! seasonality
     IF (debug_init) PRINT *, 'timesteps per year and A/O dt ratio'
     IF (debug_init) PRINT *, nyear, ndta
-    IF (nyear > maxnyr) STOP 'embm : nyear > maxnyr'
     tv = 86400.0 * yearlen / (nyear * tsc)
     ryear = 1.0 / (yearlen * 86400)
+    ALLOCATE(solfor(maxj,nyear))       ; solfor = 0.0
+    ALLOCATE(albo(maxj,nyear))         ; albo = 0.0
+    ALLOCATE(uatml(2,maxi,maxj,nyear)) ; uatml = 0.0
+    ALLOCATE(usurfl(maxi,maxj,nyear))  ; usurfl = 0.0
+    ALLOCATE(tncep(maxi,maxj,nyear))   ; tncep = 0.0
+    ALLOCATE(pncep(maxi,maxj,nyear))   ; pncep = 0.0
+    ALLOCATE(rhncep(maxi,maxj,nyear))  ; rhncep = 0.0
+    ALLOCATE(atm_alb(maxi,maxj,nyear)) ; atm_alb = 0.0
+
 
     dtatm = tv / ndta
     IF (debug_init) PRINT *, 'embm timestep (s) =', dtatm * tsc
