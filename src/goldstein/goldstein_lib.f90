@@ -3,7 +3,7 @@ MODULE goldstein_lib
   IMPLICIT NONE
   SAVE
 
-  INTEGER :: maxi, maxj, maxk, maxl, maxnyr, mpxi, mpxj, maxisles, mpi
+  INTEGER :: maxi, maxj, maxk, maxl, mpxi, mpxj, mpi
 
   INTEGER :: isles, ntot, intot, nyear
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk

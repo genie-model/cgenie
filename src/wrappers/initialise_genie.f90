@@ -30,8 +30,7 @@ SUBROUTINE initialise_genie()
        & gem_adapt_auto_unlimitedGEM, gem_adapt_diag_biogem_full, &
        & dim_GENIENL, dim_GENIENX, dim_GENIENY, dim_GOLDSTEINNLONS, &
        & dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, dim_GOLDSTEINNTRACS, &
-       & dim_GOLDSTEINMAXISLES, dim_SEDGEMNLONS, dim_SEDGEMNLATS, &
-       & dim_ROKGEMNLONS, dim_ROKGEMNLATS
+       & dim_SEDGEMNLONS, dim_SEDGEMNLATS, dim_ROKGEMNLONS, dim_ROKGEMNLATS
 
   ! Assign default values
   koverall_total = 0
@@ -86,7 +85,6 @@ SUBROUTINE initialise_genie()
   dim_GOLDSTEINNLATS = 36
   dim_GOLDSTEINNLEVS = 8
   dim_GOLDSTEINNTRACS = 2
-  dim_GOLDSTEINMAXISLES = 5
   dim_SEDGEMNLONS = 36
   dim_SEDGEMNLATS = 36
   dim_ROKGEMNLONS = 36

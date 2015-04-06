@@ -208,7 +208,7 @@ CONTAINS
     ! Solve system of simultaneous equations. Zero division here might
     ! suggest not enough islands in the .psiles file
     IF (isles > 1) THEN
-       CALL matmult(isles, erisl, erisl(1,isles+1))
+       CALL matmult(isles, erisl(:,1:isles), erisl(:,isles+1))
        DO isl = 1, isles
           psibc(isl) = -erisl(isl,isles+1)
        END DO
@@ -542,7 +542,7 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat, message, die
     USE genie_control, ONLY: &
          & dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, &
-         & dim_GOLDSTEINNTRACS, dim_GOLDSTEINMAXISLES
+         & dim_GOLDSTEINNTRACS
 
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: olon1, olon2, olon3
@@ -649,10 +649,8 @@ CONTAINS
     maxj = dim_GOLDSTEINNLATS
     maxk = dim_GOLDSTEINNLEVS
     maxl = dim_GOLDSTEINNTRACS
-    maxnyr = 720
     mpxi = maxi
     mpxj = maxj + 1
-    maxisles = dim_GOLDSTEINMAXISLES
     mpi = 2 * (maxi + maxj)
 
     IF (debug_init) PRINT *
@@ -680,10 +678,6 @@ CONTAINS
     ALLOCATE(ipf(maxj))             ; ipf = 0
     ALLOCATE(ias(maxj))             ; ias = 0
     ALLOCATE(iaf(maxj))             ; iaf = 0
-    ALLOCATE(lpisl(mpi,maxisles))   ; lpisl = 0
-    ALLOCATE(ipisl(mpi,maxisles))   ; ipisl = 0
-    ALLOCATE(jpisl(mpi,maxisles))   ; jpisl = 0
-    ALLOCATE(npi(maxisles))         ; npi = 0
     ALLOCATE(icosd(maxi,maxj))      ; icosd = 0
     ALLOCATE(mldk(maxi,maxj))       ; mldk = 0
 
@@ -748,10 +742,6 @@ CONTAINS
     ALLOCATE(fx0avg(5,maxi,maxj))                    ; fx0avg = 0.0
     ALLOCATE(fwavg(4,maxi,maxj))                     ; fwavg = 0.0
     ALLOCATE(windavg(4,maxi,maxj))                   ; windavg = 0.0
-    ALLOCATE(psisl(0:maxi,0:maxj,maxisles))          ; psisl = 0.0
-    ALLOCATE(ubisl(2,0:maxi+1,0:maxj,maxisles))      ; ubisl = 0.0
-    ALLOCATE(erisl(maxisles,maxisles+1))             ; erisl = 0.0
-    ALLOCATE(psibc(maxisles))                        ; psibc = 0.0
     ALLOCATE(ts_store(maxl,maxi,maxj,maxk))          ; ts_store = 0.0
     ALLOCATE(albcl(maxi,maxj))                       ; albcl = 0.0
     ALLOCATE(evap_save1(maxi,maxj))                  ; evap_save1 = 0.0
@@ -899,7 +889,6 @@ CONTAINS
 
     ! v2 seasonality
     IF (debug_init) PRINT *, 'timesteps per year'
-    IF (nyear > maxnyr) STOP 'goldstein : nyear > maxnyr'
     IF (debug_init) PRINT *, nyear
     tv = 86400.0 * yearlen / (nyear * tsc)
 
@@ -1449,10 +1438,14 @@ CONTAINS
     IF (debug_init) &
          & PRINT *, 'Number of landmasses present in .psiles file:', &
          & isles+1, '(i.e.', isles, 'islands)'
-    IF (isles > maxisles) THEN
-       CALL die('Too many islands (increase GOLDSTEINMAXISLES)!', &
-            & __LINE__, __FILE__)
-    END IF
+    ALLOCATE(lpisl(mpi,isles))                 ; lpisl = 0
+    ALLOCATE(ipisl(mpi,isles))                 ; ipisl = 0
+    ALLOCATE(jpisl(mpi,isles))                 ; jpisl = 0
+    ALLOCATE(npi(isles))                       ; npi = 0
+    ALLOCATE(psisl(0:maxi,0:maxj,isles))       ; psisl = 0.0
+    ALLOCATE(ubisl(2,0:maxi+1,0:maxj,isles))   ; ubisl = 0.0
+    ALLOCATE(erisl(isles,isles+1))             ; erisl = 0.0
+    ALLOCATE(psibc(isles))                     ; psibc = 0.0
 
     ! read island path integral data, read isles+1 paths only if want last path
     ! for testing
@@ -3395,7 +3388,7 @@ CONTAINS
   SUBROUTINE matinv_gold(nvar, amat)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: nvar
-    REAL, INTENT(INOUT) :: amat(maxisles,maxisles)
+    REAL, INTENT(INOUT) :: amat(:,:)
 
     INTEGER :: i, j, k
 
@@ -3413,8 +3406,8 @@ CONTAINS
   SUBROUTINE matmult(nvar, amat, rhs)
     IMPLICIT NONE
     INTEGER, intent(in) :: nvar
-    REAL, INTENT(IN) :: amat(maxisles,maxisles)
-    REAL, INTENT(OUT) :: rhs(maxisles)
+    REAL, INTENT(IN) :: amat(:,:)
+    REAL, INTENT(OUT) :: rhs(:)
 
     INTEGER :: i, j
 
