@@ -1,0 +1,659 @@
+\documentclass[a4paper,10pt,article]{memoir}
+
+\usepackage[a4paper,margin=1in]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage{fourier}
+\usepackage{amsmath,amssymb}
+
+\usepackage{color}
+\definecolor{orange}{rgb}{0.75,0.5,0}
+\definecolor{magenta}{rgb}{1,0,1}
+\definecolor{cyan}{rgb}{0,1,1}
+\definecolor{grey}{rgb}{0.25,0.25,0.25}
+\newcommand{\outline}[1]{{\color{grey}{\scriptsize #1}}}
+\newcommand{\revnote}[1]{{\color{red}\textit{\textbf{#1}}}}
+\newcommand{\note}[1]{{\color{blue}\textit{\textbf{#1}}}}
+\newcommand{\citenote}[1]{{\color{orange}{[\textit{\textbf{#1}}]}}}
+
+\usepackage{xspace}
+
+\usepackage{listings}
+\usepackage{courier}
+\lstset{basicstyle=\tiny\ttfamily,breaklines=true,language=Python}
+
+\usepackage{fancyvrb}
+\usepackage{url}
+
+\usepackage{float}
+\newfloat{listing}{tbp}{lop}
+\floatname{listing}{Listing}
+
+\title{Optimisation work for GENIE \texttt{cupcake}}
+\author{Ian~Ross}
+\date{2 April 2015}
+
+\begin{document}
+
+\catcode`~=11    % Make tilde a normal character (danger of weirdness...)
+%\catcode`~=13    % Make tilde an active character again
+
+\maketitle
+
+General guidelines:
+\begin{enumerate}
+  \item{Rationalise coordinate dimension size variables before doing
+    anything else -- all this \texttt{maxi} vs. \texttt{imax} stuff is
+    just confusing and unnecessary.}
+  \item{Convert arrays to \texttt{ALLOCATABLE} in small groups and do
+    a little test to make sure you're not screwing things up!}
+  \item{Initialise all allocated arrays to zero: the original
+    fixed-size arrays are mostly defined as \texttt{SAVE} and there
+    are some places that seem to rely on them being zeroed.}
+  \item{Be careful about using the \texttt{maxi} and \texttt{maxj}
+    coordinate dimensions before they're properly initialised!  This
+    is especially possible in the various \texttt{initialise\_...}
+    routines.}
+  \item{Some modules haven't been fully organised as F90 modules, so
+    that also needs to be done: mostly it's a matter of putting the
+    initialisation, step and tear-down routines into a single module.}
+\end{enumerate}
+
+\textbf{Not yet done:}
+\begin{itemize}
+  \item{Tracer reorganisation}
+  \item{\texttt{maxnyr} and \texttt{maxisles} in GOLDSTEIN}
+  \item{Status and error checks for \texttt{ALLOCATE}s}
+\end{itemize}
+
+%======================================================================
+\chapter{Shared}
+
+\section{Tracer counts}
+
+Tracer counts are defined in \texttt{common/gem\_cmn.f90} as
+\texttt{PARAMETER}s:
+
+\begin{verbatim}
+  INTEGER,PARAMETER::n_atm = 19
+  INTEGER,PARAMETER::n_ocn = 95
+  INTEGER,PARAMETER::n_sed = 79
+\end{verbatim}
+
+and also in \texttt{wrappers/genie\_control.f90}:
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: intrac_atm_max=19, intrac_ocn_max=95, intrac_sed_max=79
+\end{verbatim}
+
+Instead, these \emph{maximum} tracer counts should be kept as
+\texttt{PARAMETER}s while the \emph{actual} tracer counts are
+determined from the \texttt{atm\_select}, \texttt{ocn\_select} and
+\texttt{sed\_select} arrays:
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: &
+    & n_atm_max = 19, n_ocn_max = 95, n_sed_max = 79
+
+  ...
+
+  n_atm = COUNT(atm_select)
+  n_ocn = COUNT(ocn_select)
+  n_sed = COUNT(sed_select)
+\end{verbatim}
+
+and index mapping arrays should be defined as:
+
+\begin{verbatim}
+  INTEGER, DIMENSION(:), ALLOCATABLE :: &
+    & idx_to_atm, idx_to_ocn, idx_to_sed
+  INTEGER, DIMENSION(n_atm_max) :: atm_to_idx
+  INTEGER, DIMENSION(n_ocn_max) :: ocn_to_idx
+  INTEGER, DIMENSION(n_sed_max) :: sed_to_idx
+\end{verbatim}
+
+one set giving the mapping from the index into tracer arrays to the
+tracer ID (all the existing \texttt{io\_...} constants) and the other
+giving the mapping from the tracer ID to the index into tracer arrays
+(with a default value of $-1$ for unused tracers).  These things
+should all be set up immediately after the main GENIE namelist is read
+so that all of the array sizes are assigned before any of the
+sub-modules are initialised.
+
+Some of this sort of thing has already been partially done in
+\texttt{common/gem\_util.f90} and \texttt{common/gem\_cmn.f90}.  That
+stuff should be cleaned up and used for this.  There should be one
+common set of tracer index maps for each tracer type (atmosphere,
+ocean, sediment) across all modules.
+
+\emph{Might it be a good idea to actually make the \texttt{io\_...}
+  constants non-constant and assign the index values to them
+  directly?  Depends on how these things are used elsewhere.}
+
+%======================================================================
+\chapter{\texttt{gemlite}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+   15 & \texttt{end\_gemlite.f90} \\
+   89 & \texttt{gemlite\_data.f90} \\
+   95 & \texttt{gemlite\_lib.f90} \\
+  113 & \texttt{cpl\_comp\_gemlite.f90} \\
+  113 & \texttt{initialise\_gemlite.f90} \\
+  541 & \texttt{gemlite.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
+
+\begin{verbatim}
+  INTEGER,PARAMETER::n_i = ilon1_ocn
+  INTEGER,PARAMETER::n_j = ilat1_ocn
+  INTEGER,PARAMETER::n_k = inl1_ocn
+\end{verbatim}
+
+\section{Array definitions}
+
+Most are already \texttt{ALLOCATABLE}, except for:
+
+\begin{verbatim}
+  INTEGER,DIMENSION(n_i,n_j)::goldstein_k1
+  REAL,DIMENSION(n_k)::goldstein_dz
+  REAL,DIMENSION(n_k)::goldstein_dza
+  REAL,DIMENSION(0:n_j)::goldstein_sv
+\end{verbatim}
+
+\section{Allocation and deallocation}
+
+\begin{itemize}
+  \item{Needed to set up \texttt{gemlite} as a proper F90 module in
+    order to have calling interfaces that will work with assumed-shape
+    arrays.}
+  \item{Tracer counts!  (Probably like more or less all the other
+    biogeochemistry modules.)}
+\end{itemize}
+
+\section{Special considerations}
+
+The \texttt{maxisles} variable is used in the following allocations:
+
+\begin{verbatim}
+    ALLOCATE(lpisl(mpi,maxisles))   ; lpisl = 0
+    ALLOCATE(ipisl(mpi,maxisles))   ; ipisl = 0
+    ALLOCATE(jpisl(mpi,maxisles))   ; jpisl = 0
+    ALLOCATE(npi(maxisles))         ; npi = 0
+    ALLOCATE(psisl(0:maxi,0:maxj,maxisles))          ; psisl = 0.0
+    ALLOCATE(ubisl(2,0:maxi+1,0:maxj,maxisles))      ; ubisl = 0.0
+    ALLOCATE(erisl(maxisles,maxisles+1))             ; erisl = 0.0
+    ALLOCATE(psibc(maxisles))                        ; psibc = 0.0
+\end{verbatim}
+
+All now allocated to the exact number of islands.
+
+%======================================================================
+\chapter{\texttt{goldsteinseaice}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+   84 & \texttt{gold\_seaice\_lib.f90} \\
+  355 & \texttt{gold\_seaice\_netcdf.f90} \\
+  445 & \texttt{gold\_seaice\_data.f90} \\
+ 1027 & \texttt{gold\_seaice.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: maxi = GOLDSTEINNLONS
+  INTEGER, PARAMETER :: maxj = GOLDSTEINNLATS
+  INTEGER, PARAMETER :: maxk = GOLDSTEINNLEVS
+\end{verbatim}
+
+\section{Array definitions}
+
+All defined in \texttt{gold\_seaice\_lib.f90}; all need to be made
+\texttt{ALLOCATABLE}:
+
+\begin{verbatim}
+  INTEGER :: k1(0:maxi+1,0:maxj+1)
+  REAL, DIMENSION(0:maxj) :: s, c, sv, cv
+  REAL :: ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), u(2,0:maxi,0:maxj)
+  REAL, DIMENSION(0:maxj) :: rc, rcv, cv2, rc2
+  REAL :: rds(maxj), rdsv(1:maxj-1)
+  REAL, DIMENSION(maxj) :: asurf
+  REAL, DIMENSION(2,maxi,maxj) :: varice, varice1, dtha, varicedy, variceth
+  REAL, DIMENSION(maxi,maxj) :: tice, albice
+  REAL, DIMENSION(2,maxi,maxj) :: haavg, dthaavg
+  REAL, DIMENSION(maxi,maxj) :: ticeavg, albiceavg, fxdelavg ,fwdelavg
+\end{verbatim}
+
+as do the following from \texttt{gold\_seaice\_netcdf.f90}:
+
+\begin{verbatim}
+  REAL, DIMENSION(maxi) :: nclon1, nclon2, nclon3
+  REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
+\end{verbatim}
+
+\section{Allocation and deallocation}
+
+Need to be careful not to use coordinate size variables in subroutine
+argument definitions \emph{before they're assigned values!}  The
+Fortran compiler doesn't help you to spot this, so it produces weird
+run-time errors.
+
+
+%======================================================================
+\chapter{\texttt{ents}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+  129 & \texttt{ents\_data.f90} \\
+  195 & \texttt{ents\_lib.f90} \\
+  654 & \texttt{ents\_netcdf.f90} \\
+  673 & \texttt{ents\_diag.f90} \\
+  802 & \texttt{ents.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+Same as in other modules:
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
+\end{verbatim}
+
+(Also the usual \texttt{maxi}/\texttt{imax},
+\texttt{maxj}/\texttt{jmax} duplication.)
+
+\section{Array definitions}
+
+All defined in \texttt{gold\_seaice\_lib.f90}; all need to be made
+\texttt{ALLOCATABLE}:
+
+\begin{verbatim}
+  INTEGER :: ents_k1(maxi,maxj)
+  REAL :: ents_lat(maxj)
+  REAL, DIMENSION(maxi,maxj) :: Cveg, Csoil, fv, epsv
+  REAL, DIMENSION(maxi,maxj) :: leaf, respveg, respsoil, photo
+  REAL, DIMENSION(maxi,maxj) :: sphoto, srveg, sleaf, srsoil, sCveg1, &
+    & sCsoil1, sfv1, sepsv1, sfx0a, sfx0o, sfxsens, sfxlw, sevap, &
+    & spptn, srelh, sbcap, salbs, ssnow, sz0
+  REAL :: stqld(2,maxi,maxj)
+  REAL, DIMENSION(2,maxi,maxj) :: tqld, tqldavg
+  REAL, DIMENSION(maxi,maxj) :: bcap, bcapavg, snowavg, z0avg, &
+    albsavg, z0, evapavg, pptnavg, runavg, fvfv
+  REAL :: fxavg(7,maxi,maxj)
+\end{verbatim}
+
+\section{Allocation and deallocation}
+
+Some cases where initialisation is really needed: all the fixed-size
+arrays were defined as \texttt{SAVE} so they got initialised
+automatically.
+
+
+%======================================================================
+\chapter{\texttt{embm}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+   250 & \texttt{embm\_lib.f90} \\
+   294 & \texttt{embm\_data.f90} \\
+   412 & \texttt{embm\_netcdf.f90} \\
+   794 & \texttt{embm\_diag.f90} \\
+  3593 & \texttt{embm.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=2
+  INTEGER, PARAMETER :: maxnyr=400
+  INTEGER, PARAMETER :: en_ntimes_max=2000
+\end{verbatim}
+
+Here, \texttt{maxl} isn't used, but these \texttt{maxnyr} and
+\texttt{en\_ntimes\_max} things will require some attention.
+
+\section{Array definitions}
+
+\begin{verbatim}
+  INTEGER :: k1(0:maxi+1,0:maxj+1)
+  INTEGER :: ku(2,maxi,maxj), mk(maxi+1,maxj)
+  REAL :: dt(maxk), ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
+       & dz(maxk), s(0:maxj), c(0:maxj), dzu(2,maxk), &
+       & tau(2,maxi,maxj), drag(2,maxi+1,maxj), dztau(2,maxi,maxj), &
+       & diff(2), ec(4), sv(0:maxj)
+  REAL :: cv(0:maxj), dza(maxk), dztav(2,maxi,maxj), &
+       & tau0(maxi,maxj), dztav0(maxi,maxj), &
+       & tau1(maxi,maxj), dztav1(maxi,maxj), tsa0(maxj)
+  REAL :: rc(0:maxj), rcv(1:maxj-1), rdphi, rds(maxj), rdsv(1:maxj-1), &
+       & cv2(1:maxj-1), rc2(0:maxj), rtv(maxi,maxj), rtv3(maxi,maxj), &
+       & rdz(maxk), rdza(maxk)
+  REAL :: us_dztau(2, maxi, maxj), us_dztav(2, maxi, maxj)
+  REAL :: asurf(maxj)
+  REAL :: tq(2,maxi,maxj), tq1(2,maxi,maxj), qsata(maxi,maxj), &
+       & qsato(maxi,maxj), co2(maxi,maxj), ch4(maxi,maxj), n2o(maxi,maxj), &
+       & varice(2,maxi,maxj), varice1(2,maxi,maxj), &
+       & tqa(2,maxi,maxj), solfor(maxj,maxnyr)
+  REAL :: albcl(maxi,maxj), fxsw(maxi,maxj), fxplw(maxi,maxj), &
+       & fx0a(maxi,maxj), fx0o(maxi,maxj), fxsen(maxi,maxj), &
+       & pmeadj(maxi,maxj), pptn(maxi,maxj), evap(maxi,maxj), &
+       & usurf(maxi,maxj), fxlata(maxi,maxj), fxlato(maxi,maxj), &
+       & fxlw(maxi,maxj), diffa(2,2,maxj), betam(2), betaz(2), hatmbl(2), &
+       & ca(maxi,maxj), qb(maxi,maxj), qbsic(maxi,maxj)
+  REAL :: fx0sic(maxi,maxj), fx0neto(maxi,maxj), fwfxneto(maxi,maxj), &
+       & evapsic(maxi,maxj), tsfreez(maxi,maxj)
+  REAL :: uatm(2,maxi,maxj)
+  REAL :: tqavg(2,maxi,maxj), fxlatavg(maxi,maxj), fxsenavg(maxi,maxj), &
+       & fxswavg(maxi,maxj), fxlwavg(maxi,maxj), fwpptavg(maxi,maxj), &
+       & fwevpavg(maxi,maxj)
+  REAL :: fx0avg(4,maxi,maxj), fwavg(2,maxi,maxj)
+  REAL :: albo(maxj,maxnyr), palb(maxi,maxj), palbavg(maxi,maxj)
+  REAL :: lice_vect(maxi,maxj,en_ntimes_max)
+  REAL, DIMENSION(maxi,maxj) :: d18o_ice_thresh, d18o_orog_min, d18o_orog_grad
+  REAL :: uatml(2,maxi,maxj,maxnyr)
+  REAL, DIMENSION(maxi,maxj,maxnyr) :: usurfl, tncep, pncep, rhncep, atm_alb
+  REAL, DIMENSION(maxi,maxj) :: chl, cel
+  REAL, DIMENSION(maxi,maxj) :: q_pa, rq_pa, q_pa_avg, rq_pa_avg
+  INTEGER, DIMENSION(maxi,maxj) :: iroff, jroff
+\end{verbatim}
+
+\section{Special considerations}
+
+The \texttt{maxnyr} (400) and \texttt{en\_ntimes\_max} (2000) things
+are used in the following allocations:
+
+\begin{verbatim}
+    ALLOCATE(solfor(maxj,maxnyr))
+    ALLOCATE(albo(maxj,maxnyr))
+    ALLOCATE(uatml(2,maxi,maxj,maxnyr))
+    ALLOCATE(usurfl(maxi,maxj,maxnyr))
+    ALLOCATE(tncep(maxi,maxj,maxnyr))
+    ALLOCATE(pncep(maxi,maxj,maxnyr))
+    ALLOCATE(rhncep(maxi,maxj,maxnyr))
+    ALLOCATE(atm_alb(maxi,maxj,maxnyr))
+
+    REAL :: orbitall_vect(en_ntimes_max,5) [local]
+    ALLOCATE(orog_vect(maxi,maxj,en_ntimes_max)) ; orog_vect = 0.0
+    ALLOCATE(lice_vect(maxi,maxj,en_ntimes_max)) ; lice_vect = 0.0
+\end{verbatim}
+
+Now removed and replaced with more appropriate allocations where
+required.
+
+%======================================================================
+\chapter{\texttt{atchem}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+   15 & \texttt{end\_atchem.f90} \\
+   41 & \texttt{initialise\_atchem.f90} \\
+   66 & \texttt{cpl\_flux\_atchem.f90} \\
+  110 & \texttt{atchem\_data\_netCDF.f90} \\
+  131 & \texttt{atchem\_lib.f90} \\
+  146 & \texttt{cpl\_comp\_atchem.f90} \\
+  149 & \texttt{atchem\_box.f90} \\
+  154 & \texttt{atchem.f90} \\
+  285 & \texttt{atchem\_data.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER,PARAMETER::n_i = ilon1_atm
+  INTEGER,PARAMETER::n_j = ilat1_atm
+  INTEGER,PARAMETER::n_phys_atm = 15
+\end{verbatim}
+
+The \texttt{n\_phys\_atm} variable will be dealt with in the
+``tracers'' stuff.
+
+\section{Array definitions}
+
+\begin{verbatim}
+  real,dimension(n_atm,n_i,n_j) :: atm
+  real,dimension(n_atm,n_i,n_j) :: fatm
+  real,dimension(n_phys_atm,n_i,n_j) :: phys_atm
+  real,dimension(n_atm,n_i,n_j) :: atm_slabbiosphere
+\end{verbatim}
+
+
+%======================================================================
+\chapter{\texttt{rokgem}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+  29 & \texttt{end\_rokgem.f90} \\
+  46 & \texttt{cpl\_flux\_rokatm.f90} \\
+  66 & \texttt{cpl\_flux\_rokocn.f90} \\
+ 167 & \texttt{rokgem.f90} \\
+ 274 & \texttt{initialise\_rokgem.f90} \\
+ 405 & \texttt{rokgem\_lib.f90} \\
+ 453 & \texttt{rokgem\_data\_netCDF.f90} \\
+ 827 & \texttt{rokgem\_data.f90} \\
+1737 & \texttt{rokgem\_box.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER,PARAMETER :: n_i = ilon1_rok
+  INTEGER,PARAMETER :: n_j = ilat1_rok
+  INTEGER,PARAMETER :: n_phys_rok = 08
+  INTEGER,PARAMETER :: n_phys_ocnrok = 06
+  INTEGER,PARAMETER :: n_io = ilon1_rok
+  INTEGER,PARAMETER :: n_jo = ilat1_rok
+  INTEGER,PARAMETER :: n_ko = inl1_ocn
+\end{verbatim}
+
+\section{Array definitions}
+
+Some are already \texttt{ALLOCATABLE}...
+
+\begin{verbatim}
+  real,dimension(n_phys_rok,n_i,n_j)::phys_rok
+  REAL,DIMENSION(n_phys_ocnrok,n_io,n_jo) :: phys_ocnrok
+  INTEGER,DIMENSION(ilon1_ocn,ilat1_ocn) :: goldstein_k1
+  INTEGER :: landmask(n_i,n_j)
+  REAL :: runoff_drainage(n_i+2,n_j+2)
+  INTEGER :: runoff_drainto(n_i,n_j,2)
+  REAL :: runoff_coast(n_i,n_j)
+  REAL :: total_calcium_flux(n_i,n_j)
+  REAL :: total_calcium_flux_Ca(n_i,n_j)
+  REAL :: total_calcium_flux_Si(n_i,n_j)
+  REAL :: weather_fCaCO3_2D(n_i,n_j)
+  REAL :: weather_fCaSiO3_2D(n_i,n_j)
+  REAL :: orogeny(n_i,n_j)
+  REAL :: regimes_calib(n_i,n_j)
+  REAL :: ref_T0_2D(n_i,n_j)
+  REAL :: ref_R0_2D(n_i,n_j)
+  REAL :: ref_P0_2D(n_i,n_j)
+  REAL :: data_T_2D(n_i,n_j)
+  REAL :: data_R_2D(n_i,n_j)
+  REAL :: data_P_2D(n_i,n_j)
+  REAL :: calibrate_T_2D(n_i,n_j)
+  REAL :: calibrate_R_2D(n_i,n_j)
+  REAL :: calibrate_P_2D(n_i,n_j)
+\end{verbatim}
+
+\section{Allocation and deallocation}
+
+
+%======================================================================
+\chapter{Miscellaneous}
+
+\section{Source files}
+
+\section{Coordinate variables}
+
+\section{Array definitions}
+
+\section{Allocation and deallocation}
+
+
+%======================================================================
+\chapter{\texttt{goldstein}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+   260 & \texttt{goldstein\_lib.f90} \\
+   446 & \texttt{goldstein\_data.f90} \\
+   718 & \texttt{goldstein\_netcdf.f90} \\
+  1147 & \texttt{goldstein\_diag.f90} \\
+  3524 & \texttt{goldstein.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
+  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=GOLDSTEINNTRACS
+  INTEGER, PARAMETER :: maxnyr=720
+  INTEGER, PARAMETER :: mpxi=maxi, mpxj=maxj+1
+  INTEGER, PARAMETER :: maxisles=GOLDSTEINMAXISLES, mpi=2 * (maxi + maxj)
+\end{verbatim}
+
+\section{Array definitions}
+
+\begin{verbatim}
+  INTEGER :: k1(0:maxi+1,0:maxj+1), ku(2,maxi,maxj), mk(maxi+1,maxj)
+  INTEGER :: ips(maxj), ipf(maxj), ias(maxj), iaf(maxj)
+  INTEGER :: lpisl(mpi,maxisles), ipisl(mpi,maxisles), jpisl(mpi,maxisles)
+  INTEGER :: npi(maxisles)
+  REAL :: dt(maxk), ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1)
+  REAL :: dz(maxk), u(3,0:maxi,0:maxj,maxk), ts(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
+  REAL :: s(0:maxj), c(0:maxj), dzu(2,maxk), tau(2,maxi,maxj)
+  REAL :: drag(2,maxi+1,maxj), dztau(2,maxi,maxj)
+  REAL :: ratm(mpxi*mpxj,mpxi+1), ub(2,0:maxi+1,0:maxj)
+  REAL :: rho(0:maxi+1,0:maxj+1,0:maxk), ts1(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
+  REAL :: sv(0:maxj)
+  REAL :: cv(0:maxj), dza(maxk), dztav(2,maxi,maxj), gb(mpxi*mpxj)
+  REAL :: gap(mpxi*mpxj,2*mpxi+3), cost(maxi,maxj), rh(3,0:maxi+1,0:maxj+1)
+  REAL :: gbold(mpxi*mpxj), tau0(maxi,maxj), dztav0(maxi,maxj)
+  REAL :: tau1(maxi,maxj), dztav1(maxi,maxj), tsa0(maxj), t0
+  REAL :: fw_hosing(maxi,maxj), rhosing(maxi,maxj), zro(maxk), zw(0:maxk)
+  REAL :: dzg(maxk,maxk), z2dzg(maxk,maxk), rdzg(maxk,maxk)
+  REAL :: fw_anom(maxi,maxj), fw_anom_rate(maxi,maxj)
+  REAL :: psi(0:maxi,0:maxj)
+  REAL :: u1(3,0:maxi,0:maxj,maxk)
+  REAL, DIMENSION(0:maxj) :: rc, rc2
+  REAL, DIMENSION(maxi,maxj) :: rtv, rtv3
+  REAL, DIMENSION(1:maxj-1) :: rcv, rdsv, cv2
+  REAL :: rds(maxj), rdz(maxk), rdza(maxk)
+  REAL :: bp(maxi+1,maxj,maxk), sbp(maxi+1,maxj)
+  INTEGER :: icosd(maxi,maxj)
+  REAL :: asurf(maxj)
+  REAL :: tsavg(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
+  REAL :: uavg(3,0:maxi,0:maxj,maxk), rhoavg(0:maxi+1,0:maxj+1,0:maxk)
+  REAL :: fx0avg(5,maxi,maxj), fwavg(4,maxi,maxj), windavg(4,maxi,maxj)
+  REAL :: psisl(0:maxi,0:maxj,maxisles), ubisl(2,0:maxi+1,0:maxj,maxisles)
+  REAL :: erisl(maxisles,maxisles+1), psibc(maxisles)
+  REAL :: ts_store(maxl,maxi,maxj,maxk)
+  REAL :: albcl(maxi,maxj)
+  REAL, DIMENSION(maxi,maxj) :: &
+       & evap_save1, late_save1, sens_save1, evap_save2, late_save2, sens_save2
+  REAL, DIMENSION(maxi,maxj) :: &
+       & mldpebuoy, mldpeconv, mldpelayer1, mldketau, mldemix, mld
+  REAL, DIMENSION(maxk) :: mlddec, mlddecd
+  INTEGER :: mldk(maxi,maxj)
+  REAL :: ediff1(maxi,maxj,maxk-1), diffmax(maxk)
+  REAL :: ssmax(maxk-1)
+  LOGICAL :: getj(maxi,maxj)
+\end{verbatim}
+
+\section{Allocation and deallocation}
+
+
+%======================================================================
+\chapter{\texttt{sedgem}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+ 114 & \texttt{sedgem\_box\_benthic.f90} \\
+ 127 & \texttt{end\_sedgem.f90} \\
+ 146 & \texttt{cpl\_comp\_sedgem.f90} \\
+ 154 & \texttt{cpl\_flux\_sedgem.f90} \\
+ 208 & \texttt{initialise\_sedgem.f90} \\
+ 474 & \texttt{sedgem\_box\_ridgwelletal2003\_sedflx.f90} \\
+ 570 & \texttt{sedgem.f90} \\
+ 592 & \texttt{sedgem\_lib.f90} \\
+1042 & \texttt{sedgem\_box\_archer1991\_sedflx.f90} \\
+1573 & \texttt{sedgem\_data\_netCDF.f90} \\
+2067 & \texttt{sedgem\_box.f90} \\
+2412 & \texttt{sedgem\_data.f90} \\
+\end{tabular}
+
+Need to merge \texttt{sedgem.f90} \\ \texttt{initialise\_sedgem.f90}
+and \texttt{end\_sedgem.f90}.
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER, PARAMETER :: n_i = ilon1_sed
+  INTEGER, PARAMETER :: n_j = ilat1_sed
+  INTEGER, PARAMETER :: n_phys_sed = 14
+  INTEGER, PARAMETER :: n_opt_sed = 26
+\end{verbatim}
+
+\section{Array definitions}
+
+Almost everything is already allocatable.  Should be pretty easy to
+do.
+
+%======================================================================
+\chapter{\texttt{biogem}}
+
+\section{Source files}
+
+\begin{tabular}{rl}
+  66 & \texttt{end\_biogem.f90} \\
+  92 & \texttt{cpl\_comp\_biogem.f90} \\
+ 353 & \texttt{initialise\_biogem.f90} \\
+1647 & \texttt{biogem\_lib.f90} \\
+2470 & \texttt{biogem\_data\_ascii.f90} \\
+2695 & \texttt{biogem.f90} \\
+2994 & \texttt{biogem\_data\_netCDF.f90} \\
+3146 & \texttt{biogem\_data.f90} \\
+3867 & \texttt{biogem\_box.f90} \\
+\end{tabular}
+
+\section{Coordinate variables}
+
+\begin{verbatim}
+  INTEGER,PARAMETER::n_i = ilon1_ocn
+  INTEGER,PARAMETER::n_j = ilat1_ocn
+  INTEGER,PARAMETER::n_k = inl1_ocn
+  INTEGER,PARAMETER::n_phys_ocn = 21
+  INTEGER,PARAMETER::n_phys_ocnatm = 25
+  INTEGER,PARAMETER::n_data_max = 32767
+  INTEGER,PARAMETER::n_opt_misc = 14
+  INTEGER,PARAMETER::n_opt_atm = 01
+  INTEGER,PARAMETER::n_opt_bio = 06
+  INTEGER,PARAMETER::n_opt_force = 08
+  INTEGER,PARAMETER::n_opt_data = 30
+  INTEGER,PARAMETER::n_opt_select = 05
+  INTEGER,PARAMETER::n_diag_bio = 09
+  INTEGER,PARAMETER::n_diag_geochem = 07
+  INTEGER,PARAMETER::n_diag_misc_2D = 07
+\end{verbatim}
+
+\section{Array definitions}
+
+Lots...
+
+\section{Allocation and deallocation}
+
+\end{document}
