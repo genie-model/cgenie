@@ -415,334 +415,655 @@ CONTAINS
     getversion = genie_version
   END FUNCTION getversion
 
+  ! print a message and abort the program
+  ! optional references to the line number and file of the error
+  SUBROUTINE alloc_die(line, file)
+    IMPLICIT NONE
+    INTEGER,          INTENT(IN), OPTIONAL :: line
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: file
+
+    WRITE (6,*) "ERROR: Could not allocate memory"
+    IF (PRESENT(line)) THEN
+       WRITE (6,*) 'at line: ', line
+    END IF
+    IF (PRESENT(file)) THEN
+       WRITE (6,*) 'in file: ', TRIM(file)
+    END IF
+    WRITE (6,*) 'stopping'
+    CALL flush(6)
+    STOP
+  END SUBROUTINE alloc_die
+
   SUBROUTINE allocate_genie_global()
     IMPLICIT NONE
 
-    ALLOCATE(alon1_atm(ilon1_atm))           ; alon1_atm = 0.0
-    ALLOCATE(alat1_atm(ilat1_atm))           ; alat1_atm = 0.0
-    ALLOCATE(alon1_ocn(ilon1_ocn))           ; alon1_ocn = 0.0
-    ALLOCATE(alat1_ocn(ilat1_ocn))           ; alat1_ocn = 0.0
-    ALLOCATE(alon1_sic(ilon1_sic))           ; alon1_sic = 0.0
-    ALLOCATE(alat1_sic(ilat1_sic))           ; alat1_sic = 0.0
-    ALLOCATE(aboxedge1_lon_atm(ilon1_atm+1)) ; aboxedge1_lon_atm = 0.0
-    ALLOCATE(aboxedge1_lat_atm(ilat1_atm+1)) ; aboxedge1_lat_atm = 0.0
-    ALLOCATE(aboxedge1_lon_ocn(ilon1_ocn+1)) ; aboxedge1_lon_ocn = 0.0
-    ALLOCATE(aboxedge1_lat_ocn(ilat1_ocn+1)) ; aboxedge1_lat_ocn = 0.0
-    ALLOCATE(aboxedge1_lon_sic(ilon1_sic+1)) ; aboxedge1_lon_sic = 0.0
-    ALLOCATE(aboxedge1_lat_sic(ilat1_sic+1)) ; aboxedge1_lat_sic = 0.0
-    ALLOCATE(alon2_atm(ilon2_atm))           ; alon2_atm = 0.0
-    ALLOCATE(alat2_atm(ilat2_atm))           ; alat2_atm = 0.0
-    ALLOCATE(alon2_ocn(ilon2_ocn))           ; alon2_ocn = 0.0
-    ALLOCATE(alat2_ocn(ilat2_ocn))           ; alat2_ocn = 0.0
-    ALLOCATE(alon2_sic(ilon2_sic))           ; alon2_sic = 0.0
-    ALLOCATE(alat2_sic(ilat2_sic))           ; alat2_sic = 0.0
-    ALLOCATE(aboxedge2_lon_atm(ilon2_atm+1)) ; aboxedge2_lon_atm = 0.0
-    ALLOCATE(aboxedge2_lat_atm(ilat2_atm+1)) ; aboxedge2_lat_atm = 0.0
-    ALLOCATE(aboxedge2_lon_ocn(ilon2_ocn+1)) ; aboxedge2_lon_ocn = 0.0
-    ALLOCATE(aboxedge2_lat_ocn(ilat2_ocn+1)) ; aboxedge2_lat_ocn = 0.0
-    ALLOCATE(aboxedge2_lon_sic(ilon2_sic+1)) ; aboxedge2_lon_sic = 0.0
-    ALLOCATE(aboxedge2_lat_sic(ilat2_sic+1)) ; aboxedge2_lat_sic = 0.0
-    ALLOCATE(alon3_atm(ilon3_atm))           ; alon3_atm = 0.0
-    ALLOCATE(alat3_atm(ilat3_atm))           ; alat3_atm = 0.0
-    ALLOCATE(alon3_ocn(ilon3_ocn))           ; alon3_ocn = 0.0
-    ALLOCATE(alat3_ocn(ilat3_ocn))           ; alat3_ocn = 0.0
-    ALLOCATE(alon3_sic(ilon3_sic))           ; alon3_sic = 0.0
-    ALLOCATE(alat3_sic(ilat3_sic))           ; alat3_sic = 0.0
-    ALLOCATE(aboxedge3_lon_atm(ilon3_atm+1)) ; aboxedge3_lon_atm = 0.0
-    ALLOCATE(aboxedge3_lat_atm(ilat3_atm+1)) ; aboxedge3_lat_atm = 0.0
-    ALLOCATE(aboxedge3_lon_ocn(ilon3_ocn+1)) ; aboxedge3_lon_ocn = 0.0
-    ALLOCATE(aboxedge3_lat_ocn(ilat3_ocn+1)) ; aboxedge3_lat_ocn = 0.0
-    ALLOCATE(aboxedge3_lon_sic(ilon3_sic+1)) ; aboxedge3_lon_sic = 0.0
-    ALLOCATE(aboxedge3_lat_sic(ilat3_sic+1)) ; aboxedge3_lat_sic = 0.0
-    ALLOCATE(depth1_ocn(inl1_ocn))           ; depth1_ocn = 0.0
-    ALLOCATE(depth2_ocn(inl2_ocn))           ; depth2_ocn = 0.0
+    INTEGER :: status
 
-    ALLOCATE(ilandmask1_atm(ilon1_atm,ilat1_atm)) ; ilandmask1_atm = 0
-    ALLOCATE(ilandmask2_atm(ilon2_atm,ilat2_atm)) ; ilandmask2_atm = 0
-    ALLOCATE(ilandmask3_atm(ilon3_atm,ilat3_atm)) ; ilandmask3_atm = 0
-    ALLOCATE(ilandmask1_ocn(ilon1_ocn,ilat1_ocn)) ; ilandmask1_ocn = 0
-    ALLOCATE(ilandmask2_ocn(ilon2_ocn,ilat2_ocn)) ; ilandmask2_ocn = 0
-    ALLOCATE(ilandmask3_ocn(ilon3_ocn,ilat3_ocn)) ; ilandmask3_ocn = 0
-    ALLOCATE(ilandmask1_sic(ilon1_sic,ilat1_sic)) ; ilandmask1_sic = 0
-    ALLOCATE(ilandmask2_sic(ilon2_sic,ilat2_sic)) ; ilandmask2_sic = 0
-    ALLOCATE(ilandmask3_sic(ilon3_sic,ilat3_sic)) ; ilandmask3_sic = 0
+    ALLOCATE(alon1_atm(ilon1_atm),STAT=status)           ; alon1_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat1_atm(ilat1_atm),STAT=status)           ; alat1_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon1_ocn(ilon1_ocn),STAT=status)           ; alon1_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat1_ocn(ilat1_ocn),STAT=status)           ; alat1_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon1_sic(ilon1_sic),STAT=status)           ; alon1_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat1_sic(ilat1_sic),STAT=status)           ; alat1_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lon_atm(ilon1_atm+1),STAT=status) ; aboxedge1_lon_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lat_atm(ilat1_atm+1),STAT=status) ; aboxedge1_lat_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lon_ocn(ilon1_ocn+1),STAT=status) ; aboxedge1_lon_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lat_ocn(ilat1_ocn+1),STAT=status) ; aboxedge1_lat_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lon_sic(ilon1_sic+1),STAT=status) ; aboxedge1_lon_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge1_lat_sic(ilat1_sic+1),STAT=status) ; aboxedge1_lat_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon2_atm(ilon2_atm),STAT=status)           ; alon2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat2_atm(ilat2_atm),STAT=status)           ; alat2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon2_ocn(ilon2_ocn),STAT=status)           ; alon2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat2_ocn(ilat2_ocn),STAT=status)           ; alat2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon2_sic(ilon2_sic),STAT=status)           ; alon2_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat2_sic(ilat2_sic),STAT=status)           ; alat2_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lon_atm(ilon2_atm+1),STAT=status) ; aboxedge2_lon_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lat_atm(ilat2_atm+1),STAT=status) ; aboxedge2_lat_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lon_ocn(ilon2_ocn+1),STAT=status) ; aboxedge2_lon_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lat_ocn(ilat2_ocn+1),STAT=status) ; aboxedge2_lat_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lon_sic(ilon2_sic+1),STAT=status) ; aboxedge2_lon_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge2_lat_sic(ilat2_sic+1),STAT=status) ; aboxedge2_lat_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon3_atm(ilon3_atm),STAT=status)           ; alon3_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat3_atm(ilat3_atm),STAT=status)           ; alat3_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon3_ocn(ilon3_ocn),STAT=status)           ; alon3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat3_ocn(ilat3_ocn),STAT=status)           ; alat3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alon3_sic(ilon3_sic),STAT=status)           ; alon3_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(alat3_sic(ilat3_sic),STAT=status)           ; alat3_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lon_atm(ilon3_atm+1),STAT=status) ; aboxedge3_lon_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lat_atm(ilat3_atm+1),STAT=status) ; aboxedge3_lat_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lon_ocn(ilon3_ocn+1),STAT=status) ; aboxedge3_lon_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lat_ocn(ilat3_ocn+1),STAT=status) ; aboxedge3_lat_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lon_sic(ilon3_sic+1),STAT=status) ; aboxedge3_lon_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(aboxedge3_lat_sic(ilat3_sic+1),STAT=status) ; aboxedge3_lat_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(depth1_ocn(inl1_ocn),STAT=status)           ; depth1_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(depth2_ocn(inl2_ocn),STAT=status)           ; depth2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(tstar_atm(ilon1_atm,ilat1_atm))         ; tstar_atm = 0.0
-    ALLOCATE(netsolar_atm(ilon1_atm,ilat1_atm))      ; netsolar_atm = 0.0
-    ALLOCATE(netlong_atm(ilon1_atm,ilat1_atm))       ; netlong_atm = 0.0
-    ALLOCATE(tstar_ocn(ilon1_ocn,ilat1_ocn))         ; tstar_ocn = 0.0
-    ALLOCATE(latent_ocn(ilon1_ocn,ilat1_ocn))        ; latent_ocn = 0.0
-    ALLOCATE(sensible_ocn(ilon1_ocn,ilat1_ocn))      ; sensible_ocn = 0.0
-    ALLOCATE(netsolar_ocn(ilon1_ocn,ilat1_ocn))      ; netsolar_ocn = 0.0
-    ALLOCATE(netlong_ocn(ilon1_ocn,ilat1_ocn))       ; netlong_ocn = 0.0
-    ALLOCATE(surf_latent_atm(ilon1_atm,ilat1_atm))   ; surf_latent_atm = 0.0
-    ALLOCATE(surf_sensible_atm(ilon1_atm,ilat1_atm)) ; surf_sensible_atm = 0.0
-    ALLOCATE(surf_stressx_atm(ilon1_atm,ilat1_atm))  ; surf_stressx_atm = 0.0
-    ALLOCATE(surf_stressy_atm(ilon1_atm,ilat1_atm))  ; surf_stressy_atm = 0.0
-    ALLOCATE(surf_evap_atm(ilon1_atm,ilat1_atm))     ; surf_evap_atm = 0.0
-    ALLOCATE(surf_stressx2_atm(ilon2_atm,ilat2_atm)) ; surf_stressx2_atm = 0.0
-    ALLOCATE(surf_stressy2_atm(ilon2_atm,ilat2_atm)) ; surf_stressy2_atm = 0.0
-    ALLOCATE(surf_stressx3_atm(ilon3_atm,ilat3_atm)) ; surf_stressx3_atm = 0.0
-    ALLOCATE(surf_stressy3_atm(ilon3_atm,ilat3_atm)) ; surf_stressy3_atm = 0.0
-    ALLOCATE(trest_ocn(ilon1_ocn,ilat1_ocn))         ; trest_ocn = 0.0
-    ALLOCATE(srest_ocn(ilon1_ocn,ilat1_ocn))         ; srest_ocn = 0.0
+    ALLOCATE(ilandmask1_atm(ilon1_atm,ilat1_atm),STAT=status) ; ilandmask1_atm = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask2_atm(ilon2_atm,ilat2_atm),STAT=status) ; ilandmask2_atm = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask3_atm(ilon3_atm,ilat3_atm),STAT=status) ; ilandmask3_atm = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask1_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ilandmask1_ocn = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask2_ocn(ilon2_ocn,ilat2_ocn),STAT=status) ; ilandmask2_ocn = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask3_ocn(ilon3_ocn,ilat3_ocn),STAT=status) ; ilandmask3_ocn = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask1_sic(ilon1_sic,ilat1_sic),STAT=status) ; ilandmask1_sic = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask2_sic(ilon2_sic,ilat2_sic),STAT=status) ; ilandmask2_sic = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ilandmask3_sic(ilon3_sic,ilat3_sic),STAT=status) ; ilandmask3_sic = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(land_latent_atm(ilon1_atm,ilat1_atm))    ; land_latent_atm = 0.0
-    ALLOCATE(land_sensible_atm(ilon1_atm,ilat1_atm))  ; land_sensible_atm = 0.0
-    ALLOCATE(land_stressx_atm(ilon1_atm,ilat1_atm))   ; land_stressx_atm = 0.0
-    ALLOCATE(land_stressy_atm(ilon1_atm,ilat1_atm))   ; land_stressy_atm = 0.0
-    ALLOCATE(land_evap_atm(ilon1_atm,ilat1_atm))      ; land_evap_atm = 0.0
-    ALLOCATE(ocean_latent_atm(ilon1_atm,ilat1_atm))   ; ocean_latent_atm = 0.0
-    ALLOCATE(ocean_sensible_atm(ilon1_atm,ilat1_atm)) ; ocean_sensible_atm = 0.0
-    ALLOCATE(ocean_stressx_atm(ilon1_atm,ilat1_atm))  ; ocean_stressx_atm = 0.0
-    ALLOCATE(ocean_stressy_atm(ilon1_atm,ilat1_atm))  ; ocean_stressy_atm = 0.0
-    ALLOCATE(ocean_evap_atm(ilon1_atm,ilat1_atm))     ; ocean_evap_atm = 0.0
+    ALLOCATE(tstar_atm(ilon1_atm,ilat1_atm),STAT=status)         ; tstar_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netsolar_atm(ilon1_atm,ilat1_atm),STAT=status)      ; netsolar_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netlong_atm(ilon1_atm,ilat1_atm),STAT=status)       ; netlong_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(tstar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; tstar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(latent_ocn(ilon1_ocn,ilat1_ocn),STAT=status)        ; latent_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sensible_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; sensible_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netsolar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; netsolar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netlong_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; netlong_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_latent_atm(ilon1_atm,ilat1_atm),STAT=status)   ; surf_latent_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_sensible_atm(ilon1_atm,ilat1_atm),STAT=status) ; surf_sensible_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressx_atm(ilon1_atm,ilat1_atm),STAT=status)  ; surf_stressx_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressy_atm(ilon1_atm,ilat1_atm),STAT=status)  ; surf_stressy_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_evap_atm(ilon1_atm,ilat1_atm),STAT=status)     ; surf_evap_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressx2_atm(ilon2_atm,ilat2_atm),STAT=status) ; surf_stressx2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressy2_atm(ilon2_atm,ilat2_atm),STAT=status) ; surf_stressy2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressx3_atm(ilon3_atm,ilat3_atm),STAT=status) ; surf_stressx3_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(surf_stressy3_atm(ilon3_atm,ilat3_atm),STAT=status) ; surf_stressy3_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(trest_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; trest_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(srest_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; srest_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(ocean_lowestlu2_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlu2_ocn = 0.0
-    ALLOCATE(ocean_lowestlu3_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlu3_ocn = 0.0
-    ALLOCATE(ocean_lowestlv2_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlv2_ocn = 0.0
-    ALLOCATE(ocean_lowestlv3_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_lowestlv3_ocn = 0.0
-    ALLOCATE(ocean_stressx2_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressx2_ocn = 0.0
-    ALLOCATE(ocean_stressx3_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressx3_ocn = 0.0
-    ALLOCATE(ocean_stressy2_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressy2_ocn = 0.0
-    ALLOCATE(ocean_stressy3_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_stressy3_ocn = 0.0
-    ALLOCATE(stressx_ocn(2,ilon1_ocn,ilat1_ocn))       ; stressx_ocn = 0.0
-    ALLOCATE(stressy_ocn(2,ilon1_ocn,ilat1_ocn))       ; stressy_ocn = 0.0
+    ALLOCATE(land_latent_atm(ilon1_atm,ilat1_atm),STAT=status)    ; land_latent_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_sensible_atm(ilon1_atm,ilat1_atm),STAT=status)  ; land_sensible_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_stressx_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_stressx_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_stressy_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_stressy_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_evap_atm(ilon1_atm,ilat1_atm),STAT=status)      ; land_evap_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_latent_atm(ilon1_atm,ilat1_atm),STAT=status)   ; ocean_latent_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_sensible_atm(ilon1_atm,ilat1_atm),STAT=status) ; ocean_sensible_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressx_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_stressx_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressy_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_stressy_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_evap_atm(ilon1_atm,ilat1_atm),STAT=status)     ; ocean_evap_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(surf_orog_atm(ilon1_atm,ilat1_atm))  ; surf_orog_atm = 0.0
-    ALLOCATE(zonwind_atm(ilon1_atm,ilat1_atm))    ; zonwind_atm = 0.0
-    ALLOCATE(merwind_atm(ilon1_atm,ilat1_atm))    ; merwind_atm = 0.0
-    ALLOCATE(runoff_ocn(ilon1_ocn,ilat1_ocn))     ; runoff_ocn = 0.0
-    ALLOCATE(runoff_land(ilon1_ocn,ilat1_ocn))    ; runoff_land = 0.0
-    ALLOCATE(runoff_sic(ilon1_atm,ilat1_atm))     ; runoff_sic = 0.0
-    ALLOCATE(seaicefrac_ocn(ilon1_ocn,ilat1_ocn)) ; seaicefrac_ocn = 0.0
-    ALLOCATE(dummy_ocn(ilon1_ocn,ilat1_ocn))      ; dummy_ocn = 0.0
-    ALLOCATE(dummy_atm(ilon1_atm,ilat1_atm))      ; dummy_atm = 0.0
-    ALLOCATE(interpmask_atm(ilon1_atm,ilat1_atm)) ; interpmask_atm = 0.0
-    ALLOCATE(interpmask_ocn(ilon1_ocn,ilat1_ocn)) ; interpmask_ocn = 0.0
-    ALLOCATE(evap_ocn(ilon1_ocn,ilat1_ocn))       ; evap_ocn = 0.0
-    ALLOCATE(precip_ocn(ilon1_ocn,ilat1_ocn))     ; precip_ocn = 0.0
-    ALLOCATE(evap_atm(ilon1_atm,ilat1_atm))       ; evap_atm = 0.0
-    ALLOCATE(evap_sic(ilon1_atm,ilat1_atm))       ; evap_sic = 0.0
-    ALLOCATE(precip_atm(ilon1_atm,ilat1_atm))     ; precip_atm = 0.0
-    ALLOCATE(precip_sic(ilon1_atm,ilat1_atm))     ; precip_sic = 0.0
-    ALLOCATE(ustar_ocn(ilon1_ocn,ilat1_ocn))      ; ustar_ocn = 0.0
-    ALLOCATE(vstar_ocn(ilon1_ocn,ilat1_ocn))      ; vstar_ocn = 0.0
-    ALLOCATE(sstar_ocn(ilon1_ocn,ilat1_ocn))      ; sstar_ocn = 0.0
+    ALLOCATE(ocean_lowestlu2_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ocean_lowestlu2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlu3_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ocean_lowestlu3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlv2_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ocean_lowestlv2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlv3_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ocean_lowestlv3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressx2_ocn(ilon1_ocn,ilat1_ocn),STAT=status)  ; ocean_stressx2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressx3_ocn(ilon1_ocn,ilat1_ocn),STAT=status)  ; ocean_stressx3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressy2_ocn(ilon1_ocn,ilat1_ocn),STAT=status)  ; ocean_stressy2_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_stressy3_ocn(ilon1_ocn,ilat1_ocn),STAT=status)  ; ocean_stressy3_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressx_ocn(2,ilon1_ocn,ilat1_ocn),STAT=status)       ; stressx_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressy_ocn(2,ilon1_ocn,ilat1_ocn),STAT=status)       ; stressy_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(hght_sic(ilon1_sic,ilat1_sic))              ; hght_sic = 0.0
-    ALLOCATE(frac_sic(ilon1_sic,ilat1_sic))              ; frac_sic = 0.0
-    ALLOCATE(temp_sic(ilon1_sic,ilat1_sic))              ; temp_sic = 0.0
-    ALLOCATE(albd_sic(ilon1_sic,ilat1_sic))              ; albd_sic = 0.0
-    ALLOCATE(dhght_sic(ilon1_sic,ilat1_sic))             ; dhght_sic = 0.0
-    ALLOCATE(dfrac_sic(ilon1_sic,ilat1_sic))             ; dfrac_sic = 0.0
-    ALLOCATE(waterflux_ocn(ilon1_ocn,ilat1_ocn))         ; waterflux_ocn = 0.0
-    ALLOCATE(waterflux_atm(ilon1_atm,ilat1_atm))         ; waterflux_atm = 0.0
-    ALLOCATE(waterflux_sic(ilon1_sic,ilat1_sic))         ; waterflux_sic = 0.0
-    ALLOCATE(co2_atm(ilon1_atm,ilat1_atm))               ; co2_atm = 0.0
-    ALLOCATE(n2o_atm(ilon1_atm,ilat1_atm))               ; n2o_atm = 0.0
-    ALLOCATE(ch4_atm(ilon1_atm,ilat1_atm))               ; ch4_atm = 0.0
-    ALLOCATE(mass14co2(ilon1_atm,ilat1_atm,inl1_atm))    ; mass14co2 = 0.0
-    ALLOCATE(ddtmass14co2(ilon1_atm,ilat1_atm,inl1_atm)) ; ddtmass14co2 = 0.0
-    ALLOCATE(massair(ilon1_atm,ilat1_atm,inl1_atm))      ; massair = 0.0
+    ALLOCATE(surf_orog_atm(ilon1_atm,ilat1_atm),STAT=status)  ; surf_orog_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(zonwind_atm(ilon1_atm,ilat1_atm),STAT=status)    ; zonwind_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(merwind_atm(ilon1_atm,ilat1_atm),STAT=status)    ; merwind_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(runoff_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; runoff_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(runoff_land(ilon1_ocn,ilat1_ocn),STAT=status)    ; runoff_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(runoff_sic(ilon1_atm,ilat1_atm),STAT=status)     ; runoff_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(seaicefrac_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; seaicefrac_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(dummy_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; dummy_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(dummy_atm(ilon1_atm,ilat1_atm),STAT=status)      ; dummy_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(interpmask_atm(ilon1_atm,ilat1_atm),STAT=status) ; interpmask_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(interpmask_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; interpmask_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; evap_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(precip_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; precip_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_atm(ilon1_atm,ilat1_atm),STAT=status)       ; evap_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_sic(ilon1_atm,ilat1_atm),STAT=status)       ; evap_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(precip_atm(ilon1_atm,ilat1_atm),STAT=status)     ; precip_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(precip_sic(ilon1_atm,ilat1_atm),STAT=status)     ; precip_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ustar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; ustar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(vstar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; vstar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sstar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; sstar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(ips_out(ilat1_ocn)) ; ips_out = 0
-    ALLOCATE(ipf_out(ilat1_ocn)) ; ipf_out = 0
-    ALLOCATE(ias_out(ilat1_ocn)) ; ias_out = 0
-    ALLOCATE(iaf_out(ilat1_ocn)) ; iaf_out = 0
+    ALLOCATE(hght_sic(ilon1_sic,ilat1_sic),STAT=status)              ; hght_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(frac_sic(ilon1_sic,ilat1_sic),STAT=status)              ; frac_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(temp_sic(ilon1_sic,ilat1_sic),STAT=status)              ; temp_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(albd_sic(ilon1_sic,ilat1_sic),STAT=status)              ; albd_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(dhght_sic(ilon1_sic,ilat1_sic),STAT=status)             ; dhght_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(dfrac_sic(ilon1_sic,ilat1_sic),STAT=status)             ; dfrac_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(waterflux_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; waterflux_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(waterflux_atm(ilon1_atm,ilat1_atm),STAT=status)         ; waterflux_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(waterflux_sic(ilon1_sic,ilat1_sic),STAT=status)         ; waterflux_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(co2_atm(ilon1_atm,ilat1_atm),STAT=status)               ; co2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(n2o_atm(ilon1_atm,ilat1_atm),STAT=status)               ; n2o_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ch4_atm(ilon1_atm,ilat1_atm),STAT=status)               ; ch4_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(mass14co2(ilon1_atm,ilat1_atm,inl1_atm),STAT=status)    ; mass14co2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ddtmass14co2(ilon1_atm,ilat1_atm,inl1_atm),STAT=status) ; ddtmass14co2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(massair(ilon1_atm,ilat1_atm,inl1_atm),STAT=status)      ; massair = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(tavg_ocn(ilon1_ocn,ilat1_ocn))             ; tavg_ocn = 0.0
-    ALLOCATE(rough_ocn(ilon1_ocn,ilat1_ocn))            ; rough_ocn = 0.0
-    ALLOCATE(latent_atm_meanocn(ilon1_atm,ilat1_atm))   ; latent_atm_meanocn = 0.0
-    ALLOCATE(latent_atm_meansic(ilon1_atm,ilat1_atm))   ; latent_atm_meansic = 0.0
-    ALLOCATE(sensible_atm_meanocn(ilon1_atm,ilat1_atm)) ; sensible_atm_meanocn = 0.0
-    ALLOCATE(sensible_atm_meansic(ilon1_atm,ilat1_atm)) ; sensible_atm_meansic = 0.0
-    ALLOCATE(netsolar_atm_meanocn(ilon1_atm,ilat1_atm)) ; netsolar_atm_meanocn = 0.0
-    ALLOCATE(netsolar_atm_meansic(ilon1_atm,ilat1_atm)) ; netsolar_atm_meansic = 0.0
-    ALLOCATE(netlong_atm_meanocn(ilon1_atm,ilat1_atm))  ; netlong_atm_meanocn = 0.0
-    ALLOCATE(netlong_atm_meansic(ilon1_atm,ilat1_atm))  ; netlong_atm_meansic = 0.0
-    ALLOCATE(stressx_atm_meanocn(ilon1_atm,ilat1_atm))  ; stressx_atm_meanocn = 0.0
-    ALLOCATE(stressx_atm_meansic(ilon1_atm,ilat1_atm))  ; stressx_atm_meansic = 0.0
-    ALLOCATE(stressy_atm_meanocn(ilon1_atm,ilat1_atm))  ; stressy_atm_meanocn = 0.0
-    ALLOCATE(stressy_atm_meansic(ilon1_atm,ilat1_atm))  ; stressy_atm_meansic = 0.0
-    ALLOCATE(precip_atm_meanocn(ilon1_atm,ilat1_atm))   ; precip_atm_meanocn = 0.0
-    ALLOCATE(precip_atm_meansic(ilon1_atm,ilat1_atm))   ; precip_atm_meansic = 0.0
-    ALLOCATE(evap_atm_meanocn(ilon1_atm,ilat1_atm))     ; evap_atm_meanocn = 0.0
-    ALLOCATE(evap_atm_meansic(ilon1_atm,ilat1_atm))     ; evap_atm_meansic = 0.0
-    ALLOCATE(lowestlt_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlt_atm_meanocn = 0.0
-    ALLOCATE(lowestlq_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlq_atm_meanocn = 0.0
-    ALLOCATE(lowestlp_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlp_atm_meanocn = 0.0
-    ALLOCATE(lowestlh_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlh_atm_meanocn = 0.0
-    ALLOCATE(lowestlu_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlu_atm_meanocn = 0.0
-    ALLOCATE(lowestlv_atm_meanocn(ilon1_atm,ilat1_atm)) ; lowestlv_atm_meanocn = 0.0
-    ALLOCATE(runoff_atm_meanocn(ilon1_atm,ilat1_atm))   ; runoff_atm_meanocn = 0.0
+    ALLOCATE(ips_out(ilat1_ocn),STAT=status) ; ips_out = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ipf_out(ilat1_ocn),STAT=status) ; ipf_out = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ias_out(ilat1_ocn),STAT=status) ; ias_out = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(iaf_out(ilat1_ocn),STAT=status) ; iaf_out = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(seaicefrac_atm_meanocn(ilon1_atm,ilat1_atm))  ; seaicefrac_atm_meanocn = 0.0
-    ALLOCATE(conductflux_atm_meanocn(ilon1_atm,ilat1_atm)) ; conductflux_atm_meanocn = 0.0
-    ALLOCATE(waterflux_atm_meanocn(ilon1_atm,ilat1_atm))   ; waterflux_atm_meanocn = 0.0
-    ALLOCATE(seaicefrac_atm(ilon1_atm,ilat1_atm))          ; seaicefrac_atm = 0.0
-    ALLOCATE(conductflux_atm(ilon1_atm,ilat1_atm))         ; conductflux_atm = 0.0
-    ALLOCATE(dtcarry_ocn_sic(ilon1_atm,ilat1_atm))         ; dtcarry_ocn_sic = 0.0
-    ALLOCATE(energycarry_ocn_sic(ilon1_atm,ilat1_atm))     ; energycarry_ocn_sic = 0.0
-    ALLOCATE(energycarry_sic_ocn(ilon1_atm,ilat1_atm))     ; energycarry_sic_ocn = 0.0
-    ALLOCATE(albedo_atm(ilon1_atm,ilat1_atm))              ; albedo_atm = 0.0
-    ALLOCATE(albedo_ocn(ilon1_ocn,ilat1_ocn))              ; albedo_ocn = 0.0
-    ALLOCATE(temptop_atm(ilon1_atm,ilat1_atm))             ; temptop_atm = 0.0
-    ALLOCATE(thicktop_atm(ilon1_atm,ilat1_atm))            ; thicktop_atm = 0.0
-    ALLOCATE(conductflux_sic(ilon1_sic,ilat1_sic))         ; conductflux_sic = 0.0
-    ALLOCATE(conductflux_ocn(ilon1_ocn,ilat1_ocn))         ; conductflux_ocn = 0.0
-    ALLOCATE(seaicefrac_sic(ilon1_sic,ilat1_sic))          ; seaicefrac_sic = 0.0
+    ALLOCATE(tavg_ocn(ilon1_ocn,ilat1_ocn),STAT=status)             ; tavg_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(rough_ocn(ilon1_ocn,ilat1_ocn),STAT=status)            ; rough_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(latent_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)   ; latent_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(latent_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)   ; latent_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sensible_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; sensible_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sensible_atm_meansic(ilon1_atm,ilat1_atm),STAT=status) ; sensible_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netsolar_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; netsolar_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netsolar_atm_meansic(ilon1_atm,ilat1_atm),STAT=status) ; netsolar_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netlong_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)  ; netlong_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(netlong_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)  ; netlong_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressx_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)  ; stressx_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressx_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)  ; stressx_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressy_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)  ; stressy_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(stressy_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)  ; stressy_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(precip_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)   ; precip_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(precip_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)   ; precip_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)     ; evap_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_atm_meansic(ilon1_atm,ilat1_atm),STAT=status)     ; evap_atm_meansic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlt_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlt_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlq_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlq_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlp_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlp_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlh_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlh_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlu_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlu_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(lowestlv_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; lowestlv_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(runoff_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)   ; runoff_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(atmos_lowestlu_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlu_atm = 0.0
-    ALLOCATE(atmos_lowestlu2_atm(ilon2_atm,ilat2_atm)) ; atmos_lowestlu2_atm = 0.0
-    ALLOCATE(atmos_lowestlv3_atm(ilon3_atm,ilat3_atm)) ; atmos_lowestlv3_atm = 0.0
-    ALLOCATE(atmos_lowestlv_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlv_atm = 0.0
-    ALLOCATE(atmos_lowestlq_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlq_atm = 0.0
-    ALLOCATE(atmos_lowestlt_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlt_atm = 0.0
-    ALLOCATE(atmos_lowestlp_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlp_atm = 0.0
-    ALLOCATE(atmos_lowestlh_atm(ilon1_atm,ilat1_atm))  ; atmos_lowestlh_atm = 0.0
-    ALLOCATE(land_lowestlu_atm(ilon1_atm,ilat1_atm))   ; land_lowestlu_atm = 0.0
-    ALLOCATE(land_lowestlv_atm(ilon1_atm,ilat1_atm))   ; land_lowestlv_atm = 0.0
-    ALLOCATE(land_lowestlq_atm(ilon1_atm,ilat1_atm))   ; land_lowestlq_atm = 0.0
-    ALLOCATE(land_lowestlt_atm(ilon1_atm,ilat1_atm))   ; land_lowestlt_atm = 0.0
-    ALLOCATE(ocean_lowestlu_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlu_atm = 0.0
-    ALLOCATE(ocean_lowestlv_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlv_atm = 0.0
-    ALLOCATE(ocean_lowestlq_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlq_atm = 0.0
-    ALLOCATE(ocean_lowestlt_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlt_atm = 0.0
-    ALLOCATE(ocean_lowestlp_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlp_atm = 0.0
-    ALLOCATE(ocean_lowestlh_atm(ilon1_atm,ilat1_atm))  ; ocean_lowestlh_atm = 0.0
+    ALLOCATE(seaicefrac_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)  ; seaicefrac_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(conductflux_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status) ; conductflux_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(waterflux_atm_meanocn(ilon1_atm,ilat1_atm),STAT=status)   ; waterflux_atm_meanocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(seaicefrac_atm(ilon1_atm,ilat1_atm),STAT=status)          ; seaicefrac_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(conductflux_atm(ilon1_atm,ilat1_atm),STAT=status)         ; conductflux_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(dtcarry_ocn_sic(ilon1_atm,ilat1_atm),STAT=status)         ; dtcarry_ocn_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(energycarry_ocn_sic(ilon1_atm,ilat1_atm),STAT=status)     ; energycarry_ocn_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(energycarry_sic_ocn(ilon1_atm,ilat1_atm),STAT=status)     ; energycarry_sic_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(albedo_atm(ilon1_atm,ilat1_atm),STAT=status)              ; albedo_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(albedo_ocn(ilon1_ocn,ilat1_ocn),STAT=status)              ; albedo_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(temptop_atm(ilon1_atm,ilat1_atm),STAT=status)             ; temptop_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(thicktop_atm(ilon1_atm,ilat1_atm),STAT=status)            ; thicktop_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(conductflux_sic(ilon1_sic,ilat1_sic),STAT=status)         ; conductflux_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(conductflux_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; conductflux_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(seaicefrac_sic(ilon1_sic,ilat1_sic),STAT=status)          ; seaicefrac_sic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(psigma(inl1_atm)) ; psigma = 0.0
+    ALLOCATE(atmos_lowestlu_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlu_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlu2_atm(ilon2_atm,ilat2_atm),STAT=status) ; atmos_lowestlu2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlv3_atm(ilon3_atm,ilat3_atm),STAT=status) ; atmos_lowestlv3_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlv_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlv_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlq_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlq_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlt_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlt_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlp_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlp_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_lowestlh_atm(ilon1_atm,ilat1_atm),STAT=status)  ; atmos_lowestlh_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_lowestlu_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_lowestlu_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_lowestlv_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_lowestlv_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_lowestlq_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_lowestlq_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_lowestlt_atm(ilon1_atm,ilat1_atm),STAT=status)   ; land_lowestlt_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlu_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlu_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlv_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlv_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlq_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlq_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlt_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlt_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlp_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlp_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlh_atm(ilon1_atm,ilat1_atm),STAT=status)  ; ocean_lowestlh_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(ocean_lowestlt_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlt_ocn = 0.0
-    ALLOCATE(ocean_lowestlq_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlq_ocn = 0.0
-    ALLOCATE(ocean_lowestlp_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlp_ocn = 0.0
-    ALLOCATE(ocean_lowestlh_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_lowestlh_ocn = 0.0
-    ALLOCATE(ocean_atm_netsolar_ocn(ilon1_ocn,ilat1_ocn)) ; ocean_atm_netsolar_ocn = 0.0
-    ALLOCATE(ocean_atm_netlong_ocn(ilon1_ocn,ilat1_ocn))  ; ocean_atm_netlong_ocn = 0.0
-    ALLOCATE(ocean_latent_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_latent_ocn = 0.0
-    ALLOCATE(ocean_sensible_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_sensible_ocn = 0.0
-    ALLOCATE(ocean_netsolar_ocn(ilon1_ocn,ilat1_ocn))     ; ocean_netsolar_ocn = 0.0
-    ALLOCATE(ocean_netlong_ocn(ilon1_ocn,ilat1_ocn))      ; ocean_netlong_ocn = 0.0
-    ALLOCATE(ocean_evap_ocn(ilon1_ocn,ilat1_ocn))         ; ocean_evap_ocn = 0.0
-    ALLOCATE(ocean_precip_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_precip_ocn = 0.0
-    ALLOCATE(ocean_runoff_ocn(ilon1_ocn,ilat1_ocn))       ; ocean_runoff_ocn = 0.0
-    ALLOCATE(atmos_latent_ocn(ilon1_ocn,ilat1_ocn))       ; atmos_latent_ocn = 0.0
-    ALLOCATE(atmos_sensible_ocn(ilon1_ocn,ilat1_ocn))     ; atmos_sensible_ocn = 0.0
-    ALLOCATE(atmos_netsolar_ocn(ilon1_ocn,ilat1_ocn))     ; atmos_netsolar_ocn = 0.0
-    ALLOCATE(atmos_netlong_ocn(ilon1_ocn,ilat1_ocn))      ; atmos_netlong_ocn = 0.0
-    ALLOCATE(atmos_evap_ocn(ilon1_ocn,ilat1_ocn))         ; atmos_evap_ocn = 0.0
-    ALLOCATE(atmos_precip_ocn(ilon1_ocn,ilat1_ocn))       ; atmos_precip_ocn = 0.0
-    ALLOCATE(atmos_latent_atm(ilon1_atm,ilat1_atm))       ; atmos_latent_atm = 0.0
-    ALLOCATE(atmos_sensible_atm(ilon1_atm,ilat1_atm))     ; atmos_sensible_atm = 0.0
-    ALLOCATE(atmos_netsolar_atm(ilon1_atm,ilat1_atm))     ; atmos_netsolar_atm = 0.0
-    ALLOCATE(atmos_netlong_atm(ilon1_atm,ilat1_atm))      ; atmos_netlong_atm = 0.0
-    ALLOCATE(atmos_evap_atm(ilon1_atm,ilat1_atm))         ; atmos_evap_atm = 0.0
-    ALLOCATE(atmos_precip_atm(ilon1_atm,ilat1_atm))       ; atmos_precip_atm = 0.0
+    ALLOCATE(psigma(inl1_atm),STAT=status) ; psigma = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(albavg_ocn(ilon1_ocn,ilat1_ocn)) ; albavg_ocn = 0.0
-    ALLOCATE(weight_ocn(ilon1_atm,ilat1_atm)) ; weight_ocn = 0.0
+    ALLOCATE(ocean_lowestlt_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_lowestlt_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlq_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_lowestlq_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlp_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_lowestlp_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_lowestlh_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_lowestlh_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_atm_netsolar_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; ocean_atm_netsolar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_atm_netlong_ocn(ilon1_ocn,ilat1_ocn),STAT=status)  ; ocean_atm_netlong_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_latent_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; ocean_latent_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_sensible_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_sensible_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_netsolar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; ocean_netsolar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_netlong_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; ocean_netlong_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_evap_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; ocean_evap_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_precip_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; ocean_precip_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ocean_runoff_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; ocean_runoff_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_latent_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; atmos_latent_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_sensible_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; atmos_sensible_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_netsolar_ocn(ilon1_ocn,ilat1_ocn),STAT=status)     ; atmos_netsolar_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_netlong_ocn(ilon1_ocn,ilat1_ocn),STAT=status)      ; atmos_netlong_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_evap_ocn(ilon1_ocn,ilat1_ocn),STAT=status)         ; atmos_evap_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_precip_ocn(ilon1_ocn,ilat1_ocn),STAT=status)       ; atmos_precip_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_latent_atm(ilon1_atm,ilat1_atm),STAT=status)       ; atmos_latent_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_sensible_atm(ilon1_atm,ilat1_atm),STAT=status)     ; atmos_sensible_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_netsolar_atm(ilon1_atm,ilat1_atm),STAT=status)     ; atmos_netsolar_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_netlong_atm(ilon1_atm,ilat1_atm),STAT=status)      ; atmos_netlong_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_evap_atm(ilon1_atm,ilat1_atm),STAT=status)         ; atmos_evap_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(atmos_precip_atm(ilon1_atm,ilat1_atm),STAT=status)       ; atmos_precip_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(surf_qstar_atm(ilon1_atm,ilat1_atm))  ; surf_qstar_atm = 0.0
-    ALLOCATE(tstar_gb_land(ilon1_atm,ilat1_atm))   ; tstar_gb_land = 0.0
-    ALLOCATE(albedo_land(ilon1_atm,ilat1_atm))     ; albedo_land = 0.0
-    ALLOCATE(evap_land(ilon1_atm,ilat1_atm))       ; evap_land = 0.0
-    ALLOCATE(fx_le_land(ilon1_atm,ilat1_atm))      ; fx_le_land = 0.0
-    ALLOCATE(fx_sen_land(ilon1_atm,ilat1_atm))     ; fx_sen_land = 0.0
-    ALLOCATE(fx_momx_land(ilon1_atm,ilat1_atm))    ; fx_momx_land = 0.0
-    ALLOCATE(fx_momy_land(ilon1_atm,ilat1_atm))    ; fx_momy_land = 0.0
-    ALLOCATE(land_fxco2_atm(ilon1_atm,ilat1_atm))  ; land_fxco2_atm = 0.0
-    ALLOCATE(ice_icefrac_atm(ilon1_atm,ilat1_atm)) ; ice_icefrac_atm = 0.0
-    ALLOCATE(land_tice_ice(ilon1_atm,ilat1_atm))   ; land_tice_ice = 0.0
-    ALLOCATE(land_albice_ice(ilon1_atm,ilat1_atm)) ; land_albice_ice = 0.0
+    ALLOCATE(albavg_ocn(ilon1_ocn,ilat1_ocn),STAT=status) ; albavg_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(weight_ocn(ilon1_atm,ilat1_atm),STAT=status) ; weight_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(evap_save1(ilon1_ocn,ilat1_ocn)) ; evap_save1 = 0.0
-    ALLOCATE(evap_save2(ilon1_ocn,ilat1_ocn)) ; evap_save2 = 0.0
-    ALLOCATE(late_save1(ilon1_ocn,ilat1_ocn)) ; late_save1 = 0.0
-    ALLOCATE(late_save2(ilon1_ocn,ilat1_ocn)) ; late_save2 = 0.0
-    ALLOCATE(sens_save1(ilon1_ocn,ilat1_ocn)) ; sens_save1 = 0.0
-    ALLOCATE(sens_save2(ilon1_ocn,ilat1_ocn)) ; sens_save2 = 0.0
+    ALLOCATE(surf_qstar_atm(ilon1_atm,ilat1_atm),STAT=status)  ; surf_qstar_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(tstar_gb_land(ilon1_atm,ilat1_atm),STAT=status)   ; tstar_gb_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(albedo_land(ilon1_atm,ilat1_atm),STAT=status)     ; albedo_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_land(ilon1_atm,ilat1_atm),STAT=status)       ; evap_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(fx_le_land(ilon1_atm,ilat1_atm),STAT=status)      ; fx_le_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(fx_sen_land(ilon1_atm,ilat1_atm),STAT=status)     ; fx_sen_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(fx_momx_land(ilon1_atm,ilat1_atm),STAT=status)    ; fx_momx_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(fx_momy_land(ilon1_atm,ilat1_atm),STAT=status)    ; fx_momy_land = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_fxco2_atm(ilon1_atm,ilat1_atm),STAT=status)  ; land_fxco2_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ice_icefrac_atm(ilon1_atm,ilat1_atm),STAT=status) ; ice_icefrac_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_tice_ice(ilon1_atm,ilat1_atm),STAT=status)   ; land_tice_ice = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_albice_ice(ilon1_atm,ilat1_atm),STAT=status) ; land_albice_ice = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(go_ds(ilat1_ocn)) ; go_ds = 0.0
+    ALLOCATE(evap_save1(ilon1_ocn,ilat1_ocn),STAT=status) ; evap_save1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(evap_save2(ilon1_ocn,ilat1_ocn),STAT=status) ; evap_save2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(late_save1(ilon1_ocn,ilat1_ocn),STAT=status) ; late_save1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(late_save2(ilon1_ocn,ilat1_ocn),STAT=status) ; late_save2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sens_save1(ilon1_ocn,ilat1_ocn),STAT=status) ; sens_save1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(sens_save2(ilon1_ocn,ilat1_ocn),STAT=status) ; sens_save2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(go_ips(ilat1_ocn))          ; go_ips = 0
-    ALLOCATE(go_ipf(ilat1_ocn))          ; go_ipf = 0
-    ALLOCATE(go_ias(ilat1_ocn))          ; go_ias = 0
-    ALLOCATE(go_iaf(ilat1_ocn))          ; go_iaf = 0
-    ALLOCATE(go_k1(ilon1_ocn,ilat1_ocn)) ; go_k1 = 0
+    ALLOCATE(go_ds(ilat1_ocn),STAT=status) ; go_ds = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(go_dz(1:inl1_ocn))                               ; go_dz = 0.0
-    ALLOCATE(go_dza(1:inl1_ocn))                              ; go_dza = 0.0
-    ALLOCATE(go_c(0:ilat1_ocn))                               ; go_c = 0.0
-    ALLOCATE(go_cv(0:ilat1_ocn))                              ; go_cv = 0.0
-    ALLOCATE(go_s(0:ilat1_ocn))                               ; go_s = 0.0
-    ALLOCATE(go_sv(0:ilat1_ocn))                              ; go_sv = 0.0
-    ALLOCATE(go_ts(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn))  ; go_ts = 0.0
-    ALLOCATE(go_ts1(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn)) ; go_ts1 = 0.0
-    ALLOCATE(go_cost(ilon1_ocn,ilat1_ocn))                    ; go_cost = 0.0
-    ALLOCATE(go_uvw(1:3,ilon1_ocn,ilat1_ocn,1:inl1_ocn))      ; go_uvw = 0.0
-    ALLOCATE(go_tau(1:2,ilon1_ocn,ilat1_ocn))                 ; go_tau = 0.0
-    ALLOCATE(eb_uv(1:2,ilon1_ocn,ilat1_ocn))                  ; eb_uv = 0.0
-    ALLOCATE(eb_usurf(ilon1_ocn,ilat1_ocn))                   ; eb_usurf = 0.0
-    ALLOCATE(go_solfor(ilat1_ocn))                            ; go_solfor = 0.0
-    ALLOCATE(go_fxsw(ilon1_ocn,ilat1_ocn))                    ; go_fxsw = 0.0
-    ALLOCATE(go_mldta(ilon1_ocn,ilat1_ocn))                   ; go_mldta = 0.0
-    ALLOCATE(go_psi(0:ilon1_ocn,0:ilat1_ocn))                 ; go_psi = 0.0
+    ALLOCATE(go_ips(ilat1_ocn),STAT=status)          ; go_ips = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_ipf(ilat1_ocn),STAT=status)          ; go_ipf = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_ias(ilat1_ocn),STAT=status)          ; go_ias = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_iaf(ilat1_ocn),STAT=status)          ; go_iaf = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_k1(ilon1_ocn,ilat1_ocn),STAT=status) ; go_k1 = 0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(eb_ca(ilon1_ocn,ilat1_ocn))           ; eb_ca = 0.0
-    ALLOCATE(ea_co2(ilon1_ocn,ilat1_ocn))          ; ea_co2 = 0.0
-    ALLOCATE(ea_fxplw(ilon1_ocn,ilat1_ocn))        ; ea_fxplw = 0.0
-    ALLOCATE(go_rho(ilon1_ocn,ilat1_ocn,inl1_ocn)) ; go_rho = 0.0
+    ALLOCATE(go_dz(1:inl1_ocn),STAT=status)                               ; go_dz = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_dza(1:inl1_ocn),STAT=status)                              ; go_dza = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_c(0:ilat1_ocn),STAT=status)                               ; go_c = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_cv(0:ilat1_ocn),STAT=status)                              ; go_cv = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_s(0:ilat1_ocn),STAT=status)                               ; go_s = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_sv(0:ilat1_ocn),STAT=status)                              ; go_sv = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_ts(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn),STAT=status)  ; go_ts = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_ts1(intrac_ocn,ilon1_ocn,ilat1_ocn,inl1_ocn),STAT=status) ; go_ts1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_cost(ilon1_ocn,ilat1_ocn),STAT=status)                    ; go_cost = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_uvw(1:3,ilon1_ocn,ilat1_ocn,1:inl1_ocn),STAT=status)      ; go_uvw = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_tau(1:2,ilon1_ocn,ilat1_ocn),STAT=status)                 ; go_tau = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_uv(1:2,ilon1_ocn,ilat1_ocn),STAT=status)                  ; eb_uv = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_usurf(ilon1_ocn,ilat1_ocn),STAT=status)                   ; eb_usurf = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_solfor(ilat1_ocn),STAT=status)                            ; go_solfor = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_fxsw(ilon1_ocn,ilat1_ocn),STAT=status)                    ; go_fxsw = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_mldta(ilon1_ocn,ilat1_ocn),STAT=status)                   ; go_mldta = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_psi(0:ilon1_ocn,0:ilat1_ocn),STAT=status)                 ; go_psi = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(en_orog_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max)) ; en_orog_vect = 0.0
-    ALLOCATE(en_lice_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max)) ; en_lice_vect = 0.0
-    ALLOCATE(eb_fx0a(ilon1_ocn,ilat1_ocn))                    ; eb_fx0a = 0.0
-    ALLOCATE(eb_fx0o(ilon1_ocn,ilat1_ocn))                    ; eb_fx0o = 0.0
-    ALLOCATE(eb_fxsen(ilon1_ocn,ilat1_ocn))                   ; eb_fxsen = 0.0
-    ALLOCATE(eb_fxlw(ilon1_ocn,ilat1_ocn))                    ; eb_fxlw = 0.0
-    ALLOCATE(eb_evap(ilon1_ocn,ilat1_ocn))                    ; eb_evap = 0.0
-    ALLOCATE(eb_pptn(ilon1_ocn,ilat1_ocn))                    ; eb_pptn = 0.0
-    ALLOCATE(eb_relh(ilon1_ocn,ilat1_ocn))                    ; eb_relh = 0.0
-    ALLOCATE(torog_atm(ilon1_atm,ilat1_atm))                  ; torog_atm = 0.0
-    ALLOCATE(albs_atm(ilon1_atm,ilat1_atm))                   ; albs_atm = 0.0
-    ALLOCATE(landice_slicemask_lic(ilon1_lic,ilat1_lic))      ; landice_slicemask_lic = 0.0
-    ALLOCATE(land_albs_snow_lnd(ilon1_lnd,ilat1_lnd))         ; land_albs_snow_lnd = 0.0
-    ALLOCATE(land_albs_nosnow_lnd(ilon1_lnd,ilat1_lnd))       ; land_albs_nosnow_lnd = 0.0
-    ALLOCATE(land_snow_lnd(ilon1_lnd,ilat1_lnd))              ; land_snow_lnd = 0.0
-    ALLOCATE(land_bcap_lnd(ilon1_lnd,ilat1_lnd))              ; land_bcap_lnd = 0.0
-    ALLOCATE(land_z0_lnd(ilon1_lnd,ilat1_lnd))                ; land_z0_lnd = 0.0
-    ALLOCATE(land_temp_lnd(ilon1_lnd,ilat1_lnd))              ; land_temp_lnd = 0.0
-    ALLOCATE(land_moisture_lnd(ilon1_lnd,ilat1_lnd))          ; land_moisture_lnd = 0.0
+    ALLOCATE(eb_ca(ilon1_ocn,ilat1_ocn),STAT=status)           ; eb_ca = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ea_co2(ilon1_ocn,ilat1_ocn),STAT=status)          ; ea_co2 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(ea_fxplw(ilon1_ocn,ilat1_ocn),STAT=status)        ; ea_fxplw = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(go_rho(ilon1_ocn,ilat1_ocn,inl1_ocn),STAT=status) ; go_rho = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(el_leaf(ilon1_ocn,ilat1_ocn))     ; el_leaf = 0.0
-    ALLOCATE(el_respveg(ilon1_ocn,ilat1_ocn))  ; el_respveg = 0.0
-    ALLOCATE(el_respsoil(ilon1_ocn,ilat1_ocn)) ; el_respsoil = 0.0
-    ALLOCATE(el_photo(ilon1_ocn,ilat1_ocn))    ; el_photo = 0.0
+    ALLOCATE(en_orog_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max),STAT=status) ; en_orog_vect = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(en_lice_vect(ilon1_ocn,ilat1_ocn,en_ntimes_max),STAT=status) ; en_lice_vect = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_fx0a(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_fx0a = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_fx0o(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_fx0o = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_fxsen(ilon1_ocn,ilat1_ocn),STAT=status)                   ; eb_fxsen = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_fxlw(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_fxlw = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_evap(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_evap = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_pptn(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_pptn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(eb_relh(ilon1_ocn,ilat1_ocn),STAT=status)                    ; eb_relh = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(torog_atm(ilon1_atm,ilat1_atm),STAT=status)                  ; torog_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(albs_atm(ilon1_atm,ilat1_atm),STAT=status)                   ; albs_atm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(landice_slicemask_lic(ilon1_lic,ilat1_lic),STAT=status)      ; landice_slicemask_lic = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_albs_snow_lnd(ilon1_lnd,ilat1_lnd),STAT=status)         ; land_albs_snow_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_albs_nosnow_lnd(ilon1_lnd,ilat1_lnd),STAT=status)       ; land_albs_nosnow_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_snow_lnd(ilon1_lnd,ilat1_lnd),STAT=status)              ; land_snow_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_bcap_lnd(ilon1_lnd,ilat1_lnd),STAT=status)              ; land_bcap_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_z0_lnd(ilon1_lnd,ilat1_lnd),STAT=status)                ; land_z0_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_temp_lnd(ilon1_lnd,ilat1_lnd),STAT=status)              ; land_temp_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(land_moisture_lnd(ilon1_lnd,ilat1_lnd),STAT=status)          ; land_moisture_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfcatm(intrac_atm_max,ilon1_atm,ilat1_atm))     ; genie_sfcatm = 0.0
-    ALLOCATE(genie_sfxsumatm(intrac_atm_max,ilon1_atm,ilat1_atm))  ; genie_sfxsumatm = 0.0
-    ALLOCATE(genie_sfcatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcatm1 = 0.0
-    ALLOCATE(genie_sfxatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxatm1 = 0.0
-    ALLOCATE(genie_sfcatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd)) ; genie_sfcatm_lnd = 0.0
-    ALLOCATE(genie_sfxatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd)) ; genie_sfxatm_lnd = 0.0
+    ALLOCATE(el_leaf(ilon1_ocn,ilat1_ocn),STAT=status)     ; el_leaf = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(el_respveg(ilon1_ocn,ilat1_ocn),STAT=status)  ; el_respveg = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(el_respsoil(ilon1_ocn,ilat1_ocn),STAT=status) ; el_respsoil = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(el_photo(ilon1_ocn,ilat1_ocn),STAT=status)    ; el_photo = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfxrok(intrac_ocn_max,ilon1_rok,ilat1_rok))         ; genie_sfxrok = 0.0
-    ALLOCATE(genie_sfxsumrok1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))     ; genie_sfxsumrok1 = 0.0
-    ALLOCATE(genie_sfxsumrok1_gem(intrac_ocn_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumrok1_gem = 0.0
-    ALLOCATE(genie_sfxsumatm1_gem(intrac_atm_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumatm1_gem = 0.0
+    ALLOCATE(genie_sfcatm(intrac_atm_max,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumatm(intrac_atm_max,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfcatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcatm1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxatm1(intrac_atm_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxatm1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfcatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfcatm_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxatm_lnd(intrac_atm_max,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfxatm_lnd = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfcsed(intrac_sed_max,ilon1_sed,ilat1_sed))     ; genie_sfcsed = 0.0
-    ALLOCATE(genie_sfxsumsed(intrac_sed_max,ilon1_sed,ilat1_sed))  ; genie_sfxsumsed = 0.0
-    ALLOCATE(genie_sfxsumsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn)) ; genie_sfxsumsed1 = 0.0
-    ALLOCATE(genie_sfcsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcsed1 = 0.0
-    ALLOCATE(genie_sfxsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxsed1 = 0.0
-    ALLOCATE(genie_sfcsumocn(intrac_ocn_max,ilon1_sed,ilat1_sed))  ; genie_sfcsumocn = 0.0
-    ALLOCATE(genie_sfxocn(intrac_ocn_max,ilon1_sed,ilat1_sed))     ; genie_sfxocn = 0.0
-    ALLOCATE(genie_sfxocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))    ; genie_sfxocn1 = 0.0
-    ALLOCATE(genie_sfcocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn))    ; genie_sfcocn1 = 0.0
+    ALLOCATE(genie_sfxrok(intrac_ocn_max,ilon1_rok,ilat1_rok),STAT=status)         ; genie_sfxrok = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumrok1(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status)     ; genie_sfxsumrok1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumrok1_gem(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumrok1_gem = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumatm1_gem(intrac_atm_max,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumatm1_gem = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_atm1(intrac_atm_max,ilon1_atm,ilat1_atm))         ; genie_atm1 = 0.0
-    ALLOCATE(genie_ocn(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn)) ; genie_ocn = 0.0
+    ALLOCATE(genie_sfcsed(intrac_sed_max,ilon1_sed,ilat1_sed),STAT=status)     ; genie_sfcsed = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumsed(intrac_sed_max,ilon1_sed,ilat1_sed),STAT=status)  ; genie_sfxsumsed = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsumsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumsed1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfcsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcsed1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxsed1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfcsumocn(intrac_ocn_max,ilon1_sed,ilat1_sed),STAT=status)  ; genie_sfcsumocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxocn(intrac_ocn_max,ilon1_sed,ilat1_sed),STAT=status)     ; genie_sfxocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfxocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxocn1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_sfcocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcocn1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+
+    ALLOCATE(genie_atm1(intrac_atm_max,ilon1_atm,ilat1_atm),STAT=status)         ; genie_atm1 = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
+    ALLOCATE(genie_ocn(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn),STAT=status) ; genie_ocn = 0.0
+    IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
   END SUBROUTINE allocate_genie_global
 END MODULE genie_global

@@ -49,6 +49,7 @@ CONTAINS
 
   SUBROUTINE initialise_rokgem(dum_genie_timestep, dum_sfxrok, dum_sfxsumrok1)
     USE genie_control, ONLY: dim_ROKGEMNLONS, dim_ROKGEMNLATS
+    USE genie_util, ONLY: die
     USE rokgem_data
     USE rokgem_box
     USE rokgem_data_netCDF
@@ -56,7 +57,7 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxrok     ! rocks-surface tracer composition; rok grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumrok1 ! rocks-surface fluxes; integrated, ocn grid
 
-    INTEGER :: loc_iou, i, j
+    INTEGER :: loc_iou, i, j, status
 
     print*,'======================================================='
     print*,' >>> Initialising rokgem weathering module ...'
@@ -68,29 +69,52 @@ CONTAINS
 
     CALL sub_load_goin_rokgem()
 
-    ALLOCATE(phys_rok(n_phys_rok,n_i,n_j))         ; phys_rok = 0.0
-    ALLOCATE(phys_ocnrok(n_phys_ocnrok,n_i,n_j))   ; phys_ocnrok = 0.0
-    ALLOCATE(goldstein_k1(ilon1_ocn,ilat1_ocn))    ; goldstein_k1 = 0
-    ALLOCATE(landmask(n_i,n_j))                    ; landmask = 0
-    ALLOCATE(runoff_drainage(n_i+2,n_j+2))         ; runoff_drainage = 0.0  !'+2' comes from fact that *.k1 file is 38x38
-    ALLOCATE(runoff_drainto(n_i,n_j,2))            ; runoff_drainto = 0
-    ALLOCATE(runoff_coast(n_i,n_j))                ; runoff_coast = 0.0
-    ALLOCATE(total_calcium_flux(n_i,n_j))          ; total_calcium_flux = 0.0
-    ALLOCATE(total_calcium_flux_Ca(n_i,n_j))       ; total_calcium_flux_Ca = 0.0
-    ALLOCATE(total_calcium_flux_Si(n_i,n_j))       ; total_calcium_flux_Si = 0.0
-    ALLOCATE(weather_fCaCO3_2D(n_i,n_j))           ; weather_fCaCO3_2D = 0.0
-    ALLOCATE(weather_fCaSiO3_2D(n_i,n_j))          ; weather_fCaSiO3_2D = 0.0
-    ALLOCATE(orogeny(n_i,n_j))                     ; orogeny = 0.0
-    ALLOCATE(regimes_calib(n_i,n_j))               ; regimes_calib = 0.0
-    ALLOCATE(ref_T0_2D(n_i,n_j))                   ; ref_T0_2D = 0.0
-    ALLOCATE(ref_R0_2D(n_i,n_j))                   ; ref_R0_2D = 0.0
-    ALLOCATE(ref_P0_2D(n_i,n_j))                   ; ref_P0_2D = 0.0
-    ALLOCATE(data_T_2D(n_i,n_j))                   ; data_T_2D = 0.0
-    ALLOCATE(data_R_2D(n_i,n_j))                   ; data_R_2D = 0.0
-    ALLOCATE(data_P_2D(n_i,n_j))                   ; data_P_2D = 0.0
-    ALLOCATE(calibrate_T_2D(n_i,n_j))              ; calibrate_T_2D = 0.0
-    ALLOCATE(calibrate_R_2D(n_i,n_j))              ; calibrate_R_2D = 0.0
-    ALLOCATE(calibrate_P_2D(n_i,n_j))              ; calibrate_P_2D = 0.0
+    ALLOCATE(phys_rok(n_phys_rok,n_i,n_j),STAT=status)         ; phys_rok = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(phys_ocnrok(n_phys_ocnrok,n_i,n_j),STAT=status)   ; phys_ocnrok = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(goldstein_k1(ilon1_ocn,ilat1_ocn),STAT=status)    ; goldstein_k1 = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(landmask(n_i,n_j),STAT=status)                    ; landmask = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(runoff_drainage(n_i+2,n_j+2),STAT=status)         ; runoff_drainage = 0.0  !'+2' comes from fact that *.k1 file is 38x38
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(runoff_drainto(n_i,n_j,2),STAT=status)            ; runoff_drainto = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(runoff_coast(n_i,n_j),STAT=status)                ; runoff_coast = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(total_calcium_flux(n_i,n_j),STAT=status)          ; total_calcium_flux = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(total_calcium_flux_Ca(n_i,n_j),STAT=status)       ; total_calcium_flux_Ca = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(total_calcium_flux_Si(n_i,n_j),STAT=status)       ; total_calcium_flux_Si = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(weather_fCaCO3_2D(n_i,n_j),STAT=status)           ; weather_fCaCO3_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(weather_fCaSiO3_2D(n_i,n_j),STAT=status)          ; weather_fCaSiO3_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(orogeny(n_i,n_j),STAT=status)                     ; orogeny = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(regimes_calib(n_i,n_j),STAT=status)               ; regimes_calib = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ref_T0_2D(n_i,n_j),STAT=status)                   ; ref_T0_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ref_R0_2D(n_i,n_j),STAT=status)                   ; ref_R0_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ref_P0_2D(n_i,n_j),STAT=status)                   ; ref_P0_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(data_T_2D(n_i,n_j),STAT=status)                   ; data_T_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(data_R_2D(n_i,n_j),STAT=status)                   ; data_R_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(data_P_2D(n_i,n_j),STAT=status)                   ; data_P_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(calibrate_T_2D(n_i,n_j),STAT=status)              ; calibrate_T_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(calibrate_R_2D(n_i,n_j),STAT=status)              ; calibrate_R_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(calibrate_P_2D(n_i,n_j),STAT=status)              ; calibrate_P_2D = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
     CALL sub_init_phys_rok()
 

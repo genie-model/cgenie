@@ -21,6 +21,7 @@ CONTAINS
   SUBROUTINE initialise_atchem(dum_sfxsumatm, dum_sfcatm)
     USE atchem_data
     USE atchem_data_netCDF
+    USE genie_util, ONLY: check_iostat
     IMPLICIT NONE
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm    ! atmosphere-surface tracer composition; atm grid
@@ -32,10 +33,14 @@ CONTAINS
     n_j = dim_GENIENY
     n_phys_atm = 15
 
-    ALLOCATE(atm(n_atm,n_i,n_j)) ; atm = 0.0
-    ALLOCATE(fatm(n_atm,n_i,n_j)) ; fatm = 0.0
-    ALLOCATE(phys_atm(n_phys_atm,n_i,n_j)) ; phys_atm = 0.0
-    ALLOCATE(atm_slabbiosphere(n_atm,n_i,n_j)) ; atm_slabbiosphere = 0.0
+    ALLOCATE(atm(n_atm,n_i,n_j),STAT=alloc_error)               ; atm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fatm(n_atm,n_i,n_j),STAT=alloc_error)              ; fatm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(phys_atm(n_phys_atm,n_i,n_j),STAT=alloc_error)     ; phys_atm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(atm_slabbiosphere(n_atm,n_i,n_j),STAT=alloc_error) ; atm_slabbiosphere = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     CALL sub_load_goin_atchem()
 

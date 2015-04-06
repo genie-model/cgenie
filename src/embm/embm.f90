@@ -218,6 +218,7 @@ CONTAINS
        & atmos_dt_tim, solconst, eb_rmax, eb_dphi, eb_rdtdim, eb_ca, &
        & gn_daysperyear, torog_atm, surf_orog_atm, landice_slicemask_lic, &
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
+    USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
@@ -384,140 +385,246 @@ CONTAINS
        END IF
     END IF
 
-    ALLOCATE(k1(0:maxi+1,0:maxj+1)) ; k1 = 0
-    ALLOCATE(ku(2,maxi,maxj))       ; ku = 0
-    ALLOCATE(mk(maxi+1,maxj))       ; mk = 0
+    ALLOCATE(k1(0:maxi+1,0:maxj+1),STAT=alloc_error) ; k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ku(2,maxi,maxj),STAT=alloc_error)       ; ku = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(mk(maxi+1,maxj),STAT=alloc_error)       ; mk = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(dt(maxk))       ; dt = 0.0
-    ALLOCATE(ds(maxj))       ; ds = 0.0
-    ALLOCATE(dsv(1:maxj-1))  ; dsv = 0.0
-    ALLOCATE(rds2(2:maxj-1)) ; rds2 = 0.0
-    ALLOCATE(dz(maxk))       ; dz = 0.0
-    ALLOCATE(s(0:maxj))      ; s = 0.0
-    ALLOCATE(c(0:maxj))      ; c = 0.0
-    ALLOCATE(sv(0:maxj))     ; sv = 0.0
+    ALLOCATE(dt(maxk),STAT=alloc_error)       ; dt = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ds(maxj),STAT=alloc_error)       ; ds = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dsv(1:maxj-1),STAT=alloc_error)  ; dsv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rds2(2:maxj-1),STAT=alloc_error) ; rds2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dz(maxk),STAT=alloc_error)       ; dz = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(s(0:maxj),STAT=alloc_error)      ; s = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(c(0:maxj),STAT=alloc_error)      ; c = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sv(0:maxj),STAT=alloc_error)     ; sv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(dzu(2,maxk))    ; dzu = 0.0
+    ALLOCATE(dzu(2,maxk),STAT=alloc_error)    ; dzu = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(tau(2,maxi,maxj))    ; tau = 0.0
-    ALLOCATE(drag(2,maxi+1,maxj)) ; drag = 0.0
-    ALLOCATE(dztau(2,maxi,maxj))  ; dztau = 0.0
+    ALLOCATE(tau(2,maxi,maxj),STAT=alloc_error)    ; tau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(drag(2,maxi+1,maxj),STAT=alloc_error) ; drag = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztau(2,maxi,maxj),STAT=alloc_error)  ; dztau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(cv(0:maxj)) ; cv = 0.0
-    ALLOCATE(dza(maxk))  ; dza = 0.0
-    ALLOCATE(tsa0(maxj)) ; tsa0 = 0.0
+    ALLOCATE(cv(0:maxj),STAT=alloc_error) ; cv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dza(maxk),STAT=alloc_error)  ; dza = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tsa0(maxj),STAT=alloc_error) ; tsa0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(tau0(maxi,maxj))   ; tau0 = 0.0
-    ALLOCATE(dztav0(maxi,maxj)) ; dztav0 = 0.0
-    ALLOCATE(tau1(maxi,maxj))   ; tau1 = 0.0
-    ALLOCATE(dztav1(maxi,maxj)) ; dztav1 = 0.0
+    ALLOCATE(tau0(maxi,maxj),STAT=alloc_error)   ; tau0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztav0(maxi,maxj),STAT=alloc_error) ; dztav0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tau1(maxi,maxj),STAT=alloc_error)   ; tau1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztav1(maxi,maxj),STAT=alloc_error) ; dztav1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(dztav(2,maxi,maxj)) ; dztav = 0.0
+    ALLOCATE(dztav(2,maxi,maxj),STAT=alloc_error) ; dztav = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(rc(0:maxj))     ; rc = 0.0
-    ALLOCATE(rcv(1:maxj-1))  ; rcv = 0.0
-    ALLOCATE(rds(maxj))      ; rds = 0.0
-    ALLOCATE(rdsv(1:maxj-1)) ; rdsv = 0.0
-    ALLOCATE(cv2(1:maxj-1))  ; cv2 = 0.0
-    ALLOCATE(rc2(0:maxj))    ; rc2 = 0.0
-    ALLOCATE(rdz(maxk))      ; rdz = 0.0
-    ALLOCATE(rdza(maxk))     ; rdza = 0.0
+    ALLOCATE(rc(0:maxj),STAT=alloc_error)     ; rc = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rcv(1:maxj-1),STAT=alloc_error)  ; rcv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rds(maxj),STAT=alloc_error)      ; rds = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdsv(1:maxj-1),STAT=alloc_error) ; rdsv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(cv2(1:maxj-1),STAT=alloc_error)  ; cv2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rc2(0:maxj),STAT=alloc_error)    ; rc2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdz(maxk),STAT=alloc_error)      ; rdz = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdza(maxk),STAT=alloc_error)     ; rdza = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(rtv(maxi,maxj))  ; rtv = 0.0
-    ALLOCATE(rtv3(maxi,maxj)) ; rtv3 = 0.0
+    ALLOCATE(rtv(maxi,maxj),STAT=alloc_error)  ; rtv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rtv3(maxi,maxj),STAT=alloc_error) ; rtv3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(us_dztau(2, maxi, maxj)) ; us_dztau = 0.0
-    ALLOCATE(us_dztav(2, maxi, maxj)) ; us_dztav = 0.0
+    ALLOCATE(us_dztau(2, maxi, maxj),STAT=alloc_error) ; us_dztau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(us_dztav(2, maxi, maxj),STAT=alloc_error) ; us_dztav = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(asurf(maxj)) ; asurf = 0.0
+    ALLOCATE(asurf(maxj),STAT=alloc_error) ; asurf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(qsata(maxi,maxj)) ; qsata = 0.0
-    ALLOCATE(qsato(maxi,maxj)) ; qsato = 0.0
-    ALLOCATE(co2(maxi,maxj))   ; co2 = 0.0
-    ALLOCATE(ch4(maxi,maxj))   ; ch4 = 0.0
-    ALLOCATE(n2o(maxi,maxj))   ; n2o = 0.0
+    ALLOCATE(qsata(maxi,maxj),STAT=alloc_error) ; qsata = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qsato(maxi,maxj),STAT=alloc_error) ; qsato = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(co2(maxi,maxj),STAT=alloc_error)   ; co2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ch4(maxi,maxj),STAT=alloc_error)   ; ch4 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(n2o(maxi,maxj),STAT=alloc_error)   ; n2o = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(tq(2,maxi,maxj))      ; tq = 0.0
-    ALLOCATE(tq1(2,maxi,maxj))     ; tq1 = 0.0
-    ALLOCATE(varice(2,maxi,maxj))  ; varice = 0.0
-    ALLOCATE(varice1(2,maxi,maxj)) ; varice1 = 0.0
-    ALLOCATE(tqa(2,maxi,maxj))     ; tqa = 0.0
+    ALLOCATE(tq(2,maxi,maxj),STAT=alloc_error)      ; tq = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tq1(2,maxi,maxj),STAT=alloc_error)     ; tq1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(varice(2,maxi,maxj),STAT=alloc_error)  ; varice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(varice1(2,maxi,maxj),STAT=alloc_error) ; varice1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tqa(2,maxi,maxj),STAT=alloc_error)     ; tqa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(albcl(maxi,maxj))  ; albcl = 0.0
-    ALLOCATE(fxsw(maxi,maxj))   ; fxsw = 0.0
-    ALLOCATE(fxplw(maxi,maxj))  ; fxplw = 0.0
-    ALLOCATE(fx0a(maxi,maxj))   ; fx0a = 0.0
-    ALLOCATE(fx0o(maxi,maxj))   ; fx0o = 0.0
-    ALLOCATE(fxsen(maxi,maxj))  ; fxsen = 0.0
-    ALLOCATE(pmeadj(maxi,maxj)) ; pmeadj = 0.0
-    ALLOCATE(pptn(maxi,maxj))   ; pptn = 0.0
-    ALLOCATE(evap(maxi,maxj))   ; evap = 0.0
-    ALLOCATE(usurf(maxi,maxj))  ; usurf = 0.0
-    ALLOCATE(fxlata(maxi,maxj)) ; fxlata = 0.0
-    ALLOCATE(fxlato(maxi,maxj)) ; fxlato = 0.0
-    ALLOCATE(fxlw(maxi,maxj))   ; fxlw = 0.0
-    ALLOCATE(ca(maxi,maxj))     ; ca = 0.0
-    ALLOCATE(qb(maxi,maxj))     ; qb = 0.0
-    ALLOCATE(qbsic(maxi,maxj))  ; qbsic = 0.0
+    ALLOCATE(albcl(maxi,maxj),STAT=alloc_error)  ; albcl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsw(maxi,maxj),STAT=alloc_error)   ; fxsw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxplw(maxi,maxj),STAT=alloc_error)  ; fxplw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0a(maxi,maxj),STAT=alloc_error)   ; fx0a = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0o(maxi,maxj),STAT=alloc_error)   ; fx0o = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsen(maxi,maxj),STAT=alloc_error)  ; fxsen = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pmeadj(maxi,maxj),STAT=alloc_error) ; pmeadj = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pptn(maxi,maxj),STAT=alloc_error)   ; pptn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(evap(maxi,maxj),STAT=alloc_error)   ; evap = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurf(maxi,maxj),STAT=alloc_error)  ; usurf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlata(maxi,maxj),STAT=alloc_error) ; fxlata = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlato(maxi,maxj),STAT=alloc_error) ; fxlato = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlw(maxi,maxj),STAT=alloc_error)   ; fxlw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ca(maxi,maxj),STAT=alloc_error)     ; ca = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qb(maxi,maxj),STAT=alloc_error)     ; qb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qbsic(maxi,maxj),STAT=alloc_error)  ; qbsic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(diffa(2,2,maxj)) ; diffa = 0.0
+    ALLOCATE(diffa(2,2,maxj),STAT=alloc_error) ; diffa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(fx0sic(maxi,maxj))   ; fx0sic = 0.0
-    ALLOCATE(fx0neto(maxi,maxj))  ; fx0neto = 0.0
-    ALLOCATE(fwfxneto(maxi,maxj)) ; fwfxneto = 0.0
-    ALLOCATE(evapsic(maxi,maxj))  ; evapsic = 0.0
-    ALLOCATE(tsfreez(maxi,maxj))  ; tsfreez = 0.0
+    ALLOCATE(fx0sic(maxi,maxj),STAT=alloc_error)   ; fx0sic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0neto(maxi,maxj),STAT=alloc_error)  ; fx0neto = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwfxneto(maxi,maxj),STAT=alloc_error) ; fwfxneto = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(evapsic(maxi,maxj),STAT=alloc_error)  ; evapsic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tsfreez(maxi,maxj),STAT=alloc_error)  ; tsfreez = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(uatm(2,maxi,maxj)) ; uatm = 0.0
+    ALLOCATE(uatm(2,maxi,maxj),STAT=alloc_error) ; uatm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(fxlatavg(maxi,maxj)) ; fxlatavg = 0.0
-    ALLOCATE(fxsenavg(maxi,maxj)) ; fxsenavg = 0.0
-    ALLOCATE(fxswavg(maxi,maxj))  ; fxswavg = 0.0
-    ALLOCATE(fxlwavg(maxi,maxj))  ; fxlwavg = 0.0
-    ALLOCATE(fwpptavg(maxi,maxj)) ; fwpptavg = 0.0
-    ALLOCATE(fwevpavg(maxi,maxj)) ; fwevpavg = 0.0
+    ALLOCATE(fxlatavg(maxi,maxj),STAT=alloc_error) ; fxlatavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsenavg(maxi,maxj),STAT=alloc_error) ; fxsenavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxswavg(maxi,maxj),STAT=alloc_error)  ; fxswavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlwavg(maxi,maxj),STAT=alloc_error)  ; fxlwavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwpptavg(maxi,maxj),STAT=alloc_error) ; fwpptavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwevpavg(maxi,maxj),STAT=alloc_error) ; fwevpavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(tqavg(2,maxi,maxj))  ; tqavg = 0.0
-    ALLOCATE(fx0avg(4,maxi,maxj)) ; fx0avg = 0.0
-    ALLOCATE(fwavg(2,maxi,maxj))  ; fwavg = 0.0
+    ALLOCATE(tqavg(2,maxi,maxj),STAT=alloc_error)  ; tqavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0avg(4,maxi,maxj),STAT=alloc_error) ; fx0avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwavg(2,maxi,maxj),STAT=alloc_error)  ; fwavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(palb(maxi,maxj))    ; palb = 0.0
-    ALLOCATE(palbavg(maxi,maxj)) ; palbavg = 0.0
+    ALLOCATE(palb(maxi,maxj),STAT=alloc_error)    ; palb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(palbavg(maxi,maxj),STAT=alloc_error) ; palbavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(d18o_ice_thresh(maxi,maxj)) ; d18o_ice_thresh = 0.0
-    ALLOCATE(d18o_orog_min(maxi,maxj))   ; d18o_orog_min = 0.0
-    ALLOCATE(d18o_orog_grad(maxi,maxj))  ; d18o_orog_grad = 0.0
+    ALLOCATE(d18o_ice_thresh(maxi,maxj),STAT=alloc_error) ; d18o_ice_thresh = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(d18o_orog_min(maxi,maxj),STAT=alloc_error)   ; d18o_orog_min = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(d18o_orog_grad(maxi,maxj),STAT=alloc_error)  ; d18o_orog_grad = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(chl(maxi,maxj)) ; chl = 0.0
-    ALLOCATE(cel(maxi,maxj)) ; cel = 0.0
+    ALLOCATE(chl(maxi,maxj),STAT=alloc_error) ; chl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(cel(maxi,maxj),STAT=alloc_error) ; cel = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(q_pa(maxi,maxj))      ; q_pa = 0.0
-    ALLOCATE(rq_pa(maxi,maxj))     ; rq_pa = 0.0
-    ALLOCATE(q_pa_avg(maxi,maxj))  ; q_pa_avg = 0.0
-    ALLOCATE(rq_pa_avg(maxi,maxj)) ; rq_pa_avg = 0.0
+    ALLOCATE(q_pa(maxi,maxj),STAT=alloc_error)      ; q_pa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rq_pa(maxi,maxj),STAT=alloc_error)     ; rq_pa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(q_pa_avg(maxi,maxj),STAT=alloc_error)  ; q_pa_avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rq_pa_avg(maxi,maxj),STAT=alloc_error) ; rq_pa_avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(iroff(maxi,maxj)) ; iroff = 0
-    ALLOCATE(jroff(maxi,maxj)) ; jroff = 0
+    ALLOCATE(iroff(maxi,maxj),STAT=alloc_error) ; iroff = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(jroff(maxi,maxj),STAT=alloc_error) ; jroff = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(nclon1(maxi)) ; nclon1 = 0.0
-    ALLOCATE(nclon2(maxi)) ; nclon2 = 0.0
-    ALLOCATE(nclon3(maxi)) ; nclon3 = 0.0
-    ALLOCATE(nclat1(maxj)) ; nclat1 = 0.0
-    ALLOCATE(nclat2(maxj)) ; nclat2 = 0.0
-    ALLOCATE(nclat3(maxj)) ; nclat3 = 0.0
+    ALLOCATE(nclon1(maxi),STAT=alloc_error) ; nclon1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclon2(maxi),STAT=alloc_error) ; nclon2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclon3(maxi),STAT=alloc_error) ; nclon3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat1(maxj),STAT=alloc_error) ; nclat1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat2(maxj),STAT=alloc_error) ; nclat2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat3(maxj),STAT=alloc_error) ; nclat3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! Local allocations
 
-    ALLOCATE(bmask(maxi,maxj)) ; bmask = 0
-    ALLOCATE(zro(maxk))        ; zro = 0.0
-    ALLOCATE(zw(0:maxk))       ; zw = 0.0
+    ALLOCATE(bmask(maxi,maxj),STAT=alloc_error) ; bmask = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(zro(maxk),STAT=alloc_error)        ; zro = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(zw(0:maxk),STAT=alloc_error)       ; zw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(uatml1(2,maxi,maxj,nmth+1)) ; uatml1 = 0.0
-    ALLOCATE(usurfl1(maxi,maxj,nmth+1))  ; usurfl1 = 0.0
-    ALLOCATE(tncep1(maxi,maxj,nmth+1))   ; tncep1 = 0.0
-    ALLOCATE(pncep1(maxi,maxj,nmth+1))   ; pncep1 = 0.0
-    ALLOCATE(rhncep1(maxi,maxj,nmth+1))  ; rhncep1 = 0.0
-    ALLOCATE(atm_alb1(maxi,maxj,nmth+1)) ; atm_alb1 = 0.0
+    ALLOCATE(uatml1(2,maxi,maxj,nmth+1),STAT=alloc_error) ; uatml1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurfl1(maxi,maxj,nmth+1),STAT=alloc_error)  ; usurfl1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tncep1(maxi,maxj,nmth+1),STAT=alloc_error)   ; tncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pncep1(maxi,maxj,nmth+1),STAT=alloc_error)   ; pncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rhncep1(maxi,maxj,nmth+1),STAT=alloc_error)  ; rhncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(atm_alb1(maxi,maxj,nmth+1),STAT=alloc_error) ; atm_alb1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! Input directory name
     lenin = lnsig1(indir_name)
@@ -648,14 +755,22 @@ CONTAINS
     IF (debug_init) PRINT *, nyear, ndta
     tv = 86400.0 * yearlen / (nyear * tsc)
     ryear = 1.0 / (yearlen * 86400)
-    ALLOCATE(solfor(maxj,nyear))       ; solfor = 0.0
-    ALLOCATE(albo(maxj,nyear))         ; albo = 0.0
-    ALLOCATE(uatml(2,maxi,maxj,nyear)) ; uatml = 0.0
-    ALLOCATE(usurfl(maxi,maxj,nyear))  ; usurfl = 0.0
-    ALLOCATE(tncep(maxi,maxj,nyear))   ; tncep = 0.0
-    ALLOCATE(pncep(maxi,maxj,nyear))   ; pncep = 0.0
-    ALLOCATE(rhncep(maxi,maxj,nyear))  ; rhncep = 0.0
-    ALLOCATE(atm_alb(maxi,maxj,nyear)) ; atm_alb = 0.0
+    ALLOCATE(solfor(maxj,nyear),STAT=alloc_error)       ; solfor = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(albo(maxj,nyear),STAT=alloc_error)         ; albo = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(uatml(2,maxi,maxj,nyear),STAT=alloc_error) ; uatml = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurfl(maxi,maxj,nyear),STAT=alloc_error)  ; usurfl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tncep(maxi,maxj,nyear),STAT=alloc_error)   ; tncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pncep(maxi,maxj,nyear),STAT=alloc_error)   ; pncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rhncep(maxi,maxj,nyear),STAT=alloc_error)  ; rhncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(atm_alb(maxi,maxj,nyear),STAT=alloc_error) ; atm_alb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
 
     dtatm = tv / ndta
@@ -864,7 +979,8 @@ CONTAINS
        IF (debug_init) PRINT *,  'co2 defined from ', TRIM(filenameco2)
        IF (debug_init) PRINT *, 't_co2,nco2,co2steps', t_co2, nco2, co2steps
        OPEN(729,FILE=TRIM(filenameco2))
-       ALLOCATE(co2_vect(nco2))
+       ALLOCATE(co2_vect(nco2),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO i = 1, nco2
           READ (729,*) co2_vect(i)
        END DO
@@ -1401,10 +1517,14 @@ CONTAINS
     ! read in time varying orbital forcing
     IF (orbit_radfor == 'y' .OR. orbit_radfor == 'Y') THEN
        OPEN(UNIT=729,FILE=indir_name(1:lenin)//TRIM(filenameorbit),IOSTAT=ios)
-       ALLOCATE(orbitecc_vect(norbit))
-       ALLOCATE(orbitobl_vect(norbit))
-       ALLOCATE(orbitpre_vect(norbit))
-       ALLOCATE(orbittau_vect(norbit))
+       ALLOCATE(orbitecc_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbitobl_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbitpre_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbittau_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO i = 1, norbit
           READ (729,*,IOSTAT=ios) (orbitall_vect(n), n = 1, 5)
           orbitecc_vect(norbit-i+1) = orbitall_vect(2)
@@ -1618,7 +1738,8 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenameorog))
-       ALLOCATE(orog_vect(maxi,maxj,norog))
+       ALLOCATE(orog_vect(maxi,maxj,norog),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO l = 1, norog
           DO i = 1, maxi
              DO j = 1, maxj
@@ -1634,7 +1755,8 @@ CONTAINS
        ! See holden et al 2009 Clim Past Disc
        ! d18o time series
        OPEN(77,FILE=TRIM(filenamed18o))
-       ALLOCATE(d18o_vect(nd18o))
+       ALLOCATE(d18o_vect(nd18o),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        READ (77,*) (d18o_vect(l), l = 1, nd18o)
        CLOSE(77)
        ! Threshold value of d18o at which cell is ice covered
@@ -1717,7 +1839,8 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenamelice))
-       ALLOCATE(lice_vect(maxi,maxj,nlice)) ; lice_vect = 0.0
+       ALLOCATE(lice_vect(maxi,maxj,nlice),STAT=alloc_error) ; lice_vect = 0.0
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO l = 1, nlice
           DO i = 1, maxi
              DO j = 1, maxj

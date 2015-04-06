@@ -61,92 +61,172 @@ CONTAINS
 
     call sub_load_goin_biogem()
 
-    ALLOCATE(ocn(n_ocn,n_i,n_j,n_k))                   ; ocn = 0.0
-    ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j))          ; ocnatm_airsea_pv = 0.0
-    ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j))    ; ocnatm_airsea_solconst = 0.0
-    ALLOCATE(bio_part(n_sed,n_i,n_j,n_k))              ; bio_part = 0.0
-    ALLOCATE(bio_remin(n_ocn,n_i,n_j,n_k))             ; bio_remin = 0.0
-    ALLOCATE(bio_settle(n_sed,n_i,n_j,n_k))            ; bio_settle = 0.0
-    ALLOCATE(bio_part_red(n_sed,n_sed,n_i,n_j))        ; bio_part_red = 0.0
-    ALLOCATE(phys_ocn(n_phys_ocn,n_i,n_j,n_k))         ; phys_ocn = 0.0
-    ALLOCATE(phys_ocnatm(n_phys_ocnatm,n_i,n_j))       ; phys_ocnatm = 0.0
-    ALLOCATE(carb(n_carb,n_i,n_j,n_k))                 ; carb = 0.0
-    ALLOCATE(carbconst(n_carbconst,n_i,n_j,n_k))       ; carbconst = 0.0
-    ALLOCATE(carbalk(n_carbalk,n_i,n_j,n_k))           ; carbalk = 0.0
-    ALLOCATE(carbisor(n_carbisor,n_i,n_j,n_k))         ; carbisor = 0.0
-    ALLOCATE(carb_TSn(3,n_i,n_j,n_k))                  ; carb_TSn = 0.0
-    ALLOCATE(diag_bio(n_diag_bio,n_i,n_j))             ; diag_bio = 0.0
-    ALLOCATE(diag_geochem(n_diag_geochem,n_i,n_j,n_k)) ; diag_geochem = 0.0
-    ALLOCATE(diag_airsea(n_atm,n_i,n_j))               ; diag_airsea = 0.0
-    ALLOCATE(diag_forcing(n_atm,n_i,n_j))              ; diag_forcing = 0.0
-    ALLOCATE(diag_misc_2D(n_diag_misc_2D,n_i,n_j))     ; diag_misc_2D = 0.0
-    ALLOCATE(diag_misc_psi(0:n_i,0:n_j))               ; diag_misc_psi = 0.0
+    ALLOCATE(ocn(n_ocn,n_i,n_j,n_k),STAT=alloc_error)                   ; ocn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(bio_remin(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; bio_remin = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(bio_settle(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; bio_settle = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(bio_part_red(n_sed,n_sed,n_i,n_j),STAT=alloc_error)        ; bio_part_red = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(phys_ocn(n_phys_ocn,n_i,n_j,n_k),STAT=alloc_error)         ; phys_ocn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(phys_ocnatm(n_phys_ocnatm,n_i,n_j),STAT=alloc_error)       ; phys_ocnatm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(carb(n_carb,n_i,n_j,n_k),STAT=alloc_error)                 ; carb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(carbconst(n_carbconst,n_i,n_j,n_k),STAT=alloc_error)       ; carbconst = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(carbalk(n_carbalk,n_i,n_j,n_k),STAT=alloc_error)           ; carbalk = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(carbisor(n_carbisor,n_i,n_j,n_k),STAT=alloc_error)         ; carbisor = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(carb_TSn(3,n_i,n_j,n_k),STAT=alloc_error)                  ; carb_TSn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_bio(n_diag_bio,n_i,n_j),STAT=alloc_error)             ; diag_bio = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_geochem(n_diag_geochem,n_i,n_j,n_k),STAT=alloc_error) ; diag_geochem = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_airsea(n_atm,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_forcing(n_atm,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_misc_2D(n_diag_misc_2D,n_i,n_j),STAT=alloc_error)     ; diag_misc_2D = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(diag_misc_psi(0:n_i,0:n_j),STAT=alloc_error)               ; diag_misc_psi = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(int_ocn_timeslice(n_ocn,n_i,n_j,n_k))                   ; int_ocn_timeslice = 0.0
-    ALLOCATE(int_bio_part_timeslice(n_sed,n_i,n_j,n_k))              ; int_bio_part_timeslice = 0.0
-    ALLOCATE(int_bio_settle_timeslice(n_sed,n_i,n_j,n_k))            ; int_bio_settle_timeslice = 0.0
-    ALLOCATE(int_bio_remin_timeslice(n_ocn,n_i,n_j,n_k))             ; int_bio_remin_timeslice = 0.0
-    ALLOCATE(int_phys_ocn_timeslice(n_phys_ocn,n_i,n_j,n_k))         ; int_phys_ocn_timeslice = 0.0
-    ALLOCATE(int_phys_ocnatm_timeslice(n_phys_ocnatm,n_i,n_j))       ; int_phys_ocnatm_timeslice = 0.0
-    ALLOCATE(int_carb_timeslice(n_carb,n_i,n_j,n_k))                 ; int_carb_timeslice = 0.0
-    ALLOCATE(int_carbconst_timeslice(n_carbconst,n_i,n_j,n_k))       ; int_carbconst_timeslice = 0.0
-    ALLOCATE(int_carbisor_timeslice(n_carbisor,n_i,n_j,n_k))         ; int_carbisor_timeslice = 0.0
-    ALLOCATE(int_sfcatm1_timeslice(n_atm,n_i,n_j))                   ; int_sfcatm1_timeslice = 0.0
-    ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j))                   ; int_focnatm_timeslice = 0.0
-    ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j))                   ; int_sfcsed1_timeslice = 0.0
-    ALLOCATE(int_focnsed_timeslice(n_sed,n_i,n_j))                   ; int_focnsed_timeslice = 0.0
-    ALLOCATE(int_fsedocn_timeslice(n_ocn,n_i,n_j))                   ; int_fsedocn_timeslice = 0.0
-    ALLOCATE(int_opsi_timeslice(0:n_j,0:n_k))                        ; int_opsi_timeslice = 0.0
-    ALLOCATE(int_opsia_timeslice(0:n_j,0:n_k))                       ; int_opsia_timeslice = 0.0
-    ALLOCATE(int_opsip_timeslice(0:n_j,0:n_k))                       ; int_opsip_timeslice = 0.0
-    ALLOCATE(int_zpsi_timeslice(0:n_j,0:n_k))                        ; int_zpsi_timeslice = 0.0
-    ALLOCATE(int_u_timeslice(3,n_i,n_j,n_k))                         ; int_u_timeslice = 0.0
-    ALLOCATE(int_psi_timeslice(0:n_i,0:n_j))                         ; int_psi_timeslice = 0.0
-    ALLOCATE(int_diag_bio_timeslice(n_diag_bio,n_i,n_j))             ; int_diag_bio_timeslice = 0.0
-    ALLOCATE(int_diag_geochem_timeslice(n_diag_geochem,n_i,n_j,n_k)) ; int_diag_geochem_timeslice = 0.0
-    ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j))              ; int_diag_weather_timeslice = 0.0
-    ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j))               ; int_diag_airsea_timeslice = 0.0
+    ALLOCATE(int_ocn_timeslice(n_ocn,n_i,n_j,n_k),STAT=alloc_error)                   ; int_ocn_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_bio_part_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; int_bio_part_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_bio_settle_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; int_bio_settle_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_bio_remin_timeslice(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; int_bio_remin_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_phys_ocn_timeslice(n_phys_ocn,n_i,n_j,n_k),STAT=alloc_error)         ; int_phys_ocn_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_phys_ocnatm_timeslice(n_phys_ocnatm,n_i,n_j),STAT=alloc_error)       ; int_phys_ocnatm_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_carb_timeslice(n_carb,n_i,n_j,n_k),STAT=alloc_error)                 ; int_carb_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_carbconst_timeslice(n_carbconst,n_i,n_j,n_k),STAT=alloc_error)       ; int_carbconst_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_carbisor_timeslice(n_carbisor,n_i,n_j,n_k),STAT=alloc_error)         ; int_carbisor_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_sfcatm1_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_sfcatm1_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_sfcsed1_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_focnsed_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_focnsed_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_fsedocn_timeslice(n_ocn,n_i,n_j),STAT=alloc_error)                   ; int_fsedocn_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_opsi_timeslice(0:n_j,0:n_k),STAT=alloc_error)                        ; int_opsi_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_opsia_timeslice(0:n_j,0:n_k),STAT=alloc_error)                       ; int_opsia_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_opsip_timeslice(0:n_j,0:n_k),STAT=alloc_error)                       ; int_opsip_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_zpsi_timeslice(0:n_j,0:n_k),STAT=alloc_error)                        ; int_zpsi_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_u_timeslice(3,n_i,n_j,n_k),STAT=alloc_error)                         ; int_u_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_psi_timeslice(0:n_i,0:n_j),STAT=alloc_error)                         ; int_psi_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_diag_bio_timeslice(n_diag_bio,n_i,n_j),STAT=alloc_error)             ; int_diag_bio_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_diag_geochem_timeslice(n_diag_geochem,n_i,n_j,n_k),STAT=alloc_error) ; int_diag_geochem_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j),STAT=alloc_error)              ; int_diag_weather_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j)) ; force_restore_ocn_k1 = 0
-    ALLOCATE(force_restore_atm(n_atm,n_i,n_j))    ; force_restore_atm = 0.0
-    ALLOCATE(force_restore_atm_I(n_atm,n_i,n_j))  ; force_restore_atm_I = 0.0
-    ALLOCATE(force_restore_atm_II(n_atm,n_i,n_j)) ; force_restore_atm_II = 0.0
+    ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_restore_ocn_k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_restore_atm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_restore_atm_I = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_restore_atm_II = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(force_flux_ocn_k1(n_ocn,n_i,n_j)) ; force_flux_ocn_k1 = 0
-    ALLOCATE(force_flux_atm(n_atm,n_i,n_j))    ; force_flux_atm = 0.0
-    ALLOCATE(force_flux_atm_I(n_atm,n_i,n_j))  ; force_flux_atm_I = 0.0
-    ALLOCATE(force_flux_atm_II(n_atm,n_i,n_j)) ; force_flux_atm_II = 0.0
+    ALLOCATE(force_flux_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_flux_ocn_k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_flux_atm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_flux_atm_I = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_flux_atm_II = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(force_flux_sed(n_sed,n_i,n_j))    ; force_flux_sed = 0.0
-    ALLOCATE(force_flux_sed_I(n_sed,n_i,n_j))  ; force_flux_sed_I = 0.0
-    ALLOCATE(force_flux_sed_II(n_sed,n_i,n_j)) ; force_flux_sed_II = 0.0
+    ALLOCATE(force_flux_sed(n_sed,n_i,n_j),STAT=alloc_error)    ; force_flux_sed = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_sed_I(n_sed,n_i,n_j),STAT=alloc_error)  ; force_flux_sed_I = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_sed_II(n_sed,n_i,n_j),STAT=alloc_error) ; force_flux_sed_II = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(par_phys_seaice(n_i,n_j))             ; par_phys_seaice = 0.0
-    ALLOCATE(par_phys_windspeed(n_i,n_j))          ; par_phys_windspeed = 0.0
-    ALLOCATE(par_bio_CaCO3toPOCrainratio(n_i,n_j)) ; par_bio_CaCO3toPOCrainratio = 0.0
-    ALLOCATE(par_bio_Cd_alpha(n_i,n_j))            ; par_bio_Cd_alpha = 0.0
-    ALLOCATE(par_bio_POCdtoPOCrainratio(n_i,n_j))  ; par_bio_POCdtoPOCrainratio = 0.0
-    ALLOCATE(par_bio_remin_kc(n_i,n_j))            ; par_bio_remin_kc = 0.0
-    ALLOCATE(par_bio_remin_ko(n_i,n_j))            ; par_bio_remin_ko = 0.0
-    ALLOCATE(par_bio_remin_kl(n_i,n_j))            ; par_bio_remin_kl = 0.0
-    ALLOCATE(par_scav_fpart_POC(n_i,n_j,n_k))      ; par_scav_fpart_POC = 0.0
-    ALLOCATE(par_scav_fpart_CaCO3(n_i,n_j,n_k))    ; par_scav_fpart_CaCO3 = 0.0
-    ALLOCATE(par_scav_fpart_opal(n_i,n_j,n_k))     ; par_scav_fpart_opal = 0.0
-    ALLOCATE(par_scav_fpart_det(n_i,n_j,n_k))      ; par_scav_fpart_det = 0.0
-    ALLOCATE(par_bio_remin_b(n_i,n_j))             ; par_bio_remin_b = 0.0
-    ALLOCATE(par_misc_2D(n_i,n_j))                 ; par_misc_2D = 0.0
+    ALLOCATE(par_phys_seaice(n_i,n_j),STAT=alloc_error)             ; par_phys_seaice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_phys_windspeed(n_i,n_j),STAT=alloc_error)          ; par_phys_windspeed = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_CaCO3toPOCrainratio(n_i,n_j),STAT=alloc_error) ; par_bio_CaCO3toPOCrainratio = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_Cd_alpha(n_i,n_j),STAT=alloc_error)            ; par_bio_Cd_alpha = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_POCdtoPOCrainratio(n_i,n_j),STAT=alloc_error)  ; par_bio_POCdtoPOCrainratio = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_remin_kc(n_i,n_j),STAT=alloc_error)            ; par_bio_remin_kc = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_remin_ko(n_i,n_j),STAT=alloc_error)            ; par_bio_remin_ko = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_remin_kl(n_i,n_j),STAT=alloc_error)            ; par_bio_remin_kl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_scav_fpart_POC(n_i,n_j,n_k),STAT=alloc_error)      ; par_scav_fpart_POC = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_scav_fpart_CaCO3(n_i,n_j,n_k),STAT=alloc_error)    ; par_scav_fpart_CaCO3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_scav_fpart_opal(n_i,n_j,n_k),STAT=alloc_error)     ; par_scav_fpart_opal = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_scav_fpart_det(n_i,n_j,n_k),STAT=alloc_error)      ; par_scav_fpart_det = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_bio_remin_b(n_i,n_j),STAT=alloc_error)             ; par_bio_remin_b = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(par_misc_2D(n_i,n_j),STAT=alloc_error)                 ; par_misc_2D = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(goldstein_k1(n_i,n_j)) ; goldstein_k1 = 0
-    ALLOCATE(goldstein_ips(n_j))    ; goldstein_ips = 0
-    ALLOCATE(goldstein_ipf(n_j))    ; goldstein_ipf = 0
-    ALLOCATE(goldstein_ias(n_j))    ; goldstein_ias = 0
-    ALLOCATE(goldstein_iaf(n_j))    ; goldstein_iaf = 0
-    ALLOCATE(goldstein_dz(n_k))     ; goldstein_dz = 0.0
-    ALLOCATE(goldstein_dza(n_k))    ; goldstein_dza = 0.0
-    ALLOCATE(goldstein_c(0:n_j))    ; goldstein_c = 0.0
-    ALLOCATE(goldstein_cv(0:n_j))   ; goldstein_cv = 0.0
-    ALLOCATE(goldstein_s(0:n_j))    ; goldstein_s = 0.0
-    ALLOCATE(goldstein_sv(0:n_j))   ; goldstein_sv = 0.0
+    ALLOCATE(goldstein_k1(n_i,n_j),STAT=alloc_error) ; goldstein_k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_ips(n_j),STAT=alloc_error)    ; goldstein_ips = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_ipf(n_j),STAT=alloc_error)    ; goldstein_ipf = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_ias(n_j),STAT=alloc_error)    ; goldstein_ias = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_iaf(n_j),STAT=alloc_error)    ; goldstein_iaf = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_dz(n_k),STAT=alloc_error)     ; goldstein_dz = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_dza(n_k),STAT=alloc_error)    ; goldstein_dza = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_c(0:n_j),STAT=alloc_error)    ; goldstein_c = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_cv(0:n_j),STAT=alloc_error)   ; goldstein_cv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_s(0:n_j),STAT=alloc_error)    ; goldstein_s = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(goldstein_sv(0:n_j),STAT=alloc_error)   ; goldstein_sv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! ---------------------------------------------------------- ! set time
     ! NOTE: modify 'par_misc_t_start' according to the run-time accumulated in any requested restart,

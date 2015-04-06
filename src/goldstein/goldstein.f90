@@ -607,7 +607,7 @@ CONTAINS
     ! ssmax parameters
     REAL :: ssmaxmid, ssmaxdiff, ssmaxtanhefold, ssmaxtanh0dep, zssmax
 
-    INTEGER :: ios
+    INTEGER :: ios, status
     LOGICAL :: ioex
     CHARACTER(LEN=200) :: msgStr
 
@@ -671,111 +671,211 @@ CONTAINS
        CALL check_iostat(ios, __LINE__, __FILE__)
     END IF
 
-    ALLOCATE(k1(0:maxi+1,0:maxj+1)) ; k1 = 0
-    ALLOCATE(ku(2,maxi,maxj))       ; ku = 0
-    ALLOCATE(mk(maxi+1,maxj))       ; mk = 0
-    ALLOCATE(ips(maxj))             ; ips = 0
-    ALLOCATE(ipf(maxj))             ; ipf = 0
-    ALLOCATE(ias(maxj))             ; ias = 0
-    ALLOCATE(iaf(maxj))             ; iaf = 0
-    ALLOCATE(icosd(maxi,maxj))      ; icosd = 0
-    ALLOCATE(mldk(maxi,maxj))       ; mldk = 0
+    ALLOCATE(k1(0:maxi+1,0:maxj+1),STAT=status) ; k1 = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ku(2,maxi,maxj),STAT=status)       ; ku = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mk(maxi+1,maxj),STAT=status)       ; mk = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ips(maxj),STAT=status)             ; ips = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ipf(maxj),STAT=status)             ; ipf = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ias(maxj),STAT=status)             ; ias = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(iaf(maxj),STAT=status)             ; iaf = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(icosd(maxi,maxj),STAT=status)      ; icosd = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldk(maxi,maxj),STAT=status)       ; mldk = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
-    ALLOCATE(dt(maxk))                               ; dt = 0.0
-    ALLOCATE(ds(maxj))                               ; ds = 0.0
-    ALLOCATE(dsv(1:maxj-1))                          ; dsv = 0.0
-    ALLOCATE(rds2(2:maxj-1))                         ; rds2 = 0.0
-    ALLOCATE(dz(maxk))                               ; dz = 0.0
-    ALLOCATE(u(3,0:maxi,0:maxj,maxk))                ; u = 0.0
-    ALLOCATE(ts(maxl,0:maxi+1,0:maxj+1,0:maxk+1))    ; ts = 0.0
-    ALLOCATE(s(0:maxj))                              ; s = 0.0
-    ALLOCATE(c(0:maxj))                              ; c = 0.0
-    ALLOCATE(dzu(2,maxk))                            ; dzu = 0.0
-    ALLOCATE(tau(2,maxi,maxj))                       ; tau = 0.0
-    ALLOCATE(drag(2,maxi+1,maxj))                    ; drag = 0.0
-    ALLOCATE(dztau(2,maxi,maxj))                     ; dztau = 0.0
-    ALLOCATE(ratm(mpxi*mpxj,mpxi+1))                 ; ratm = 0.0
-    ALLOCATE(ub(2,0:maxi+1,0:maxj))                  ; ub = 0.0
-    ALLOCATE(rho(0:maxi+1,0:maxj+1,0:maxk))          ; rho = 0.0
-    ALLOCATE(ts1(maxl,0:maxi+1,0:maxj+1,0:maxk+1))   ; ts1 = 0.0
-    ALLOCATE(sv(0:maxj))                             ; sv = 0.0
-    ALLOCATE(cv(0:maxj))                             ; cv = 0.0
-    ALLOCATE(dza(maxk))                              ; dza = 0.0
-    ALLOCATE(dztav(2,maxi,maxj))                     ; dztav = 0.0
-    ALLOCATE(gb(mpxi*mpxj))                          ; gb = 0.0
-    ALLOCATE(gap(mpxi*mpxj,2*mpxi+3))                ; gap = 0.0
-    ALLOCATE(cost(maxi,maxj))                        ; cost = 0.0
-    ALLOCATE(rh(3,0:maxi+1,0:maxj+1))                ; rh = 0.0
-    ALLOCATE(gbold(mpxi*mpxj))                       ; gbold = 0.0
-    ALLOCATE(tau0(maxi,maxj))                        ; tau0 = 0.0
-    ALLOCATE(dztav0(maxi,maxj))                      ; dztav0 = 0.0
-    ALLOCATE(tau1(maxi,maxj))                        ; tau1 = 0.0
-    ALLOCATE(dztav1(maxi,maxj))                      ; dztav1 = 0.0
-    ALLOCATE(tsa0(maxj))                             ; tsa0 = 0.0
-    ALLOCATE(fw_hosing(maxi,maxj))                   ; fw_hosing = 0.0
-    ALLOCATE(rhosing(maxi,maxj))                     ; rhosing = 0.0
-    ALLOCATE(zro(maxk))                              ; zro = 0.0
-    ALLOCATE(zw(0:maxk))                             ; zw = 0.0
-    ALLOCATE(dzg(maxk,maxk))                         ; dzg = 0.0
-    ALLOCATE(z2dzg(maxk,maxk))                       ; z2dzg = 0.0
-    ALLOCATE(rdzg(maxk,maxk))                        ; rdzg = 0.0
-    ALLOCATE(fw_anom(maxi,maxj))                     ; fw_anom = 0.0
-    ALLOCATE(fw_anom_rate(maxi,maxj))                ; fw_anom_rate = 0.0
-    ALLOCATE(psi(0:maxi,0:maxj))                     ; psi = 0.0
-    ALLOCATE(u1(3,0:maxi,0:maxj,maxk))               ; u1 = 0.0
-    ALLOCATE(rc(0:maxj))                             ; rc = 0.0
-    ALLOCATE(rc2(0:maxj))                            ; rc2 = 0.0
-    ALLOCATE(rtv(maxi,maxj))                         ; rtv = 0.0
-    ALLOCATE(rtv3(maxi,maxj))                        ; rtv3 = 0.0
-    ALLOCATE(rcv(1:maxj-1))                          ; rcv = 0.0
-    ALLOCATE(rdsv(1:maxj-1))                         ; rdsv = 0.0
-    ALLOCATE(cv2(1:maxj-1))                          ; cv2 = 0.0
-    ALLOCATE(rds(maxj))                              ; rds = 0.0
-    ALLOCATE(rdz(maxk))                              ; rdz = 0.0
-    ALLOCATE(rdza(maxk))                             ; rdza = 0.0
-    ALLOCATE(bp(maxi+1,maxj,maxk))                   ; bp = 0.0
-    ALLOCATE(sbp(maxi+1,maxj))                       ; sbp = 0.0
-    ALLOCATE(asurf(maxj))                            ; asurf = 0.0
-    ALLOCATE(tsavg(maxl,0:maxi+1,0:maxj+1,0:maxk+1)) ; tsavg = 0.0
-    ALLOCATE(uavg(3,0:maxi,0:maxj,maxk))             ; uavg = 0.0
-    ALLOCATE(rhoavg(0:maxi+1,0:maxj+1,0:maxk))       ; rhoavg = 0.0
-    ALLOCATE(fx0avg(5,maxi,maxj))                    ; fx0avg = 0.0
-    ALLOCATE(fwavg(4,maxi,maxj))                     ; fwavg = 0.0
-    ALLOCATE(windavg(4,maxi,maxj))                   ; windavg = 0.0
-    ALLOCATE(ts_store(maxl,maxi,maxj,maxk))          ; ts_store = 0.0
-    ALLOCATE(albcl(maxi,maxj))                       ; albcl = 0.0
-    ALLOCATE(evap_save1(maxi,maxj))                  ; evap_save1 = 0.0
-    ALLOCATE(late_save1(maxi,maxj))                  ; late_save1 = 0.0
-    ALLOCATE(sens_save1(maxi,maxj))                  ; sens_save1 = 0.0
-    ALLOCATE(evap_save2(maxi,maxj))                  ; evap_save2 = 0.0
-    ALLOCATE(late_save2(maxi,maxj))                  ; late_save2 = 0.0
-    ALLOCATE(sens_save2(maxi,maxj))                  ; sens_save2 = 0.0
-    ALLOCATE(mldpebuoy(maxi,maxj))                   ; mldpebuoy = 0.0
-    ALLOCATE(mldpeconv(maxi,maxj))                   ; mldpeconv = 0.0
-    ALLOCATE(mldpelayer1(maxi,maxj))                 ; mldpelayer1 = 0.0
-    ALLOCATE(mldketau(maxi,maxj))                    ; mldketau = 0.0
-    ALLOCATE(mldemix(maxi,maxj))                     ; mldemix = 0.0
-    ALLOCATE(mld(maxi,maxj))                         ; mld = 0.0
-    ALLOCATE(mlddec(maxk), mlddecd(maxk))            ; mlddec = 0.0
-    ALLOCATE(ediff1(maxi,maxj,maxk-1))               ; ediff1 = 0.0
-    ALLOCATE(diffmax(maxk))                          ; diffmax = 0.0
-    ALLOCATE(ssmax(maxk-1))                          ; ssmax = 0.0
+    ALLOCATE(dt(maxk),STAT=status)                               ; dt = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ds(maxj),STAT=status)                               ; ds = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dsv(1:maxj-1),STAT=status)                          ; dsv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rds2(2:maxj-1),STAT=status)                         ; rds2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dz(maxk),STAT=status)                               ; dz = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(u(3,0:maxi,0:maxj,maxk),STAT=status)                ; u = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ts(maxl,0:maxi+1,0:maxj+1,0:maxk+1),STAT=status)    ; ts = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(s(0:maxj),STAT=status)                              ; s = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(c(0:maxj),STAT=status)                              ; c = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dzu(2,maxk),STAT=status)                            ; dzu = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(tau(2,maxi,maxj),STAT=status)                       ; tau = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(drag(2,maxi+1,maxj),STAT=status)                    ; drag = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dztau(2,maxi,maxj),STAT=status)                     ; dztau = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ratm(mpxi*mpxj,mpxi+1),STAT=status)                 ; ratm = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ub(2,0:maxi+1,0:maxj),STAT=status)                  ; ub = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rho(0:maxi+1,0:maxj+1,0:maxk),STAT=status)          ; rho = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ts1(maxl,0:maxi+1,0:maxj+1,0:maxk+1),STAT=status)   ; ts1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(sv(0:maxj),STAT=status)                             ; sv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(cv(0:maxj),STAT=status)                             ; cv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dza(maxk),STAT=status)                              ; dza = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dztav(2,maxi,maxj),STAT=status)                     ; dztav = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(gb(mpxi*mpxj),STAT=status)                          ; gb = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(gap(mpxi*mpxj,2*mpxi+3),STAT=status)                ; gap = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(cost(maxi,maxj),STAT=status)                        ; cost = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rh(3,0:maxi+1,0:maxj+1),STAT=status)                ; rh = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(gbold(mpxi*mpxj),STAT=status)                       ; gbold = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(tau0(maxi,maxj),STAT=status)                        ; tau0 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dztav0(maxi,maxj),STAT=status)                      ; dztav0 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(tau1(maxi,maxj),STAT=status)                        ; tau1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dztav1(maxi,maxj),STAT=status)                      ; dztav1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(tsa0(maxj),STAT=status)                             ; tsa0 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fw_hosing(maxi,maxj),STAT=status)                   ; fw_hosing = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rhosing(maxi,maxj),STAT=status)                     ; rhosing = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(zro(maxk),STAT=status)                              ; zro = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(zw(0:maxk),STAT=status)                             ; zw = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(dzg(maxk,maxk),STAT=status)                         ; dzg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(z2dzg(maxk,maxk),STAT=status)                       ; z2dzg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rdzg(maxk,maxk),STAT=status)                        ; rdzg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fw_anom(maxi,maxj),STAT=status)                     ; fw_anom = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fw_anom_rate(maxi,maxj),STAT=status)                ; fw_anom_rate = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(psi(0:maxi,0:maxj),STAT=status)                     ; psi = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(u1(3,0:maxi,0:maxj,maxk),STAT=status)               ; u1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rc(0:maxj),STAT=status)                             ; rc = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rc2(0:maxj),STAT=status)                            ; rc2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rtv(maxi,maxj),STAT=status)                         ; rtv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rtv3(maxi,maxj),STAT=status)                        ; rtv3 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rcv(1:maxj-1),STAT=status)                          ; rcv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rdsv(1:maxj-1),STAT=status)                         ; rdsv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(cv2(1:maxj-1),STAT=status)                          ; cv2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rds(maxj),STAT=status)                              ; rds = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rdz(maxk),STAT=status)                              ; rdz = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rdza(maxk),STAT=status)                             ; rdza = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(bp(maxi+1,maxj,maxk),STAT=status)                   ; bp = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(sbp(maxi+1,maxj),STAT=status)                       ; sbp = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(asurf(maxj),STAT=status)                            ; asurf = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(tsavg(maxl,0:maxi+1,0:maxj+1,0:maxk+1),STAT=status) ; tsavg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(uavg(3,0:maxi,0:maxj,maxk),STAT=status)             ; uavg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(rhoavg(0:maxi+1,0:maxj+1,0:maxk),STAT=status)       ; rhoavg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fx0avg(5,maxi,maxj),STAT=status)                    ; fx0avg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fwavg(4,maxi,maxj),STAT=status)                     ; fwavg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(windavg(4,maxi,maxj),STAT=status)                   ; windavg = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ts_store(maxl,maxi,maxj,maxk),STAT=status)          ; ts_store = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(albcl(maxi,maxj),STAT=status)                       ; albcl = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(evap_save1(maxi,maxj),STAT=status)                  ; evap_save1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(late_save1(maxi,maxj),STAT=status)                  ; late_save1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(sens_save1(maxi,maxj),STAT=status)                  ; sens_save1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(evap_save2(maxi,maxj),STAT=status)                  ; evap_save2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(late_save2(maxi,maxj),STAT=status)                  ; late_save2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(sens_save2(maxi,maxj),STAT=status)                  ; sens_save2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldpebuoy(maxi,maxj),STAT=status)                   ; mldpebuoy = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldpeconv(maxi,maxj),STAT=status)                   ; mldpeconv = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldpelayer1(maxi,maxj),STAT=status)                 ; mldpelayer1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldketau(maxi,maxj),STAT=status)                    ; mldketau = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mldemix(maxi,maxj),STAT=status)                     ; mldemix = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mld(maxi,maxj),STAT=status)                         ; mld = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(mlddec(maxk), mlddecd(maxk),STAT=status)            ; mlddec = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ediff1(maxi,maxj,maxk-1),STAT=status)               ; ediff1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(diffmax(maxk),STAT=status)                          ; diffmax = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ssmax(maxk-1),STAT=status)                          ; ssmax = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
-    ALLOCATE(getj(maxi,maxj)) ; getj = .FALSE.
+    ALLOCATE(getj(maxi,maxj),STAT=status) ; getj = .FALSE.
+    IF (status /= 0) CALL die("Could not allocate memory")
 
-    ALLOCATE(nclon1(maxi))     ; nclon1 = 0.0
-    ALLOCATE(nclon2(maxi))     ; nclon2 = 0.0
-    ALLOCATE(nclon3(maxi))     ; nclon3 = 0.0
-    ALLOCATE(nclat1(maxj))     ; nclat1 = 0.0
-    ALLOCATE(nclat2(maxj))     ; nclat2 = 0.0
-    ALLOCATE(nclat3(maxj))     ; nclat3 = 0.0
-    ALLOCATE(ncdepth(maxk))    ; ncdepth = 0.0
-    ALLOCATE(ncdepth1(maxk+1)) ; ncdepth1 = 0.0
+    ALLOCATE(nclon1(maxi),STAT=status)     ; nclon1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(nclon2(maxi),STAT=status)     ; nclon2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(nclon3(maxi),STAT=status)     ; nclon3 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(nclat1(maxj),STAT=status)     ; nclat1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(nclat2(maxj),STAT=status)     ; nclat2 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(nclat3(maxj),STAT=status)     ; nclat3 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ncdepth(maxk),STAT=status)    ; ncdepth = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ncdepth1(maxk+1),STAT=status) ; ncdepth1 = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
     ! Local allocations
-    ALLOCATE(bmask(maxi,maxj))       ; bmask = 0
-    ALLOCATE(h(3,0:maxi+1,0:maxj+1)) ; h = 0.0
-    ALLOCATE(fw_anom_in(maxi,maxj))  ; fw_anom_in = 0.0
+    ALLOCATE(bmask(maxi,maxj),STAT=status)       ; bmask = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(h(3,0:maxi+1,0:maxj+1),STAT=status) ; h = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(fw_anom_in(maxi,maxj),STAT=status)  ; fw_anom_in = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
     ! syr re-defined here
     syr = yearlen * 86400
@@ -1438,14 +1538,22 @@ CONTAINS
     IF (debug_init) &
          & PRINT *, 'Number of landmasses present in .psiles file:', &
          & isles+1, '(i.e.', isles, 'islands)'
-    ALLOCATE(lpisl(mpi,isles))                 ; lpisl = 0
-    ALLOCATE(ipisl(mpi,isles))                 ; ipisl = 0
-    ALLOCATE(jpisl(mpi,isles))                 ; jpisl = 0
-    ALLOCATE(npi(isles))                       ; npi = 0
-    ALLOCATE(psisl(0:maxi,0:maxj,isles))       ; psisl = 0.0
-    ALLOCATE(ubisl(2,0:maxi+1,0:maxj,isles))   ; ubisl = 0.0
-    ALLOCATE(erisl(isles,isles+1))             ; erisl = 0.0
-    ALLOCATE(psibc(isles))                     ; psibc = 0.0
+    ALLOCATE(lpisl(mpi,isles),STAT=status)                 ; lpisl = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ipisl(mpi,isles),STAT=status)                 ; ipisl = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(jpisl(mpi,isles),STAT=status)                 ; jpisl = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(npi(isles),STAT=status)                       ; npi = 0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(psisl(0:maxi,0:maxj,isles),STAT=status)       ; psisl = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(ubisl(2,0:maxi+1,0:maxj,isles),STAT=status)   ; ubisl = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(erisl(isles,isles+1),STAT=status)             ; erisl = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
+    ALLOCATE(psibc(isles),STAT=status)                     ; psibc = 0.0
+    IF (status /= 0) CALL die("Could not allocate memory")
 
     ! read island path integral data, read isles+1 paths only if want last path
     ! for testing

@@ -412,7 +412,7 @@ CONTAINS
 
   ! Extra diagnostic routine for c-goldstein v2 with seasonal cycle
   SUBROUTINE diagosc(istep, iout, ext, fx0flux, fwflux, wstress)
-    USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_util, ONLY: check_unit, check_iostat, die
     IMPLICIT NONE
     INTEGER, intent(in) :: istep, iout
     CHARACTER(LEN=3), INTENT(IN) :: ext
@@ -435,10 +435,15 @@ CONTAINS
 
     REAL :: lon(maxi), lat(maxj), depth(maxk)
 
+    INTEGER :: status
+
     IF (.NOT. ALLOCATED(opsiavg)) THEN
-       ALLOCATE(opsiavg(0:maxj,0:maxk))  ; opsiavg = 0.0
-       ALLOCATE(opsipavg(0:maxj,0:maxk)) ; opsipavg = 0.0
-       ALLOCATE(opsiaavg(0:maxj,0:maxk)) ; opsiaavg= 0.0
+       ALLOCATE(opsiavg(0:maxj,0:maxk),STAT=status)  ; opsiavg = 0.0
+       IF (status /= 0) CALL die("Could not allocate memory")
+       ALLOCATE(opsipavg(0:maxj,0:maxk),STAT=status) ; opsipavg = 0.0
+       IF (status /= 0) CALL die("Could not allocate memory")
+       ALLOCATE(opsiaavg(0:maxj,0:maxk),STAT=status) ; opsiaavg= 0.0
+       IF (status /= 0) CALL die("Could not allocate memory")
     END IF
 
     rnyear = 1.0 / nyear
