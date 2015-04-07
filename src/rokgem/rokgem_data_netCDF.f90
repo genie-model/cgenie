@@ -28,15 +28,15 @@ CONTAINS
 
        ! dummy variables
        !(NOTE: output for temp, runoff and productivity is that used in rokgem calculations, so may have been calibrated if option set)
-       REAL,INTENT(in)                 :: dum_temp(n_i,n_j)                                        ! temperature (originally from atmosphere composition interface array - subject to calibration)
-       REAL,INTENT(in)                 :: dum_CO2(n_i,n_j)                                         ! CO2 (from atmosphere composition interface array)
-       REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                                      ! runoff (originally from EMBM - subject to calibration)
-       REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                                       ! photosythesis from land veg module (ENTS)
-       REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)                                     ! vegetation respiration from land veg module (ENTS) (subject to calibration)
-       REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
-       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm_all,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
+       REAL,INTENT(in) :: dum_temp(:,:)                           ! temperature (originally from atmosphere composition interface array - subject to calibration)
+       REAL,INTENT(in) :: dum_CO2(:,:)                            ! CO2 (from atmosphere composition interface array)
+       REAL,INTENT(in) :: dum_runoff(:,:)                         ! runoff (originally from EMBM - subject to calibration)
+       REAL,INTENT(in) :: dum_photo(:,:)                          ! photosythesis from land veg module (ENTS)
+       REAL,INTENT(in) :: dum_respveg(:,:)                        ! vegetation respiration from land veg module (ENTS) (subject to calibration)
+       REAL,INTENT(in) :: dum_loc_P(:,:)                          ! Productivity as calculated for rokgem from ENTS inputs
+       REAL,INTENT(in) :: dum_force_flux_weather_a_land(:,:,:)    ! fluxes shared over land (atmosphere variables)
+       REAL,INTENT(in) :: dum_force_flux_weather_o_land(:,:,:)    ! fluxes shared over land (ocean variables)
+       REAL,INTENT(in) :: dum_force_flux_weather_o_ocean(:,:,:)   ! fluxes into coastal positions in ocean (ocean variables)
 
            ! re-open netcdf file
            call sub_save_netcdf(output_years_2d(output_counter_2d))
@@ -79,15 +79,15 @@ CONTAINS
 
        ! dummy variables
        !(NOTE: output for temp, runoff and productivity is that used in rokgem calculations, so may have been calibrated if option set)
-       REAL,INTENT(in)                 :: dum_temp(n_i,n_j)                                        ! temperature (originally from atmosphere composition interface array - subject to calibration)
-       REAL,INTENT(in)                 :: dum_CO2(n_i,n_j)                                         ! CO2 (from atmosphere composition interface array)
-       REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                                      ! runoff (originally from EMBM - subject to calibration)
-       REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                                       ! photosythesis from land veg module (ENTS)
-       REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)                                     ! vegetation respiration from land veg module (ENTS) (subject to calibration)
-       REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
-       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm_all,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
-       REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
+       REAL,INTENT(in) :: dum_temp(:,:)                           ! temperature (originally from atmosphere composition interface array - subject to calibration)
+       REAL,INTENT(in) :: dum_CO2(:,:)                            ! CO2 (from atmosphere composition interface array)
+       REAL,INTENT(in) :: dum_runoff(:,:)                         ! runoff (originally from EMBM - subject to calibration)
+       REAL,INTENT(in) :: dum_photo(:,:)                          ! photosythesis from land veg module (ENTS)
+       REAL,INTENT(in) :: dum_respveg(:,:)                        ! vegetation respiration from land veg module (ENTS) (subject to calibration)
+       REAL,INTENT(in) :: dum_loc_P(:,:)                          ! Productivity as calculated for rokgem from ENTS inputs
+       REAL,INTENT(in) :: dum_force_flux_weather_a_land(:,:,:)    ! fluxes shared over land (atmosphere variables)
+       REAL,INTENT(in) :: dum_force_flux_weather_o_land(:,:,:)    ! fluxes shared over land (ocean variables)
+       REAL,INTENT(in) :: dum_force_flux_weather_o_ocean(:,:,:)   ! fluxes into coastal positions in ocean (ocean variables)
 
     !-----------------------------------------------------------------------
     !       DEFINE LOCAL VARIABLES

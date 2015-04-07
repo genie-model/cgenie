@@ -228,16 +228,18 @@ CONTAINS
   END SUBROUTINE rokgem_wrapper
 
   SUBROUTINE cpl_flux_rokatm_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL cpl_flux_rokatm(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_rok, ilat1_rok, ilon1_atm, ilat1_atm, &
+         & ilon1_rok, ilat1_rok, ilon1_atm, ilat1_atm, &
          & genie_sfxatm1, genie_sfxsumatm, .FALSE.)
   END SUBROUTINE cpl_flux_rokatm_wrapper
 
   SUBROUTINE cpl_flux_rokatm_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL cpl_flux_rokatm(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_rok, ilat1_rok, ilon1_atm, ilat1_atm, &
+         & ilon1_rok, ilat1_rok, ilon1_atm, ilat1_atm, &
          & genie_sfxatm1, genie_sfxsumatm1_gem, .TRUE.)
   END SUBROUTINE cpl_flux_rokatm_gem_wrapper
 
@@ -248,6 +250,7 @@ CONTAINS
   END SUBROUTINE reinit_flux_rokatm_gem_wrapper
 
   SUBROUTINE cpl_flux_rokocn_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL cpl_flux_rokocn(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & intrac_ocn_max, ilon1_rok, ilat1_rok, ilon1_ocn, ilat1_ocn, &
@@ -255,6 +258,7 @@ CONTAINS
   END SUBROUTINE cpl_flux_rokocn_wrapper
 
   SUBROUTINE cpl_flux_rokocn_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL cpl_flux_rokocn(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & intrac_ocn_max, ilon1_rok, ilat1_rok, ilon1_ocn, ilat1_ocn, &
@@ -433,7 +437,7 @@ CONTAINS
   SUBROUTINE cpl_comp_atmocn_wrapper
     USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmocn(intrac_atm_max, genie_sfcatm, genie_sfcatm1)
+    CALL cpl_comp_atmocn(genie_sfcatm, genie_sfcatm1)
   END SUBROUTINE cpl_comp_atmocn_wrapper
 
   SUBROUTINE cpl_comp_EMBM_wrapper
@@ -445,7 +449,7 @@ CONTAINS
   SUBROUTINE cpl_comp_atmlnd_wrapper
     USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmlnd(intrac_atm_max, genie_sfcatm, genie_sfcatm_lnd)
+    CALL cpl_comp_atmlnd(genie_sfcatm, genie_sfcatm_lnd)
   END SUBROUTINE cpl_comp_atmlnd_wrapper
 
   SUBROUTINE atchem_save_restart_wrapper

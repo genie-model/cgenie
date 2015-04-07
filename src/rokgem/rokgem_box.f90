@@ -49,7 +49,7 @@ CONTAINS
 
   SUBROUTINE sub_antarctica(dum_landmask,dum_ncells_antarctica,dum_nrows_antarctica)
 
-    INTEGER, INTENT(in)             :: dum_landmask(n_i,n_j)
+    INTEGER, INTENT(in)             :: dum_landmask(:,:)
     INTEGER, INTENT(inout)          :: dum_ncells_antarctica
     INTEGER, INTENT(inout)          :: dum_nrows_antarctica
 
@@ -103,12 +103,12 @@ CONTAINS
 
     IMPLICIT NONE
     INTEGER                         :: i, j, k, l, m, n, row, col, lon, lat
-    REAL, INTENT(in)                :: dum_drainage(n_i+2,n_j+2)                        ! this is the *.k1 file
-    INTEGER, INTENT(inout)          :: dum_drainto_1(n_i,n_j,2)
+    REAL, INTENT(in)                :: dum_drainage(:,:)                        ! this is the *.k1 file
+    INTEGER, INTENT(inout)          :: dum_drainto_1(:,:,:)
  ! array with coastal (lat,lon)s for routing fluxes (simple)
-       REAL, INTENT(inout)             :: dum_drainto_2(runoff_detail_i,runoff_detail_j)
+    REAL, INTENT(inout)             :: dum_drainto_2(:,:)
 ! detailed river routing file (lat,lon,amount)s - several for each cell
-    REAL, INTENT(inout)             :: dum_coast(n_i,n_j)
+    REAL, INTENT(inout)             :: dum_coast(:,:)
 
     ! *******
     ! ROUTING
@@ -318,10 +318,10 @@ CONTAINS
   SUBROUTINE sub_coastal_output(dum_input_array,dum_drainto_1,dum_drainto_2,dum_output_coast)
 
     ! Dummy variables
-    REAL, INTENT(in)                :: dum_input_array(n_i,n_j)                         !array with fluxes
-    INTEGER, INTENT(in)             :: dum_drainto_1(n_i,n_j,2)          !array with coastal (lat,lon)s for routing fluxes (simple)
-       REAL, INTENT(in)                :: dum_drainto_2(runoff_detail_i,runoff_detail_j)   !detailed river routing file (lat,lon,amount)s - several for each cell
-    REAL, INTENT(inout)             :: dum_output_coast(n_i,n_j)         !array with fluxes in coastal ocean
+    REAL, INTENT(in)                :: dum_input_array(:,:)                         !array with fluxes
+    INTEGER, INTENT(in)             :: dum_drainto_1(:,:,:)          !array with coastal (lat,lon)s for routing fluxes (simple)
+    REAL, INTENT(in)                :: dum_drainto_2(:,:)   !detailed river routing file (lat,lon,amount)s - several for each cell
+    REAL, INTENT(inout)             :: dum_output_coast(:,:)         !array with fluxes in coastal ocean
 
     ! Local counting variables
     INTEGER                         :: i, j, k, row, col, lon, lat
@@ -441,13 +441,13 @@ CONTAINS
     ! code originally from biogem.main.f90 (cbms_goldstein.v8.0.1) by AJR:
 
     ! dummy variables
-    REAL,INTENT(in)::dum_dts
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm_all,n_i,n_j)                   ! atmosphere composition interface array
-    REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                            ! run-off array (taken from EMBM)
-    REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                            ! photosythesis from land veg module (ENTS)
-    REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)            ! vegetation respiration from land veg module (ENTS)
-       REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm_all,n_i,n_j)                             ! atmosphere flux interface array
+    REAL,INTENT(in)    :: dum_dts
+    REAL,INTENT(in)    :: dum_sfcatm1(:,:,:)   ! atmosphere composition interface array
+    REAL,INTENT(in)    :: dum_runoff(:,:)      ! run-off array (taken from EMBM)
+    REAL,INTENT(in)    :: dum_photo(:,:)       ! photosythesis from land veg module (ENTS)
+    REAL,INTENT(in)    :: dum_respveg(:,:)     ! vegetation respiration from land veg module (ENTS)
+    REAL,INTENT(inout) :: dum_sfxrok(:,:,:)    ! ocean flux interface array (same no of tracers as used in biogem ocean)
+    REAL,INTENT(inout) :: dum_sfxatm1(:,:,:)   ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -476,13 +476,13 @@ CONTAINS
     REAL                            :: n, m
 
     REAL                            :: loc_force_flux_weather_a(n_atm_all)            ! total fluxes (atmosphere variables)
-       REAL                            :: loc_force_flux_weather_a_percell(n_ocn)                    ! flux per grid cell for even distribution (atmosphere variables)
-       REAL                            :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)                ! fluxes out of atmosphere (atmosphere variables)
+    REAL                            :: loc_force_flux_weather_a_percell(n_ocn)                    ! flux per grid cell for even distribution (atmosphere variables)
+    REAL                            :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)                ! fluxes out of atmosphere (atmosphere variables)
 
     REAL                            :: loc_force_flux_weather_o(n_ocn)                    ! total fluxes (ocean variables)
-       REAL                            :: loc_force_flux_weather_o_percell(n_ocn)                    ! flux per grid cell for even distribution (ocean variables)
+    REAL                            :: loc_force_flux_weather_o_percell(n_ocn)                    ! flux per grid cell for even distribution (ocean variables)
     REAL                            :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j)    ! fluxes shared over land (ocean variables)
-       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
+    REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 
     real::loc_epsilon
     REAL                            :: loc_standard
@@ -1043,9 +1043,9 @@ CONTAINS
     IMPLICIT NONE
 
     ! dummy variables
-    REAL, intent(in)                :: dum_runoff(n_i,n_j)
-    REAL, intent(in)                :: dum_lithology(par_nliths,n_i,n_j)
-    REAL, intent(inout)             :: dum_calcium_flux(par_nliths,n_i,n_j)            ! F_HCO_3- is sum of this
+    REAL, intent(in)                :: dum_runoff(:,:)
+    REAL, intent(in)                :: dum_lithology(:,:,:)
+    REAL, intent(inout)             :: dum_calcium_flux(:,:,:)            ! F_HCO_3- is sum of this
 
     ! local variables
     REAL                            :: loc_runoff(n_i,n_j)
@@ -1206,9 +1206,9 @@ CONTAINS
     IMPLICIT NONE
 
     ! dummy variables
-    REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)
-    REAL, INTENT(in)                :: dum_lithology(par_nliths,n_i,n_j)
-    REAL, INTENT(inout)             :: dum_calcium_flux(par_nliths,n_i,n_j)            ! F_HCO_3- is sum of this
+    REAL,INTENT(in)                 :: dum_runoff(:,:)
+    REAL, INTENT(in)                :: dum_lithology(:,:,:)
+    REAL, INTENT(inout)             :: dum_calcium_flux(:,:,:)            ! F_HCO_3- is sum of this
 
     ! local variables
     REAL                            :: loc_runoff(n_i,n_j)
@@ -1328,9 +1328,9 @@ CONTAINS
 
   SUBROUTINE sum_calcium_flux_CaSi(dum_calcium_flux,dum_total_calcium_flux_Ca,dum_total_calcium_flux_Si)
 
-    REAL, INTENT(in)                :: dum_calcium_flux(par_nliths,n_i,n_j)            ! F_HCO_3- is sum of this
-    REAL, INTENT(inout)             :: dum_total_calcium_flux_Ca(n_i,n_j)              ! F_HCO_3- for Ca rocks
-    REAL, INTENT(inout)             :: dum_total_calcium_flux_Si(n_i,n_j)              ! F_HCO_3- for Si rocks
+    REAL, INTENT(in)                :: dum_calcium_flux(:,:,:)            ! F_HCO_3- is sum of this
+    REAL, INTENT(inout)             :: dum_total_calcium_flux_Ca(:,:)              ! F_HCO_3- for Ca rocks
+    REAL, INTENT(inout)             :: dum_total_calcium_flux_Si(:,:)              ! F_HCO_3- for Si rocks
 
     INTEGER                         :: i, j, k
 
@@ -1402,12 +1402,12 @@ CONTAINS
     ! Based on SUBROUTINE sub_glob_avg_weath - see above
 
     ! dummy variables
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm_all,n_i,n_j)      ! atmosphere composition interface array
-    REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)
-    REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                ! photosythesis from land veg module (ENTS)
-    REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)              ! vegetation respiration from land veg module (ENTS)
-       REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm_all,n_i,n_j)      ! atmosphere flux interface array
+    REAL,INTENT(in)    :: dum_sfcatm1(:,:,:)   ! atmosphere composition interface array
+    REAL,INTENT(in)    :: dum_runoff(:,:)
+    REAL,INTENT(in)    :: dum_photo(:,:)       ! photosythesis from land veg module (ENTS)
+    REAL,INTENT(in)    :: dum_respveg(:,:)     ! vegetation respiration from land veg module (ENTS)
+    REAL,INTENT(inout) :: dum_sfxrok(:,:,:)    ! ocean flux interface array (same no of tracers as used in biogem ocean)
+    REAL,INTENT(inout) :: dum_sfxatm1(:,:,:)   ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -1425,7 +1425,7 @@ CONTAINS
 
     REAL                            :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j) ! fluxes shared over land (atmosphere variables)
     REAL                            :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j) ! fluxes shared over land (ocean variables)
-       REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
+    REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 
     CHARACTER(LEN=7),DIMENSION(n_ocn)       :: globtracer_names
 
