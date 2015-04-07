@@ -63,9 +63,9 @@ CONTAINS
 
     ALLOCATE(ocn(n_ocn,n_i,n_j,n_k),STAT=alloc_error)                   ; ocn = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
+    ALLOCATE(ocnatm_airsea_pv(n_atm_all,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
+    ALLOCATE(ocnatm_airsea_solconst(n_atm_all,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -93,9 +93,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_geochem(n_diag_geochem,n_i,n_j,n_k),STAT=alloc_error) ; diag_geochem = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(diag_airsea(n_atm,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
+    ALLOCATE(diag_airsea(n_atm_all,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(diag_forcing(n_atm,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
+    ALLOCATE(diag_forcing(n_atm_all,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_misc_2D(n_diag_misc_2D,n_i,n_j),STAT=alloc_error)     ; diag_misc_2D = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -120,9 +120,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_carbisor_timeslice(n_carbisor,n_i,n_j,n_k),STAT=alloc_error)         ; int_carbisor_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_sfcatm1_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_sfcatm1_timeslice = 0.0
+    ALLOCATE(int_sfcatm1_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)                   ; int_sfcatm1_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
+    ALLOCATE(int_focnatm_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_sfcsed1_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -148,25 +148,25 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j),STAT=alloc_error)              ; int_diag_weather_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
+    ALLOCATE(int_diag_airsea_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_restore_ocn_k1 = 0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_restore_atm = 0.0
+    ALLOCATE(force_restore_atm(n_atm_all,n_i,n_j),STAT=alloc_error)    ; force_restore_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_restore_atm_I = 0.0
+    ALLOCATE(force_restore_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)  ; force_restore_atm_I = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_restore_atm_II = 0.0
+    ALLOCATE(force_restore_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error) ; force_restore_atm_II = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_flux_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_flux_ocn_k1 = 0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_flux_atm = 0.0
+    ALLOCATE(force_flux_atm(n_atm_all,n_i,n_j),STAT=alloc_error)    ; force_flux_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_flux_atm_I = 0.0
+    ALLOCATE(force_flux_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)  ; force_flux_atm_I = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_flux_atm_II = 0.0
+    ALLOCATE(force_flux_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error) ; force_flux_atm_II = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_flux_sed(n_sed,n_i,n_j),STAT=alloc_error)    ; force_flux_sed = 0.0
@@ -554,15 +554,15 @@ CONTAINS
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_focn                 ! local ocean tracer flux array
     REAL,DIMENSION(n_sed,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
-    REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
-    REAL,DIMENSION(n_atm)::loc_datm_restore                        !
+    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
+    REAL,DIMENSION(n_atm_all)::loc_datm_restore                        !
     REAL,DIMENSION(n_ocn)::loc_force_flux_dust                     !
     real::loc_ocn_tot_M,loc_ocn_rtot_M                             ! ocean mass and reciprocal
     real::loc_ocn_tot_V,loc_ocn_rtot_V                             ! ocean volume  and reciprocal
     real::loc_fS,loc_fT                                            !
     REAL,DIMENSION(n_ocn)::loc_force_restore_ocn_tmod              ! relaxation modifier
-    REAL,DIMENSION(n_atm)::loc_force_restore_atm_tmod              ! relaxation modifier
-    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency), units (mol yr-1)
+    REAL,DIMENSION(n_atm_all)::loc_force_restore_atm_tmod              ! relaxation modifier
+    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency), units (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_frokocn                   ! local rok->ocean change (ocn tracer currency), units (mol)
@@ -655,7 +655,7 @@ CONTAINS
        ! recalculate time-varying restoring and flux forcings of the system & fractional relaxation
        ! NOTE: updating of restoring time-series position calculated seperately (sub: biogem_forcing)
        ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
-       DO l=3,n_l_atm
+       DO l=3,n_atm
           ia = conv_iselected_ia(l)
           IF (force_restore_atm_select(ia)) THEN
              loc_force_restore_atm_tmod(ia) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ia))
@@ -1094,7 +1094,7 @@ CONTAINS
                 ! NOTE: do not force restore if time is outside the specified restoring interval
                 !       (indicated by the time indices being identical)
                 ! NOTE: do not calculate a restoring flux if there is also a flux forcing [special case]
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    IF (force_restore_atm_select(ia) .AND. (.NOT. force_flux_atm_select(ia))) THEN
                       IF (force_restore_atm_sig_i(ia,1) /= force_restore_atm_sig_i(ia,2)) THEN
@@ -1122,7 +1122,7 @@ CONTAINS
                 ! NOTE: assume one-to-one mapping between atm and ocn tracers
                 !       => array need not be looped through to fine io corresponding to any chosen ia
                 ! NOTE: if no correspondence, the NULL index of the ocean tracer array provides the dustbin
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    IF (atm_type(ia) == 1) THEN
                       if (ocnatm_airsea_eqm(ia)) then
@@ -1191,7 +1191,7 @@ CONTAINS
                 ! calculate value of applied flux forcings
                 ! NOTE: <force_flux*> in units of (mol yr-1)
                 ! ATMOSPHERIC TRACERS (applied at the ocean-atmosphere interface)
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    IF (force_flux_atm_select(ia)) THEN
                       locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ia,i,j)
@@ -1577,7 +1577,7 @@ CONTAINS
                 !                       => it is not used in the updating of mass balance anywhere
                 locij_focnatm(:,i,j) = fun_calc_ocnatm_flux(i,j,dum_sfcatm1(:,i,j),loc_dtyr)
                 ! set local flux arrays for the updating of ocean and atmosphere reservoirs
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + locij_focnatm(ia,i,j)
                    loc_tot_i = conv_atm_ocn_i(0,ia)
@@ -1694,7 +1694,7 @@ CONTAINS
                 ! NOTE: convert units from (mol yr-1) to (mol m-2 s-1)
                 ! NOTE: update external interface array with TOTAL flux to atmosphere
                 !       (i.e., due to both air-sea exchange and any forcing of the atmosphere)
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    dum_sfxatm1(ia,i,j) = phys_ocnatm(ipoa_rA,i,j)*conv_s_yr*locij_fatm(ia,i,j)
                 end do
@@ -2049,7 +2049,7 @@ CONTAINS
     IF (ctrl_debug_lvl1) print*, '*** UPDATE FORCING TIME SERIES DATA ***'
     ! recalculate time-varying restoring and flux forcings of the system & fractional relaxation
     ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
-    DO l=3,n_l_atm
+    DO l=3,n_atm
        ia = conv_iselected_ia(l)
        IF (force_restore_atm_select(ia)) THEN
           CALL sub_update_force_restore_atm(loc_t,ia)
@@ -2385,7 +2385,7 @@ CONTAINS
     real::loc_t,loc_dts,loc_dtyr                                   !
     real::loc_yr_save                                              !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi,loc_opsia,loc_opsip !
-    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
+    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
@@ -2427,7 +2427,7 @@ CONTAINS
                       IF (n_k >= loc_k1) THEN
                          ! ocn->atm
                          ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                         DO l=3,n_l_atm
+                         DO l=3,n_atm
                             ia = conv_iselected_ia(l)
                             locij_focnatm(ia,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ia,i,j)
                          end do
@@ -2672,7 +2672,7 @@ CONTAINS
     real::loc_yr,loc_yr_save                                       !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi                 !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsia,loc_opsip               !
-    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
+    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_ocn_ben                   ! local benthic ocean composition
@@ -2752,7 +2752,7 @@ CONTAINS
                    IF (n_k >= loc_k1) THEN
                       ! ocn->atm
                       ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                      DO l=3,n_l_atm
+                      DO l=3,n_atm
                          ia = conv_iselected_ia(l)
                          locij_focnatm(ia,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ia,i,j)
                       end do
@@ -2807,7 +2807,7 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_ocnatm) THEN
-                DO l=1,n_l_atm
+                DO l=1,n_atm
                    ia = conv_iselected_ia(l)
                    int_ocnatm_sig(ia) = int_ocnatm_sig(ia) + &
                         & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))*loc_ocnatm_rtot_A
@@ -2821,7 +2821,7 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_focnatm) THEN
-                DO l=3,n_l_atm
+                DO l=3,n_atm
                    ia = conv_iselected_ia(l)
                    int_focnatm_sig(ia) = int_focnatm_sig(ia) + &
                         & loc_dtyr*SUM(locij_focnatm(ia,:,:))
@@ -3002,11 +3002,11 @@ CONTAINS
                       int_diag_weather_sig(io) = int_diag_weather_sig(io) + SUM(dum_sfxsumrok1(io,:,:))
                    end if
                 END DO
-                DO l=1,n_l_atm
+                DO l=1,n_atm
                    ia = conv_iselected_ia(l)
                    int_diag_airsea_sig(ia) = int_diag_airsea_sig(ia) + loc_dtyr*SUM(diag_airsea(ia,:,:))
                 END DO
-                DO l=1,n_l_atm
+                DO l=1,n_atm
                    ia = conv_iselected_ia(l)
                    int_diag_forcing_sig(ia) = int_diag_forcing_sig(ia) + loc_dtyr*SUM(diag_forcing(ia,:,:))
                 END DO

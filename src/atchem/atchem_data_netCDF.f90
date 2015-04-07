@@ -75,7 +75,7 @@ CONTAINS
     loc_it_2(1) = loc_id_lonm
     loc_it_2(2) = loc_id_latm
     ! -------------------------------------------------------- ! define (2D) tracer variables
-    DO l=1,n_l_atm
+    DO l=1,n_atm
        ia = conv_iselected_ia(l)
        call sub_defvar('atm_'//trim(string_atm(ia)),loc_iou,2,loc_it_2,loc_c0,loc_c0,' ','F', &
             & string_longname_atm(ia),'Atmosphere tracer - '//trim(string_atm(ia)),' ')
@@ -95,7 +95,7 @@ CONTAINS
     ! -------------------------------------------------------- ! write (2D) tracer variables
     loc_ij_mask(:,:) = 1.0
     loc_ij(:,:)= 0.0
-    DO l=1,n_l_atm
+    DO l=1,n_atm
        ia = conv_iselected_ia(l)
        loc_ij(:,:) = atm(ia,:,:)
        call sub_putvar2d('atm_'//trim(string_atm(ia)),loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_ij_mask(:,:))

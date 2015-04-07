@@ -34,7 +34,7 @@ CONTAINS
        REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                                       ! photosythesis from land veg module (ENTS)
        REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)                                     ! vegetation respiration from land veg module (ENTS) (subject to calibration)
        REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
-       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
+       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm_all,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
 
@@ -85,7 +85,7 @@ CONTAINS
        REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                                       ! photosythesis from land veg module (ENTS)
        REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)                                     ! vegetation respiration from land veg module (ENTS) (subject to calibration)
        REAL,INTENT(in)                 :: dum_loc_P(n_i,n_j)                                       ! Productivity as calculated for rokgem from ENTS inputs
-       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
+       REAL,INTENT(in)                 :: dum_force_flux_weather_a_land(n_atm_all,n_i,n_j)             ! fluxes shared over land (atmosphere variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_land(n_ocn,n_i,n_j)             ! fluxes shared over land (ocean variables)
        REAL,INTENT(in)                 :: dum_force_flux_weather_o_ocean(n_ocn,n_i,n_j)            ! fluxes into coastal positions in ocean (ocean variables)
 

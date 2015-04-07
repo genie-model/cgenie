@@ -363,7 +363,7 @@ CONTAINS
     USE rokgem_box
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts                      ! time-step
-    REAL, INTENT(IN) :: dum_sfcatm1(n_atm,n_i,n_j)   ! atmosphere composition interface array
+    REAL, INTENT(IN) :: dum_sfcatm1(n_atm_all,n_i,n_j)   ! atmosphere composition interface array
     REAL, INTENT(IN) :: dum_runoff(n_i,n_j)          ! run-off to be read in from exernal module (EMBM, or ENTS)
     REAL, INTENT(IN) :: dum_photo(n_i,n_j)           ! photosythesis from land veg module (ENTS)
     REAL, INTENT(IN) :: dum_respveg(n_i,n_j)         ! vegetation respiration from land veg module (ENTS)
@@ -371,7 +371,7 @@ CONTAINS
     ! for same grid as RokGeM at the moment
     REAL, INTENT(INOUT) :: dum_sfxrok(n_ocn,n_i,n_j)   ! ocean flux interface array
     !  (same no of tracers as used in biogem ocean)
-    REAL, INTENT(INOUT) :: dum_sfxatm1(n_atm,n_i,n_j ) ! atmosphere flux interface array
+    REAL, INTENT(INOUT) :: dum_sfxatm1(n_atm_all,n_i,n_j ) ! atmosphere flux interface array
 
     ! increment timestep counter
     tstep_count = tstep_count + 1

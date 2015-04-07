@@ -1162,7 +1162,7 @@ CONTAINS
     !       save ocean-atmosphere interface tracer data field
     !-----------------------------------------------------------------------
     If (ctrl_data_save_slice_ocnatm) then
-       DO l=1,n_l_atm
+       DO l=1,n_atm
           ia = conv_iselected_ia(l)
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
@@ -1911,7 +1911,7 @@ CONTAINS
     If (ctrl_data_save_slice_carb) then
        loc_mask = phys_ocnatm(ipoa_mask_ocn,:,:)
        loc_ij(:,:) = 0.0
-       DO l=3,n_l_atm
+       DO l=3,n_atm
           ia = conv_iselected_ia(l)
           SELECT CASE (atm_type(ia))
           CASE (1)
@@ -2734,7 +2734,7 @@ CONTAINS
     ! NOTE: write data both as the total inventory, and as the equivalent
     !       mean partial pressure simple conversion factor from atm to mol is used
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO l=3,n_l_atm
+       DO l=3,n_atm
           ia = conv_iselected_ia(l)
           SELECT CASE (atm_type(ia))
           CASE (1)
@@ -2823,7 +2823,7 @@ CONTAINS
     ! NOTE: write data both as the total flux, and as the equivalent mean
     !       flux density
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO l=3,n_l_atm
+       DO l=3,n_atm
           ia = conv_iselected_ia(l)
           SELECT CASE (atm_type(ia))
           CASE (1)

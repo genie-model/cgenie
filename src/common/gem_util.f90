@@ -1287,7 +1287,7 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for ocn -> atm
     do io=1,n_ocn
        loc_tot_i = 0
-       do ia=1,n_atm
+       do ia=1,n_atm_all
           if (abs(conv_ocn_atm(ia,io)) > const_real_nullsmall) then
              loc_tot_i = loc_tot_i + 1
              conv_ocn_atm_i(loc_tot_i,io) = ia
@@ -1296,7 +1296,7 @@ CONTAINS
        conv_ocn_atm_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for atm -> ocn
-    do ia=1,n_atm
+    do ia=1,n_atm_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_atm_ocn(io,ia)) > const_real_nullsmall) then
@@ -1677,9 +1677,9 @@ CONTAINS
        end if
     END DO
     ! set number of active tracers and allocate tracer index conversion array size
-    n_l_atm = l
-    ALLOCATE(conv_iselected_ia(n_l_atm),STAT=error)
-    ALLOCATE(l2ia(n_l_atm),STAT=error)
+    n_atm = l
+    ALLOCATE(conv_iselected_ia(n_atm),STAT=error)
+    ALLOCATE(l2ia(n_atm),STAT=error)
     ! re-set filepipe
     REWIND(unit=in)
     ! goto start-of-file tag
@@ -1721,7 +1721,7 @@ CONTAINS
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    do ia=1,n_atm
+    do ia=1,n_atm_all
        IF (atm_select(ia)) THEN
           if (.not. atm_select(atm_dep(ia))) then
              CALL sub_report_error( &

@@ -43,7 +43,7 @@ CONTAINS
     if (ctrl_debug_init > 0) then
        ! --- TRACER INITIALIZATION ----------------------------------------------------------------------------------------------- !
        print*,'--- TRACER INITIALIZATION --------------------------'
-       DO l=1,n_l_atm
+       DO l=1,n_atm
           ia = conv_iselected_ia(l)
           print*,'atm tracer initial value: ',trim(string_atm(ia)),' = ',atm_init(ia)
        end do
@@ -96,7 +96,7 @@ CONTAINS
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_atm                                       ! number of selected tracers in the re-start file
-    integer,DIMENSION(n_atm)::loc_conv_iselected_ia            ! number of selected atmospheric tracers in restart
+    integer,DIMENSION(n_atm_all)::loc_conv_iselected_ia            ! number of selected atmospheric tracers in restart
     real,dimension(n_i,n_j)::loc_atm                           !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
@@ -146,7 +146,7 @@ CONTAINS
           ! -------------------------------------------------------- ! load and apply only tracers that are selected
           IF (ctrl_debug_init == 1) print*,' * Loading restart tracers: '
           DO iv=1,loc_nvars
-             DO l=1,n_l_atm
+             DO l=1,n_atm
                 ia = conv_iselected_ia(l)
                 if ('atm_'//trim(string_atm(ia)) == trim(loc_varname(iv))) then
                    IF (ctrl_debug_init == 1) print*,'   ',trim(loc_varname(iv))
@@ -235,7 +235,7 @@ CONTAINS
     ! NOTE: need to seed ias_T as temperature is required in order to convert between mole (total) and partial pressure
     DO i=1,n_i
        DO j=1,n_j
-          DO ia=1,n_atm
+          DO ia=1,n_atm_all
              IF (atm_select(ia)) THEN
                 SELECT CASE (atm_type(ia))
                 CASE (0)

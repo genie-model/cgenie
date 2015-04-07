@@ -29,7 +29,7 @@ SUBROUTINE initialise_gem()
   !  INITIALIZE ARRAYS
   ! ---------------------------------------------------------- !
   ! NOTE: check for problems allocating array space
-  !- --------------------------------------------------------- ! 
+  !- --------------------------------------------------------- !
   ALLOCATE(conv_ls_lo(n_l_ocn,n_l_sed),STAT=alloc_error)
   ALLOCATE(conv_lD_lP(n_l_sed,n_l_ocn),STAT=alloc_error)
   ALLOCATE(conv_lP_lD(n_l_ocn,n_l_sed),STAT=alloc_error)
@@ -46,12 +46,12 @@ SUBROUTINE initialise_gem()
   ALLOCATE(conv_ls_lo_i_N(0:n_l_ocn,0:n_l_sed),STAT=alloc_error)
   ALLOCATE(conv_ls_lo_i_S(0:n_l_ocn,0:n_l_sed),STAT=alloc_error)
   ALLOCATE(conv_ls_lo_i_meth(0:n_l_ocn,0:n_l_sed),STAT=alloc_error)
-  !- --------------------------------------------------------- ! 
+  !- --------------------------------------------------------- !
 
   if (ctrl_debug_init > 0) then
      print*,'--- TRACER SELECTION ---'
      print*,'Selected atmosphere tracers:                        : '
-     do ia=1,n_atm
+     do ia=1,n_atm_all
         if (atm_select(ia)) print*,ia,' = ',trim(string_longname_atm(ia))
      end do
      print*,'Selected ocean tracers:                             : '

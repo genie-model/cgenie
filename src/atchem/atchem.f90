@@ -33,13 +33,13 @@ CONTAINS
     n_j = dim_GENIENY
     n_phys_atm = 15
 
-    ALLOCATE(atm(n_atm,n_i,n_j),STAT=alloc_error)               ; atm = 0.0
+    ALLOCATE(atm(n_atm_all,n_i,n_j),STAT=alloc_error)               ; atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(fatm(n_atm,n_i,n_j),STAT=alloc_error)              ; fatm = 0.0
+    ALLOCATE(fatm(n_atm_all,n_i,n_j),STAT=alloc_error)              ; fatm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(phys_atm(n_phys_atm,n_i,n_j),STAT=alloc_error)     ; phys_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(atm_slabbiosphere(n_atm,n_i,n_j),STAT=alloc_error) ; atm_slabbiosphere = 0.0
+    ALLOCATE(atm_slabbiosphere(n_atm_all,n_i,n_j),STAT=alloc_error) ; atm_slabbiosphere = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     CALL sub_load_goin_atchem()
@@ -69,10 +69,10 @@ CONTAINS
     integer::ia,l,i,j
     real::loc_dtyr
     REAL::loc_atm_tot_V
-    REAL,DIMENSION(n_atm)::loc_atm_tot
+    REAL,DIMENSION(n_atm_all)::loc_atm_tot
     REAL,DIMENSION(n_i,n_j)::loc_conv_atm_mol,loc_conv_mol_atm
-    REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                  ! local flux to atmosphere (mol)
-    REAL,DIMENSION(n_atm)::loc_fracdecay_atm                   ! local reduction factor for decaying atmospheric tracers
+    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_fatm                  ! local flux to atmosphere (mol)
+    REAL,DIMENSION(n_atm_all)::loc_fracdecay_atm                   ! local reduction factor for decaying atmospheric tracers
 
     ! *** INITIALIZE LOCAL VARIABLES ***
     loc_atm_tot = 0.0 ; loc_conv_atm_mol = 0.0 ; loc_conv_mol_atm = 0.0
@@ -95,7 +95,7 @@ CONTAINS
        block_jloop: DO j=1,n_j
 
           ! *** DECAY RADIOACTIVE TRACERS ***
-          DO l=3,n_l_atm
+          DO l=3,n_atm
              ia = conv_iselected_ia(l)
              ! radioactive decay of isotopes
              IF (ABS(const_lambda_atm(ia)) > const_real_nullsmall) THEN
@@ -137,7 +137,7 @@ CONTAINS
     ! update atmospheric composition
     ! NOTE: units of partial pressure (atm)
     ! NOTE: carry out at every (i.e, wet + dry) grid point
-    DO l=3,n_l_atm
+    DO l=3,n_atm
        ia = conv_iselected_ia(l)
        ! update atmospheric tracers
        atm(ia,:,:) = atm(ia,:,:) + loc_conv_mol_atm(:,:)*phys_atm(ipa_A,:,:)*fatm(ia,:,:) + loc_conv_mol_atm(:,:)*locij_fatm(ia,:,:)
@@ -185,9 +185,9 @@ CONTAINS
        loc_filename = TRIM(par_outdir_name) // TRIM(par_outfile_name)
        OPEN(UNIT=out,STATUS='replace',FILE=loc_filename,FORM='unformatted',ACTION='write')
        WRITE(unit=out)                                    &
-            & n_l_atm,                                    &
-            & (conv_iselected_ia(l),l=1,n_l_atm),         &
-            & (atm(conv_iselected_ia(l),:,:),l=1,n_l_atm)
+            & n_atm,                                    &
+            & (conv_iselected_ia(l),l=1,n_atm),         &
+            & (atm(conv_iselected_ia(l),:,:),l=1,n_atm)
        CLOSE(UNIT=out)
     END IF
   END SUBROUTINE atchem_save_rst

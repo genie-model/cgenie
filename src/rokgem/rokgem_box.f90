@@ -442,12 +442,12 @@ CONTAINS
 
     ! dummy variables
     REAL,INTENT(in)::dum_dts
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)                   ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm_all,n_i,n_j)                   ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                            ! run-off array (taken from EMBM)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                            ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)            ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)                             ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm_all,n_i,n_j)                             ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -475,9 +475,9 @@ CONTAINS
     REAL                            :: loc_weather_ratio_CaCO3
     REAL                            :: n, m
 
-    REAL                            :: loc_force_flux_weather_a(n_atm)            ! total fluxes (atmosphere variables)
+    REAL                            :: loc_force_flux_weather_a(n_atm_all)            ! total fluxes (atmosphere variables)
        REAL                            :: loc_force_flux_weather_a_percell(n_ocn)                    ! flux per grid cell for even distribution (atmosphere variables)
-       REAL                            :: loc_force_flux_weather_a_land(n_atm,n_i,n_j)                ! fluxes out of atmosphere (atmosphere variables)
+       REAL                            :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)                ! fluxes out of atmosphere (atmosphere variables)
 
     REAL                            :: loc_force_flux_weather_o(n_ocn)                    ! total fluxes (ocean variables)
        REAL                            :: loc_force_flux_weather_o_percell(n_ocn)                    ! flux per grid cell for even distribution (ocean variables)
@@ -918,7 +918,7 @@ CONTAINS
     ! ######################################################################################################################### !
 
     ! Spread out atmosphere variables' fluxes onto land
-    DO k=1,n_atm
+    DO k=1,n_atm_all
        IF(k.gt.2) THEN
           loc_force_flux_weather_a_percell(k) = loc_force_flux_weather_a(k)/nlandcells
           loc_force_flux_weather_a_land(k,:,:) = landmask(:,:) * loc_force_flux_weather_a_percell(k)
@@ -1402,12 +1402,12 @@ CONTAINS
     ! Based on SUBROUTINE sub_glob_avg_weath - see above
 
     ! dummy variables
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)      ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm_all,n_i,n_j)      ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)              ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)      ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm_all,n_i,n_j)      ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -1423,7 +1423,7 @@ CONTAINS
     REAL                            :: n
     REAL                            :: loc_standard
 
-    REAL                            :: loc_force_flux_weather_a_land(n_atm,n_i,n_j) ! fluxes shared over land (atmosphere variables)
+    REAL                            :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j) ! fluxes shared over land (atmosphere variables)
     REAL                            :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j) ! fluxes shared over land (ocean variables)
        REAL                            :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 

@@ -16,7 +16,7 @@ SUBROUTINE cpl_comp_gemglt(dum_genie_atm1, dum_genie_ocn)
   ! local variables
   integer::l,ia,io
   ! copy tracer array
-  DO l=1,n_l_atm
+  DO l=1,n_atm
      ia = conv_iselected_ia(l)
      atm(l,:,:) = dum_genie_atm1(ia,:,:)
   end do
@@ -46,7 +46,7 @@ SUBROUTINE cpl_comp_gltgem_d(dum_genie_datm1, dum_genie_docn)
   dum_genie_datm1 = 0.0
   dum_genie_docn = 0.0
   ! copy tracer anomaly arrays
-  DO l=1,n_l_atm
+  DO l=1,n_atm
      ia = conv_iselected_ia(l)
      dum_genie_datm1(ia,:,:) = datm(l,:,:)
   end do
@@ -77,7 +77,7 @@ SUBROUTINE cpl_comp_gltgem_dsum(dum_genie_datm1, dum_genie_docn)
   dum_genie_docn = 0.0
   ! copy tracer anomaly arrays
   ! NOTE: do not re-set integrated composition anomaly arrays yet ...
-  DO l=1,n_l_atm
+  DO l=1,n_atm
      ia = conv_iselected_ia(l)
      dum_genie_datm1(ia,:,:) = datm_sum(l,:,:)
   end do

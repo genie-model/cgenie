@@ -364,7 +364,7 @@ CONTAINS
        print*,'Report level #2 debug?                              : ',ctrl_debug_lvl2
        ! --- TRACER FORCING ------------------------------------------------------------------------------------------------------ !
        print*,'--- TRACER FORCING ---------------------------------'
-       DO l=1,n_l_atm
+       DO l=1,n_atm
           ia = conv_iselected_ia(l)
           print*,'atm tracer forcing time scale factor  : ',trim(string_atm(ia)),' = ',par_atm_force_scale_time(ia)
           print*,'atm tracer forcing value scale factor : ',trim(string_atm(ia)),' = ',par_atm_force_scale_val(ia)
@@ -1829,7 +1829,7 @@ CONTAINS
        end if
     end do
     ! ATMOSPHERE TRACERS
-    do ia=1,n_atm
+    do ia=1,n_atm_all
        IF (atm_select(ia)) THEN
           if (.not. atm_select(atm_dep(ia))) then
              loc_string = string_atm(atm_dep(ia))
@@ -2706,7 +2706,7 @@ CONTAINS
     real,DIMENSION(2)::loc_data_scale
     loc_ij = 0.0
     ! LOOP
-    DO l=3,n_l_atm
+    DO l=3,n_atm
        ia = conv_iselected_ia(l)
        IF (force_restore_atm_select(ia)) THEN
           force_restore_atm_sig_i(ia,:) = n_data_max
@@ -2925,7 +2925,7 @@ CONTAINS
     real,DIMENSION(2)::loc_data_scale
     loc_ij = 0.0
     ! LOOP
-    DO l=3,n_l_atm
+    DO l=3,n_atm
        ia = conv_iselected_ia(l)
        IF (force_flux_atm_select(ia)) THEN
           force_flux_atm_sig_i(ia,:) = n_data_max

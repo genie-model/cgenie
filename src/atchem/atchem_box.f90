@@ -23,7 +23,7 @@ CONTAINS
     ! dummy arguments
     INTEGER,INTENT(in)::dum_i,dum_j
     real,intent(in)::dum_dtyr
-    REAL,DIMENSION(n_atm),intent(inout)::dum_fatm              ! net flux to atmosphere (mol)
+    REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm              ! net flux to atmosphere (mol)
     ! local variables
     real::loc_Fatm,loc_Fterr                                   ! flux to atm, flux to terrestrial biosphere
     real::loc_Ratm,loc_Rterr                                   ! local isotopic variables
@@ -90,7 +90,7 @@ CONTAINS
     IMPLICIT NONE
     ! dummy arguments
     real,intent(in)::dum_dtyr
-    REAL,DIMENSION(n_atm),intent(inout)::dum_fatm              ! flux to atmosphere (mol)
+    REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm              ! flux to atmosphere (mol)
     ! local variables
     REAL::loc_flux_CH4,loc_flux_CH4_13C                        ! local CH4 flux
     real::loc_tot,loc_standard                                 ! local isotopic variables
@@ -137,7 +137,7 @@ CONTAINS
     IMPLICIT NONE
     ! dummy arguments
     real,intent(in)::dum_dtyr
-    REAL,DIMENSION(n_atm),intent(inout)::dum_fatm              ! flux to atmosphere (mol)
+    REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm              ! flux to atmosphere (mol)
 
     ! *** CALCULATE COSMOGENIC 14C FLUX ***
     dum_fatm(ias_pCO2_14C) = dum_fatm(ias_pCO2_14C) + dum_dtyr*(1.0/real(n_i*n_j))*par_atm_F14C
