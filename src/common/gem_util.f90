@@ -1629,12 +1629,51 @@ CONTAINS
     DO n = 1,loc_n_start
        READ(unit=in,fmt='(1X)')
     END DO
-    ! zero selected tracer counter
+    ! Count number of incuded ('active') tracers and set up indexes.
     l = 0
-    ! count number of incuded ('active') tracers
     DO n = 1,loc_n_elements
        IF (atm_select(n)) THEN
           l = l + 1
+          SELECT CASE (n)
+          CASE (ias_T)
+             ia_T = l
+          CASE (ias_q)
+             ia_q = l
+          CASE (ias_pCO2)
+             ia_pCO2 = l
+          CASE (ias_pCO2_13C)
+             ia_pCO2_13C = l
+          CASE (ias_pCO2_14C)
+             ia_pCO2_14C = l
+          CASE (ias_pO2)
+             ia_pO2 = l
+          CASE (ias_pO2_18O)
+             ia_pO2_18O = l
+          CASE (ias_pN2)
+             ia_pN2 = l
+          CASE (ias_pN2_15N)
+             ia_pN2_15N = l
+          CASE (ias_pCH4)
+             ia_pCH4 = l
+          CASE (ias_pCH4_13C)
+             ia_pCH4_13C = l
+          CASE (ias_pCH4_14C)
+             ia_pCH4_14C = l
+          CASE (ias_pSF6)
+             ia_pSF6 = l
+          CASE (ias_pN2O)
+             ia_pN2O = l
+          CASE (ias_pN2O_15N)
+             ia_pN2O_15N = l
+          CASE (ias_pH2S)
+             ia_pH2S = l
+          CASE (ias_pH2S_34S)
+             ia_pH2S_34S = l
+          CASE (ias_pCFC11)
+             ia_pCFC11 = l
+          CASE (ias_pCFC12)
+             ia_pCFC12 = l
+          END SELECT
        end if
     END DO
     ! set number of active tracers and allocate tracer index conversion array size

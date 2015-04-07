@@ -68,7 +68,9 @@ MODULE gem_cmn
   INTEGER,PARAMETER::n_carbalk                            = 13          ! number of alkalinty chemistry descriptors
   INTEGER,PARAMETER::n_carbisor                           = 08          ! number of carbonate isotopic ratio descriptors
   ! *** array index values ***
-  ! ocean tracer IDs
+
+  ! OCEAN TRACER INDEXES
+
   INTEGER,PARAMETER::io_T                                 = 01    !
   INTEGER,PARAMETER::io_S                                 = 02    !
   INTEGER,PARAMETER::io_DIC                               = 03    !
@@ -118,7 +120,7 @@ MODULE gem_cmn
   INTEGER,PARAMETER::io_Cd                                = 34    !
   INTEGER,PARAMETER::io_Cd_114Cd                          = 51    !
   INTEGER,PARAMETER::io_Ca                                = 35    !
-  INTEGER,PARAMETER::io_Ca_44Ca                           = 76    ! qsub -j y -o cgenie_output -V -S /bin/bash
+  INTEGER,PARAMETER::io_Ca_44Ca                           = 76    !
   INTEGER,PARAMETER::io_Mg                                = 50    !
   INTEGER,PARAMETER::io_Li                                = 53    !
   INTEGER,PARAMETER::io_Li_7Li                            = 54    !
@@ -164,7 +166,10 @@ MODULE gem_cmn
   INTEGER,PARAMETER::io_CFe_56Fe                          = 91  !
   INTEGER,PARAMETER::io_I                                 = 92  !
   INTEGER,PARAMETER::io_IO3                               = 93  !
-  ! atmospheric tracer indices
+
+  ! ATMOSPHERIC TRACER INDEXES
+
+  ! Constant indexes into atm_select
   INTEGER,PARAMETER::ias_T                                = 01    ! temperature
   INTEGER,PARAMETER::ias_q                                = 02    ! specific humidity
   INTEGER,PARAMETER::ias_pCO2                             = 03    ! pCO2
@@ -184,7 +189,30 @@ MODULE gem_cmn
   INTEGER,PARAMETER::ias_pH2S_34S                         = 17    ! pH2S
   INTEGER,PARAMETER::ias_pCFC11                           = 18    ! halo-carbon
   INTEGER,PARAMETER::ias_pCFC12                           = 19    ! halo-carbon
-  ! sediment tracer indicesqsub -j y -o cgenie_output -V -S /bin/bash
+
+  ! Indexes into dynamic arrays (-1 for unused tracers)
+  INTEGER :: ia_T = -1
+  INTEGER :: ia_q = -1
+  INTEGER :: ia_pCO2 = -1
+  INTEGER :: ia_pCO2_13C = -1
+  INTEGER :: ia_pCO2_14C = -1
+  INTEGER :: ia_pO2 = -1
+  INTEGER :: ia_pO2_18O = -1
+  INTEGER :: ia_pN2 = -1
+  INTEGER :: ia_pN2_15N = -1
+  INTEGER :: ia_pCH4 = -1
+  INTEGER :: ia_pCH4_13C = -1
+  INTEGER :: ia_pCH4_14C = -1
+  INTEGER :: ia_pSF6 = -1
+  INTEGER :: ia_pN2O = -1
+  INTEGER :: ia_pN2O_15N = -1
+  INTEGER :: ia_pH2S = -1
+  INTEGER :: ia_pH2S_34S = -1
+  INTEGER :: ia_pCFC11 = -1
+  INTEGER :: ia_pCFC12 = -1
+
+  ! SEDIMENT TRACER INDEXES
+
   INTEGER,PARAMETER::is_NULL1                             = 01    !
   INTEGER,PARAMETER::is_NULL2                             = 02    !
   INTEGER,PARAMETER::is_POC                               = 03    !
@@ -264,6 +292,7 @@ MODULE gem_cmn
   INTEGER,PARAMETER::is_foram_b_13C                       = 40    !
   INTEGER,PARAMETER::is_foram_b_14C                       = 41    !
   INTEGER,PARAMETER::is_foram_b_18O                       = 42    !
+
   ! (carbonate) chemistry descriptors array indices
   INTEGER,PARAMETER::ic_H                                 = 01    ! H+ concentration
   INTEGER,PARAMETER::ic_fug_CO2                           = 02    ! CO2 fugacity
