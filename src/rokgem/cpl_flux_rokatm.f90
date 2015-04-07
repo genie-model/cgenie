@@ -26,7 +26,6 @@
   real,dimension(dum_n_maxatm,dum_n_maxi,dum_n_maxj),intent(out)::dum_sfxsumatm
   logical,intent(in)::dum_gem
   ! local variables
-  integer,parameter::ia_PCO2=03
   integer::loc_scalei,loc_scalej
   real::loc_scale
   ! initialize local variables!

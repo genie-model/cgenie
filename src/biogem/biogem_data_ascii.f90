@@ -85,8 +85,8 @@ CONTAINS
                & )
           SELECT CASE (atm_type(ia))
           CASE (0)
-             If (ia == ia_T) loc_string = '% time (yr) / surface air temperature (degrees C)'
-             If (ia == ia_q) loc_string = '% time (yr) / surface humidity (???)'
+             If (ia == ias_T) loc_string = '% time (yr) / surface air temperature (degrees C)'
+             If (ia == ias_q) loc_string = '% time (yr) / surface humidity (???)'
           CASE (1)
              loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' (mol) / global ' //TRIM(string_atm(ia))//' (atm)'
           CASE (n_itype_min:n_itype_max)
@@ -362,7 +362,7 @@ CONTAINS
        CLOSE(unit=out,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
        !
-       IF (atm_select(ia_pCO2_14C)) THEN
+       IF (atm_select(ias_pCO2_14C)) THEN
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','misc_atm_D14C',string_results_ext)
           loc_string = '% time (yr) / mean isotopic composition (o/oo)'
@@ -1295,13 +1295,13 @@ CONTAINS
        CLOSE(unit=out,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
        ! atmospheric CO2 D14C
-       IF (atm_select(ia_pCO2_14C)) THEN
-          loc_tot  = int_ocnatm_sig(atm_dep(ia_pCO2))/int_t_sig
-          loc_frac = int_ocnatm_sig(ia_pCO2_13C)/int_t_sig
-          loc_standard = const_standards(atm_type(ia_pCO2_13C))
+       IF (atm_select(ias_pCO2_14C)) THEN
+          loc_tot  = int_ocnatm_sig(atm_dep(ias_pCO2))/int_t_sig
+          loc_frac = int_ocnatm_sig(ias_pCO2_13C)/int_t_sig
+          loc_standard = const_standards(atm_type(ias_pCO2_13C))
           loc_d13C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
-          loc_frac = int_ocnatm_sig(ia_pCO2_14C)/int_t_sig
-          loc_standard = const_standards(atm_type(ia_pCO2_14C))
+          loc_frac = int_ocnatm_sig(ias_pCO2_14C)/int_t_sig
+          loc_standard = const_standards(atm_type(ias_pCO2_14C))
           loc_d14C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           loc_sig = fun_convert_delta14CtoD14C(loc_d13C,loc_d14C)
           loc_filename=fun_data_timeseries_filename( &
@@ -1501,7 +1501,7 @@ CONTAINS
           if (idm2D == idiag_misc_2D_FpCO2_13C) then
              loc_tot  = int_diag_misc_2D_sig(idiag_misc_2D_FpCO2)
              loc_frac = int_diag_misc_2D_sig(idiag_misc_2D_FpCO2_13C)
-             loc_standard = const_standards(atm_type(ia_pCO2_13C))
+             loc_standard = const_standards(atm_type(ias_pCO2_13C))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -2224,9 +2224,9 @@ CONTAINS
     ! total ocean-atmosphere interface area
     loc_ocnatm_tot_A = sum(phys_ocnatm(ipoa_A,:,:))
     ! calculate local isotopic variables
-    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
-    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2_13C,:,:))/loc_ocnatm_tot_A
-    loc_standard = const_standards(atm_type(ia_pCO2_13C))
+    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
+    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2_13C,:,:))/loc_ocnatm_tot_A
+    loc_standard = const_standards(atm_type(ias_pCO2_13C))
     if (loc_frac < const_real_nullsmall) then
        loc_frac = fun_calc_isotope_fraction(0.0,loc_standard)*loc_tot
     end if
@@ -2257,7 +2257,7 @@ CONTAINS
              par_misc_t_echo_header = .FALSE.
           end if
           ! calculate local variables
-          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
+          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
           ! print values
           if (dum_gemlite) then
              PRINT'(A5,F11.2,3X,F11.3,F9.3,3X,F9.3,F8.3,F8.3,F8.3,3X,F11.3,F11.3)', &
@@ -2309,7 +2309,7 @@ CONTAINS
              par_misc_t_echo_header = .FALSE.
           end if
           ! calculate local variables
-          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
+          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
           ! print values
           if (dum_gemlite) then
              PRINT'(A5,F11.2,3X,F11.3,F9.3,3X,F8.3,F8.3,F8.3,3X,F11.3,F11.3)', &

@@ -206,7 +206,7 @@ CONTAINS
     ! total ocean mass
     loc_ocn_tot_M = conv_m3_kg*loc_ocn_tot_V
     ! conversion between partial pressure and molar quantity
-    loc_conv_atm_mol(:,:) = phys_atm_V(:,:)/(conv_Pa_atm*const_R_SI*atm(ia_T,:,:))
+    loc_conv_atm_mol(:,:) = phys_atm_V(:,:)/(conv_Pa_atm*const_R_SI*atm(ias_T,:,:))
 
     ! *** UPDATE OCEAN-ATMOSPHERE ***
 
@@ -347,7 +347,7 @@ CONTAINS
                    loc_tot_fCO2 = loc_tot_fCO2 + &
                         & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*carb(ic_fug_CO2,i,j)
                    loc_tot_pCO2 = loc_tot_pCO2 + &
-                        & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*atm(ia_pCO2,i,j)
+                        & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*atm(ias_pCO2,i,j)
                    loc_tot_A = loc_tot_A + &
                         & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)
                 end if
@@ -404,9 +404,9 @@ CONTAINS
                & loc_conv_atm_mol(:,:)
           ! calculate change in atmospheric pCO2 (atm) => update atmosphere
           loc_datm_pCO2(:,:)    = loc_DCO2(:,:)/loc_conv_atm_mol(:,:)
-          datm(ia_pCO2,:,:)     = datm(ia_pCO2,:,:)     + loc_datm_pCO2(:,:)
-          datm_sum(ia_pCO2,:,:) = datm_sum(ia_pCO2,:,:) + loc_datm_pCO2(:,:)
-          atm(ia_pCO2,:,:)      = atm(ia_pCO2,:,:)      + loc_datm_pCO2(:,:)
+          datm(ias_pCO2,:,:)     = datm(ias_pCO2,:,:)     + loc_datm_pCO2(:,:)
+          datm_sum(ias_pCO2,:,:) = datm_sum(ias_pCO2,:,:) + loc_datm_pCO2(:,:)
+          atm(ias_pCO2,:,:)      = atm(ias_pCO2,:,:)      + loc_datm_pCO2(:,:)
           ! calculate change in ocean DIC (mol kg-1) => update ocean
           loc_docn_DIC           = -sum(loc_DCO2(:,:))/loc_ocn_tot_M
           docn(io_DIC,:,:,:)     = docn(io_DIC,:,:,:)     + loc_docn_DIC
@@ -419,20 +419,20 @@ CONTAINS
           ! NOTE: the air-sea CO2 disequilibrium fractionation is accounted for atm->ocn CO2 transfer
           ! NOTE: 2-way kinetic effects are not account for currently ... but could be
           !       (GEMlite methodology is such an approximation of nominally whole-system change -- does it really matter?)
-          if (atm_select(ia_pCO2_13C)) then
+          if (atm_select(ias_pCO2_13C)) then
              ! test for ocn-atm flux direction
              if (loc_docn_DIC < 0.0) then
                 ! net CO2 addition to atmosphere => use [CO2] isotopic composition
                 loc_DCO2_13C(:,:) = carbisor(ici_CO2_r13C,:,:)*loc_DCO2(:,:)
              else
                 ! net CO2 addition to the ocean => use pCO2 isotopic composition
-                loc_DCO2_13C(:,:) = loc_r13C_as(:,:)*atm(ia_pCO2_13C,:,:)/atm(ia_pCO2,:,:)*loc_DCO2(:,:)
+                loc_DCO2_13C(:,:) = loc_r13C_as(:,:)*atm(ias_pCO2_13C,:,:)/atm(ias_pCO2,:,:)*loc_DCO2(:,:)
              endif
              ! calculate change in atmospheric 13pCO2 (atm) => update atmosphere
              loc_datm_pCO2_13C(:,:)    = loc_DCO2_13C(:,:)/loc_conv_atm_mol(:,:)
-             datm(ia_pCO2_13C,:,:)      = datm(ia_pCO2_13C,:,:)     + loc_datm_pCO2_13C(:,:)
-             datm_sum(ia_pCO2_13C,:,:)  = datm_sum(ia_pCO2_13C,:,:) + loc_datm_pCO2_13C(:,:)
-             atm(ia_pCO2_13C,:,:)       = atm(ia_pCO2_13C,:,:)      + loc_datm_pCO2_13C(:,:)
+             datm(ias_pCO2_13C,:,:)      = datm(ias_pCO2_13C,:,:)     + loc_datm_pCO2_13C(:,:)
+             datm_sum(ias_pCO2_13C,:,:)  = datm_sum(ias_pCO2_13C,:,:) + loc_datm_pCO2_13C(:,:)
+             atm(ias_pCO2_13C,:,:)       = atm(ias_pCO2_13C,:,:)      + loc_datm_pCO2_13C(:,:)
              ! calculate change in ocean 13DIC (mol kg-1) => update ocean
              loc_docn_DIC_13C           = -sum(loc_DCO2_13C(:,:))/loc_ocn_tot_M
              docn(io_DIC_13C,:,:,:)     = docn(io_DIC_13C,:,:,:)     + loc_docn_DIC_13C
@@ -524,15 +524,15 @@ CONTAINS
     ! partition O2 fluxes between ocean and atmosphere in direct proportion to the ratio of their inventories
     ! NOTE: for now: simply add (all) O2 associated with buried POM to the atmosphere
     ! NOTE: loc_tot_fsed is negative for a flux leaving ocean (sedimentation)
-    if (atm_select(ia_pO2)) then
+    if (atm_select(ias_pO2)) then
        loc_tot_DpO2 = -(loc_tot_fdis(conv_io_lselected(io_O2)) + loc_tot_fsed(conv_io_lselected(io_O2)))
        loc_tot_fdis(conv_io_lselected(io_O2)) = 0.0
        loc_tot_fsed(conv_io_lselected(io_O2)) = 0.0
        ! update atmosphere
        loc_datm_pO2(:,:)    = loc_tot_DpO2/real(n_i*n_j)/loc_conv_atm_mol(:,:)
-       datm(ia2l(ia_pO2),:,:)     = datm(ia2l(ia_pO2),:,:)     + loc_datm_pO2(:,:)
-       datm_sum(conv_ia_lselected(ia_pO2),:,:) = datm_sum(conv_ia_lselected(ia_pO2),:,:) + loc_datm_pO2(:,:)
-       atm(conv_ia_lselected(ia_pO2),:,:)      = atm(conv_ia_lselected(ia_pO2),:,:)      + loc_datm_pO2(:,:)
+       datm(ia2l(ias_pO2),:,:)     = datm(ia2l(ias_pO2),:,:)     + loc_datm_pO2(:,:)
+       datm_sum(conv_ia_lselected(ias_pO2),:,:) = datm_sum(conv_ia_lselected(ias_pO2),:,:) + loc_datm_pO2(:,:)
+       atm(conv_ia_lselected(ias_pO2),:,:)      = atm(conv_ia_lselected(ias_pO2),:,:)      + loc_datm_pO2(:,:)
     endif
 
     ! *** !!! DECAY TRACERS !!! ***

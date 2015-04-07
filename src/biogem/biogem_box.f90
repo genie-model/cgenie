@@ -238,9 +238,9 @@ CONTAINS
              ! NOTE: assume that the total mass of C is approximately equal to 12C + 13C
              ! NOTE: for 14C, the standard is already in the form: 14C/C
              SELECT CASE (ia)
-             CASE (ia_pCO2_13C)
+             CASE (ias_pCO2_13C)
                 ! isotopic fluxes - 13C
-                loc_r13C_atm = dum_atm(ia_pCO2_13C)/dum_atm(ia_pCO2)
+                loc_r13C_atm = dum_atm(ias_pCO2_13C)/dum_atm(ias_pCO2)
                 loc_r13C_ocn = carbisor(ici_CO2_r13C,dum_i,dum_j,n_k)
                 loc_R_atm = loc_r13C_atm/(1.0 - loc_r13C_atm)
                 loc_R_ocn = loc_r13C_ocn/(1.0 - loc_r13C_ocn)
@@ -257,33 +257,33 @@ CONTAINS
                 loc_alpha_as = loc_alpha_alpha*loc_alpha_k
                 loc_alpha_sa = loc_alpha_k
                 ! calculate fluxes
-                loc_fatmocn(ia_pCO2_13C) = (loc_alpha_as*loc_R_atm/(1.0 + loc_alpha_as*loc_R_atm))*loc_fatmocn(ia_pCO2)
-                loc_focnatm(ia_pCO2_13C) = (loc_alpha_sa*loc_R_ocn/(1.0 + loc_alpha_sa*loc_R_ocn))*loc_focnatm(ia_pCO2)
-             CASE (ia_pCO2_14C)
+                loc_fatmocn(ias_pCO2_13C) = (loc_alpha_as*loc_R_atm/(1.0 + loc_alpha_as*loc_R_atm))*loc_fatmocn(ias_pCO2)
+                loc_focnatm(ias_pCO2_13C) = (loc_alpha_sa*loc_R_ocn/(1.0 + loc_alpha_sa*loc_R_ocn))*loc_focnatm(ias_pCO2)
+             CASE (ias_pCO2_14C)
                 ! isotopic fluxes - 14C
-                loc_r14C_atm = dum_atm(ia_pCO2_14C)/dum_atm(ia_pCO2)
+                loc_r14C_atm = dum_atm(ias_pCO2_14C)/dum_atm(ias_pCO2)
                 loc_r14C_ocn = carbisor(ici_CO2_r14C,dum_i,dum_j,n_k)
                 loc_R_atm = loc_r14C_atm/(1.0 - loc_r14C_atm)
                 loc_R_ocn = loc_r14C_ocn/(1.0 - loc_r14C_ocn)
-                loc_fatmocn(ia_pCO2_14C) = (loc_alpha_as**2*loc_R_atm/(1.0 + loc_alpha_as**2*loc_R_atm))*loc_fatmocn(ia_pCO2)
-                loc_focnatm(ia_pCO2_14C) = (loc_alpha_sa**2*loc_R_ocn/(1.0 + loc_alpha_sa**2*loc_R_ocn))*loc_focnatm(ia_pCO2)
-             CASE (ia_pCH4_13C)
-                if (dum_atm(ia_pCH4) > const_real_nullsmall) then
-                   loc_r13C_atm = dum_atm(ia_pCH4_13C)/dum_atm(ia_pCH4)
-                   loc_fatmocn(ia_pCH4_13C) = loc_r13C_atm*loc_fatmocn(ia_pCH4)
+                loc_fatmocn(ias_pCO2_14C) = (loc_alpha_as**2*loc_R_atm/(1.0 + loc_alpha_as**2*loc_R_atm))*loc_fatmocn(ias_pCO2)
+                loc_focnatm(ias_pCO2_14C) = (loc_alpha_sa**2*loc_R_ocn/(1.0 + loc_alpha_sa**2*loc_R_ocn))*loc_focnatm(ias_pCO2)
+             CASE (ias_pCH4_13C)
+                if (dum_atm(ias_pCH4) > const_real_nullsmall) then
+                   loc_r13C_atm = dum_atm(ias_pCH4_13C)/dum_atm(ias_pCH4)
+                   loc_fatmocn(ias_pCH4_13C) = loc_r13C_atm*loc_fatmocn(ias_pCH4)
                 end if
                 if (ocn(io_CH4,dum_i,dum_j,n_k) > const_real_nullsmall) then
                    loc_r13C_ocn = ocn(io_CH4_13C,dum_i,dum_j,n_k)/ocn(io_CH4,dum_i,dum_j,n_k)
-                   loc_focnatm(ia_pCH4_13C) = loc_r13C_ocn*loc_focnatm(ia_pCH4)
+                   loc_focnatm(ias_pCH4_13C) = loc_r13C_ocn*loc_focnatm(ias_pCH4)
                 end if
-             CASE (ia_pCH4_14C)
-                if (dum_atm(ia_pCH4) > const_real_nullsmall) then
-                   loc_r14C_atm = dum_atm(ia_pCH4_14C)/dum_atm(ia_pCH4)
-                   loc_fatmocn(ia_pCH4_14C) = loc_r14C_atm*loc_fatmocn(ia_pCH4)
+             CASE (ias_pCH4_14C)
+                if (dum_atm(ias_pCH4) > const_real_nullsmall) then
+                   loc_r14C_atm = dum_atm(ias_pCH4_14C)/dum_atm(ias_pCH4)
+                   loc_fatmocn(ias_pCH4_14C) = loc_r14C_atm*loc_fatmocn(ias_pCH4)
                 end if
                 if (ocn(io_CH4,dum_i,dum_j,n_k) > const_real_nullsmall) then
                    loc_r14C_ocn = ocn(io_CH4_14C,dum_i,dum_j,n_k)/ocn(io_CH4,dum_i,dum_j,n_k)
-                   loc_focnatm(ia_pCH4_14C) = loc_r14C_ocn*loc_focnatm(ia_pCH4)
+                   loc_focnatm(ias_pCH4_14C) = loc_r14C_ocn*loc_focnatm(ias_pCH4)
                 end if
              case default
                 ! ### INSERT CODE TO DEAL WITH ADDITIONAL ISOTOPES ############################################################### !

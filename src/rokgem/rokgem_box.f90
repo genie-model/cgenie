@@ -520,7 +520,7 @@ CONTAINS
     ! extract temperature to local array this way to please intel compilers
     DO i=1,n_i
        DO j=1,n_j
-          loc_SLT(i,j) = dum_sfcatm1(ia_T,i,j)
+          loc_SLT(i,j) = dum_sfcatm1(ias_T,i,j)
           ! do calibrations if requested
           IF (opt_calibrate_T_0D) THEN
              loc_SLT(i,j) = loc_SLT(i,j) + 273.15
@@ -592,7 +592,7 @@ CONTAINS
     ! convert atm pCO2 to ppm
     DO i=1,n_i
        DO j=1,n_j
-          loc_CO22(i,j) = 1.0E+06*dum_sfcatm1(ia_PCO2,i,j)
+          loc_CO22(i,j) = 1.0E+06*dum_sfcatm1(ias_PCO2,i,j)
        END DO
     END DO
     ! calculate mean co2 (ppm)
@@ -789,20 +789,20 @@ CONTAINS
        IF (opt_outgas_eq_Si.eqv..true.) THEN
           ! NOTE: '-' because coming out of atmosphere
           ! NOTE: not 2.0*weather_fCaSiO3 becasue outgassing is being assumed to balance net silicate weathering
-          loc_force_flux_weather_a(ia_PCO2) = -(weather_fCaSiO3 + weather_fCaCO3)
+          loc_force_flux_weather_a(ias_PCO2) = -(weather_fCaSiO3 + weather_fCaCO3)
        ELSE
           ! NOTE: '-' because coming out of atmosphere
           ! NOTE: straight-forward -- outgassing minus CO2 consumed in weathering
-          loc_force_flux_weather_a(ia_PCO2) = par_outgas_CO2 -(2.0*weather_fCaSiO3 + weather_fCaCO3)
+          loc_force_flux_weather_a(ias_PCO2) = par_outgas_CO2 -(2.0*weather_fCaSiO3 + weather_fCaCO3)
        ENDIF
        loc_force_flux_weather_o(io_DIC) = 2.0*weather_fCaSiO3 + 2.0*weather_fCaCO3
     ENDIF
 
     ! d13C
     ! NOTE: does not matter how the standard is derived -- it is al the same standard! (13C)
-    loc_standard = const_standards(atm_type(ia_pCO2_13C))
+    loc_standard = const_standards(atm_type(ias_pCO2_13C))
     loc_d13C = fun_calc_isotope_delta( &
-         & dum_sfcatm1(ia_pCO2,n_i,n_j),dum_sfcatm1(ia_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
+         & dum_sfcatm1(ias_pCO2,n_i,n_j),dum_sfcatm1(ias_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
          & )
     IF (opt_short_circuit_atm.eqv..true.) THEN
        IF (opt_outgas_eq_Si.eqv..true.) THEN
@@ -817,14 +817,14 @@ CONTAINS
     ELSE
        IF (opt_outgas_eq_Si.eqv..true.) THEN
           ! NOTE: '-' because coming out of atmosphere
-          loc_force_flux_weather_a(ia_pCO2_13C) = &
+          loc_force_flux_weather_a(ias_pCO2_13C) = &
                & -( &
                &   fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaSiO3 + &
                &   fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaCO3 &
                & )
        ELSE
           ! NOTE: '-' because coming out of atmosphere
-          loc_force_flux_weather_a(ia_pCO2_13C) = &
+          loc_force_flux_weather_a(ias_pCO2_13C) = &
                & fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*par_outgas_CO2 - &
                & ( &
                & 2.0*fun_calc_isotope_fraction(loc_d13C,loc_standard)*weather_fCaSiO3 + &
@@ -894,7 +894,7 @@ CONTAINS
        loc_force_flux_weather_o(io_O2) = loc_force_flux_weather_o(io_O2) - 1.0*par_weather_CaSiO3_fracC*weather_fCaSiO3
     ELSE
        ! NOTE: '-' because coming out of atmosphere
-       loc_force_flux_weather_a(ia_pO2) = loc_force_flux_weather_a(ia_pO2) - 1.0*par_weather_CaSiO3_fracC*weather_fCaSiO3
+       loc_force_flux_weather_a(ias_pO2) = loc_force_flux_weather_a(ias_pO2) - 1.0*par_weather_CaSiO3_fracC*weather_fCaSiO3
     ENDIF
     ! ######################################################################################################################### !
 
@@ -909,7 +909,7 @@ CONTAINS
          & 2.0*par_weather_CaSiO3_fracFeS2*weather_fCaSiO3
     ! O2 consumption associated with pyrite weathering (and conversion of H2S -> H2SO4)
     IF (.NOT. opt_short_circuit_atm) THEN
-       loc_force_flux_weather_a(ia_pO2)     = loc_force_flux_weather_a(ia_pO2) - 2.0*loc_force_flux_weather_o(io_H2S)
+       loc_force_flux_weather_a(ias_pO2)     = loc_force_flux_weather_a(ias_pO2) - 2.0*loc_force_flux_weather_o(io_H2S)
        loc_force_flux_weather_o(io_SO4)     = loc_force_flux_weather_o(io_H2S)
        loc_force_flux_weather_o(io_SO4_34S) = loc_force_flux_weather_o(io_H2S_34S)
        loc_force_flux_weather_o(io_H2S)     = 0.0
@@ -926,8 +926,8 @@ CONTAINS
     END DO
     ! no need to route to the atmosphere - just take it straight from the cells above the land (assuming same grid)
        ! convert from Mol/yr to Mol/sec/m^2 and put it into passing array (only take variable altered here - pCO2)
-    dum_sfxatm1(ia_PCO2,:,:) =  loc_force_flux_weather_a_land(ia_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
-    dum_sfxatm1(ia_PCO2_13C,:,:) =  loc_force_flux_weather_a_land(ia_PCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ias_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ias_PCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_PCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
        ! Spread out ocean variables' fluxes onto land
     DO k=1,n_ocn
        IF(k.gt.2) THEN
@@ -953,7 +953,7 @@ CONTAINS
        outputs = (/loc_avSLT,loc_maxSLT,loc_minSLT,loc_R*conv_yr_s,loc_maxR*conv_yr_s,loc_minR*conv_yr_s, &
             & loc_avP,loc_maxP,loc_minP,loc_CO2,loc_maxCO2,loc_minCO2, &
             & loc_weather_ratio_CaCO3,loc_weather_ratio_CaSiO3,weather_fCaCO3/1.0E12,weather_fCaSiO3/1.0E12, &
-            & loc_force_flux_weather_a(ia_PCO2)/1.0E12, &
+            & loc_force_flux_weather_a(ias_PCO2)/1.0E12, &
             & loc_force_flux_weather_o(io_ALK)/1.0E12,loc_force_flux_weather_o(io_DIC)/1.0E12, &
             & loc_force_flux_weather_o(io_Ca)/1.0E12,loc_force_flux_weather_o(io_DIC_13C)/1.0E12, &
             & sum(loc_force_flux_weather_o_land(io_ALK,:,:))/1.0E12,sum(loc_force_flux_weather_o_land(io_DIC,:,:))/1.0E12, &
@@ -984,7 +984,7 @@ CONTAINS
              ENDIF
           END DO
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'globavg_atm_PCO2_year_'//TRIM(year_text)//'.dat', &
-               n_i,n_j,loc_force_flux_weather_a_land(ia_PCO2,:,:))
+               n_i,n_j,loc_force_flux_weather_a_land(ias_PCO2,:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'temperature_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_SLT(:,:))
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'runoff_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_runoff(:,:)*conv_yr_s)
           CALL sub_save_data_ij(TRIM(par_outdir_name)//'productivity_year_'//TRIM(year_text)//'.dat',n_i,n_j,loc_P(:,:))
@@ -1468,7 +1468,7 @@ CONTAINS
     !                     print*,"before calib", loc_SLT(:,1)
     DO i=1,n_i
        DO j=1,n_j
-          loc_SLT(i,j) = dum_sfcatm1(ia_T,i,j)
+          loc_SLT(i,j) = dum_sfcatm1(ias_T,i,j)
           ! do calibrations if requested
           IF (opt_calibrate_T_0D) THEN
              loc_SLT(i,j) = loc_SLT(i,j) + 273.15
@@ -1518,7 +1518,7 @@ CONTAINS
     ! convert atm pCO2 to ppm
     DO i=1,n_i
        DO j=1,n_j
-          loc_CO2(i,j) = 1.0E+06*dum_sfcatm1(ia_PCO2,i,j)
+          loc_CO2(i,j) = 1.0E+06*dum_sfcatm1(ias_PCO2,i,j)
        END DO
     END DO
 
@@ -1529,7 +1529,7 @@ CONTAINS
        DO i=1,n_i
           DO j=1,n_j
              ! make sure that numbers stay positive
-             n = 1.0 + par_k_Ca*(dum_sfcatm1(ia_T,i,j) - loc_SLT0)
+             n = 1.0 + par_k_Ca*(dum_sfcatm1(ias_T,i,j) - loc_SLT0)
              IF (n.lt.0.0) THEN
                 n = 0
              ENDIF
@@ -1550,7 +1550,7 @@ CONTAINS
     IF (opt_weather_T_Si) THEN
        DO i=1,n_i
           DO j=1,n_j
-             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ia_T,i,j) - loc_SLT0))
+             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ias_T,i,j) - loc_SLT0))
           END DO
        END DO
     ENDIF
@@ -1600,10 +1600,10 @@ CONTAINS
        ENDIF
     ELSE
        IF (opt_outgas_eq_Si.eqv..true.) THEN
-          loc_force_flux_weather_a_land(ia_PCO2,:,:) = &
+          loc_force_flux_weather_a_land(ias_PCO2,:,:) = &
                & - 1.0*(weather_fCaSiO3_2D(:,:) + weather_fCaCO3_2D(:,:)) !'-' because coming out of atmosphere
        ELSE
-          loc_force_flux_weather_a_land(ia_PCO2,:,:) = landmask(:,:)*par_outgas_CO2/nlandcells - &
+          loc_force_flux_weather_a_land(ias_PCO2,:,:) = landmask(:,:)*par_outgas_CO2/nlandcells - &
                & 1.0*(2.0*weather_fCaSiO3_2D(:,:) + weather_fCaCO3_2D(:,:)) !'-' because coming out of atmosphere
        ENDIF
        loc_force_flux_weather_o_land(io_DIC,:,:) = 2.0*weather_fCaSiO3_2D(:,:) + 2.0*weather_fCaCO3_2D(:,:)
@@ -1621,19 +1621,19 @@ CONTAINS
                & fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:)
        ENDIF
     ELSE
-       loc_standard = const_standards(atm_type(ia_pCO2_13C ))
+       loc_standard = const_standards(atm_type(ias_pCO2_13C ))
        !'-' because coming out of atmosphere
-       loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
+       loc_force_flux_weather_a_land(ias_pCO2_13C,:,:) = &
             fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - &
             1.0*(2.0*fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
             fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
        IF (opt_outgas_eq_Si.eqv..true.) THEN
-          loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
+          loc_force_flux_weather_a_land(ias_pCO2_13C,:,:) = &
                - 1.0*(fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
                fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
        ELSE
           !'-' because coming out of atmosphere
-          loc_force_flux_weather_a_land(ia_pCO2_13C,:,:) = &
+          loc_force_flux_weather_a_land(ias_pCO2_13C,:,:) = &
                fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*landmask(:,:)*par_outgas_CO2/nlandcells - &
                1.0*(2.0*fun_calc_isotope_fraction(par_outgas_CO2_d13C,loc_standard)*weather_fCaSiO3_2D(:,:) + &
                fun_calc_isotope_fraction(par_weather_CaCO3_d13C,loc_standard)*weather_fCaCO3_2D(:,:))
@@ -1654,8 +1654,8 @@ CONTAINS
        ENDIF
     END DO
 
-    dum_sfxatm1(ia_PCO2,:,:) =  loc_force_flux_weather_a_land(ia_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
-    dum_sfxatm1(ia_pCO2_13C,:,:) =  loc_force_flux_weather_a_land(ia_pCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ias_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ias_pCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_pCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
 
     dum_sfxrok(:,:,:) = loc_force_flux_weather_o_ocean(:,:,:)
     ! convert from Mol/yr to Mol/sec for passing out
@@ -1671,7 +1671,7 @@ CONTAINS
             & sum(landmask(:,:)*loc_CO2(:,:))/nlandcells,maxval(landmask(:,:)*loc_CO2(:,:)),minval(landmask(:,:)*loc_CO2(:,:)), &
             & sum(loc_weather_ratio_CaCO3(:,:)*landmask(:,:))/nlandcells,sum(loc_weather_ratio_CaSiO3(:,:)*landmask(:,:))/nlandcells, &
             & sum(weather_fCaCO3_2D(:,:))/1.0E12,sum(weather_fCaSiO3_2D(:,:))/1.0E12, &
-            & sum(loc_force_flux_weather_a_land(ia_PCO2,:,:))/1.0E12, &
+            & sum(loc_force_flux_weather_a_land(ias_PCO2,:,:))/1.0E12, &
             & sum(loc_force_flux_weather_o_land(io_ALK,:,:))/1.0E12,sum(loc_force_flux_weather_o_land(io_DIC,:,:))/1.0E12, &
             & sum(loc_force_flux_weather_o_land(io_Ca,:,:))/1.0E12,sum(loc_force_flux_weather_o_land(io_DIC_13C,:,:))/1.0E12, &
             & sum(loc_force_flux_weather_o_land(io_ALK,:,:))/1.0E12,sum(loc_force_flux_weather_o_land(io_DIC,:,:))/1.0E12, &

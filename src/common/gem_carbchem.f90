@@ -1403,13 +1403,13 @@ CONTAINS
     !       rather than as a Bunsen Solubility Coefficient (see Wanninkohf [1992])
     !       (actaully, it is not really this simple and K should be corrected for water vapour pressure and lame things like that)
     SELECT CASE (dum_ia)
-    CASE (ia_pCO2,ia_pN2O)
+    CASE (ias_pCO2,ias_pN2O)
        fun_calc_solconst = EXP( &
             & par_bunsen_coef(1,dum_ia) + par_bunsen_coef(2,dum_ia)*(100*loc_rT) + par_bunsen_coef(3,dum_ia)*LOG(loc_Tr100) + &
             & loc_S* &
             & (par_bunsen_coef(4,dum_ia) + par_bunsen_coef(5,dum_ia)*(loc_Tr100) + par_bunsen_coef(6,dum_ia)*(loc_Tr100)**2) &
             &  )
-    CASE (ia_pCFC11,ia_pCFC12)
+    CASE (ias_pCFC11,ias_pCFC12)
        fun_calc_solconst = EXP( &
             & par_bunsen_coef(1,dum_ia) + par_bunsen_coef(2,dum_ia)*(100*loc_rT) + par_bunsen_coef(3,dum_ia)*LOG(loc_Tr100) + &
             & loc_S* &

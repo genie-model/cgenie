@@ -1599,7 +1599,7 @@ CONTAINS
     opt_select(:) = .FALSE.
     ! set derived tracer selection options
     opt_select(iopt_select_carbchem)   = ocn_select(io_DIC) .AND. ocn_select(io_ALK)
-    opt_select(iopt_select_ocnatm_CO2) = opt_select(iopt_select_carbchem) .AND. atm_select(ia_pCO2)
+    opt_select(iopt_select_ocnatm_CO2) = opt_select(iopt_select_carbchem) .AND. atm_select(ias_pCO2)
 
     ! *** parameter consistency check - biological productivity ***
     ! check first-order consistency between biologial option, and selected dissolved and sedimentary tracers
@@ -1864,7 +1864,7 @@ CONTAINS
                   & ) then
                 loc_string1 = string_atm(ia)
                 loc_string2 = string_atm(atm_dep(ia))
-                If ((ia == ia_pCO2_14C) .AND. (atm_dep(ia) == ia_pCO2)) then
+                If ((ia == ias_pCO2_14C) .AND. (atm_dep(ia) == ias_pCO2)) then
                    CALL sub_report_error( &
                         & 'biogem_data','sub_check_par', &
                         & 'An isotope tracer '//TRIM(loc_string1)//' and associated bulk tracer '//TRIM(loc_string2)// &
@@ -1956,7 +1956,7 @@ CONTAINS
 
     ! *** FIX UP AND MAKE GENERIC ***
     ! verify ocn-atm carbon cycle option selection
-    IF (atm_select(ia_pCO2) .NEQV. ocn_select(io_DIC)) THEN
+    IF (atm_select(ias_pCO2) .NEQV. ocn_select(io_DIC)) THEN
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par', &
             & 'Do you really mean to select CO2 in the atmosphere but not in the ocean (or vice versa)?', &
@@ -2306,11 +2306,11 @@ CONTAINS
     ! detrmine whether to save inversion diagnostics
     ctrl_data_save_inversion = .false.
     IF ( &
-         & (force_restore_ocn_select(io_colr) .AND. (force_flux_atm_select(ia_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
+         & (force_restore_ocn_select(io_colr) .AND. (force_flux_atm_select(ias_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
          & .OR. &
-         & (force_restore_atm_select(ia_pCO2_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
+         & (force_restore_atm_select(ias_pCO2_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) &
          & .OR. &
-         & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
+         & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) &
          & .OR. &
          & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_ocn_select(io_DIC_13C)) &
          & .OR. &

@@ -80,7 +80,7 @@ CONTAINS
 
     ! *** CALCULATE LOCAL CONSTANTS ***
     ! local constants for converting between partial pressure and molar quantity
-    loc_conv_atm_mol = phys_atm(ipa_V,:,:) / (conv_Pa_atm * const_R_SI * atm(ia_T,:,:))
+    loc_conv_atm_mol = phys_atm(ipa_V,:,:) / (conv_Pa_atm * const_R_SI * atm(ias_T,:,:))
     loc_conv_mol_atm = 1.0 / loc_conv_atm_mol
     ! time
     loc_dtyr = dum_dts / conv_yr_s
@@ -104,22 +104,22 @@ CONTAINS
           end do
 
           ! *** OXIDIZE CH4 ***
-          IF (atm_select(ia_pCH4) .AND. atm_select(ia_pCO2) .AND. atm_select(ia_pO2)) THEN
+          IF (atm_select(ias_pCH4) .AND. atm_select(ias_pCO2) .AND. atm_select(ias_pO2)) THEN
              CALL sub_calc_oxidize_CH4(i,j,loc_dtyr)
           END IF
 
           ! *** ADD CH4 ***
-          IF (atm_select(ia_pCH4) .AND. atm_select(ia_pCO2) .AND. atm_select(ia_pO2)) THEN
+          IF (atm_select(ias_pCH4) .AND. atm_select(ias_pCO2) .AND. atm_select(ias_pO2)) THEN
              CALL sub_calc_wetlands_CH4(loc_dtyr,locij_fatm(:,i,j))
           END IF
 
           ! *** PRODUCE RADIOACTIVE TRACERS ***
-          IF (atm_select(ia_pCO2_14C)) THEN
+          IF (atm_select(ias_pCO2_14C)) THEN
              CALL sub_calc_generate_14C(loc_dtyr,locij_fatm(:,i,j))
           END IF
 
           ! *** EXCHANGE CO2 WITH A VIRTUAL TERRESTRIAL RESERVOIR ***
-          IF ((par_atm_FterrCO2exchange > const_real_nullsmall) .AND. atm_select(ia_pCO2) .AND. atm_select(ia_pCO2_13C)) THEN
+          IF ((par_atm_FterrCO2exchange > const_real_nullsmall) .AND. atm_select(ias_pCO2) .AND. atm_select(ias_pCO2_13C)) THEN
              CALL sub_calc_terrCO2exchange(i,j,loc_dtyr,locij_fatm(:,i,j))
           END IF
 
@@ -145,7 +145,7 @@ CONTAINS
        ! homogenize the partial pressure of tracers in the atmopshere across (all grid points)
        loc_atm_tot(ia) = SUM(loc_conv_atm_mol(:,:)*atm(ia,:,:))
        loc_atm_tot_V = SUM(phys_atm(ipa_V,:,:))
-       atm(ia,:,:) = (loc_atm_tot(ia)/loc_atm_tot_V)*conv_Pa_atm*const_R_SI*atm(ia_T,:,:)
+       atm(ia,:,:) = (loc_atm_tot(ia)/loc_atm_tot_V)*conv_Pa_atm*const_R_SI*atm(ias_T,:,:)
     end do
 
     ! *** UPDATE INTERFACE ARRAYS ***

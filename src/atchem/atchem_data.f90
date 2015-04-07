@@ -232,14 +232,14 @@ CONTAINS
     ! initialize global arrays
     atm(:,:,:)  = 0.0
     ! set <atm> array
-    ! NOTE: need to seed ia_T as temperature is required in order to convert between mole (total) and partial pressure
+    ! NOTE: need to seed ias_T as temperature is required in order to convert between mole (total) and partial pressure
     DO i=1,n_i
        DO j=1,n_j
           DO ia=1,n_atm
              IF (atm_select(ia)) THEN
                 SELECT CASE (atm_type(ia))
                 CASE (0)
-                   if (ia == ia_T) atm(ia,i,j) = const_zeroC
+                   if (ia == ias_T) atm(ia,i,j) = const_zeroC
                 CASE (1)
                    atm(ia,i,j) = atm_init(ia)
                 CASE (11,12,13,14)
@@ -268,14 +268,14 @@ CONTAINS
     ! NOTE: units of (mol)
     DO i=1,n_i
        DO j=1,n_j
-          IF (atm_select(ia_pCO2)) THEN
-             atm_slabbiosphere(ia_pCO2,i,j) = par_atm_slabbiosphere_C/real(n_i*n_j)
+          IF (atm_select(ias_pCO2)) THEN
+             atm_slabbiosphere(ias_pCO2,i,j) = par_atm_slabbiosphere_C/real(n_i*n_j)
           end if
-          IF (atm_select(ia_pCO2_13C)) THEN
-             loc_tot  = atm_slabbiosphere(ia_pCO2,i,j)
-             loc_standard = const_standards(atm_type(ia_pCO2_13C))
+          IF (atm_select(ias_pCO2_13C)) THEN
+             loc_tot  = atm_slabbiosphere(ias_pCO2,i,j)
+             loc_standard = const_standards(atm_type(ias_pCO2_13C))
              loc_frac = fun_calc_isotope_fraction(par_atm_slabbiosphere_C_d13C,loc_standard)
-             atm_slabbiosphere(ia_pCO2_13C,i,j) = loc_frac*loc_tot
+             atm_slabbiosphere(ias_pCO2_13C,i,j) = loc_frac*loc_tot
           end if
        END DO
     END DO

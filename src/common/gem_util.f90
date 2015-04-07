@@ -31,42 +31,42 @@ CONTAINS
     ! NOTE: populate unused elements with zero
     ! ### INSERT DEFINITIONS FOR ADDITIONAL OCN/ATM RELATIONSHIPS HERE ########################################################### !
     conv_atm_ocn(:,:) = 0.0
-    conv_atm_ocn(io_DIC,ia_pCO2)         = 1.0
-    conv_atm_ocn(io_DIC_13C,ia_pCO2_13C) = 1.0
-    conv_atm_ocn(io_DIC_14C,ia_pCO2_14C) = 1.0
-    conv_atm_ocn(io_O2,ia_pO2)           = 1.0
-    conv_atm_ocn(io_O2_18O,ia_pO2_18O)   = 1.0
-    conv_atm_ocn(io_N2,ia_pN2)           = 1.0
-    conv_atm_ocn(io_N2_15N,ia_pN2_15N)   = 1.0
-    conv_atm_ocn(io_CH4,ia_pCH4)         = 1.0
-    conv_atm_ocn(io_CH4_13C,ia_pCH4_13C) = 1.0
-    conv_atm_ocn(io_CH4_14C,ia_pCH4_14C) = 1.0
-    conv_atm_ocn(io_SF6,ia_pSF6)         = 1.0
-    conv_atm_ocn(io_N2O,ia_pN2O)         = 1.0
-    conv_atm_ocn(io_N2O_15N,ia_pN2O_15N) = 1.0
-    conv_atm_ocn(io_H2S,ia_pH2S)         = 1.0
-    conv_atm_ocn(io_H2S_34S,ia_pH2S_34S) = 1.0
-    conv_atm_ocn(io_CFC11,ia_pCFC11)     = 1.0
-    conv_atm_ocn(io_CFC12,ia_pCFC12)     = 1.0
+    conv_atm_ocn(io_DIC,ias_pCO2)         = 1.0
+    conv_atm_ocn(io_DIC_13C,ias_pCO2_13C) = 1.0
+    conv_atm_ocn(io_DIC_14C,ias_pCO2_14C) = 1.0
+    conv_atm_ocn(io_O2,ias_pO2)           = 1.0
+    conv_atm_ocn(io_O2_18O,ias_pO2_18O)   = 1.0
+    conv_atm_ocn(io_N2,ias_pN2)           = 1.0
+    conv_atm_ocn(io_N2_15N,ias_pN2_15N)   = 1.0
+    conv_atm_ocn(io_CH4,ias_pCH4)         = 1.0
+    conv_atm_ocn(io_CH4_13C,ias_pCH4_13C) = 1.0
+    conv_atm_ocn(io_CH4_14C,ias_pCH4_14C) = 1.0
+    conv_atm_ocn(io_SF6,ias_pSF6)         = 1.0
+    conv_atm_ocn(io_N2O,ias_pN2O)         = 1.0
+    conv_atm_ocn(io_N2O_15N,ias_pN2O_15N) = 1.0
+    conv_atm_ocn(io_H2S,ias_pH2S)         = 1.0
+    conv_atm_ocn(io_H2S_34S,ias_pH2S_34S) = 1.0
+    conv_atm_ocn(io_CFC11,ias_pCFC11)     = 1.0
+    conv_atm_ocn(io_CFC12,ias_pCFC12)     = 1.0
     ! convert dissolved species -> gaseous
     conv_ocn_atm(:,:) = 0.0
-    conv_ocn_atm(ia_pCO2,io_DIC)         = 1.0/conv_atm_ocn(io_DIC,ia_pCO2)
-    conv_ocn_atm(ia_pCO2_13C,io_DIC_13C) = 1.0/conv_atm_ocn(io_DIC_13C,ia_pCO2_13C)
-    conv_ocn_atm(ia_pCO2_14C,io_DIC_14C) = 1.0/conv_atm_ocn(io_DIC_14C,ia_pCO2_14C)
-    conv_ocn_atm(ia_pO2,io_O2)           = 1.0/conv_atm_ocn(io_O2,ia_pO2)
-    conv_ocn_atm(ia_pO2_18O,io_O2_18O)   = 1.0/conv_atm_ocn(io_O2_18O,ia_pO2_18O)
-    conv_ocn_atm(ia_pN2,io_N2)           = 1.0/conv_atm_ocn(io_N2,ia_pN2)
-    conv_ocn_atm(ia_pN2_15N,io_N2_15N)   = 1.0/conv_atm_ocn(io_N2_15N,ia_pN2_15N)
-    conv_ocn_atm(ia_pCH4,io_CH4)         = 1.0/conv_atm_ocn(io_CH4,ia_pCH4)
-    conv_ocn_atm(ia_pCH4_13C,io_CH4_13C) = 1.0/conv_atm_ocn(io_CH4_13C,ia_pCH4_13C)
-    conv_ocn_atm(ia_pCH4_14C,io_CH4_14C) = 1.0/conv_atm_ocn(io_CH4_14C,ia_pCH4_14C)
-    conv_ocn_atm(ia_pSF6,io_SF6)         = 1.0/conv_atm_ocn(io_SF6,ia_pSF6)
-    conv_ocn_atm(ia_pN2O,io_N2O)         = 1.0/conv_atm_ocn(io_N2O,ia_pN2O)
-    conv_ocn_atm(ia_pN2O_15N,io_N2O_15N) = 1.0/conv_atm_ocn(io_N2O_15N,ia_pN2O_15N)
-    conv_ocn_atm(ia_pH2S,io_H2S)         = 1.0/conv_atm_ocn(io_H2S,ia_pH2S)
-    conv_ocn_atm(ia_pH2S_34S,io_H2S_34S) = 1.0/conv_atm_ocn(io_H2S_34S,ia_pH2S_34S)
-    conv_ocn_atm(ia_pCFC11,io_CFC11)     = 1.0/conv_atm_ocn(io_CFC11,ia_pCFC11)
-    conv_ocn_atm(ia_pCFC12,io_CFC12)     = 1.0/conv_atm_ocn(io_CFC12,ia_pCFC12)
+    conv_ocn_atm(ias_pCO2,io_DIC)         = 1.0/conv_atm_ocn(io_DIC,ias_pCO2)
+    conv_ocn_atm(ias_pCO2_13C,io_DIC_13C) = 1.0/conv_atm_ocn(io_DIC_13C,ias_pCO2_13C)
+    conv_ocn_atm(ias_pCO2_14C,io_DIC_14C) = 1.0/conv_atm_ocn(io_DIC_14C,ias_pCO2_14C)
+    conv_ocn_atm(ias_pO2,io_O2)           = 1.0/conv_atm_ocn(io_O2,ias_pO2)
+    conv_ocn_atm(ias_pO2_18O,io_O2_18O)   = 1.0/conv_atm_ocn(io_O2_18O,ias_pO2_18O)
+    conv_ocn_atm(ias_pN2,io_N2)           = 1.0/conv_atm_ocn(io_N2,ias_pN2)
+    conv_ocn_atm(ias_pN2_15N,io_N2_15N)   = 1.0/conv_atm_ocn(io_N2_15N,ias_pN2_15N)
+    conv_ocn_atm(ias_pCH4,io_CH4)         = 1.0/conv_atm_ocn(io_CH4,ias_pCH4)
+    conv_ocn_atm(ias_pCH4_13C,io_CH4_13C) = 1.0/conv_atm_ocn(io_CH4_13C,ias_pCH4_13C)
+    conv_ocn_atm(ias_pCH4_14C,io_CH4_14C) = 1.0/conv_atm_ocn(io_CH4_14C,ias_pCH4_14C)
+    conv_ocn_atm(ias_pSF6,io_SF6)         = 1.0/conv_atm_ocn(io_SF6,ias_pSF6)
+    conv_ocn_atm(ias_pN2O,io_N2O)         = 1.0/conv_atm_ocn(io_N2O,ias_pN2O)
+    conv_ocn_atm(ias_pN2O_15N,io_N2O_15N) = 1.0/conv_atm_ocn(io_N2O_15N,ias_pN2O_15N)
+    conv_ocn_atm(ias_pH2S,io_H2S)         = 1.0/conv_atm_ocn(io_H2S,ias_pH2S)
+    conv_ocn_atm(ias_pH2S_34S,io_H2S_34S) = 1.0/conv_atm_ocn(io_H2S_34S,ias_pH2S_34S)
+    conv_ocn_atm(ias_pCFC11,io_CFC11)     = 1.0/conv_atm_ocn(io_CFC11,ias_pCFC11)
+    conv_ocn_atm(ias_pCFC12,io_CFC12)     = 1.0/conv_atm_ocn(io_CFC12,ias_pCFC12)
     ! ############################################################################################################################ !
     ! OCEAN-SEDIMENT
     ! (compositional) relational operator for converting between dissolved and particulate forms
@@ -283,8 +283,8 @@ CONTAINS
     const_lambda_ocn(:) = 0.0
     const_lambda_sed(:) = 0.0
     ! atm tracers
-    const_lambda_atm(ia_pCO2_14C) = const_lambda_14C
-    const_lambda_atm(ia_pCH4_14C) = const_lambda_14C
+    const_lambda_atm(ias_pCO2_14C) = const_lambda_14C
+    const_lambda_atm(ias_pCH4_14C) = const_lambda_14C
     ! ocn tracers
     const_lambda_ocn(io_DIC_14C) = const_lambda_14C
     const_lambda_ocn(io_DOM_C_14C) = const_lambda_14C
