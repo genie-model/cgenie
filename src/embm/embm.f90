@@ -1,6 +1,9 @@
 MODULE embm
 
   USE genie_util, ONLY: check_unit, check_iostat
+  USE genie_control, &
+       & ONLY: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS
+
   USE embm_lib
   USE embm_netcdf
   USE embm_data
@@ -23,17 +26,17 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(imax,jmax), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & latent_atm, sensible_atm, netsolar_atm, &
          & netlong_atm, pptn_atm, evap_atm
-    REAL, DIMENSION(imax,jmax), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
          & tstar_atm, qstar_atm
     INTEGER(kind=8), INTENT(IN) :: koverall
-    REAL, INTENT(OUT) :: torog_atm(imax,jmax)
-    REAL, INTENT(IN) :: surf_orog_atm(imax,jmax)
+    REAL, INTENT(OUT) :: torog_atm(maxi,maxj)
+    REAL, INTENT(IN) :: surf_orog_atm(maxi,maxj)
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
     INTEGER :: i, j, itv, iout, ios
     REAL :: sum1(4), sum2(4)
@@ -76,8 +79,8 @@ CONTAINS
     ! diagnostics ('surflux.F' will update it again) and calculate
     ! specific and relative humidity after adjustment for
     ! precipitation has been made
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (orogswitch >= 1) THEN
              tatm = tq(1,i,j) + (lapse_rate * surf_orog_atm(i,j))
           else
@@ -215,38 +218,39 @@ CONTAINS
        & atmos_dt_tim, solconst, eb_rmax, eb_dphi, eb_rdtdim, eb_ca, &
        & gn_daysperyear, torog_atm, surf_orog_atm, landice_slicemask_lic, &
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
+    USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
-    REAL, DIMENSION(maxi), INTENT(OUT) :: alon1, alon2, alon3
-    REAL, DIMENSION(maxj), INTENT(OUT) :: alat1, alat2, alat3
-    REAL, DIMENSION(maxi+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
+    REAL, DIMENSION(:), INTENT(OUT) :: alat1, alat2, alat3
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & aboxedge1_lon, aboxedge2_lon, aboxedge3_lon
-    REAL, DIMENSION(maxj+1), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(OUT) :: &
          & aboxedge1_lat, aboxedge2_lat, aboxedge3_lat
-    INTEGER, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    INTEGER, DIMENSION(:,:), INTENT(OUT) :: &
          & ilandmask1, ilandmask2, ilandmask3
-    INTEGER, DIMENSION(maxj), INTENT(IN) :: ias, iaf, ips, ipf
+    INTEGER, DIMENSION(:), INTENT(IN) :: ias, iaf, ips, ipf
     INTEGER, INTENT(IN) :: jsf
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: tstar_ocn
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: co2_out, ch4_out, n2o_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: tstar_ocn
+    REAL, DIMENSION(:,:), INTENT(OUT) :: co2_out, ch4_out, n2o_out
     INTEGER(KIND=8), INTENT(IN) :: totsteps
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
          & tstar_atm, qstar_atm
     REAL, INTENT(OUT) :: atmos_dt_tim
     REAL, INTENT(IN) :: solconst
-    REAL, INTENT(OUT) :: eb_rmax, eb_dphi, eb_rdtdim, eb_ca(maxi,maxj)
+    REAL, INTENT(OUT) :: eb_rmax, eb_dphi, eb_rdtdim, eb_ca(:,:)
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & torog_atm, surf_orog_atm, landice_slicemask_lic
     REAL, INTENT(IN) :: syr
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
-    INTEGER :: bmask(maxi,maxj)
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: bmask
     REAL :: z1, tv, tv1, tv2, tv3, tv4, tv5, tatm, relh0_ocean, &
-         & relh0_land, diffamp(2), diffwid, difflin, &
-         & diffend, zro(maxk), zw(0:maxk)
+         & relh0_land, diffamp(2), diffwid, difflin, diffend
+    REAL, DIMENSION(:), ALLOCATABLE :: zro, zw
     REAL :: radfor_scl_co2, radfor_pc_co2_rise
     REAL :: radfor_scl_ch4, radfor_pc_ch4_rise
     REAL :: radfor_scl_n2o, radfor_pc_n2o_rise
@@ -286,8 +290,8 @@ CONTAINS
     REAL :: albedop_scl
 
     ! Seasonal fields
-    REAL :: uatml1(2,maxi,maxj,nmth+1)
-    REAL, DIMENSION(maxi,maxj,nmth+1) :: &
+    REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: uatml1
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
          & usurfl1, tncep1, pncep1, rhncep1, atm_alb1
 
     ! Precipitation timescale and land radiation
@@ -300,7 +304,7 @@ CONTAINS
     ! module is active
     LOGICAL :: flag_wind
 
-    REAL :: orbitall_vect(en_ntimes_max,5)
+    REAL :: orbitall_vect(5)
 
     INTEGER, EXTERNAL :: lnsig1
 
@@ -353,6 +357,10 @@ CONTAINS
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising EMBM atmosphere module ...'
 
+    maxi = dim_GOLDSTEINNLONS
+    maxj = dim_GOLDSTEINNLATS
+    maxk = dim_GOLDSTEINNLEVS
+
     IF (debug_init) PRINT *
 
     CALL check_unit(56, __LINE__, __FILE__)
@@ -376,6 +384,247 @@ CONTAINS
           STOP
        END IF
     END IF
+
+    ALLOCATE(k1(0:maxi+1,0:maxj+1),STAT=alloc_error) ; k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ku(2,maxi,maxj),STAT=alloc_error)       ; ku = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(mk(maxi+1,maxj),STAT=alloc_error)       ; mk = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(dt(maxk),STAT=alloc_error)       ; dt = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ds(maxj),STAT=alloc_error)       ; ds = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dsv(1:maxj-1),STAT=alloc_error)  ; dsv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rds2(2:maxj-1),STAT=alloc_error) ; rds2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dz(maxk),STAT=alloc_error)       ; dz = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(s(0:maxj),STAT=alloc_error)      ; s = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(c(0:maxj),STAT=alloc_error)      ; c = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sv(0:maxj),STAT=alloc_error)     ; sv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(dzu(2,maxk),STAT=alloc_error)    ; dzu = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(tau(2,maxi,maxj),STAT=alloc_error)    ; tau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(drag(2,maxi+1,maxj),STAT=alloc_error) ; drag = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztau(2,maxi,maxj),STAT=alloc_error)  ; dztau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(cv(0:maxj),STAT=alloc_error) ; cv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dza(maxk),STAT=alloc_error)  ; dza = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tsa0(maxj),STAT=alloc_error) ; tsa0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(tau0(maxi,maxj),STAT=alloc_error)   ; tau0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztav0(maxi,maxj),STAT=alloc_error) ; dztav0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tau1(maxi,maxj),STAT=alloc_error)   ; tau1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(dztav1(maxi,maxj),STAT=alloc_error) ; dztav1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(dztav(2,maxi,maxj),STAT=alloc_error) ; dztav = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(rc(0:maxj),STAT=alloc_error)     ; rc = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rcv(1:maxj-1),STAT=alloc_error)  ; rcv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rds(maxj),STAT=alloc_error)      ; rds = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdsv(1:maxj-1),STAT=alloc_error) ; rdsv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(cv2(1:maxj-1),STAT=alloc_error)  ; cv2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rc2(0:maxj),STAT=alloc_error)    ; rc2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdz(maxk),STAT=alloc_error)      ; rdz = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rdza(maxk),STAT=alloc_error)     ; rdza = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(rtv(maxi,maxj),STAT=alloc_error)  ; rtv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rtv3(maxi,maxj),STAT=alloc_error) ; rtv3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(us_dztau(2, maxi, maxj),STAT=alloc_error) ; us_dztau = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(us_dztav(2, maxi, maxj),STAT=alloc_error) ; us_dztav = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(asurf(maxj),STAT=alloc_error) ; asurf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(qsata(maxi,maxj),STAT=alloc_error) ; qsata = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qsato(maxi,maxj),STAT=alloc_error) ; qsato = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(co2(maxi,maxj),STAT=alloc_error)   ; co2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ch4(maxi,maxj),STAT=alloc_error)   ; ch4 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(n2o(maxi,maxj),STAT=alloc_error)   ; n2o = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(tq(2,maxi,maxj),STAT=alloc_error)      ; tq = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tq1(2,maxi,maxj),STAT=alloc_error)     ; tq1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(varice(2,maxi,maxj),STAT=alloc_error)  ; varice = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(varice1(2,maxi,maxj),STAT=alloc_error) ; varice1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tqa(2,maxi,maxj),STAT=alloc_error)     ; tqa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(albcl(maxi,maxj),STAT=alloc_error)  ; albcl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsw(maxi,maxj),STAT=alloc_error)   ; fxsw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxplw(maxi,maxj),STAT=alloc_error)  ; fxplw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0a(maxi,maxj),STAT=alloc_error)   ; fx0a = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0o(maxi,maxj),STAT=alloc_error)   ; fx0o = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsen(maxi,maxj),STAT=alloc_error)  ; fxsen = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pmeadj(maxi,maxj),STAT=alloc_error) ; pmeadj = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pptn(maxi,maxj),STAT=alloc_error)   ; pptn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(evap(maxi,maxj),STAT=alloc_error)   ; evap = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurf(maxi,maxj),STAT=alloc_error)  ; usurf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlata(maxi,maxj),STAT=alloc_error) ; fxlata = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlato(maxi,maxj),STAT=alloc_error) ; fxlato = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlw(maxi,maxj),STAT=alloc_error)   ; fxlw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ca(maxi,maxj),STAT=alloc_error)     ; ca = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qb(maxi,maxj),STAT=alloc_error)     ; qb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(qbsic(maxi,maxj),STAT=alloc_error)  ; qbsic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(diffa(2,2,maxj),STAT=alloc_error) ; diffa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(fx0sic(maxi,maxj),STAT=alloc_error)   ; fx0sic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0neto(maxi,maxj),STAT=alloc_error)  ; fx0neto = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwfxneto(maxi,maxj),STAT=alloc_error) ; fwfxneto = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(evapsic(maxi,maxj),STAT=alloc_error)  ; evapsic = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tsfreez(maxi,maxj),STAT=alloc_error)  ; tsfreez = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(uatm(2,maxi,maxj),STAT=alloc_error) ; uatm = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(fxlatavg(maxi,maxj),STAT=alloc_error) ; fxlatavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxsenavg(maxi,maxj),STAT=alloc_error) ; fxsenavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxswavg(maxi,maxj),STAT=alloc_error)  ; fxswavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fxlwavg(maxi,maxj),STAT=alloc_error)  ; fxlwavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwpptavg(maxi,maxj),STAT=alloc_error) ; fwpptavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwevpavg(maxi,maxj),STAT=alloc_error) ; fwevpavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(tqavg(2,maxi,maxj),STAT=alloc_error)  ; tqavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fx0avg(4,maxi,maxj),STAT=alloc_error) ; fx0avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fwavg(2,maxi,maxj),STAT=alloc_error)  ; fwavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(palb(maxi,maxj),STAT=alloc_error)    ; palb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(palbavg(maxi,maxj),STAT=alloc_error) ; palbavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(d18o_ice_thresh(maxi,maxj),STAT=alloc_error) ; d18o_ice_thresh = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(d18o_orog_min(maxi,maxj),STAT=alloc_error)   ; d18o_orog_min = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(d18o_orog_grad(maxi,maxj),STAT=alloc_error)  ; d18o_orog_grad = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(chl(maxi,maxj),STAT=alloc_error) ; chl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(cel(maxi,maxj),STAT=alloc_error) ; cel = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(q_pa(maxi,maxj),STAT=alloc_error)      ; q_pa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rq_pa(maxi,maxj),STAT=alloc_error)     ; rq_pa = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(q_pa_avg(maxi,maxj),STAT=alloc_error)  ; q_pa_avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rq_pa_avg(maxi,maxj),STAT=alloc_error) ; rq_pa_avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(iroff(maxi,maxj),STAT=alloc_error) ; iroff = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(jroff(maxi,maxj),STAT=alloc_error) ; jroff = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(nclon1(maxi),STAT=alloc_error) ; nclon1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclon2(maxi),STAT=alloc_error) ; nclon2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclon3(maxi),STAT=alloc_error) ; nclon3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat1(maxj),STAT=alloc_error) ; nclat1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat2(maxj),STAT=alloc_error) ; nclat2 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(nclat3(maxj),STAT=alloc_error) ; nclat3 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ! Local allocations
+
+    ALLOCATE(bmask(maxi,maxj),STAT=alloc_error) ; bmask = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(zro(maxk),STAT=alloc_error)        ; zro = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(zw(0:maxk),STAT=alloc_error)       ; zw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(uatml1(2,maxi,maxj,nmth+1),STAT=alloc_error) ; uatml1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurfl1(maxi,maxj,nmth+1),STAT=alloc_error)  ; usurfl1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tncep1(maxi,maxj,nmth+1),STAT=alloc_error)   ; tncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pncep1(maxi,maxj,nmth+1),STAT=alloc_error)   ; pncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rhncep1(maxi,maxj,nmth+1),STAT=alloc_error)  ; rhncep1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(atm_alb1(maxi,maxj,nmth+1),STAT=alloc_error) ; atm_alb1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! Input directory name
     lenin = lnsig1(indir_name)
@@ -447,10 +696,7 @@ CONTAINS
     s0 = SIN(th0) ; s1 = SIN(th1)
     phix = 2*pi
 
-    ! grid dimensions must be no greater than array dimensions in var.cmn
-    imax = maxi ; jmax = maxj ; kmax = maxk ; lmax = 2
-
-    dphi = phix / imax
+    dphi = phix / maxi
     IF (igrid < 2) phi0 = -260.0 * deg_to_rad
     rdphi = 1.0 / dphi
 
@@ -461,8 +707,8 @@ CONTAINS
     sv(0) = s0
     cv(0) = COS(th0)
     IF (igrid == 1) THEN
-       dth = (th1 - th0) / jmax
-       DO j = 1, jmax
+       dth = (th1 - th0) / maxj
+       DO j = 1, maxj
           thv = th0 + j * dth
           theta = thv - 0.5 * dth
           sv(j) = SIN(thv)
@@ -470,8 +716,8 @@ CONTAINS
           cv(j) = COS(thv)
        END DO
     ELSE IF (igrid == 0) THEN
-       dscon = (s1 - s0) / jmax
-       DO j = 1, jmax
+       dscon = (s1 - s0) / maxj
+       DO j = 1, maxj
           sv(j) = s0 + j * dscon
           cv(j) = SQRT(1 - sv(j) * sv(j))
           s(j) = sv(j) - 0.5 * dscon
@@ -481,13 +727,13 @@ CONTAINS
        PRINT *, 'EMBM latitudes: velocity; tracers'
        PRINT *, 'j, 180/pi*asin(sv(j)), 180/pi*asin(s(j))'
     END IF
-    DO j = 1, jmax
+    DO j = 1, maxj
        ds(j) = sv(j) - sv(j-1)
        rds(j) = 1.0 / ds(j)
        c(j) = SQRT(1 - s(j) * s(j))
        rc(j) = 1.0 / c(j)
        rc2(j) = rc(j) * rc(j) * rdphi
-       IF (j < jmax) THEN
+       IF (j < maxj) THEN
           dsv(j) = s(j+1) - s(j)
           rdsv(j) = 1.0 / dsv(j)
           rcv(j) = 1.0 / cv(j)
@@ -498,7 +744,7 @@ CONTAINS
     END DO
 
     ! area of grid cell (assumes sine(lat) grid)
-    DO j = 1, jmax
+    DO j = 1, maxj
        asurf(j) = rsc * rsc * ds(j) * dphi
        IF (debug_init) &
             &PRINT *, 'j = ', j, 'EMBM grid cell area is', asurf(j), 'm2'
@@ -507,9 +753,25 @@ CONTAINS
     ! seasonality
     IF (debug_init) PRINT *, 'timesteps per year and A/O dt ratio'
     IF (debug_init) PRINT *, nyear, ndta
-    IF (nyear > maxnyr) STOP 'embm : nyear > maxnyr'
     tv = 86400.0 * yearlen / (nyear * tsc)
     ryear = 1.0 / (yearlen * 86400)
+    ALLOCATE(solfor(maxj,nyear),STAT=alloc_error)       ; solfor = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(albo(maxj,nyear),STAT=alloc_error)         ; albo = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(uatml(2,maxi,maxj,nyear),STAT=alloc_error) ; uatml = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(usurfl(maxi,maxj,nyear),STAT=alloc_error)  ; usurfl = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tncep(maxi,maxj,nyear),STAT=alloc_error)   ; tncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pncep(maxi,maxj,nyear),STAT=alloc_error)   ; pncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(rhncep(maxi,maxj,nyear),STAT=alloc_error)  ; rhncep = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(atm_alb(maxi,maxj,nyear),STAT=alloc_error) ; atm_alb = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
 
     dtatm = tv / ndta
     IF (debug_init) PRINT *, 'embm timestep (s) =', dtatm * tsc
@@ -519,54 +781,54 @@ CONTAINS
     IF (debug_init) PRINT *, 'dimensional ocean timestep', tv * tsc / 86400
     IF (debug_init) PRINT *, 'dimensionless O/A timesteps', tv, dtatm
 
-    rdtdim = 1.0 / (tsc * dt(kmax))
+    rdtdim = 1.0 / (tsc * dt(maxk))
     IF (debug_init) PRINT *, 'rdtdim = ', rdtdim
 
     ! Set up grid
     ! For variable (exponential) dz use ez0 > 0, ELSE use ez0 < 0
     ez0 = 0.1
-    z1 = ez0*((1.0 + 1 / ez0)**(1.0 / kmax) - 1.0)
+    z1 = ez0*((1.0 + 1 / ez0)**(1.0 / maxk) - 1.0)
     IF (debug_init) PRINT *, 'z1', z1
     tv4 = ez0 * ((z1 / ez0 + 1)**0.5 - 1)
     tv2 = 0
     tv1 = 0
-    zro(kmax) = -tv4
-    zw(kmax) = tv2
-    DO k = 1, kmax
+    zro(maxk) = -tv4
+    zw(maxk) = tv2
+    DO k = 1, maxk
        IF (ez0 > 0) THEN
           tv3 = ez0 * ((z1 / ez0 + 1)**k - 1)
-          dz(kmax-k+1) = tv3 - tv2
+          dz(maxk-k+1) = tv3 - tv2
           tv2 = tv3
           tv5 = ez0 * ((z1 / ez0 + 1)**(k + 0.5) - 1)
-          IF (k < kmax) dza(kmax-k) = tv5 - tv4
+          IF (k < maxk) dza(maxk-k) = tv5 - tv4
           tv4 = tv5
-          tv1 = tv1 + dz(kmax-k+1)
+          tv1 = tv1 + dz(maxk-k+1)
           ! tv3 is the depth of the kth w level from the top
           ! tv5 is the depth of the k+1th density level from the top
        ELSE
-          dz(k) = REAL(1.0D0 / kmax)
-          dza(k) = REAL(1.0D0 / kmax)
+          dz(k) = REAL(1.0D0 / maxk)
+          dza(k) = REAL(1.0D0 / maxk)
        END IF
     END DO
 
-    DO k = kmax, 1, -1
+    DO k = maxk, 1, -1
        IF (k > 1) zro(k-1) = zro(k) - dza(k-1)
        zw(k-1) = zw(k) - dz(k)
     END DO
     IF (debug_init) WRITE (6,'(i4,3e12.4)') &
-         & (k, dsc * zw(k), dsc * zro(k), dsc * dz(k), k = kmax, 1, -1)
+         & (k, dsc * zw(k), dsc * zro(k), dsc * dz(k), k = maxk, 1, -1)
 
     IF (debug_init) PRINT *, 'dzz'
-    dzz = dz(kmax) * dza(kmax-1) / 2
+    dzz = dz(maxk) * dza(maxk-1) / 2
     IF (debug_init) PRINT *, dzz
 
     ! efficiency array
-    rdz(1:kmax-1) = 1.0 / dz(1:kmax-1)
-    rdza(1:kmax-1) = 1.0 / dza(1:kmax-1)
-    rdz(kmax) = 1.0 / dz(kmax)
+    rdz(1:maxk-1) = 1.0 / dz(1:maxk-1)
+    rdza(1:maxk-1) = 1.0 / dza(1:maxk-1)
+    rdz(maxk) = 1.0 / dz(maxk)
 
-    ! dza(kmax) never referenced, set to 0 for Andy's biogeo-code
-    dza(kmax) = 0.0
+    ! dza(maxk) never referenced, set to 0 for Andy's biogeo-code
+    dza(maxk) = 0.0
 
     ! Set up sin and cos factors at rho and v points (c grid) fix for
     ! global domain although only cv and cv2 are referred to at or
@@ -594,8 +856,8 @@ CONTAINS
        OPEN(99,FILE=indir_name(1:lenin)//yv_wstress(1:len_yv),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              ! Variables dztau and dztav are renamed here to separate
              ! the unscaled (hence 'us') versions read in from files,
              ! from those scaled versions used in surflux and
@@ -632,16 +894,16 @@ CONTAINS
     OPEN(13,FILE=indir_name(1:lenin)//world//'.k1',IOSTAT=ios)
     CALL check_iostat(ios, __LINE__, __FILE__)
 
-    ! Note k1(i,j) must be periodic ; k1(0,j) - k1(imax,j) = 0 and
-    ! k1(1,j) - k1(imax+1,j) = 0, as enforced below;
-    do j = jmax+1, 0, -1
-       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, imax+1)
+    ! Note k1(i,j) must be periodic ; k1(0,j) - k1(maxi,j) = 0 and
+    ! k1(1,j) - k1(maxi+1,j) = 0, as enforced below;
+    do j = maxj+1, 0, -1
+       READ (13,*,IOSTAT=ios) (k1(i,j), i = 0, maxi+1)
        CALL check_iostat(ios, __LINE__, __FILE__)
 
        ! rotate grid to check b.c.s
-       k1(0,j) = k1(imax,j)
-       k1(imax+1,j) = k1(1,j)
-       IF (debug_init .AND. j /= 0 .AND. j /= jmax+1) &
+       k1(0,j) = k1(maxi,j)
+       k1(maxi+1,j) = k1(1,j)
+       IF (debug_init .AND. j /= 0 .AND. j /= maxj+1) &
             & WRITE(6,'(i4,32i3)') j, (k1(i,j), i = 1, 32)
     END DO
 
@@ -660,10 +922,10 @@ CONTAINS
 
     ! climatological albedo (similar to Weaver et al. 2001)
     IF (debug_init) PRINT *, 'climatological albedo, by latitude'
-    DO j = 1, jmax
+    DO j = 1, maxj
        albedop_scl = ((albedop_skew - s(j)) / 2.0)**albedop_skewp
        tv = ASIN(s(j))
-       albcl(1:imax,j) = albedop_offs + albedop_amp * 0.5 * &
+       albcl(1:maxi,j) = albedop_offs + albedop_amp * 0.5 * &
             & (1.0 - COS(2.0 * tv) + &
             & albedop_scl * albedop_mod2 * COS(2.0 * tv) + &
             & albedop_scl * albedop_mod4 * COS(4.0 * tv) + &
@@ -673,7 +935,7 @@ CONTAINS
 
     ! atmospheric SSW absorption coefficient, value over land purely
     ! diagnostic
-    WHERE (k1(1:maxi,1:maxj) <= kmax)
+    WHERE (k1(1:maxi,1:maxj) <= maxk)
        ca = 0.3
     ELSEWHERE
        ca = 1.0
@@ -696,8 +958,8 @@ CONTAINS
          & PRINT *, '=> climate sensitivity =', delf2x * LOG(2.0), ' Wm-2'
 
     ! initialize greenhouse gas concentrations
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           co2(i,j) = radfor_scl_co2 * co20
           ch4(i,j) = radfor_scl_ch4 * ch40
           n2o(i,j) = radfor_scl_n2o * n2o0
@@ -717,6 +979,8 @@ CONTAINS
        IF (debug_init) PRINT *,  'co2 defined from ', TRIM(filenameco2)
        IF (debug_init) PRINT *, 't_co2,nco2,co2steps', t_co2, nco2, co2steps
        OPEN(729,FILE=TRIM(filenameco2))
+       ALLOCATE(co2_vect(nco2),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO i = 1, nco2
           READ (729,*) co2_vect(i)
        END DO
@@ -736,13 +1000,13 @@ CONTAINS
        CALL check_unit(35, __LINE__, __FILE__)
        OPEN(35,file=indir_name(1:lenin)//u_wspeed(1:len_uws), IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       READ (35,*,IOSTAT=ios)((uatm(1,i,j), i = 1, imax), j = 1, jmax)
+       READ (35,*,IOSTAT=ios)((uatm(1,i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(35,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
        OPEN(35,file=indir_name(1:lenin)//v_wspeed(1:len_vws),IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       READ (35,*,IOSTAT=ios)((uatm(2,i,j), i = 1, imax), j = 1, jmax)
+       READ (35,*,IOSTAT=ios)((uatm(2,i,j), i = 1, maxi), j = 1, maxj)
        CALL check_iostat(ios, __LINE__, __FILE__)
        CLOSE(35,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -753,10 +1017,10 @@ CONTAINS
        ! 2 removes all conditional zonal averages
        IF (par_wind_polar_avg /= 1 .AND. par_wind_polar_avg /= 2)  then
           IF (debug_init) PRINT *, 'Averaging advective winds near poles'
-          DO j = 1, jmax
-             IF (j <= 2 .OR. j >= jmax-1) THEN
+          DO j = 1, maxj
+             IF (j <= 2 .OR. j >= maxj-1) THEN
                 DO l = 1, 2
-                   tv = SUM(uatm(l,:,j)) / imax
+                   tv = SUM(uatm(l,:,j)) / maxi
                    uatm(l,:,j) = tv
                 END DO
              END IF
@@ -767,7 +1031,7 @@ CONTAINS
        ! disastrous).
        uatm = uatm / usc
        IF (par_wind_polar_avg /= 1 .AND. par_wind_polar_avg /= 2) THEN
-          uatm(2,:,jmax) = 0.
+          uatm(2,:,maxj) = 0.
        END IF
     ELSE
        uatm = 0.0
@@ -781,7 +1045,7 @@ CONTAINS
     diffend = EXP(-(0.5 * pi / diffwid)**2)
     IF (debug_init) PRINT *, &
          & 'atm stability numbers, need to be small for explicit dt'
-    DO j = 1, jmax
+    DO j = 1, maxj
        tv = ASIN(s(j))
        tv2 = ASIN(sv(j))
        diffa(2,1,j) = diffamp(2)
@@ -836,11 +1100,11 @@ CONTAINS
     ! reconstruct surface wind field for bulk turbulent transfer and
     ! zonally average near poles as for uatm for stability
 
-    DO j = 1, jmax
+    DO j = 1, maxj
        tv3 = 0.0
-       DO i = 1, imax
+       DO i = 1, maxi
           IF (i == 1) THEN
-             tv = (tau(1,i,j) + tau(1,imax,j)) / 2
+             tv = (tau(1,i,j) + tau(1,maxi,j)) / 2
           ELSE
              tv = (tau(1,i,j) + tau(1,i-1,j)) / 2
           END IF
@@ -854,8 +1118,8 @@ CONTAINS
           tv3 = tv3 + usurf(i,j)
        END DO
        IF (par_wind_polar_avg /= 2) THEN
-          DO i = 1, imax
-             IF (j <= 2 .OR. j >= jmax-1) usurf(i,j) = tv3 / imax
+          DO i = 1, maxi
+             IF (j <= 2 .OR. j >= maxj-1) usurf(i,j) = tv3 / maxi
           END DO
        END IF
     END DO
@@ -880,7 +1144,7 @@ CONTAINS
     ! useful constant proportional to inverse timscale for surface freezing
     rsictscsf = ch_ice * u_tau_ice * rho0 * cpo_ice
     IF (debug_init) PRINT *, 'rsictscsf = ', rsictscsf
-    rsictscsf = dsc * dz(kmax) * rho0 * cpo_ice / (17.5 * 86400.0)
+    rsictscsf = dsc * dz(maxk) * rho0 * cpo_ice / (17.5 * 86400.0)
     IF (debug_init) PRINT *, 'rsictscsf = ', rsictscsf
     IF (debug_init) PRINT *,  &
          & 'minimum average sea-ice thickness, hmin =', hmin
@@ -918,7 +1182,7 @@ CONTAINS
     j1as = jsf + 1
     tv = SIN(-20.0 * pi / 180.0)
     tv2 = SIN(24.0 * pi / 180.0)
-    DO j = 1, jmax
+    DO j = 1, maxj
        ! Southern boundary of region 1b
        IF (tv >= sv(j-1) .AND. tv <= sv(j)) THEN
           ! At least half of box area has to be in region
@@ -959,12 +1223,12 @@ CONTAINS
        ! In north Atlantic (north of 24 deg N) NB INCLUDES DRY POINTS
        npac1c = 0
        natl1c = 0
-       DO j = j1cs, jmax
+       DO j = j1cs, maxj
           DO i = ips(j), ipf(j)
-             IF (k1(i,j) <= kmax) npac1c = npac1c + 1
+             IF (k1(i,j) <= maxk) npac1c = npac1c + 1
           END DO
           DO i = ias(j), iaf(j)
-             IF (k1(i,j) <= kmax) natl1c = natl1c + 1
+             IF (k1(i,j) <= maxk) natl1c = natl1c + 1
           END DO
        END DO
     END IF
@@ -978,7 +1242,7 @@ CONTAINS
           END DO
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             DO i = ias(j), imax
+             DO i = ias(j), maxi
                 area_atl1a = area_atl1a + asurf(j)
              END DO
              DO i = 1, iaf(j)
@@ -999,7 +1263,7 @@ CONTAINS
           END DO
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             DO i = ias(j), imax
+             DO i = ias(j), maxi
                 area_atl1b = area_atl1b + asurf(j)
              END DO
              DO i = 1, iaf(j)
@@ -1014,21 +1278,21 @@ CONTAINS
 
        area_pac1c = 0.
        area_atl1c = 0.
-       DO j = j1cs, jmax
+       DO j = j1cs, maxj
           DO i = ips(j), ipf(j)
-             IF (k1(i,j) <= kmax) area_pac1c = area_pac1c + asurf(j)
+             IF (k1(i,j) <= maxk) area_pac1c = area_pac1c + asurf(j)
           END DO
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             DO i = ias(j), imax
-                IF (k1(i,j) <= kmax) area_atl1c = area_atl1c + asurf(j)
+             DO i = ias(j), maxi
+                IF (k1(i,j) <= maxk) area_atl1c = area_atl1c + asurf(j)
              END DO
              DO i=  1, iaf(j)
-                IF (k1(i,j) <= kmax) area_atl1c = area_atl1c + asurf(j)
+                IF (k1(i,j) <= maxk) area_atl1c = area_atl1c + asurf(j)
              END DO
           ELSE
              DO i = ias(j), iaf(j)
-                IF (k1(i,j) <= kmax) area_atl1c = area_atl1c + asurf(j)
+                IF (k1(i,j) <= maxk) area_atl1c = area_atl1c + asurf(j)
              END DO
           END IF
        END DO
@@ -1055,13 +1319,13 @@ CONTAINS
           pmeadj(ips(j):ipf(j),j) = 1.0E6 * extra1b / (npac1b * asurf(j))
           pmeadj(ias(j):iaf(j),j) = -1.0E6 * extra1b / (natl1b * asurf(j))
        END DO
-       DO j = j1cs, jmax
+       DO j = j1cs, maxj
           DO i = ips(j), ipf(j)
-             IF (k1(i,j) <= kmax) &
+             IF (k1(i,j) <= maxk) &
                   & pmeadj(i,j) = 1.0E6 * extra1c / (npac1c * asurf(j))
           END DO
           DO i = ias(j), iaf(j)
-             IF (k1(i,j) <= kmax) &
+             IF (k1(i,j) <= maxk) &
                   & pmeadj(i,j) = -1.0E6 * extra1c / (natl1c * asurf(j))
           END DO
        END DO
@@ -1073,7 +1337,7 @@ CONTAINS
           pmeadj(ips(j):ipf(j),j) = 1.0E6 * extra1a / area_pac1a
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             pmeadj(ias(j):imax,j) = -1.0E6 * extra1a / area_atl1a
+             pmeadj(ias(j):maxi,j) = -1.0E6 * extra1a / area_atl1a
              pmeadj(1:iaf(j),j) = -1.0E6 * extra1a / area_atl1a
           ELSE
              pmeadj(ias(j):iaf(j),j) = -1.0E6 * extra1a / area_atl1a
@@ -1084,28 +1348,28 @@ CONTAINS
           pmeadj(ips(j):ipf(j),j) = 1.0E6 * extra1b / area_pac1b
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             pmeadj(ias(j):imax,j) = -1.0E6 * extra1b / area_atl1b
+             pmeadj(ias(j):maxi,j) = -1.0E6 * extra1b / area_atl1b
              pmeadj(1:iaf(j),j) = -1.0E6 * extra1b / area_atl1b
           ELSE
              pmeadj(ias(j):iaf(j),j) = -1.0E6 * extra1b / area_atl1b
           END IF
        END DO
 
-       do j=j1cs,jmax
+       do j=j1cs,maxj
           do i=ips(j),ipf(j)
-             IF (k1(i,j) <= kmax) pmeadj(i,j) = 1.0E6 * extra1c / area_pac1c
+             IF (k1(i,j) <= maxk) pmeadj(i,j) = 1.0E6 * extra1c / area_pac1c
           END DO
           ! conditionality to take care of 'split Atlantic' (rma, 5/10/05)
           IF (ias(j) > iaf(j)) THEN
-             do i=ias(j),imax
-                IF (k1(i,j) <= kmax) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
+             do i=ias(j),maxi
+                IF (k1(i,j) <= maxk) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
              END DO
              do i=1,iaf(j)
-                IF (k1(i,j) <= kmax) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
+                IF (k1(i,j) <= maxk) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
              END DO
           ELSE
              do i=ias(j),iaf(j)
-                IF (k1(i,j) <= kmax) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
+                IF (k1(i,j) <= maxk) pmeadj(i,j) = -1.0E6 * extra1c / area_atl1c
              END DO
           END IF
        END DO
@@ -1130,10 +1394,10 @@ CONTAINS
        CALL check_unit(13, __LINE__, __FILE__)
        OPEN(13,FILE=indir_name(1:lenin)//world//'.bmask',IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
-       DO j = jmax, 1, -1
-          READ (13,*,IOSTAT=ios) (bmask(i,j), i = 1, imax)
+       DO j = maxj, 1, -1
+          READ (13,*,IOSTAT=ios) (bmask(i,j), i = 1, maxi)
           CALL check_iostat(ios, __LINE__, __FILE__)
-          IF (debug_init) WRITE (6,'(i4,66i3)') j, (bmask(i,j), i = 1, imax)
+          IF (debug_init) WRITE (6,'(i4,66i3)') j, (bmask(i,j), i = 1, maxi)
        END DO
        CLOSE(13,IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)
@@ -1142,8 +1406,8 @@ CONTAINS
        natl1a = 0 ; npac1a = 0
        natl1b = 0 ; npac1b = 0
        natl1c = 0 ; npac1c = 0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              ! south Pacific, Atlantic (to 20 deg S)
              IF (bmask(i,j) == 31) natl1a = natl1a + 1
              IF (bmask(i,j) == 21) npac1a = npac1a + 1
@@ -1161,8 +1425,8 @@ CONTAINS
        ! here add/remove total extra1a, extra1b, extra1c Sv of freshwater
        ! equally by area in Pac/Atl resp.
        pmeadj = 0.0
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              SELECT CASE (bmask(i,j))
              CASE (31)
                 pmeadj(i,j) = -1.0E6 * extra1a / (natl1a * asurf(j))
@@ -1182,8 +1446,8 @@ CONTAINS
     END IF
 
     ! Initialize atmosphere
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Initial air temperatures
           tq(1,i,j) = tatm
           tq1(1,i,j) = tq(1,i,j)
@@ -1191,7 +1455,7 @@ CONTAINS
           ! Initial specific humidities
           ! Set to relh0_ocean*qsat_ocean over ocean and
           ! relh0_land*qsat_atmos over land
-          IF (k1(i,j) <= kmax) THEN
+          IF (k1(i,j) <= maxk) THEN
              IF (tstar_ocn(i,j) > tsic) THEN
                 tq(2,i,j) = relh0_ocean * const1 * &
                      & EXP(const2 * tstar_ocn(i,j) / (tstar_ocn(i,j) + const3))
@@ -1253,16 +1517,22 @@ CONTAINS
     ! read in time varying orbital forcing
     IF (orbit_radfor == 'y' .OR. orbit_radfor == 'Y') THEN
        OPEN(UNIT=729,FILE=indir_name(1:lenin)//TRIM(filenameorbit),IOSTAT=ios)
+       ALLOCATE(orbitecc_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbitobl_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbitpre_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
+       ALLOCATE(orbittau_vect(norbit),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO i = 1, norbit
-          READ (729,*,IOSTAT=ios) (orbitall_vect(i,n), n = 1, 5)
+          READ (729,*,IOSTAT=ios) (orbitall_vect(n), n = 1, 5)
+          orbitecc_vect(norbit-i+1) = orbitall_vect(2)
+          orbitobl_vect(norbit-i+1) = orbitall_vect(3)
+          orbitpre_vect(norbit-i+1) = orbitall_vect(4)
+          orbittau_vect(norbit-i+1) = orbitall_vect(5)
        END DO
        CLOSE(729)
-       DO i = 1, norbit
-          orbitecc_vect(norbit-i+1) = orbitall_vect(i,2)
-          orbitobl_vect(norbit-i+1) = orbitall_vect(i,3)
-          orbitpre_vect(norbit-i+1) = orbitall_vect(i,4)
-          orbittau_vect(norbit-i+1) = orbitall_vect(i,5)
-       END DO
     END IF
 
     ! v2 seasonal. Calculate radiative forcing
@@ -1366,22 +1636,22 @@ CONTAINS
 
     IF (debug_init) PRINT *, &
          & '* Longitude : alon1, alon2, alon3, abox1, abox2, abox3 *'
-    DO i = 1, imax
-       alon1(i) = REAL(360.0 * (i-0.5) / REAL(imax) + phi0 / deg_to_rad)
-       alon2(i) = REAL(360.0 * i / REAL(imax) + phi0 / deg_to_rad)
-       alon3(i) = REAL(360.0 * (i-0.5) / REAL(imax) + phi0 / deg_to_rad)
+    DO i = 1, maxi
+       alon1(i) = REAL(360.0 * (i-0.5) / REAL(maxi) + phi0 / deg_to_rad)
+       alon2(i) = REAL(360.0 * i / REAL(maxi) + phi0 / deg_to_rad)
+       alon3(i) = REAL(360.0 * (i-0.5) / REAL(maxi) + phi0 / deg_to_rad)
        nclon1(i) = alon1(i)
-       nclon2(i) = REAL(360.0 * (i-1.0) / REAL(imax) + phi0 / deg_to_rad)
+       nclon2(i) = REAL(360.0 * (i-1.0) / REAL(maxi) + phi0 / deg_to_rad)
        nclon3(i) = alon3(i)
     END DO
-    DO i = 1, imax+1
-       aboxedge1_lon(i) = REAL(360.0 * (i-1.0) / REAL(imax) + phi0 / deg_to_rad)
-       aboxedge2_lon(i) = REAL(360.0 * (i-0.5) / REAL(imax) + phi0 / deg_to_rad)
-       aboxedge3_lon(i) = REAL(360.0 * (i-1.0) / REAL(imax) + phi0 / deg_to_rad)
+    DO i = 1, maxi+1
+       aboxedge1_lon(i) = REAL(360.0 * (i-1.0) / REAL(maxi) + phi0 / deg_to_rad)
+       aboxedge2_lon(i) = REAL(360.0 * (i-0.5) / REAL(maxi) + phi0 / deg_to_rad)
+       aboxedge3_lon(i) = REAL(360.0 * (i-1.0) / REAL(maxi) + phi0 / deg_to_rad)
     END DO
 
-    DO i = 1, imax+1
-       IF (i < imax + 1) THEN
+    DO i = 1, maxi+1
+       IF (i < maxi + 1) THEN
           IF (debug_init) WRITE (*,313) i, alon1(i), alon2(i), alon3(i), &
                & aboxedge1_lon(i), aboxedge2_lon(i), aboxedge3_lon(i)
        ELSE
@@ -1393,24 +1663,24 @@ CONTAINS
     IF (debug_init) PRINT *, &
          & '* Latitude : alat1, alat2, alat3, abox1, abox2, abox3 *'
     nclat3(1) = REAL(ASIN(sv(0)) * 180.0 / pi)
-    DO j = 1, jmax
+    DO j = 1, maxj
        alat1(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        alat2(j) = REAL(ASIN(s(j)) * 180.0 / pi)
        alat3(j) = REAL(ASIN(sv(j)) * 180.0 / pi)
        nclat1(j) = alat1(j)
        nclat2(j) = alat2(j)
-       IF (j < jmax) nclat3(j + 1) = REAL(ASIN(sv(j)) * 180.0 / pi)
+       IF (j < maxj) nclat3(j + 1) = REAL(ASIN(sv(j)) * 180.0 / pi)
     END DO
-    DO j = 1, jmax+1
+    DO j = 1, maxj+1
        aboxedge1_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
        aboxedge2_lat(j) = REAL(ASIN(sv(j-1)) * 180.0 / pi)
        ! Following if statement stops bounds error
-       IF (j <= jmax) aboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
+       IF (j <= maxj) aboxedge3_lat(j) = REAL(ASIN(s(j)) * 180.0 / pi)
     END DO
-    aboxedge3_lat(jmax+1) = REAL(ASIN(sv(jmax)) * 180.0 / pi)
+    aboxedge3_lat(maxj+1) = REAL(ASIN(sv(maxj)) * 180.0 / pi)
 
-    DO j = 1, jmax+1
-       IF (j < jmax+1) THEN
+    DO j = 1, maxj+1
+       IF (j < maxj+1) THEN
           IF (debug_init) WRITE (*,313) j, alat1(j), alat2(j), alat3(j), &
                & aboxedge1_lat(j), aboxedge2_lat(j), aboxedge3_lat(j)
        ELSE
@@ -1420,7 +1690,7 @@ CONTAINS
     END DO
 
     ! This bit is to make the land-sea mask on the genie grid.  The genie
-    ! grid is offset from the goldstein grid by imax/4 in the longitudinal
+    ! grid is offset from the goldstein grid by maxi/4 in the longitudinal
     ! direction.
     WHERE (k1(1:maxi,1:maxj) >= 90)
        ilandmask1 = 1
@@ -1434,8 +1704,8 @@ CONTAINS
     IF (debug_init) PRINT *
 
     ! Output arguments
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           ! Surface air temperature [-> surface fluxes]
           tstar_atm(i,j) = REAL(tq1(1,i,j))
           ! Surface specific humidity [-> surface fluxes]
@@ -1468,9 +1738,11 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenameorog))
+       ALLOCATE(orog_vect(maxi,maxj,norog),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO l = 1, norog
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 READ (77,*) orog_vect(i,j,l)
              END DO
           END DO
@@ -1483,27 +1755,29 @@ CONTAINS
        ! See holden et al 2009 Clim Past Disc
        ! d18o time series
        OPEN(77,FILE=TRIM(filenamed18o))
+       ALLOCATE(d18o_vect(nd18o),STAT=alloc_error)
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        READ (77,*) (d18o_vect(l), l = 1, nd18o)
        CLOSE(77)
        ! Threshold value of d18o at which cell is ice covered
        OPEN(77,FILE=TRIM(filenamed18oicethresh))
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              READ (77,*) d18o_ice_thresh(i,j)
           END DO
        END DO
        CLOSE(77)
        ! Minimum (modern) orography
        OPEN(77,FILE=TRIM(filenamed18oorogmin))
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              READ (77,*) d18o_orog_min(i,j)
           END DO
        END DO
        ! 'gradient' of orography wrt d180
        OPEN(77,FILE=TRIM(filenamed18ooroggrad))
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              READ (77,*) d18o_orog_grad(i,j)
           END DO
        END DO
@@ -1511,8 +1785,8 @@ CONTAINS
        ! initialise orography
        ! LOOK need to initialise this correctly for restarts
        ! (when ENTS restarts are enabled which they are not as of 2/2/10)
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              IF (d18o_ice_thresh(i,j) < 1.0E-5) THEN
                 ! ocean (not used but initialised for completeness)
                 surf_orog_atm(i,j) = 0.0
@@ -1531,15 +1805,15 @@ CONTAINS
     ELSE
        IF (orogswitch >= 1) THEN
           OPEN(77,FILE=TRIM(filenameorog))
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 READ (77,*) surf_orog_atm(i,j)
              END DO
           END DO
           CLOSE(77)
        ELSE
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 surf_orog_atm(i,j) = 0.0
              END DO
           END DO
@@ -1548,8 +1822,8 @@ CONTAINS
             & SUM(surf_orog_atm) / SIZE(surf_orog_atm)
     END IF
 
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           torog_atm(i,j) = tstar_atm(i,j)
           IF (orogswitch == 1) THEN
              torog_atm(i,j) = torog_atm(i,j) + lapse_rate * surf_orog_atm(i,j)
@@ -1565,9 +1839,11 @@ CONTAINS
           STOP
        END IF
        OPEN(77,FILE=TRIM(filenamelice))
+       ALLOCATE(lice_vect(maxi,maxj,nlice),STAT=alloc_error) ; lice_vect = 0.0
+       CALL check_iostat(alloc_error,__LINE__,__FILE__)
        DO l = 1, nlice
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 READ (77,*) lice_vect(i,j,l)
              END DO
           END DO
@@ -1578,8 +1854,8 @@ CONTAINS
        ! Calculate ice mask from benthic d18o
        ! LOOK need to initialise this correctly for restarts
        ! (when ENTS restarts are enabled which they are not as of 2/2/10)
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              IF (d18o_ice_thresh(i,j) < 1.0E-5) THEN
                 ! ocean
                 landice_slicemask_lic(i,j) = 0.0
@@ -1595,16 +1871,16 @@ CONTAINS
     ELSE
        IF (flag_ents) THEN
           OPEN(77,FILE=TRIM(filenamelice))
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 READ (77,*) landice_slicemask_lic(i,j)
              END DO
           END DO
           CLOSE(77)
        ELSE
-          DO i = 1, imax
-             DO j = 1, jmax
-                IF (k1(i,j) <= kmax) THEN
+          DO i = 1, maxi
+             DO j = 1, maxj
+                IF (k1(i,j) <= maxk) THEN
                    landice_slicemask_lic(i,j) = 0.0
                 ELSE
                    landice_slicemask_lic(i,j) = 1.0
@@ -1623,8 +1899,8 @@ CONTAINS
           OPEN(78,FILE=indir_name(1:lenin)//'NCEP_pptn_monthly.dat')
           OPEN(79,FILE=indir_name(1:lenin)//'NCEP_RH_monthly.dat')
           DO l = 1, nmth+1
-             DO i = 1, imax
-                DO j = 1, jmax
+             DO i = 1, maxi
+                DO j = 1, maxj
                    READ (77,*) tncep1(i,j,l)
                    READ (78,*) pncep1(i,j,l)
                    READ (79,*) rhncep1(i,j,l)
@@ -1639,8 +1915,8 @@ CONTAINS
        ! Create atmospheric albedo fields
        OPEN(77,FILE=indir_name(1:lenin)//'atm_albedo_monthly.dat')
        DO l = 1, nmth+1
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 READ (77,*) atm_alb1(i,j,l)
              END DO
           END DO
@@ -1649,15 +1925,15 @@ CONTAINS
 
        ! Read in and initialise monthly winds
        OPEN(35,FILE=indir_name(1:lenin)//'uvic_windx.silo')
-       READ (35,*)(((uatml1(1,i,j,l), i = 1, imax), j = 1, jmax), l = 1, nmth+1)
+       READ (35,*)(((uatml1(1,i,j,l), i = 1, maxi), j = 1, maxj), l = 1, nmth+1)
        CLOSE(35)
        OPEN(35,FILE=indir_name(1:lenin)//'uvic_windy.silo')
-       READ (35,*)(((uatml1(2,i,j,l), i = 1, imax), j = 1, jmax), l = 1, nmth+1)
+       READ (35,*)(((uatml1(2,i,j,l), i = 1, maxi), j = 1, maxj), l = 1, nmth+1)
        CLOSE(35)
 
        ! read in wind speeds for use in radiation/evap calc.
        OPEN(35,FILE=indir_name(1:lenin)//'monthly_windspd.silo')
-       READ (35,*)(((usurfl1(i,j,l), i = 1, imax), j = 1, jmax), l = 1, nmth+1)
+       READ (35,*)(((usurfl1(i,j,l), i = 1, maxi), j = 1, maxj), l = 1, nmth+1)
        CLOSE(35)
 
        ! Preprocess for use in tsetpa/tstipa
@@ -1665,13 +1941,13 @@ CONTAINS
        ! Step avoided if par_wind_polar_avg is 2
        IF (par_wind_polar_avg /= 2)  then
           DO m = 1, nmth+1
-             DO j = 1, jmax
-                IF (j <= 2 .OR. j >= jmax-1) THEN
+             DO j = 1, maxj
+                IF (j <= 2 .OR. j >= maxj-1) THEN
                    DO l = 1, 2
-                      tv = SUM(uatml1(l,1:imax,j,m)) / imax
-                      tv1 = SUM(usurfl1(1:imax,j,m)) / imax
-                      uatml1(l,1:imax,j,m) = tv
-                      usurfl1(1:imax,j,m) = tv1
+                      tv = SUM(uatml1(l,1:maxi,j,m)) / maxi
+                      tv1 = SUM(usurfl1(1:maxi,j,m)) / maxi
+                      uatml1(l,1:maxi,j,m) = tv
+                      usurfl1(1:maxi,j,m) = tv1
                    END DO
                 END IF
              END DO
@@ -1682,11 +1958,11 @@ CONTAINS
        ! disastrous).
        ! Step avoided if par_wind_polar_avg is 2
        DO l = 1, nmth+1
-          DO i = 1, imax
-             uatml1(1,i,1:jmax,l) = uatml1(1,i,1:jmax,l) / usc
-             uatml1(2,i,1:jmax,l) = uatml1(2,i,1:jmax,l) / usc
+          DO i = 1, maxi
+             uatml1(1,i,1:maxj,l) = uatml1(1,i,1:maxj,l) / usc
+             uatml1(2,i,1:maxj,l) = uatml1(2,i,1:maxj,l) / usc
              IF (par_wind_polar_avg /= 2)  then
-                uatml1(2,i,jmax,l) = 0.
+                uatml1(2,i,maxj,l) = 0.
              END IF
           END DO
        END DO
@@ -1734,8 +2010,8 @@ CONTAINS
     ! diagnostics ('surflux.F' will update it again) and calculate
     ! specific and relative humidity after adjustment for precipitation
     ! has been made
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (orogswitch < 2 .AND. flag_ents) THEN
              qsat = const1 * &
                   & EXP(const4 * torog_atm(i,j) / (torog_atm(i,j) + const5))
@@ -1769,6 +2045,16 @@ CONTAINS
          & (par_runoff_tau * syr / 12.0))
     IF (debug_init) PRINT *, 'runoff factor 1 = ', runoff_factor_1
     IF (debug_init) PRINT *, 'runoff factor 2 = ', runoff_factor_2
+
+    DEALLOCATE(bmask)
+    DEALLOCATE(zro)
+    DEALLOCATE(zw)
+    DEALLOCATE(uatml1)
+    DEALLOCATE(usurfl1)
+    DEALLOCATE(tncep1)
+    DEALLOCATE(pncep1)
+    DEALLOCATE(rhncep1)
+    DEALLOCATE(atm_alb1)
 
     PRINT *, ' <<< Initialisation complete'
     PRINT *, '======================================================='
@@ -1808,16 +2094,16 @@ CONTAINS
     dtloc = dtatm
 
     ! set b.c's on local variables
-    cin(0:imax,0) = 0.0
-    cis(0:imax,0) = 0.0
-    tq2(0:imax,0) = 0.0
-    cin(0:imax,jmax) = 0.0
-    cis(0:imax,jmax) = 0.0
-    tq2(0:imax,jmax+1) = 0.0
+    cin(0:maxi,0) = 0.0
+    cis(0:maxi,0) = 0.0
+    tq2(0:maxi,0) = 0.0
+    cin(0:maxi,maxj) = 0.0
+    cis(0:maxi,maxj) = 0.0
+    tq2(0:maxi,maxj+1) = 0.0
 
     DO l = 1, 2
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              ! Flux to east
              cie(i,j) = betaz(l) * uatm(1,i,j) * rc(j) * 0.5 * rdphi
              diffpp = diffa(l,1,j) + &
@@ -1833,8 +2119,8 @@ CONTAINS
              diffpp = diffa(l,2,j) + &
                   & (2-l) * diffmod0 * MAX(0.0, MIN(1.0, &
                   & (pptn(i,j) - ppmin) / (ppmax - ppmin)))
-             ! cv(jmax) = 0 but dsv not defined so mask needed
-             IF (j < jmax) THEN
+             ! cv(maxj) = 0 but dsv not defined so mask needed
+             IF (j < maxj) THEN
                 tv = cv(j) * cv(j) * rdsv(j) * diffa(l,2,j)
                 pec = betam(l) * uatm(2,i,j) * dsv(j) / diffpp
                 ups = pec / (2.0 + ABS(pec))
@@ -1846,16 +2132,16 @@ CONTAINS
              cin(i,j) = cin(i,j) * (1 - ups) - tv
           END DO
        END DO
-       cie(0,1:jmax) = cie(imax,1:jmax)
-       ciw(0,1:jmax) = ciw(imax,1:jmax)
+       cie(0,1:maxj) = cie(maxi,1:maxj)
+       ciw(0,1:maxj) = ciw(maxi,1:maxj)
 
        ! iterate to solve timestep
        DO iits = 1, nii
-          tq2(1:imax,1:jmax) = cimp * tq(l,:,:) + (1.0 - cimp) * tq1(l,:,:)
-          tq2(0,1:jmax) = tq2(imax,1:jmax)
-          tq2(imax+1,1:jmax) = tq2(1,1:jmax)
-          DO j = 1, jmax
-             DO i = 1, imax
+          tq2(1:maxi,1:maxj) = cimp * tq(l,:,:) + (1.0 - cimp) * tq1(l,:,:)
+          tq2(0,1:maxj) = tq2(maxi,1:maxj)
+          tq2(maxi+1,1:maxj) = tq2(1,1:maxj)
+          DO j = 1, maxj
+             DO i = 1, maxi
                 centre = dtloc * (ciw(i,j) - cie(i-1,j) + &
                      & (cis(i,j) - cin(i,j-1)) * rds(j))
                 tq(l,i,j) = (tq1(l,i,j) * (1.0 - (1.0 - cimp) * centre) &
@@ -1869,12 +2155,12 @@ CONTAINS
           END DO
        END DO
        IF (correct) THEN
-          tq2(1:imax,1:jmax) = 0.5 * (tq2(1:imax,1:jmax) + &
+          tq2(1:maxi,1:maxj) = 0.5 * (tq2(1:maxi,1:maxj) + &
                & cimp * tq(l,:,:) + (1.0 - cimp) * tq1(l,:,:))
-          tq2(0,1:jmax) = tq2(imax,1:jmax)
-          tq2(imax+1,1:jmax) = tq2(1,1:jmax)
-          DO j = 1, jmax
-             DO i = 1, imax
+          tq2(0,1:maxj) = tq2(maxi,1:maxj)
+          tq2(maxi+1,1:maxj) = tq2(1,1:maxj)
+          DO j = 1, maxj
+             DO i = 1, maxi
                 ! Explicit and conservative corrector step
                 tq(l,i,j) = tq1(l,i,j) &
                      & - dtloc * (-tqa(l,i,j) &
@@ -1906,13 +2192,13 @@ CONTAINS
   ! MSW 8/2/5
   SUBROUTINE field_interp(uatml1, usurfl1, tncep1, pncep1, rhncep1, atm_alb1)
     IMPLICIT NONE
-    REAL, INTENT(IN) :: uatml1(2,imax,jmax,nmth+1)
-    REAL, DIMENSION(imax,jmax,nmth+1), INTENT(IN) :: &
+    REAL, INTENT(IN) :: uatml1(2,maxi,maxj,nmth+1)
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: &
          & usurfl1, tncep1, pncep1, rhncep1, atm_alb1
 
     REAL :: invmat(nmth,nmth)
-    REAL :: puatml(2,imax,jmax,nmth)
-    REAL, DIMENSION(imax,jmax,nmth) :: &
+    REAL :: puatml(2,maxi,maxj,nmth)
+    REAL, DIMENSION(maxi,maxj,nmth) :: &
          & pusurfl, ptncep, ppncep, prhncep, patm_alb
     REAL :: midpoint(0:nmth+1)
     REAL :: xint, x1int, x2int, y1int(8), y2int(8), gradint(8)
@@ -1929,8 +2215,8 @@ CONTAINS
     CLOSE(1)
 
     ! Calculate pseudo data
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           puatml(1,i,j,:) = MATMUL(invmat, uatml1(1,i,j,1:12))
           puatml(2,i,j,:) = MATMUL(invmat, uatml1(2,i,j,1:12))
           pusurfl(i,j,:) = MATMUL(invmat, usurfl1(i,j,1:12))
@@ -1947,8 +2233,8 @@ CONTAINS
        midpoint(m) = 0.5 * ((2.0 * m) - 1) * REAL(nyear) / REAL(nmth)
     END DO
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           m = 0
           DO istep = 1, nyear
              IF (REAL(istep) >= midpoint(m)) m = m + 1
@@ -2241,7 +2527,7 @@ CONTAINS
        ! Dan's offset for angular time of year
        osct = (REAL(MOD(istep-1, nyear) + 1) - &
             & (nyear * osctau1 / gn_daysperyear)) * oscryr
-       DO j = 1, jmax
+       DO j = 1, maxj
           oscv = osct + osce1 * SIN(osct) + osce2 * SIN(2.0 * osct) + &
                & osce3 * SIN(3.0 * osct)
           oscsolf = osce4 * (1.0 + osce * COS(oscv))**2
@@ -2261,14 +2547,14 @@ CONTAINS
 
     IF (.NOT. dosc) THEN
        ! Replace variable forcing by its average
-       DO j = 1, jmax
+       DO j = 1, maxj
           solavg(j) = 0.0
           DO istep = 1, nyear
              solavg(j) = solavg(j) + solfor(j,istep)
              IF (flag_ents) alboavg(j) = alboavg(j) + albo(j,istep)
           END DO
        END DO
-       DO j = 1, jmax
+       DO j = 1, maxj
           DO istep = 1, nyear
              solfor(j,istep) = solavg(j) / nyear
              IF (flag_ents) albo(j,istep) = alboavg(j) / nyear
@@ -2307,7 +2593,7 @@ CONTAINS
        & stressxv_ocn, stressyv_ocn, albedo, fxlho, fxsho, fxswo, fxlwo, &
        & evap_ocn, pptn_ocn, runoff_ocn, runoff_land, fxlha, fxsha, &
        & fxswa, fxlwa, evap_atm, pptn_atm, dthsic, dtareasic, &
-       & atmos_lowestlh_atm, go_solfor, go_fxsw, dum_n_atm, dum_sfcatm, &
+       & atmos_lowestlh_atm, go_solfor, go_fxsw, dum_sfcatm, &
        & eb_ca, gn_daysperyear, eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
        & eb_evap, eb_pptn, eb_relh, eb_uv, eb_usurf, solconst, &
        & co2_out, ch4_out, n2o_out, surf_orog_atm, landice_slicemask_lic, &
@@ -2317,41 +2603,40 @@ CONTAINS
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(imax,jmax), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
+    REAL, DIMENSION(:,:), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
          & stressxu_ocn, stressyu_ocn, stressxv_ocn, stressyv_ocn
-    REAL, DIMENSION(imax,jmax), INTENT(OUT) :: ashum, tice, albice, &
+    REAL, DIMENSION(:,:), INTENT(OUT) :: ashum, tice, albice, &
          & albedo, fxlho, fxsho, fxswo, fxlwo, pptn_ocn, &
          & runoff_ocn, runoff_land, fxlha, fxsha, fxswa, fxlwa, &
          & dthsic, dtareasic, co2_out, ch4_out, n2o_out, &
          & evap_ocn, evap_atm, pptn_atm, atmos_lowestlh_atm
-    REAL, INTENT(OUT) :: go_solfor(jmax), go_fxsw(imax,jmax)
-    INTEGER, INTENT(IN) :: dum_n_atm
-    REAL, INTENT(IN), DIMENSION(dum_n_atm,imax,jmax) :: dum_sfcatm
+    REAL, INTENT(OUT) :: go_solfor(maxj), go_fxsw(maxi,maxj)
+    REAL, INTENT(IN), DIMENSION(:,:,:) :: dum_sfcatm
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(imax,jmax), INTENT(IN) :: eb_ca
-    REAL, DIMENSION(imax,jmax), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: eb_ca
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, &
          & eb_evap, eb_pptn, eb_relh, eb_usurf
-    REAL, INTENT(OUT) :: eb_uv(2,imax,jmax)
+    REAL, INTENT(OUT) :: eb_uv(2,maxi,maxj)
     REAL, INTENT(IN) :: solconst
-    REAL, INTENT(INOUT) :: surf_orog_atm(imax,jmax)
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, INTENT(INOUT) :: surf_orog_atm(maxi,maxj)
+    REAL, DIMENSION(:,:), INTENT(OUT) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & albs_atm, land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
          & land_temp_lnd, land_moisture_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
     LOGICAL, INTENT(IN) :: flag_ents
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: lowestlu2_atm, lowestlv3_atm
 
 
-    REAL, DIMENSION(imax,jmax) :: orog_exact, lice_exact(imax,jmax)
+    REAL, DIMENSION(maxi,maxj) :: orog_exact, lice_exact
 
     ! For interpolation between time series d18o input
-    REAL :: d18o_exact, surf_orog_atm_previous(imax,jmax)
+    REAL :: d18o_exact, surf_orog_atm_previous(maxi,maxj)
 
     ! For ice sheet melt runoff
-    REAL :: ice_runoff(imax,jmax)
+    REAL :: ice_runoff(maxi,maxj)
 
     ! Variables required for/from ENTS
     REAL :: beta, tldlast, dtld, dtld1, dfxsens, dfxlw, devap, dqsato
@@ -2365,7 +2650,7 @@ CONTAINS
     ! For orography
     REAL :: surf_tq2, surf_qsata
 
-    REAL :: runoff(imax,jmax)
+    REAL :: runoff(maxi,maxj)
     REAL :: ce, ch, cesic, chsic, rq, tv0, tv, tv1, tv2, tv3, tol
     REAL :: albsic, fxswsic , fxlwsic, fxsensic , fx0oa, fx0sica
     REAL :: qsatsic, alw, ticold, cfxsensic, salt, dho, dhsic
@@ -2470,8 +2755,8 @@ CONTAINS
           ! d18o orography and icemask.
           ! store orography at previous timestep to derive meltwater
           surf_orog_atm_previous = surf_orog_atm
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 IF (d18o_ice_thresh(i,j) < 1.0E-5) THEN
                    ! ocean
                    surf_orog_atm(i,j) = 0.0
@@ -2492,8 +2777,8 @@ CONTAINS
           END DO
 
           ! ice runoff
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 ice_runoff(iroff(i,j),jroff(i,j)) = &
                      & ice_runoff(iroff(i,j),jroff(i,j)) - &
                      & (surf_orog_atm(i,j) - surf_orog_atm_previous(i,j)) *  &
@@ -2516,8 +2801,8 @@ CONTAINS
     ! only needs be run just prior to the first iteration.  If the winds
     ! are time-variant, as they are with the IGCM, this will need to be
     ! run every time-step.
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           dztau(1,i,j) = &
                & scf * stressxu_ocn(i,j) / (rh0sc * dsc * usc * fsc) / dzz
           dztau(2,i,j) = &
@@ -2547,11 +2832,11 @@ CONTAINS
     END DO
 
     IF (unify_winds == 1 .OR. .NOT. flag_ents) THEN
-       DO j = 1, jmax
+       DO j = 1, maxj
           tv3 = 0.0
-          DO i = 1, imax
+          DO i = 1, maxi
              IF (i == 1) THEN
-                tv = (tau(1,i,j) + tau(1,imax,j)) / 2
+                tv = (tau(1,i,j) + tau(1,maxi,j)) / 2
              ELSE
                 tv = (tau(1,i,j) + tau(1,i-1,j)) / 2
              END IF
@@ -2568,7 +2853,7 @@ CONTAINS
           ! added wind_polar_avg that undoes the zonal average of usurf near
           ! poles when eq 2
           IF (par_wind_polar_avg /= 2) THEN
-             IF (j <= 2 .OR. j >= jmax-1) usurf(1:imax,j) = tv3 / imax
+             IF (j <= 2 .OR. j >= maxj-1) usurf(1:maxi,j) = tv3 / maxi
           END IF
        END DO
        ! and now replace usufl with usurf for the rest of the calculations
@@ -2592,8 +2877,8 @@ CONTAINS
     !     (4) ELSE, utilize original compound increase in CO2 (if specified)
     ! *** 1 ***
     IF (atchem_radfor == 'y' .OR. atchem_radfor == 'Y') THEN
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              IF (dum_sfcatm(3,i,j) < (co20 / 1000.0)) THEN
                 co2(i,j) = co20
              ELSE
@@ -2667,8 +2952,8 @@ CONTAINS
     ELSE
        ! *** 4 ***
        ! original simple compound increase
-       DO j = 1, jmax
-          DO i = 1, imax
+       DO j = 1, maxj
+          DO i = 1, maxi
              co2(i,j) = (1.0 + rate_co2) * co2(i,j)
              ch4(i,j) = (1.0 + rate_ch4) * ch4(i,j)
              n2o(i,j) = (1.0 + rate_n2o) * n2o(i,j)
@@ -2704,13 +2989,13 @@ CONTAINS
     albice = 0.0
 
     ! make global mean temp for use in sensitivity adjustment
-    meantemp = SUM(atemp) / REAL(jmax * imax)
+    meantemp = SUM(atemp) / REAL(maxj * maxi)
 
     ! main i,j loop to compute surface flux terms
     ! note for IGCM ; the first section defines P, OLWR, rel hum. CO2, all
     ! irrelevant to IGCM
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           IF (flag_ents) THEN
              ! Optional effect of altitude in ENTS.
              ! Air temp calculated at altitude using lapse
@@ -2840,7 +3125,7 @@ CONTAINS
           fxlata(i,j) = rho0 * pptn(i,j) * hlv
 
           ! calculate terms over ocean or ice
-          IF (k1(i,j) <= kmax) THEN
+          IF (k1(i,j) <= maxk) THEN
              ! longwave radiation
              alw = atemp(i,j) + zeroc
              alw = alw * alw
@@ -3411,9 +3696,9 @@ CONTAINS
     ! evap zero over land,
     ! nre P goes straight through as no snow allowed, but E is E total
     ! for atm model and solely E_ocean for the fwflux
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk) THEN
              ! wet points;
              pptn_ocn(i,j) = REAL(pptn(i,j))
              runoff_ocn(i,j) = REAL(runoff(i,j)) + REAL(ice_runoff(i,j))
@@ -3481,7 +3766,7 @@ CONTAINS
     eb_pptn  = REAL(pptn)
     eb_uv  = usc * uatm
     eb_usurf = usurf
-    DO j = 1, jmax
+    DO j = 1, maxj
        go_solfor(j) = REAL(solfor(j, MOD(istot-1, nyear) + 1))
     END DO
 
@@ -3538,7 +3823,7 @@ CONTAINS
   !
   ! The dry points in the k1 file now define a compass direction
   ! for the runoff from that point/cell. By following this direction
-  ! to the sea (where k1 <= kmax) we build up the
+  ! to the sea (where k1 <= maxk) we build up the
   ! matrix (iroff(i,j),jroff(i,j))
   ! which defines where to put the runoff from point (i,j)
   subroutine readroff
@@ -3550,12 +3835,12 @@ CONTAINS
 
     IF (debug_init) PRINT *, 'Calculating runoff routing'
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           iroff(i,j) = i
           jroff(i,j) = j
           loop = 0
-          do while(k1(iroff(i,j),jroff(i,j)) > kmax)
+          do while(k1(iroff(i,j),jroff(i,j)) > maxk)
              IF (k1(iroff(i,j),jroff(i,j)) == iroe) THEN
                 iroff(i,j) = iroff(i,j) + 1
              ELSE IF (k1(iroff(i,j),jroff(i,j)) == iros) THEN
@@ -3566,10 +3851,10 @@ CONTAINS
                 jroff(i,j) = jroff(i,j) + 1
              END IF
              ! periodic b.c.
-             IF (iroff(i,j) == imax+1) THEN
+             IF (iroff(i,j) == maxi+1) THEN
                 iroff(i,j) = 1
              ELSE IF (iroff(i,j) == 0) THEN
-                iroff(i,j) = imax
+                iroff(i,j) = maxi
              END IF
              ! avoid inf. loops
              loop = loop + 1
@@ -3580,7 +3865,7 @@ CONTAINS
                 PRINT *, 'iroff(i,j) = ',iroff(i,j)
                 PRINT *, 'jroff(i,j) = ',jroff(i,j)
                 PRINT *, 'k1(iroff(i,j),jroff(i,j)) = ', &
-                     & k1(iroff(i,j),jroff(i,j)),' (kmax = ',kmax,')'
+                     & k1(iroff(i,j),jroff(i,j)),' (maxk = ',maxk,')'
                 stop 'problem calculating runoff'
              END IF
           END DO

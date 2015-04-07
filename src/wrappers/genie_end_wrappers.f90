@@ -15,11 +15,13 @@ CONTAINS
   END SUBROUTINE end_gem_wrapper
 
   SUBROUTINE end_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL end_biogem()
   END SUBROUTINE end_biogem_wrapper
 
   SUBROUTINE end_atchem_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL end_atchem()
   END SUBROUTINE end_atchem_wrapper
@@ -43,12 +45,14 @@ CONTAINS
   END SUBROUTINE end_embm_wrapper
 
   SUBROUTINE end_sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL end_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
                   & genie_sfcsumocn)
   END SUBROUTINE end_sedgem_wrapper
 
   SUBROUTINE end_rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL end_rokgem()
   END SUBROUTINE end_rokgem_wrapper

@@ -14,7 +14,7 @@ CONTAINS
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: istep, iout
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, &
          & dum_relh, albs_lnd, land_snow_lnd
 
@@ -48,8 +48,8 @@ CONTAINS
 
        ! Sum up quantities since last .avg calculation
        pco2ld_tot = pco2ld_tot + pco2ld
-       DO i = 1, imax
-          DO j = 1, jmax
+       DO i = 1, maxi
+          DO j = 1, maxj
              IF (ents_k1(i,j) > ents_kmax) THEN
                 ! Carbon diagnostics
                 sphoto(i,j) = sphoto(i,j) + photo(i,j)
@@ -87,8 +87,8 @@ CONTAINS
           pco2ld_tot = pco2ld_tot + pco2ld
           sumavg = 0.0
           sumavg2 = 0.0
-          DO i = 1, imax
-             DO j = 1, jmax
+          DO i = 1, maxi
+             DO j = 1, maxj
                 IF (ents_k1(i,j) > ents_kmax) THEN
                    ! Average over time
                    cfavg(1,i,j) = sphoto(i,j) * rnyear
@@ -200,8 +200,8 @@ CONTAINS
 
           ! Write to file
           DO l = 1, 8
-             DO i = 1, imax
-                DO j = 1, jmax
+             DO i = 1, maxi
+                DO j = 1, maxj
                    WRITE (1,10) cfavg(l,i,j)
                 END DO
              END DO
@@ -221,10 +221,10 @@ CONTAINS
              END IF
 
              DO kk = 1, 8
-                ALLOCATE(var_data(1,jmax,imax))
+                ALLOCATE(var_data(1,maxj,maxi))
                 label = labels(kk)
-                DO j = 1, jmax
-                   DO i = 1, imax
+                DO j = 1, maxj
+                   DO i = 1, maxi
                       SELECT CASE (kk)
                       CASE (1)
                          var_data(1,j,i) = cfavg(1,i,j)
@@ -306,8 +306,8 @@ CONTAINS
     sumphoto = 0.0 ; sumrveg = 0.0 ; sumrsoil = 0.0 ; sumleaf = 0.0
 
     ! Sum up all carbon spatially in each reservoir
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           IF (ents_k1(i,j) > ents_kmax) THEN
              sumveg = sumveg + Cveg(i,j)
              sumsoil = sumsoil + Csoil(i,j)
@@ -383,7 +383,7 @@ CONTAINS
        & albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, &
          & dum_relh, albs_lnd, land_snow_lnd
 
@@ -403,8 +403,8 @@ CONTAINS
 
     diagtime = REAL(istep) / REAL(ents_nyear)
     sumavg2 = 0.0
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           IF (ents_k1(i,j) > ents_kmax) THEN
              sumavg2(1) = sumavg2(1) + tqld(1,i,j)
              sumavg2(2) = sumavg2(2) + tqld(2,i,j)
@@ -453,12 +453,12 @@ CONTAINS
 
     PRINT *
 
-    CALL aminmaxl(imax, jmax, ents_kmax, ents_k1(:,:), tqld(1,:,:), &
+    CALL aminmaxl(maxi, maxj, ents_kmax, ents_k1(:,:), tqld(1,:,:), &
          & amin, amax, iamin, iamax, jamin, jamax)
     PRINT *, 'min land T ', amin, ' at ', iamin, jamin
     PRINT *, 'max land T ', amax, ' at ', iamax, jamax
 
-    call aminmaxl(imax, jmax, ents_kmax, ents_k1(:,:), tqld(2,:,:), &
+    call aminmaxl(maxi, maxj, ents_kmax, ents_k1(:,:), tqld(2,:,:), &
          & amin, amax, iamin, iamax, jamin, jamax)
     PRINT *, 'min land q ', amin, ' at ', iamin, jamin
     PRINT *, 'max land q ', amax, ' at ', iamax, jamax
@@ -473,12 +473,12 @@ CONTAINS
     PRINT *, tot_a, '(GtC) atm'
   END SUBROUTINE screen_diags
 
-  SUBROUTINE aminmaxl(imax, jmax, ents_kmax, k1, a, amin, amax, &
+  SUBROUTINE aminmaxl(maxi, maxj, ents_kmax, k1, a, amin, amax, &
        & iamin, iamax, jamin, jamax)
     IMPLICIT NONE
-    INTEGER, INTENT(IN) :: imax, jmax, ents_kmax
-    INTEGER, DIMENSION(imax,jmax), INTENT(IN) :: k1
-    REAL, DIMENSION(imax,jmax), INTENT(IN) :: a
+    INTEGER, INTENT(IN) :: maxi, maxj, ents_kmax
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: k1
+    REAL, DIMENSION(:,:), INTENT(IN) :: a
     REAL, INTENT(OUT) :: amin, amax
     INTEGER, INTENT(OUT) :: iamin, iamax, jamin, jamax
 
@@ -487,8 +487,8 @@ CONTAINS
     amin = a(1,1) ; amax = a(1,1)
     iamin = 1 ; iamax = 1 ; jamin = 1 ; jamax = 1
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (k1(i,j) > ents_kmax) THEN
              IF (a(i,j) < amin) THEN
                 amin = a(i,j)
@@ -539,7 +539,7 @@ CONTAINS
   SUBROUTINE entsdiagosc(nyear, istep, iout, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: nyear, istep, iout
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: albs_lnd, land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(IN) :: albs_lnd, land_snow_lnd
 
     REAL :: rnyear
     INTEGER :: i, j
@@ -550,13 +550,12 @@ CONTAINS
 
     IF (dosc) THEN
        rnyear = 1.0 / nyear
-
-       tqldavg(1,:,:) = SUM(tqld(1,:,:) * rnyear)
-       tqldavg(2,:,:) = SUM(tqld(2,:,:) * rnyear)
-       snowavg = SUM(REAL(land_snow_lnd) * rnyear)
-       albsavg = SUM(albs_lnd * rnyear)
-       bcapavg = SUM(bcap * rnyear)
-       z0avg = SUM(z0 * rnyear)
+       tqldavg(1,:,:) = tqldavg(1,:,:) + tqld(1,:,:) * rnyear
+       tqldavg(2,:,:) = tqldavg(2,:,:) + tqld(2,:,:) * rnyear
+       snowavg = snowavg + REAL(land_snow_lnd) * rnyear
+       albsavg = albsavg + albs_lnd * rnyear
+       bcapavg = bcapavg + bcap * rnyear
+       z0avg = z0avg + z0 * rnyear
 
        IF (iout == 1 .AND. MOD(istep, ents_ianav) == 0 &
             & .AND. istep >= ents_ianav) THEN
@@ -577,9 +576,9 @@ CONTAINS
              CLOSE(8,STATUS='delete')
           END IF
 
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) tqldavg(1,i,j)
                 var_data(1,j,i) = tqldavg(1,i,j)
              END DO
@@ -590,9 +589,9 @@ CONTAINS
           DEALLOCATE(var_data)
 
           OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.lqavg')
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) tqldavg(2,i,j)
                 var_data(1,j,i) = tqldavg(2,i,j)
              END DO
@@ -603,9 +602,9 @@ CONTAINS
           DEALLOCATE(var_data)
 
           OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.snowavg')
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) snowavg(i,j)
                 var_data(1,j,i) = snowavg(i,j)
              END DO
@@ -616,9 +615,9 @@ CONTAINS
           DEALLOCATE(var_data)
 
           OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.z0avg')
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) z0avg(i,j)
                 var_data(1,j,i) = z0avg(i,j)
              END DO
@@ -629,9 +628,9 @@ CONTAINS
           DEALLOCATE(var_data)
 
           OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.albsavg')
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) albsavg(i,j)
                 var_data(1,j,i) = albsavg(i,j)
              END DO
@@ -642,9 +641,9 @@ CONTAINS
           DEALLOCATE(var_data)
 
           OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.bcapavg')
-          ALLOCATE(var_data(1,jmax,imax))
-          DO j = 1, jmax
-             DO i = 1, imax
+          ALLOCATE(var_data(1,maxj,maxi))
+          DO j = 1, maxj
+             DO i = 1, maxi
                 WRITE (15,10) bcapavg(i,j)
                 var_data(1,j,i) = bcapavg(i,j)
              END DO
@@ -656,7 +655,7 @@ CONTAINS
 
           OPEN(45,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.gmairt')
           WRITE (45,'(2e18.7)') REAL(istep / nyear) - 0.5, &
-               & gmairttot / (REAL(imax * jmax))
+               & gmairttot / (REAL(maxi * maxj))
 
           ! perform diagnostics on averaged data, either by rewriting
           ! other diag routines to accept data as argument, or by

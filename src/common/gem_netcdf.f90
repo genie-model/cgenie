@@ -627,31 +627,6 @@ CONTAINS
   end subroutine sub_putvar1d_I
 
 
-  subroutine sub_putvar1d_scalar(dum_name,dum_ncid,dum_is,dum_ic,dum_din,dum_s,dum_o)
-    !=======================================================================
-    ! write data (scalar)
-    !=======================================================================
-    ! dummy variables
-    character(len=*),intent(in)::dum_name
-    integer,intent(in)::dum_ncid,dum_is,dum_ic
-    real,intent(in)::dum_din
-    real,intent(in)::dum_s,dum_o
-    ! local variables
-    integer::i,loc_iv
-    real,dimension(1)::loc_din
-    real::loc_s,loc_o
-    ! initialize local variables
-    loc_s = dum_s ! NOTE: this is a fudge to avoid compiler warnings because dum_s is otherwise never used!
-    loc_o = dum_o ! NOTE: this is a fudge to avoid compiler warnings because dum_o is otherwise never used!
-    ! BLAH
-    loc_din(1) = dum_din
-    i = nf90_inq_varid(dum_ncid,dum_name,loc_iv)
-    call sub_checkerror (i,'putvar1d nf_inq_varid '//dum_name)
-    i = nf90_put_var(dum_ncid,loc_iv,loc_din(:),start = (/ dum_is /),count = (/ dum_ic /))
-    call sub_checkerror(i,'putvar1d '//dum_name)
-  end subroutine sub_putvar1d_scalar
-
-
   subroutine sub_putvar2dI (dum_name, dum_ncid, dum_la, dum_lb, dum_is, dum_din)
     !=======================================================================
     !     write data
@@ -952,45 +927,6 @@ CONTAINS
   end subroutine sub_sync
 
 
-  subroutine sub_putvar5d (dum_name, dum_ncid, dum_la, dum_lb, dum_lc, dum_ld, dum_le, dum_is, dum_din)
-    !=======================================================================
-    !     write data
-    !
-    !     input:
-    !       dum_name   = name of variable to be written
-    !       dum_ncid   = iou unit
-    !       dum_la/b/c = length of data
-    !       dum_is   = starting point for write
-    !       dum_din  = data to be written (default real)
-    !       dum_mask = masks out the ocean or land
-    !       dum_s    = data scalar
-    !       dum_o    = data offset
-    !
-    !     based on code by: M. Eby
-    !=======================================================================
-    ! dummy valiables
-    character(len=*),intent(in)::dum_name
-    integer,intent(in)::dum_ncid,dum_is
-    integer,intent(in)::dum_la,dum_lb,dum_lc,dum_ld,dum_le
-    real,dimension(dum_la,dum_lb,dum_lc,dum_ld,dum_le),intent(in)::dum_din
-    ! local variables
-    real,dimension(dum_la,dum_lb,dum_lc,dum_ld,dum_le)::loc_din,loc_mask
-    integer::i,loc_iv
-    integer::loc_is
-    ! initialize local variables
-    loc_din = dum_din
-    loc_mask = 1
-    loc_is = dum_is ! NOTE: this is a fudge to avoid compiler warnings because dum_is is otherwise never used!
-    ! BLAH
-    where (loc_din .ge. 1.e15) loc_mask = 0
-    i = nf90_inq_varid (dum_ncid, dum_name, loc_iv)
-    call sub_checkerror (i,'putvar5d nf_inq_varid '//dum_name)
-    i = nf90_put_var (dum_ncid, loc_iv, loc_din, start = (/ 1, 1, 1, 1, 1/), &
-         & count = (/dum_la, dum_lb, dum_lc, dum_ld, dum_le /))
-    call sub_checkerror(i,'putvar5d '//dum_name)
-  end subroutine sub_putvar5d
-
-
   subroutine sub_putatttext (dum_var, dum_ncid, dum_tname, dum_text)
     !=======================================================================
     !     put text atribute
@@ -1089,38 +1025,6 @@ CONTAINS
 
   end subroutine sub_inqvars
 
-  subroutine sub_getvar1d (dum_ncid, dum_varname, dum_varlen, dum_dout)
-    !=======================================================================
-    !     open file for reading
-
-    !     input:
-    !       dum_ncid  = iou unit
-    !       dum_varname = name of variable
-    !       dum_varlen  = length of variable
-    !     output:
-    !       dum_dout   = output variable
-
-    !     based on code by: M. Eby
-    !=======================================================================
-
-    integer, intent(in)       :: dum_ncid, dum_varlen
-    character(20),intent(in)  :: dum_varname
-    real*8, dimension(dum_varlen), intent(out)  :: dum_dout
-    integer :: i,loc_iv
-
-
-    i = nf90_inq_varid (dum_ncid, dum_varname, loc_iv)
-    if (i .ne. nf90_noerr) then
-       print*, '==> Warning: netcdf variable ',trim(dum_varname), ' not found'
-       return
-    endif
-
-    i = nf90_get_var(dum_ncid,loc_iv,dum_dout)
-    call sub_checkerror (i,'sub_getvars  nf90_get_var')
-
-  end subroutine sub_getvar1d
-
-
   subroutine sub_getvar1d_I (dum_ncid, dum_varname, dum_varlen, dum_dout)
     integer, intent(in)       :: dum_ncid, dum_varlen
     character(*),intent(in)  :: dum_varname
@@ -1135,38 +1039,6 @@ CONTAINS
     call sub_checkerror (i,'sub_getvars  nf90_get_var')
   end subroutine sub_getvar1d_I
 
-
-  subroutine sub_getvar2d (dum_ncid, dum_varname, dum_varlen1, dum_varlen2, dum_dout)
-    !=======================================================================
-    !     open file for reading
-
-    !     input:
-    !       dum_ncid  = iou unit
-    !       dum_varname = name of variable
-    !       dum_varlen1/2  = length of variable
-    !     output:
-    !       dum_dout   = output variable
-
-    !     based on code by: M. Eby
-    !=======================================================================
-
-    integer, intent(in)       :: dum_ncid, dum_varlen1, dum_varlen2
-    character(20),intent(in)  :: dum_varname
-    real*8, dimension(dum_varlen1,dum_varlen2)  :: dum_out
-    real*8, dimension(dum_varlen2,dum_varlen1), intent(out)  :: dum_dout
-    integer :: i,loc_iv
-
-    i = nf90_inq_varid (dum_ncid, dum_varname, loc_iv)
-    if (i .ne. nf90_noerr) then
-       print*, '==> Warning: netcdf variable ',trim(dum_varname), ' not found'
-       return
-    endif
-
-    i = nf90_get_var(dum_ncid,loc_iv,dum_out)
-    call sub_checkerror (i,'sub_getvars  nf90_get_var')
-    dum_dout = transpose(dum_out)
-
-  end subroutine sub_getvar2d
 
   ! ****************************************************************************************************************************** !
   subroutine sub_getvarij(dum_ncid,dum_varname,dum_n1,dum_n2,dum_out)

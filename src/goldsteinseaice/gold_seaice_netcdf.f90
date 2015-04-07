@@ -9,8 +9,8 @@ MODULE gold_seaice_netcdf
   PUBLIC :: end_netcdf_sic
   PUBLIC :: nclon1, nclon2, nclon3, nclat1, nclat2, nclat3
 
-  REAL, DIMENSION(maxi) :: nclon1, nclon2, nclon3
-  REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclon1, nclon2, nclon3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclat1, nclat2, nclat3
 
   INTEGER, PARAMETER :: nall=100, nfiles=2
   INTEGER :: nco(nfiles), iddimo(nall, nfiles), idvaro(nall, nfiles)
@@ -36,7 +36,7 @@ CONTAINS
          & 'imonth', imonth, 'rtime', rtime
 
     CALL ini_netcdf_sic1(outdir_name, lenout, lout, imonth, rtime, &
-         & nclon1, nclat1, nclon2, nclat2, nclon3, nclat3, imax, jmax, imode)
+         & nclon1, nclat1, nclon2, nclat2, nclon3, nclat3, maxi, maxj, imode)
   END SUBROUTINE ini_netcdf_sic
 
 
@@ -62,7 +62,6 @@ CONTAINS
     CHARACTER(LEN=200), DIMENSION(nall) :: dimname, varname
     CHARACTER(LEN=200), DIMENSION(2,nmaxdims,nall) :: attdimname, attvarname
 
-    INTEGER, PARAMETER :: imax=100, jmax=100, kmax=100, lmax=10000
     INTEGER :: itime, ifname1
     CHARACTER(LEN=200) :: fname1
     CHARACTER(LEN=10) :: cyear
@@ -331,11 +330,11 @@ CONTAINS
   ! Organises a two-dimensional array that's on the tracer grid
   SUBROUTINE prep_netcdf_sic(temper, temp1, iland)
     IMPLICIT NONE
-    INTEGER, INTENT(IN) :: iland(0:imax+1,0:jmax+1)
-    REAL,    INTENT(IN) :: temper(imax,jmax)
-    REAL,    INTENT(OUT) :: temp1(imax,jmax)
+    INTEGER, INTENT(IN) :: iland(0:maxi+1,0:maxj+1)
+    REAL,    INTENT(IN) :: temper(maxi,maxj)
+    REAL,    INTENT(OUT) :: temp1(maxi,maxj)
 
-    WHERE (iland(1:imax,1:jmax) >= 90)
+    WHERE (iland(1:maxi,1:maxj) >= 90)
        temp1 = -99999.0
     ELSEWHERE
        temp1 = temper

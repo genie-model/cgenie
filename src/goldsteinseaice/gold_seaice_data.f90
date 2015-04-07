@@ -11,9 +11,9 @@ CONTAINS
     INTEGER :: i, j, l, icell
     REAL :: tmp_val(4)
 
-    READ (unit,*) (((varice(l,i,j), l = 1, 2), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((tice(i,j), i = 1, imax), j = 1, jmax)
-    READ (unit,*) ((albice(i,j), i = 1, imax), j = 1, jmax)
+    READ (unit,*) (((varice(l,i,j), l = 1, 2), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((tice(i,j), i = 1, maxi), j = 1, maxj)
+    READ (unit,*) ((albice(i,j), i = 1, maxi), j = 1, maxj)
 
     IF (debug_init) &
          & WRITE (*,320) 'Avg height', 'Avg area', 'Avg T', 'Avg albedo'
@@ -22,9 +22,9 @@ CONTAINS
     icell = 0
 
     ! Sum layer state variables and flow field
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax .AND. varice(2,i,j) > 0.0) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
              icell = icell + 1
              tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
              tmp_val(3) = tmp_val(3) + tice(i,j)
@@ -113,9 +113,9 @@ CONTAINS
          & WRITE (*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
     tmp_val = 0
     icell = 0
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax .AND. varice(2,i,j) > 0.0) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
              icell = icell + 1
              tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
              tmp_val(3) = tmp_val(3) + tice(i,j)
@@ -149,9 +149,9 @@ CONTAINS
          & WRITE (*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
     tmp_val = 0
     icell = 0
-    DO j = 1, jmax
-       DO i = 1, imax
-          IF (k1(i,j) <= kmax .AND. varice(2,i,j) > 0.0) THEN
+    DO j = 1, maxj
+       DO i = 1, maxi
+          IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
              icell = icell + 1
              tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
              tmp_val(3) = tmp_val(3) + tice(i,j)
@@ -275,9 +275,9 @@ CONTAINS
        WRITE (*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
        tmp_val = 0
        icell = 0
-       DO j = 1, jmax
-          DO i = 1, imax
-             IF (k1(i,j) <= kmax .AND. varice(2,i,j) > 0.0) THEN
+       DO j = 1, maxj
+          DO i = 1, maxi
+             IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
                 icell = icell + 1
                 tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
                 tmp_val(3) = tmp_val(3) + tice(i,j)
@@ -339,8 +339,8 @@ CONTAINS
     icepts = 0
     area = 0.0
 
-    DO j = 1, jmax
-       DO i = 1, imax
+    DO j = 1, maxj
+       DO i = 1, maxi
           IF (varice(2,i,j) > 0.0) THEN
              haaav(1) = haaav(1) + varice(1,i,j) * ds(j)
              haaav(2) = haaav(2) + varice(2,i,j) * ds(j)
@@ -375,7 +375,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, iout
     CHARACTER(LEN=3), INTENT(IN) :: ext
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: fx_delta, fw_delta
+    REAL, DIMENSION(:,:), INTENT(IN) :: fx_delta, fw_delta
 
     INTEGER :: ios, l
     REAL :: rnyear, work((maxi+1) * (maxj+1))

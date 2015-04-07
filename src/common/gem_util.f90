@@ -232,7 +232,7 @@ CONTAINS
     conv_POM_DOM(io_DOM_I,is_POI)               = 1.0
     ! convert DOM -> POM
     conv_DOM_POM(:,:) = 0.0
-    conv_DOM_POM(is_POC,io_DOM_C)               = 1.0/conv_POM_DOM(io_DOM_C,is_POC) 
+    conv_DOM_POM(is_POC,io_DOM_C)               = 1.0/conv_POM_DOM(io_DOM_C,is_POC)
     conv_DOM_POM(is_POC_13C,io_DOM_C_13C)       = 1.0/conv_POM_DOM(io_DOM_C_13C,is_POC_13C)
     conv_DOM_POM(is_POC_14C,io_DOM_C_14C)       = 1.0/conv_POM_DOM(io_DOM_C_14C,is_POC_14C)
     conv_DOM_POM(is_PON,io_DOM_N)               = 1.0/conv_POM_DOM(io_DOM_N,is_PON)
@@ -261,7 +261,7 @@ CONTAINS
     conv_POM_RDOM(io_RDOM_I,is_POI)               = 1.0
     ! convert RDOM -> POM
     conv_RDOM_POM(:,:) = 0.0
-    conv_RDOM_POM(is_POC,io_RDOM_C)               = 1.0/conv_POM_RDOM(io_RDOM_C,is_POC) 
+    conv_RDOM_POM(is_POC,io_RDOM_C)               = 1.0/conv_POM_RDOM(io_RDOM_C,is_POC)
     conv_RDOM_POM(is_POC_13C,io_RDOM_C_13C)       = 1.0/conv_POM_RDOM(io_RDOM_C_13C,is_POC_13C)
     conv_RDOM_POM(is_POC_14C,io_RDOM_C_14C)       = 1.0/conv_POM_RDOM(io_RDOM_C_14C,is_POC_14C)
     conv_RDOM_POM(is_PON,io_RDOM_N)               = 1.0/conv_POM_RDOM(io_RDOM_N,is_PON)
@@ -338,7 +338,7 @@ CONTAINS
             & )
     END IF
     ! convert to string
-    ! NOTE: when extracting an integer digit, add on a fraction to the real number before integer conversion 
+    ! NOTE: when extracting an integer digit, add on a fraction to the real number before integer conversion
     !       to ensure that the integer part is correctly extracted
     loc_integer = dum_integer
     DO n=dum_n,1,-1
@@ -380,7 +380,7 @@ CONTAINS
     else
        ! check for start-of-file tag
        n = 0
-       DO 
+       DO
           READ(unit=in,fmt='(A15)') loc_string_start
           n = n + 1
           IF (loc_string_start == '-START-OF-DATA-') THEN
@@ -397,7 +397,7 @@ CONTAINS
        END DO
        ! count number of lines of data and check for '-END-OF-DATA-' end of file tag
        n = 0
-       DO 
+       DO
           READ(unit=in,fmt='(A13)') loc_string_end
           IF (loc_string_end == '-END-OF-DATA-') THEN
              dum_n_elements = n
@@ -473,45 +473,6 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! COPY (LOAD AND RE-SAVE) A FILE
-  SUBROUTINE sub_copy_ascii_file(dum_filename_in,dum_filename_out)
-    ! common blocks
-    IMPLICIT NONE
-    ! dummy variables
-    CHARACTER(len=*),INTENT(in)::dum_filename_in
-    CHARACTER(len=*),INTENT(in)::dum_filename_out
-    ! local variables
-    INTEGER::n
-    INTEGER::loc_n_elements,loc_n_start
-    character(len=255),dimension(32767)::loc_string
-    ! *** INPUT DATA ***
-    ! check file format
-    CALL sub_check_fileformat(dum_filename_in,loc_n_elements,loc_n_start)
-    ! open file pipe
-    OPEN(unit=in,file=dum_filename_in,action='read')
-    ! goto start-of-file tag
-    DO n = 1,loc_n_start
-       READ(unit=in,fmt='(1X)')
-    END DO
-    ! read in data as text
-    DO n = 1,loc_n_elements
-       read(unit=in,fmt='(A255)') loc_string(n)
-    end do
-    CLOSE(unit=in)
-    ! *** RE-SAVE DATA ***
-    ! open file pipe
-    OPEN(unit=out,file=TRIM(dum_filename_out),status='replace',action='write')
-    write(unit=out,fmt='(A15)') '-START-OF-DATA-'
-    DO n = 1,loc_n_elements
-       write(unit=out,FMT=*) trim(loc_string(n))
-    end do
-    write(unit=out,fmt='(A13)') '-END-OF-DATA-'
-    CLOSE(unit=out)
-  END SUBROUTINE sub_copy_ascii_file
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
   ! LOAD IN ijk (3D) DATA
   SUBROUTINE sub_load_data_ijk(dum_filename,dumi,dum_j,dum_k,dum_data)
     ! common blocks
@@ -572,29 +533,6 @@ CONTAINS
     end if
     CLOSE(in)
   END SUBROUTINE sub_load_data_ij
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
-  ! SAVE ijk (3D) DATA
-  SUBROUTINE sub_save_data_ijk(dum_filename,dumi,dum_j,dum_k,dum_data)
-    ! common blocks
-    IMPLICIT NONE
-    ! dummy variables
-    CHARACTER(len=*),INTENT(in)::dum_filename
-    integer,intent(in)::dumi,dum_j,dum_k
-    REAL,INTENT(in),DIMENSION(dumi,dum_j,dum_k)::dum_data
-    ! local variables
-    INTEGER::i,j,k
-    ! save data
-    OPEN(unit=out,file=TRIM(dum_filename),action='write')
-    DO k=dum_k,1,-1
-       DO j=dum_j,1,-1
-          WRITE(unit=out,fmt='(999e14.6)') (dum_data(i,j,k),i=1,dumi)
-       ENDDO
-    END DO
-    CLOSE(out)
-  END SUBROUTINE sub_save_data_ijk
   ! ****************************************************************************************************************************** !
 
 
@@ -696,26 +634,6 @@ CONTAINS
          &   1.0 &
          & )
   END FUNCTION fun_convert_delta14CtoD14C
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
-  ! CONVERT: D14C -> d14C
-  FUNCTION fun_convert_D14Ctodelta14C(dum_delta13C,dum_D14C)
-    IMPLICIT NONE
-    ! result variable
-    REAL::fun_convert_D14Ctodelta14C
-    ! dummy arguments
-    REAL,INTENT(in)::dum_delta13C,dum_D14C
-    ! return function value
-    ! NOTE: see Stuiver and Polach [1977] (Stuiver and Robinson [1974])
-    fun_convert_D14Ctodelta14C = 1000.0* &
-         &( &
-         &   (1.0 + dum_D14C/1000.0) * &
-         &   ((1.0 + dum_delta13C/1000.0)**2)/(0.975**2) - &
-         &   1.0 &
-         & )
-  END FUNCTION fun_convert_D14Ctodelta14C
   ! ****************************************************************************************************************************** !
 
 
@@ -988,15 +906,15 @@ CONTAINS
     i_d = INT(d * (1.0 / d_max) * i_d_max)
     ! calculate:
     ! (a) bounding grid points along each dimension ('i_x1' and 'i_x2')
-    !     NOTE: if the possition of the point along any one dimensions is on or past the 
+    !     NOTE: if the possition of the point along any one dimensions is on or past the
     !           boundary of that dimension, then both grid points are set to the boundary grid point
     ! (b) bounding points of the interval containing the point in question ('x1' and 'x2')
-    !     NOTE: the interval between these two points is fixed at the resolution along that dimension 
-    !           of the look-up table, even if the point in question lies outside the bounding space 
+    !     NOTE: the interval between these two points is fixed at the resolution along that dimension
+    !           of the look-up table, even if the point in question lies outside the bounding space
     !           (this is to prevent divide-by-zero errors in the interpolation)
     ! (c) if the position of the point in question falls outside of the table boundary along any dimension,
-    !     the value at the required point is estimated via a linear extrapolation 
-    !     using the last two points long that particular dimension 
+    !     the value at the required point is estimated via a linear extrapolation
+    !     using the last two points long that particular dimension
     ! parameter 'a'
     IF (a >= a_max) THEN
        i_a1 = i_a_max - 1
@@ -1160,15 +1078,15 @@ CONTAINS
     i_e = INT(e * (1.0 / e_max) * i_e_max)
     ! calculate:
     ! (a) bounding grid points along each dimension ('i_x1' and 'i_x2')
-    !     NOTE: if the possition of the point along any one dimensions is on or past the 
+    !     NOTE: if the possition of the point along any one dimensions is on or past the
     !           boundary of that dimension, then both grid points are set to the boundary grid point
     ! (b) bounding points of the interval containing the point in question ('x1' and 'x2')
-    !     NOTE: the interval between these two points is fixed at the resolution along that dimension 
-    !           of the look-up table, even if the point in question lies outside the bounding space 
+    !     NOTE: the interval between these two points is fixed at the resolution along that dimension
+    !           of the look-up table, even if the point in question lies outside the bounding space
     !           (this is to prevent divide-by-zero errors in the interpolation)
     ! (c) if the position of the point in question falls outside of the table boundary along any dimension,
-    !     the value at the required point is estimated via a linear extrapolation 
-    !     using the last two points long that particular dimension 
+    !     the value at the required point is estimated via a linear extrapolation
+    !     using the last two points long that particular dimension
     ! parameter 'a'
     IF (a >= a_max) THEN
        i_a1 = i_a_max - 1
@@ -1344,7 +1262,7 @@ CONTAINS
     conv_sed_ocn_i_N(:,:)    = 0
     conv_sed_ocn_i_S(:,:)    = 0
     conv_sed_ocn_i_meth(:,:) = 0
-    ! identify the indices of all non-zero transformation values in the conversion array for ocn -> sed 
+    ! identify the indices of all non-zero transformation values in the conversion array for ocn -> sed
     do io=1,n_ocn
        loc_tot_i = 0
        do is=1,n_sed
@@ -1355,7 +1273,7 @@ CONTAINS
        end do
        conv_ocn_sed_i(0,io) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     do is=1,n_sed
        loc_tot_i = 0
        do io=1,n_ocn
@@ -1366,7 +1284,7 @@ CONTAINS
        end do
        conv_sed_ocn_i(0,is) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for ocn -> atm 
+    ! identify the indices of all non-zero transformation values in the conversion array for ocn -> atm
     do io=1,n_ocn
        loc_tot_i = 0
        do ia=1,n_atm
@@ -1377,7 +1295,7 @@ CONTAINS
        end do
        conv_ocn_atm_i(0,io) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for atm -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for atm -> ocn
     do ia=1,n_atm
        loc_tot_i = 0
        do io=1,n_ocn
@@ -1388,7 +1306,7 @@ CONTAINS
        end do
        conv_atm_ocn_i(0,ia) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for DOM -> POM 
+    ! identify the indices of all non-zero transformation values in the conversion array for DOM -> POM
     do io=1,n_ocn
        loc_tot_i = 0
        do is=1,n_sed
@@ -1399,7 +1317,7 @@ CONTAINS
        end do
        conv_DOM_POM_i(0,io) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for POM -> DOM 
+    ! identify the indices of all non-zero transformation values in the conversion array for POM -> DOM
     do is=1,n_sed
        loc_tot_i = 0
        do io=1,n_ocn
@@ -1410,7 +1328,7 @@ CONTAINS
        end do
        conv_POM_DOM_i(0,is) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for RDOM -> POM 
+    ! identify the indices of all non-zero transformation values in the conversion array for RDOM -> POM
     do io=1,n_ocn
        loc_tot_i = 0
        do is=1,n_sed
@@ -1421,7 +1339,7 @@ CONTAINS
        end do
        conv_RDOM_POM_i(0,io) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for POM -> RDOM 
+    ! identify the indices of all non-zero transformation values in the conversion array for POM -> RDOM
     do is=1,n_sed
        loc_tot_i = 0
        do io=1,n_ocn
@@ -1432,7 +1350,7 @@ CONTAINS
        end do
        conv_POM_RDOM_i(0,is) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: N-reduction redox conditions
     do is=1,n_sed
        loc_tot_i = 0
@@ -1444,7 +1362,7 @@ CONTAINS
        end do
        conv_sed_ocn_i_N(0,is) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: S-reduction redox conditions
     do is=1,n_sed
        loc_tot_i = 0
@@ -1456,7 +1374,7 @@ CONTAINS
        end do
        conv_sed_ocn_i_S(0,is) = loc_tot_i
     end do
-    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: methanogenesis
     do is=1,n_sed
        loc_tot_i = 0
@@ -1478,17 +1396,17 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(1:n_ocn,1:n_sed),INTENT(in)::dum_conv_sed_ocn              ! 
+    real,dimension(1:n_ocn,1:n_sed),INTENT(in)::dum_conv_sed_ocn              !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_ocn,0:n_sed)::fun_recalc_tracerrelationships_i         ! 
+    integer,dimension(0:n_ocn,0:n_sed)::fun_recalc_tracerrelationships_i         !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
     integer::loc_tot_i
-    integer,dimension(0:n_ocn,0:n_sed)::loc_conv_sed_ocn_i         ! 
+    integer,dimension(0:n_ocn,0:n_sed)::loc_conv_sed_ocn_i         !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1496,7 +1414,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! Re-CALCULATE INDICES
     ! -------------------------------------------------------- !
-    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn 
+    ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     do is=1,n_sed
        loc_tot_i = 0
        do io=1,n_ocn
@@ -1522,16 +1440,16 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(n_ocn,n_sed),INTENT(in)::dum_sed_ocn ! 
+    real,dimension(n_ocn,n_sed),INTENT(in)::dum_sed_ocn !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    real,dimension(n_l_ocn,n_l_sed)::fun_conv_sedocn2lslo ! 
+    real,dimension(n_l_ocn,n_l_sed)::fun_conv_sedocn2lslo !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    real,dimension(n_l_ocn,n_l_sed)::loc_lslo               ! 
+    real,dimension(n_l_ocn,n_l_sed)::loc_lslo               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1562,16 +1480,16 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_ocn,0:n_sed),INTENT(in)::dum_sed_ocn_i ! 
+    integer,dimension(0:n_ocn,0:n_sed),INTENT(in)::dum_sed_ocn_i !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_l_ocn,0:n_l_sed)::fun_conv_sedocn2lslo_i ! 
+    integer,dimension(0:n_l_ocn,0:n_l_sed)::fun_conv_sedocn2lslo_i !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    integer,dimension(0:n_l_ocn,0:n_l_sed)::loc_lslo_i               ! 
+    integer,dimension(0:n_l_ocn,0:n_l_sed)::loc_lslo_i               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1607,16 +1525,16 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(n_sed,n_ocn),INTENT(in)::dum_ocn_sed ! 
+    real,dimension(n_sed,n_ocn),INTENT(in)::dum_ocn_sed !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    real,dimension(n_l_sed,n_l_ocn)::fun_conv_ocnsed2lols ! 
+    real,dimension(n_l_sed,n_l_ocn)::fun_conv_ocnsed2lols !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    real,dimension(n_l_sed,n_l_ocn)::loc_lols               ! 
+    real,dimension(n_l_sed,n_l_ocn)::loc_lols               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1647,16 +1565,16 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_sed,0:n_ocn),INTENT(in)::dum_ocn_sed_i ! 
+    integer,dimension(0:n_sed,0:n_ocn),INTENT(in)::dum_ocn_sed_i !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_l_sed,0:n_l_ocn)::fun_conv_ocnsed2lols_i ! 
+    integer,dimension(0:n_l_sed,0:n_l_ocn)::fun_conv_ocnsed2lols_i !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    integer,dimension(0:n_l_sed,0:n_l_ocn)::loc_lols_i               ! 
+    integer,dimension(0:n_l_sed,0:n_l_ocn)::loc_lols_i               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1986,4 +1904,3 @@ CONTAINS
 
 
 END MODULE gem_util
-

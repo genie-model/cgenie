@@ -141,7 +141,7 @@ def ensure_nccompare():
     with open(os.devnull, 'w') as sink:
         status = sp.call(cmd, stdout=sink, stderr=sink)
     if status != 0:
-        sys.exit('Couldn not build nccompare.exe program')
+        sys.exit('Could not build nccompare.exe program')
 
 
 # Compare NetCDF files.
@@ -163,7 +163,7 @@ def float_compare(x, y):
 # Compare ASCII files.
 
 fp_re_str = '[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
-fpline_re_str = '^(' + fp_re_str + ')(\s*,?\s*' + fp_re_str + ')*$'
+fpline_re_str = '^(' + fp_re_str + ')((\s*,\s*|\s+)' + fp_re_str + ')*$'
 fpline_re = re.compile(fpline_re_str)
 
 def compare_ascii(f1, f2, logfp):
@@ -176,21 +176,23 @@ def compare_ascii(f1, f2, logfp):
             # If the lines match, carry on.
             if l1 == l2: continue
             # If both lines are comma or space seperated strings of
-            # floating point numbers, then extac the numbers for
+            # floating point numbers, then extract the numbers for
             # comparison.
-            if fpline_re.match(l1) and fpline_re.match(l2):
-                xs1 = map(float, l1.replace(',', ' ').split())
-                xs2 = map(float, l2.replace(',', ' ').split())
-                if len(xs1) != len(xs2): break
-                max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
-                max_reldiff = max(map(float_compare, xs1, xs2))
-                if max_absdiff > abstol:
-                    if max_reldiff < reltol:
-                        print('Max abs. diff. = ' + str(max_absdiff) +
-                              ' but max. rel. diff. = ' + str(max_reldiff) +
-                              ' < ' + str(reltol),
-                              file=logfp)
-                    else: break
+            m1 = fpline_re.match(l1)
+            m2 = fpline_re.match(l2)
+            if not m1 or not m2: break
+            xs1 = map(float, l1.replace(',', ' ').split())
+            xs2 = map(float, l2.replace(',', ' ').split())
+            if len(xs1) != len(xs2): break
+            max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
+            max_reldiff = max(map(float_compare, xs1, xs2))
+            if max_absdiff > abstol:
+                if max_reldiff < reltol:
+                    print('Max abs. diff. = ' + str(max_absdiff) +
+                          ' but max. rel. diff. = ' + str(max_reldiff) +
+                          ' < ' + str(reltol),
+                          file=logfp)
+                else: break
         if l1 == '' and l2 != '' or l1 != '' and l2 == '':
             print('Files ' + f1 + ' and ' + f2 + ' differ in length',
                   file=logfp)
@@ -223,9 +225,9 @@ def file_compare(f1, f2, logfp):
 # *exactly* the same mechanisms that one would use to run these jobs
 # by hand!
 
-def do_run(t, rdir, logfp):
+def do_run(t, rdir, logfp, i, n):
     os.chdir(U.cgenie_root)
-    print('Running test "' + t + '"')
+    print('Running test "' + t + '" [' + str(i) + '/' + str(n) + ']')
     print('Running test "' + t + '"', file=logfp)
     t = t.replace('\\', '\\\\')
 
@@ -376,8 +378,12 @@ def run_tests(tests):
     # sort of restart dependency graph.
     rtests = topological_sort(restarts)
 
+    summ = { }
     with open(os.path.join(rdir, 'test.log'), 'w') as logfp:
-        summ = { t : do_run(t, rdir, logfp) for t in rtests }
+        i = 1
+        for t in rtests:
+            summ[t] = do_run(t, rdir, logfp, i, len(rtests))
+            i += 1
     if len(summ.keys()) == 0:
         print('NO TESTS RUN')
     else:

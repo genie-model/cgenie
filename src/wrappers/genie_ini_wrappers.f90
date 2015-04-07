@@ -62,8 +62,9 @@ CONTAINS
   END SUBROUTINE initialise_gem_wrapper
 
   SUBROUTINE initialise_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL initialise_biogem(go_saln0, go_rhoair, go_cd, go_ds, go_dphi, go_usc, &
+    CALL initialise_biogem(go_saln0, go_rhoair, go_cd, go_ds(1), go_dphi, go_usc, &
          & go_dsc, go_fsc, go_rh0sc, go_rhosc, go_cpsc, genie_solar_constant, &
          & go_scf, go_ips, go_ipf, go_ias, go_iaf, go_jsf, &
          & go_k1, go_dz, go_dza, go_c, go_cv, go_s, go_sv, go_ts, go_ts1, &
@@ -72,11 +73,13 @@ CONTAINS
   END SUBROUTINE initialise_biogem_wrapper
 
   SUBROUTINE initialise_atchem_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL initialise_atchem (genie_sfxsumatm, genie_sfcatm)
   END SUBROUTINE initialise_atchem_wrapper
 
   SUBROUTINE initialise_sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL initialise_sedgem (genie_timestep, genie_sfxsumsed, genie_sfcsumocn, &
          & genie_sfcsed, genie_sfxocn)
@@ -90,16 +93,17 @@ CONTAINS
          & tstar_atm, surf_qstar_atm, eb_ca, co2_atm, global_daysperyear, &
          & alat1_ocn, landice_slicemask_lic, albs_atm, land_albs_snow_lnd, &
          & land_albs_nosnow_lnd, land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
-         & land_temp_lnd, land_moisture_lnd, intrac_atm_max, &
-         & genie_sfcatm_lnd, genie_sfxatm_lnd)
+         & land_temp_lnd, land_moisture_lnd, genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE initialise_ents_wrapper
 
   SUBROUTINE initialise_rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL initialise_rokgem (genie_timestep, genie_sfxrok, genie_sfxsumrok1)
   END SUBROUTINE initialise_rokgem_wrapper
 
   SUBROUTINE initialise_gemlite_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL initialise_gemlite(go_dsc, go_k1, go_dz, go_dza, go_sv, &
          & genie_sfxsumsed, genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)

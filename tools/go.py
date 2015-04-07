@@ -4,6 +4,7 @@ from __future__ import print_function
 import os, os.path, sys, shutil, argparse, glob
 import subprocess as sp
 import platform as plat
+import datetime as dt
 try:
     import Queue as qu
     import threading as thr
@@ -268,7 +269,7 @@ if not gui:
             else:                              usage()
         elif len(sys.argv) != 2: usage()
         if build_type and build_type not in U.build_types:
-            sys.exit('Unrecognised build type: "', build_type, '"')
+            sys.exit('Unrecognised build type: "' + build_type + '"')
     else: usage()
 
 
@@ -331,14 +332,21 @@ def build2(result, cont):
 
 # Run model.
 
+tstart = None
+tend = None
+
 def run(cont=None):
+    global tstart
     message('RUNNING: ' + model_config.display_model_version)
     logfp = open('run.log', 'w')
+    tstart = dt.datetime.now()
     manage(os.path.join('.', exe_name), logfp, run2, cont)
 
 def run2(result, cont):
     if result == 0:
-        message('Run OK!')
+        d = (dt.datetime.now() - tstart).total_seconds()
+        message('Run OK!  [elapsed: %02dh %02dm %02ds]' %
+                (int(d / 3600), int((d % 60) / 60), int(d % 60)))
     else:
         message('RUN FAILED: see run.log for details')
     if cont: cont()

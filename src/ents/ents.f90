@@ -1,5 +1,6 @@
 MODULE ents
 
+  USE genie_control, ONLY: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS
   USE ents_lib
   USE ents_data
   USE ents_diag
@@ -18,35 +19,35 @@ CONTAINS
        & gn_daysperyear, dum_lat, landice_slicemask_lic, &
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd,  &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
-       & land_moisture_lnd, ntrac_atm, sfcatm_lnd, sfxatm_lnd)
+       & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
+    USE gem_cmn, ONLY: alloc_error
+    USE genie_util, ONLY: check_iostat
     IMPLICIT NONE
     CHARACTER(LEN=13), INTENT(IN) :: dum_lin
     REAL, INTENT(IN) :: dum_rsc, dum_syr
     INTEGER, INTENT(IN) :: dum_nyear
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi
     INTEGER, INTENT(IN) :: dum_kmax
-    INTEGER, DIMENSION(maxi,maxj), INTENT(IN) :: dum_k1
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: dum_k1
     REAL, INTENT(IN) :: dum_rmax, dum_rdtdim
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_tstar_atm, dum_qstar_atm
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: dum_ca
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_tstar_atm, dum_qstar_atm
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: dum_ca
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_lat
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:), INTENT(IN) :: dum_lat
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_snow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: land_bcap_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: land_z0_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_temp_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: land_moisture_lnd
-    INTEGER, INTENT(IN) :: ntrac_atm
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(OUT) :: &
-         & sfcatm_lnd, sfxatm_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: land_bcap_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: land_z0_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_temp_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_moisture_lnd
+    REAL, DIMENSION(:,:,:), INTENT(OUT) :: sfcatm_lnd, sfxatm_lnd
 
-    REAL, DIMENSION(2,maxi,maxj) :: dum_tq
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: dum_tq
     INTEGER :: ios              ! File check flag
 
     ! Namelist declaration for ENTS goin variables
@@ -80,6 +81,9 @@ CONTAINS
     PRINT *, '======================================================='
     PRINT *, ' >>> Initialising ENTS land surface module ...'
 
+    maxi = dim_GOLDSTEINNLONS
+    maxj = dim_GOLDSTEINNLATS
+
     OPEN(UNIT=59, FILE='data_ENTS', STATUS='old', IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open ENTS namelist file'
@@ -93,6 +97,98 @@ CONTAINS
     ELSE
        CLOSE(59)
     END IF
+
+    ALLOCATE(ents_k1(maxi,maxj),STAT=alloc_error) ; ents_k1 = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ents_lat(maxj),STAT=alloc_error)     ; ents_lat = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(Cveg(maxi,maxj),STAT=alloc_error)     ; Cveg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(Csoil(maxi,maxj),STAT=alloc_error)    ; Csoil = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fv(maxi,maxj),STAT=alloc_error)       ; fv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(epsv(maxi,maxj),STAT=alloc_error)     ; epsv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(leaf(maxi,maxj),STAT=alloc_error)     ; leaf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(respveg(maxi,maxj),STAT=alloc_error)  ; respveg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(respsoil(maxi,maxj),STAT=alloc_error) ; respsoil = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(photo(maxi,maxj),STAT=alloc_error)    ; photo = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(sphoto(maxi,maxj),STAT=alloc_error)  ; sphoto = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(srveg(maxi,maxj),STAT=alloc_error)   ; srveg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sleaf(maxi,maxj),STAT=alloc_error)   ; sleaf = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(srsoil(maxi,maxj),STAT=alloc_error)  ; srsoil = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sCveg1(maxi,maxj),STAT=alloc_error)  ; sCveg1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sCsoil1(maxi,maxj),STAT=alloc_error) ; sCsoil1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sfv1(maxi,maxj),STAT=alloc_error)    ; sfv1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sepsv1(maxi,maxj),STAT=alloc_error)  ; sepsv1 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sfx0a(maxi,maxj),STAT=alloc_error)   ; sfx0a = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sfx0o(maxi,maxj),STAT=alloc_error)   ; sfx0o = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sfxsens(maxi,maxj),STAT=alloc_error) ; sfxsens = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sfxlw(maxi,maxj),STAT=alloc_error)   ; sfxlw = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sevap(maxi,maxj),STAT=alloc_error)   ; sevap = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(spptn(maxi,maxj),STAT=alloc_error)   ; spptn = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(srelh(maxi,maxj),STAT=alloc_error)   ; srelh = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sbcap(maxi,maxj),STAT=alloc_error)   ; sbcap = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(salbs(maxi,maxj),STAT=alloc_error)   ; salbs = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ssnow(maxi,maxj),STAT=alloc_error)   ; ssnow = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(sz0(maxi,maxj),STAT=alloc_error)     ; sz0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(stqld(2,maxi,maxj),STAT=alloc_error)   ; stqld = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tqld(2,maxi,maxj),STAT=alloc_error)    ; tqld = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(tqldavg(2,maxi,maxj),STAT=alloc_error) ; tqldavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(bcap(maxi,maxj),STAT=alloc_error)    ; bcap = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(bcapavg(maxi,maxj),STAT=alloc_error) ; bcapavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(snowavg(maxi,maxj),STAT=alloc_error) ; snowavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(z0avg(maxi,maxj),STAT=alloc_error)   ; z0avg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(albsavg(maxi,maxj),STAT=alloc_error) ; albsavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(z0(maxi,maxj),STAT=alloc_error)      ; z0 = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(evapavg(maxi,maxj),STAT=alloc_error) ; evapavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(pptnavg(maxi,maxj),STAT=alloc_error) ; pptnavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(runavg(maxi,maxj),STAT=alloc_error)  ; runavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(fvfv(maxi,maxj),STAT=alloc_error)    ; fvfv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(fxavg(7,maxi,maxj),STAT=alloc_error) ; fxavg = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! Input directory name
     lenin = lnsig1(indir_name)
@@ -133,6 +229,7 @@ CONTAINS
     ents_lat=dum_lat
 
     ! Convert tstar_atm & qstar_atm arrays into one tq array
+    ALLOCATE(dum_tq(2,maxi,maxj))
     dum_tq(1,:,:) = REAL(dum_tstar_atm, KIND(dum_tq))
     dum_tq(2,:,:) = REAL(dum_qstar_atm, KIND(dum_tq))
     ents_k1 = dum_k1
@@ -141,6 +238,7 @@ CONTAINS
     call setup_ents(dum_rsc, dum_syr, dum_ds, dum_dphi, dum_ca, dum_tq, &
          & dum_rmax, dum_rdtdim, dum_co2_out, gn_daysperyear, &
          & landice_slicemask_lic, albs_lnd, land_snow_lnd)
+    DEALLOCATE(dum_tq)
 
     ! albedo
     land_albs_nosnow_lnd = (fv * aveg) + ((1.0 - fv) * &
@@ -172,14 +270,14 @@ CONTAINS
        & landice_slicemask_lic, albs_lnd, land_snow_lnd)
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_rsc, dum_syr, dum_dphi
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: dum_ca
-    REAL, DIMENSION(2,maxi,maxj), INTENT(IN) :: dum_tq
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: dum_ca
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_tq
     REAL, INTENT(IN) :: dum_rmax, dum_rdtdim
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: gn_daysperyear
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd, land_snow_lnd
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd, land_snow_lnd
 
     REAL :: Cveg_ini, Csoil_ini, fv_ini, photo_ini, fws, fta, fco2, rland_pts
     REAL :: z0_ini
@@ -391,33 +489,32 @@ CONTAINS
        & dum_el_respveg, dum_el_respsoil, dum_el_leaf, landice_slicemask_lic, &
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
-       & land_moisture_lnd, ntrac_atm, sfcatm_lnd, sfxatm_lnd)
+       & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
     USE netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, nyear
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: torog_atm
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: dum_co2_out
+    REAL, DIMENSION(:,:), INTENT(IN) :: torog_atm
+    REAL, DIMENSION(:,:), INTENT(IN) :: dum_co2_out
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(:), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
-    REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_rho
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & dum_fx0a, dum_fx0o, dum_fxsen, dum_fxlw, dum_evap, dum_pptn, dum_relh
     INTEGER, INTENT(INOUT) :: dum_istep0
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & dum_el_photo, dum_el_respveg, dum_el_respsoil, dum_el_leaf
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: albs_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(OUT) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: landice_slicemask_lic
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: albs_lnd
+    REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & land_albs_snow_lnd, land_albs_nosnow_lnd
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: &
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: &
          & land_snow_lnd, land_bcap_lnd, land_z0_lnd, &
          & land_temp_lnd, land_moisture_lnd
-    INTEGER, INTENT(IN) :: ntrac_atm
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(IN) :: sfcatm_lnd
-    REAL, DIMENSION(ntrac_atm,maxi,maxj), INTENT(INOUT) :: sfxatm_lnd
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: sfcatm_lnd
+    REAL, DIMENSION(:,:,:), INTENT(INOUT) :: sfxatm_lnd
 
     INTEGER :: itv, iout, i, j, istot
     CHARACTER(LEN=200) :: filename, fname, label
@@ -508,10 +605,10 @@ CONTAINS
           END IF
 
           DO kk = 1, 10
-             ALLOCATE(var_data(1,jmax,imax))
+             ALLOCATE(var_data(1,maxj,maxi))
              label = labels(kk)
-             DO j = 1, jmax
-                DO i = 1, imax
+             DO j = 1, maxj
+                DO i = 1, maxi
                    SELECT CASE (kk)
                    CASE (1)
                       var_data(1,j,i) = photo(i,j)
@@ -595,11 +692,11 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
     REAL, INTENT(IN) :: dum_rh0sc, dum_rhosc, dum_rsc
-    REAL, DIMENSION(maxj), INTENT(IN) :: dum_ds
+    REAL, DIMENSION(:), INTENT(IN) :: dum_ds
     REAL, INTENT(IN) :: dum_dphi, dum_dsc, dum_saln0
-    REAL, DIMENSION(ents_kmax), INTENT(IN) :: dum_dz
+    REAL, DIMENSION(:), INTENT(IN) :: dum_dz
     REAL, DIMENSION(4), INTENT(IN) :: dum_ec
-    REAL, DIMENSION(maxi,maxj,ents_kmax), INTENT(IN) :: dum_rho
+    REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_rho
 
     REAL :: vol, sumrho, avrho, mass, rho1, deltah
     REAL :: diagtime, vol1, areas
@@ -619,8 +716,8 @@ CONTAINS
     OPEN(44,FILE=TRIM(filename),POSITION='APPEND')
 
     ! Sealevel rise due to thermal expansion
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           DO k = 1, ents_kmax
              IF (k >= ents_k1(i,j)) THEN
                 rho1 = (dum_rho(i,j,k) + &
@@ -662,23 +759,24 @@ CONTAINS
   SUBROUTINE carbon(torog_atm, dum_co2_out, landice_slicemask_lic, &
        & sfxatm_lnd)
     IMPLICIT NONE
-    REAL, DIMENSION(maxi,maxj), INTENT(IN) :: &
+    REAL, DIMENSION(:,:), INTENT(IN) :: &
          & torog_atm, dum_co2_out, landice_slicemask_lic
-    REAL, DIMENSION(maxi,maxj), INTENT(INOUT) :: sfxatm_lnd
+    REAL, DIMENSION(:,:), INTENT(INOUT) :: sfxatm_lnd
 
-    REAL, DIMENSION(imax,jmax) :: tair, tlnd, qlnd
+    REAL, DIMENSION(maxi,maxj) :: tair, tlnd, qlnd
     REAL :: k1v, k1s, k1a
     INTEGER :: i, j
 
     ! Work out CO2 conc according to atchem (ppmv)
+    tair = 0.0 ; tlnd = 0.0 ; qlnd = 0.0
 
     ! The following statement assumes spatially uniform pCO2 in the atmosphere
     ! TODO: compute global average pCO2
     pco2ld = dum_co2_out(1,1) * rmtp
 
     ! Start land_pts loop
-    DO i = 1, imax
-       DO j = 1, jmax
+    DO i = 1, maxi
+       DO j = 1, maxj
           ! Only calculate for non-ice land points
           IF (ABS(landice_slicemask_lic(i,j) - 1.0) < 1.0E-19) THEN
              ! Set up temperature and water arrays in Kelvin

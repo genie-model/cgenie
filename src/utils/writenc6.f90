@@ -1,7 +1,6 @@
 MODULE writenc6
 
   INTERFACE writevar
-     MODULE PROCEDURE writevar_1d
      MODULE PROCEDURE writevar_2d
      MODULE PROCEDURE writevar_3d
   END INTERFACE writevar
@@ -30,7 +29,7 @@ CONTAINS
 
     INTEGER :: iflen, lnsig, ii, iii
 
-    INTEGER :: iret, idebug
+    INTEGER :: idebug
     INTEGER :: tempdims(200), dimdim(200)
     REAL :: realval(1)
 
@@ -124,16 +123,6 @@ CONTAINS
     CALL check_err(NF90_PUT_VAR(ncid, iddim, data))
   END SUBROUTINE writedim
 
-
-  SUBROUTINE writevar_1d(ncid, idvar, data)
-    USE netcdf
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: ncid, idvar
-    REAL, DIMENSION(:), INTENT(IN) :: data
-
-    ! write data
-    CALL check_err(NF90_PUT_VAR(ncid, idvar, data))
-  END SUBROUTINE writevar_1d
 
   SUBROUTINE writevar_2d(ncid, idvar, data)
     USE netcdf

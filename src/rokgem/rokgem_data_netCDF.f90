@@ -101,6 +101,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou_rg
     loc_ntrec = ncout2d_ntrec_rg
+    loc_ij = 0.0
     loc_mask_surf(:,:) = 1.0
     loc_mask_ocean(:,:) = 0.0
     where ( landmask(:,:) .eq. 0 )

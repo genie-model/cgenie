@@ -9,7 +9,7 @@ f90 = {
                   '-msse', '-Wall' ],
 
     # Debug flags.
-    'debug': ['-g'],
+    'debug': ['-g', '-ffpe-trap=invalid,overflow'],
 
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops'],
@@ -20,6 +20,10 @@ f90 = {
 
     # Bounds checking flags ("bounds" build type).
     'bounds': ['-fbounds-check'],
+
+    # Test coverage analysis.
+    'coverage': ['-O0', '--coverage'],
+    'coverage_link': ['--coverage'],
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.

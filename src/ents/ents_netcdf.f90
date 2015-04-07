@@ -18,7 +18,7 @@ CONTAINS
     INTEGER :: ncid, status, var_id, dims(3), jj, &
          & vardim_id1, vardim_id2, vardim_id3, time_id, lon_id, lat_id
     LOGICAL :: fexist
-    REAL :: londata(jmax)
+    REAL :: londata(maxj)
 
     CALL netcdf_db_ents(label, var_name, var_att)
     dim1_name = 'time'
@@ -39,8 +39,8 @@ CONTAINS
     ELSE
        CALL check_err(NF90_CREATE(fname, NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, dim1_name, 1, vardim_id1))
-       CALL check_err(NF90_DEF_DIM(ncid, dim2_name, jmax, vardim_id2))
-       CALL check_err(NF90_DEF_DIM(ncid, dim3_name, imax, vardim_id3))
+       CALL check_err(NF90_DEF_DIM(ncid, dim2_name, maxj, vardim_id2))
+       CALL check_err(NF90_DEF_DIM(ncid, dim3_name, maxi, vardim_id3))
        dims(1) = vardim_id1
        dims(2) = vardim_id2
        dims(3) = vardim_id3
@@ -71,8 +71,8 @@ CONTAINS
     CALL check_err(NF90_INQ_VARID(ncid,dim2_name,lat_id))
     CALL check_err(NF90_PUT_VAR(ncid, lat_id, ents_lat))
     CALL check_err(NF90_INQ_VARID(ncid,dim3_name,lon_id))
-    DO jj = 1, jmax
-       londata(jj) = -255 + (jj - 1) * (360 / jmax)
+    DO jj = 1, maxj
+       londata(jj) = -255 + (jj - 1) * (360 / maxj)
     END DO
     CALL check_err(NF90_PUT_VAR(ncid, lon_id, londata))
     CALL check_err(NF90_PUT_VAR(ncid, var_id, var_data))

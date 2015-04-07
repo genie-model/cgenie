@@ -125,7 +125,7 @@ CONTAINS
     REAL,dimension(n_atm)::fun_calc_ocnatm_flux ! units of (mol yr-1)
     ! dummy arguments
     INTEGER,INTENT(in)::dum_i,dum_j
-    REAL,dimension(n_atm),INTENT(in)::dum_atm
+    REAL,dimension(:),INTENT(in)::dum_atm
     REAL,INTENT(in)::dum_dt
     ! local variables
     integer::l,ia,io
@@ -148,8 +148,8 @@ CONTAINS
     !
     loc_alpha_as = 0.0
     !
-    loc_focnatm(:) = 0.0
-    loc_fatmocn(:) = 0.0
+    loc_focnatm = 0.0 ; loc_fatmocn = 0.0
+    loc_dflux = 0.0 ; loc_deqm = 0.0
     loc_rho = phys_ocn(ipo_rho,dum_i,dum_j,n_k)
     loc_TC = ocn(io_T,dum_i,dum_j,n_k) - const_zeroC
     ! area available for air-sea gas transfer
@@ -404,9 +404,9 @@ CONTAINS
     loc_dPO4_sp = 0.0
     loc_dPO4_nsp = 0.0
     loc_frac_N2fix = 0.0
-    loc_bio_uptake(:,:) = 0.0
-    loc_bio_part_DOM(:,:) = 0.0
-    loc_bio_part_RDOM(:,:) = 0.0
+    loc_bio_uptake = 0.0
+    loc_bio_part_DOM = 0.0
+    loc_bio_part_RDOM = 0.0
     loc_k_mld = dum_k1
     loc_bio_red_DOMfrac = 0.0
     loc_bio_red_RDOMfrac = 0.0
@@ -1533,6 +1533,7 @@ CONTAINS
     integer::loc_kmax
 
     ! *** INITIALIZE VARIABLES ***
+    loc_bio_uptake = 0.0 ; loc_bio_part = 0.0
     ! initialize remineralization tracer arrays
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
@@ -1670,7 +1671,7 @@ CONTAINS
   SUBROUTINE sub_calc_geochem_Fe(dum_i,dum_j,dum_k1,dum_focnFe)
     ! dummy arguments
     INTEGER,INTENT(in)::dum_i,dum_j,dum_k1
-    real,dimension(n_k),INTENT(in)::dum_focnFe
+    real,dimension(:),INTENT(in)::dum_focnFe
     ! local variables
     INTEGER::k
     real::loc_Fe,loc_FeL,loc_L
@@ -1930,150 +1931,6 @@ CONTAINS
 
 
   ! ****************************************************************************************************************************** !
-  ! CALCULATE THE OXIDATION OF NO2
-  SUBROUTINE sub_box_oxidize_NO2(dum_i,dum_j,dum_k1,dum_dtyr)
-    ! -------------------------------------------------------- !
-    ! DUMMY ARGUMENTS
-    ! -------------------------------------------------------- !
-    INTEGER,INTENT(in)::dum_i,dum_j,dum_k1
-    real,intent(in)::dum_dtyr
-    ! -------------------------------------------------------- !
-    ! DEFINE LOCAL VARIABLES
-    ! -------------------------------------------------------- !
-    integer::l,io,k
-    real::loc_O2,loc_NO2,loc_r15N
-    real::loc_NO2_oxidation
-    real,dimension(n_ocn,n_k)::loc_bio_remin
-    ! -------------------------------------------------------- !
-    ! INITIALIZE VARIABLES
-    ! -------------------------------------------------------- !
-    ! initialize remineralization tracer arrays
-    DO l=3,n_l_ocn
-       io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
-    end do
-    ! -------------------------------------------------------- !
-    ! OXIDIZE NO2
-    ! -------------------------------------------------------- !
-    ! oxic conditions: 2NO2- + O2 -> 2N03-
-    DO k=n_k,dum_k1,-1
-       loc_O2 = ocn(io_O2,dum_i,dum_j,k)
-       loc_NO2 = ocn(io_NO2,dum_i,dum_j,k)
-       if ((loc_O2 > const_real_nullsmall) .AND. (loc_NO2 > const_real_nullsmall)) then
-          ! calculate potential NH4 oxidation
-          loc_NO2_oxidation = dum_dtyr*par_bio_remin_kNO2toNO3*min(loc_NO2,loc_O2)* &
-               & (loc_NO2/(loc_NO2 + par_bio_remin_cNO2_NO2toNO3))*(loc_O2/(loc_O2 + par_bio_remin_cO2_NO2toNO3))
-          ! calculate isotopic ratio
-          loc_r15N = ocn(io_NO2_15N,dum_i,dum_j,k)/ocn(io_NO2,dum_i,dum_j,k)
-          if (loc_NO2_oxidation > loc_NO2) then
-             ! complete NO2 oxidation (no N fractionation)
-             loc_bio_remin(io_NO2,k) = -loc_NO2
-             loc_bio_remin(io_NO3,k) = loc_NO2
-             loc_bio_remin(io_O2,k)  = -0.5*loc_NO2
-             loc_bio_remin(io_ALK,k) = -loc_bio_remin(io_NO3,k)
-             loc_bio_remin(io_NO2_15N,k) = -loc_r15N*loc_NO2
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NO2
-          else
-             ! partial NO2 oxidation (=> N isotope Rayleigh fractionation)
-             loc_bio_remin(io_NO2,k) = -loc_NO2_oxidation
-             loc_bio_remin(io_NO3,k) = loc_NO2_oxidation
-             loc_bio_remin(io_O2,k)  = -0.5*loc_NO2_oxidation
-             loc_bio_remin(io_ALK,k) = -loc_bio_remin(io_NO3,k)
-             ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO N FRACTIONATION ########################################################## !
-             loc_bio_remin(io_NO2_15N,k) = -loc_r15N*loc_NO2_oxidation
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NO2_oxidation
-             ! ################################################################################################################### !
-          end if
-       end if
-    end DO
-    ! -------------------------------------------------------- !
-    ! WRITE GLOBAL ARRAY DATA
-    ! -------------------------------------------------------- !
-    ! write ocean tracer remineralization field (global array)
-    DO l=3,n_l_ocn
-       io = conv_iselected_io(l)
-       bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-    end do
-    ! -------------------------------------------------------- !
-    ! END
-    ! -------------------------------------------------------- !
-  end SUBROUTINE sub_box_oxidize_NO2
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
-  ! CALCULATE THE REDUCTION OF NO2
-  SUBROUTINE sub_box_reduce_NO2(dum_i,dum_j,dum_k1,dum_dtyr)
-    ! -------------------------------------------------------- !
-    ! DUMMY ARGUMENTS
-    ! -------------------------------------------------------- !
-    INTEGER,INTENT(in)::dum_i,dum_j,dum_k1
-    real,intent(in)::dum_dtyr
-    ! -------------------------------------------------------- !
-    ! DEFINE LOCAL VARIABLES
-    ! -------------------------------------------------------- !
-    integer::l,io,k
-    real::loc_O2,loc_NO2,loc_r15N
-    real::loc_NO2_reduction
-    real,dimension(n_ocn,n_k)::loc_bio_remin
-    ! -------------------------------------------------------- !
-    ! INITIALIZE VARIABLES
-    ! -------------------------------------------------------- !
-    ! initialize remineralization tracer arrays
-    DO l=3,n_l_ocn
-       io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
-    end do
-    ! -------------------------------------------------------- !
-    ! REDUCE NO2
-    ! -------------------------------------------------------- !
-    ! anoxic conditions: 2NO2- + 2H+ -> N2O + O2 + H2O
-    DO k=n_k,dum_k1,-1
-       loc_O2 = ocn(io_O2,dum_i,dum_j,k)
-       loc_NO2 = ocn(io_NO2,dum_i,dum_j,k)
-       if ((loc_O2 > const_real_nullsmall) .AND. (loc_NO2 > const_real_nullsmall)) then
-          ! calculate potential NO2 reduction
-          loc_NO2_reduction = dum_dtyr*par_bio_remin_kNO2toN2O*loc_O2* &
-               & (loc_NO2/(loc_NO2 + par_bio_remin_cNO2_NO2toN2O))*(1.0 - loc_O2/(loc_O2 + par_bio_remin_cO2_NO2toN2O))
-          ! calculate isotopic ratio
-          loc_r15N = ocn(io_NO2_15N,dum_i,dum_j,k)/ocn(io_NO2,dum_i,dum_j,k)
-          if (loc_NO2_reduction > loc_NO2) then
-             ! complete NO2 reduction (no N fractionation)
-             loc_bio_remin(io_NO2,k) = -loc_NO2
-             loc_bio_remin(io_N2O,k) = 0.5*loc_NO2
-             loc_bio_remin(io_O2,k)  = 0.5*loc_NO2
-             loc_bio_remin(io_ALK,k) = -loc_bio_remin(io_NO2,k)
-             loc_bio_remin(io_NO2_15N,k) = -loc_r15N*loc_NO2
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NO2
-          else
-             ! partial NO2 reduction (=> N isotope Rayleigh fractionation)
-             loc_bio_remin(io_NO2,k) = -loc_NO2_reduction
-             loc_bio_remin(io_N2O,k) = 0.5*loc_NO2_reduction
-             loc_bio_remin(io_O2,k)  = 0.5*loc_NO2_reduction
-             loc_bio_remin(io_ALK,k) = -loc_bio_remin(io_NO2,k)
-             ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO N FRACTIONATION ########################################################## !
-             loc_bio_remin(io_NO2_15N,k) = -loc_r15N*loc_NO2_reduction
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NO2_reduction
-             ! ################################################################################################################### !
-          end if
-       end if
-    end DO
-    ! -------------------------------------------------------- !
-    ! WRITE GLOBAL ARRAY DATA
-    ! -------------------------------------------------------- !
-    ! write ocean tracer remineralization field (global array)
-    DO l=3,n_l_ocn
-       io = conv_iselected_io(l)
-       bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-    end do
-    ! -------------------------------------------------------- !
-    ! END
-    ! -------------------------------------------------------- !
-  end SUBROUTINE sub_box_reduce_NO2
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
   ! OXIDATION OF HYDROGEN SULPHIDE
   SUBROUTINE sub_box_oxidize_H2S(dum_i,dum_j,dum_k1,dum_dtyr)
     ! -------------------------------------------------------- !
@@ -2244,8 +2101,8 @@ CONTAINS
     ! ---------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! ---------------------------------------------------------- !
-    real,dimension(1:n_l_ocn),INTENT(in)::dum_ocn                !
-    real,dimension(1:n_l_ocn,1:n_l_sed),INTENT(inout)::dum_conv_ls_lo             !
+    real,dimension(:),INTENT(in)::dum_ocn                !
+    real,dimension(:,:),INTENT(inout)::dum_conv_ls_lo             !
     ! ---------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! ---------------------------------------------------------- !
@@ -3026,8 +2883,8 @@ CONTAINS
     REAL,INTENT(in)::dum_dtyr
     REAL,INTENT(in)::dum_dt_scav
     REAL,INTENT(in)::dum_ocn_Fe
-    real,dimension(n_l_sed),INTENT(inout)::dum_bio_part
-    real,dimension(n_l_ocn),INTENT(inout)::dum_bio_remin
+    real,dimension(:),INTENT(inout)::dum_bio_part
+    real,dimension(:),INTENT(inout)::dum_bio_remin
     ! local variables
     real::loc_scav_Fe_k_POC,loc_scav_Fe_k_CaCO3,loc_scav_Fe_k_opal,loc_scav_Fe_k_det
     real::loc_scav_Fe_k_tot
@@ -3126,8 +2983,8 @@ CONTAINS
     REAL,INTENT(in)::dum_dtyr
     REAL,INTENT(in)::dum_dt_scav
     REAL,INTENT(in)::dum_ocn_Fe
-    real,dimension(n_sed),INTENT(inout)::dum_bio_part
-    real,dimension(n_ocn),INTENT(inout)::dum_bio_remin
+    real,dimension(:),INTENT(inout)::dum_bio_part
+    real,dimension(:),INTENT(inout)::dum_bio_remin
     ! local variables
     real::loc_scav_Fe_k_POC,loc_scav_Fe_k_CaCO3,loc_scav_Fe_k_opal,loc_scav_Fe_k_det
     real::loc_scav_Fe_k_tot
@@ -3211,8 +3068,8 @@ CONTAINS
     REAL,INTENT(in)::dum_dtyr
     REAL,INTENT(in)::dum_dt_scav
     REAL,INTENT(in)::dum_ocn_H2S
-    real,dimension(n_l_sed),INTENT(inout)::dum_bio_part
-    real,dimension(n_l_ocn),INTENT(inout)::dum_bio_remin
+    real,dimension(:),INTENT(inout)::dum_bio_part
+    real,dimension(:),INTENT(inout)::dum_bio_remin
     ! local variables
     real::loc_H2S,loc_part_den_POCl
     real::loc_H2S_scavenging
@@ -3315,7 +3172,7 @@ CONTAINS
   SUBROUTINE sub_update_sig(dum_t,dum_sig,dum_sig_i,dum_x)
     ! dummy arguments
     REAL, INTENT(in)::dum_t
-    REAL,INTENT(in),DIMENSION(n_data_max)::dum_sig
+    REAL,INTENT(in),DIMENSION(:)::dum_sig
     INTEGER,INTENT(inout),DIMENSION(2)::dum_sig_i
     REAL, INTENT(out)::dum_x
     ! update forcing signal indices (if required) and carry put linear interpolation
@@ -3748,7 +3605,7 @@ CONTAINS
     ! result variable
     real,dimension(n_ocn)::fun_audit_combinetracer
     ! dummy arguments
-    REAL,dimension(n_ocn),INTENT(in)::dum_ocn
+    REAL,dimension(:),INTENT(in)::dum_ocn
     ! initialze result variable
     fun_audit_combinetracer(:) = dum_ocn(:)
     ! adjust ocean tracer inventory change (audit_ocn_delta) to combine different forms of the same element
@@ -3829,8 +3686,8 @@ CONTAINS
   SUBROUTINE sub_biogem_copy_ocntots(dum_ts,dum_ts1)
     USE biogem_lib
     ! dummy arguments
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts  ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts1 ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    REAL,DIMENSION(:,:,:,:),INTENT(inout)::dum_ts  ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    REAL,DIMENSION(:,:,:,:),INTENT(inout)::dum_ts1 ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
     ! local variables
     INTEGER::i,j,k,l,io
     real::loc_ocn_mean_S,loc_ocn_tot_V
@@ -3883,7 +3740,7 @@ CONTAINS
   SUBROUTINE sub_biogem_copy_tstoocn(dum_ts)
     USE biogem_lib
     ! dummy arguments
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(in)::dum_ts ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    REAL,DIMENSION(:,:,:,:),INTENT(in)::dum_ts ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
     ! local variables
     INTEGER::i,j,k
     ! copy BioGeM <ocn> array values from the relevant <ts> (or <ts1>) array of GOLDSTEIN
@@ -3907,8 +3764,8 @@ CONTAINS
   SUBROUTINE sub_biogem_copy_ocntotsTS(dum_ts,dum_ts1)
     USE biogem_lib
     ! dummy arguments
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
-    REAL,DIMENSION(intrac_ocn,n_i,n_j,n_k),INTENT(inout)::dum_ts1 ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    REAL,DIMENSION(:,:,:,:),INTENT(inout)::dum_ts ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
+    REAL,DIMENSION(:,:,:,:),INTENT(inout)::dum_ts1 ! NOTE: number of tracers in GOLDSTEIN used in dimension #1
     ! local variables
     INTEGER::i,j,k
     ! copy GOLDSTEIn <ts> array values from the relevant <ocn> array of BioGeM
@@ -3933,8 +3790,8 @@ CONTAINS
   ! Copy of GOLDSTEIn overturning streamfunction calculation
   SUBROUTINE sub_calc_psi(dum_u,dum_opsi,dum_opsia,dum_opsip,dum_zpsi,dum_opsia_minmax,dum_opsip_minmax)
     ! dummy arguments
-    REAL,INTENT(in),DIMENSION(3,n_i,n_j,n_k)::dum_u
-    REAL,INTENT(out),DIMENSION(0:n_j,0:n_k)::dum_opsi,dum_opsia,dum_opsip,dum_zpsi
+    REAL,INTENT(in),DIMENSION(:,:,:,:)::dum_u
+    REAL,INTENT(out),DIMENSION(0:,0:)::dum_opsi,dum_opsia,dum_opsip,dum_zpsi
     REAL,INTENT(out),DIMENSION(2)::dum_opsia_minmax,dum_opsip_minmax
     ! local variables
     INTEGER::i,j,k

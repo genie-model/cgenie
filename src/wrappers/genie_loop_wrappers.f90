@@ -4,56 +4,6 @@ MODULE genie_loop_wrappers
 
 CONTAINS
 
-  SUBROUTINE surf_ocn_sic_wrapper
-    USE goldstein
-    IMPLICIT NONE
-    ! Surflux module : GOLDSTEIN-GOLDSEAICE (parentage = c-GOLDSTEIN)
-    !
-    ! Inputs :  tstar_ocn                ocean surface temperature
-    !           sstar_ocn                ocean surface salinity
-    !           albedo_ocn               ocean albedo
-    !           tstar_atm                surface temperature
-    !           surf_qstar_atm           surface specific humidity
-    !           surf_pres_atm            surface pressure
-    !           surf_hght_atm            surface height (atmosphere)
-    !           hght_sic                 sea-ice height
-    !           frac_sic                 sea-ice fractional cover
-    !           temp_sic                 sea-ice surface temperature
-    !           albd_sic                 sea-ice albedo (also an output)
-    !           ocean_lowestlu2_ocn      surface wind speed (x) at u point
-    !           ocean_lowestlv2_ocn      surface wind speed (y) at u point
-    !           ocean_lowestlu3_ocn      surface wind speed (x) at v point
-    !           ocean_lowestlv3_ocn      surface wind speed (y) at v point
-    !           netsolar_ocnsic          net short-wave to ocean + sea-ice
-    !           netlong_ocnsic           net long-wave to ocean + sea-ice
-    !           albavg_ocn               average ocean grid cell albedo
-    !           rough_ocn                ocean roughness
-    !           ocean_stressx2_ocn       surface wind stress (x) at u point
-    !           ocean_stressy2_ocn       surface wind stress (y) at u point
-    !           ocean_stressx3_ocn       surface wind stress (x) at v point
-    !           ocean_stressy3_ocn       surface wind stress (y) at v point
-    !           latent_ocn               latent heat flux
-    !           sensible_ocn             sensible heat flux
-    !           netsolar_ocn             net short-wave heat flux to ocean only
-    !           netlong_ocn              net long-wave heat flux to ocean only
-    !           evap_ocn                 evaporation
-    !           surf_latent_atm          latent heat flux
-    !           surf_sensible_atm        sensible heat flux
-    !           evap_atm                 evaporation
-    !           dhght_sic                change in sea-ice height
-    !           dfrac_sic                change in sea-ice fractional cover
-    CALL surf_ocn_sic(istep_gsurf, tstar_ocn, sstar_ocn, albedo_ocn, &
-         & ocean_lowestlt_ocn, ocean_lowestlq_ocn, ocean_lowestlp_ocn, &
-         & ocean_lowestlh_ocn, hght_sic, frac_sic, temp_sic, albd_sic, &
-         & ocean_lowestlu2_ocn,ocean_lowestlv2_ocn, ocean_lowestlu3_ocn, &
-         & ocean_lowestlv3_ocn, ocean_atm_netsolar_ocn, ocean_atm_netlong_ocn, &
-         & albavg_ocn, rough_ocn, ocean_stressx2_ocn, ocean_stressy2_ocn, &
-         & ocean_stressx3_ocn, ocean_stressy3_ocn, ocean_latent_ocn, &
-         & ocean_sensible_ocn, ocean_netsolar_ocn, ocean_netlong_ocn, &
-         & ocean_evap_ocn, atmos_latent_ocn, atmos_sensible_ocn, &
-         & atmos_evap_ocn, dhght_sic, dfrac_sic, test_energy_seaice, weight_ocn)
-  END SUBROUTINE surf_ocn_sic_wrapper
-
   SUBROUTINE surflux_wrapper
     USE embm
     IMPLICIT NONE
@@ -99,7 +49,7 @@ CONTAINS
          & evap_ocn, precip_ocn, runoff_ocn, runoff_land, surf_latent_atm, &
          & surf_sensible_atm, netsolar_atm, netlong_atm, evap_atm, precip_atm, &
          & dhght_sic, dfrac_sic, atmos_lowestlh_atm, go_solfor, go_fxsw, &
-         & intrac_atm_max, genie_sfcatm1, eb_ca, global_daysperyear, &
+         & genie_sfcatm1, eb_ca, global_daysperyear, &
          & eb_fx0a, eb_fx0o, eb_fxsen, eb_fxlw, eb_evap, eb_pptn, eb_relh, &
          & eb_uv, eb_usurf, genie_solar_constant, co2_atm, ch4_atm, n2o_atm, &
          & surf_orog_atm, landice_slicemask_lic, albs_atm, land_albs_snow_lnd, &
@@ -197,30 +147,30 @@ CONTAINS
          & el_respsoil, el_leaf, landice_slicemask_lic, albs_atm, &
          & land_albs_snow_lnd, land_albs_nosnow_lnd, land_snow_lnd, &
          & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd, &
-         & intrac_atm_max, genie_sfcatm_lnd, genie_sfxatm_lnd)
+         & genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE ents_wrapper
 
   SUBROUTINE cpl_flux_ocnatm_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL cpl_flux_ocnatm(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_atm, ilat1_atm, ilon1_ocn, ilat1_ocn, &
          & genie_sfxatm1, genie_sfxsumatm)
   END SUBROUTINE cpl_flux_ocnatm_wrapper
 
   SUBROUTINE cpl_flux_lndatm_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_flux_lndatm(REAL(klnd_loop) * genie_timestep, intrac_atm_max, &
-         & ilon1_atm, ilat1_atm, ilon1_lnd, ilat1_lnd, &
-         & genie_sfxatm_lnd, genie_sfxsumatm)
+    CALL cpl_flux_lndatm(REAL(klnd_loop) * genie_timestep, genie_sfxatm_lnd, genie_sfxsumatm)
   END SUBROUTINE cpl_flux_lndatm_wrapper
 
   SUBROUTINE cpl_comp_lndEMBM_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_EMBM(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_lnd, ilat1_lnd, tstar_atm, surf_qstar_atm, genie_sfcatm_lnd)
+    CALL cpl_comp_EMBM(tstar_atm, surf_qstar_atm, genie_sfcatm_lnd)
   END SUBROUTINE cpl_comp_lndEMBM_wrapper
 
   SUBROUTINE cpl_flux_ocnsed_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_ocnsed(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
          & intrac_sed_max, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
@@ -228,22 +178,25 @@ CONTAINS
   END SUBROUTINE cpl_flux_ocnsed_wrapper
 
   SUBROUTINE cpl_flux_sedocn_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_sedocn(intrac_ocn_max, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfxocn1, genie_sfxocn)
   END SUBROUTINE cpl_flux_sedocn_wrapper
 
   SUBROUTINE cpl_flux_sedsed1_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_sedsed1(intrac_sed_max, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfxsumsed, genie_sfxsumsed1)
   END SUBROUTINE cpl_flux_sedsed1_wrapper
 
   SUBROUTINE cpl_comp_ocnsed_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_comp_ocnsed(INT(koverall / kocn_loop), &
          & conv_kocn_kbiogem, conv_kocn_ksedgem, &
-         & intrac_ocn_max, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
+         & ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
          & genie_sfcocn1, genie_sfcsumocn)
   END SUBROUTINE cpl_comp_ocnsed_wrapper
 
@@ -252,21 +205,24 @@ CONTAINS
   !       (no e.g. annual averaging of the ocean array is needed in
   !       the case of the annual GEMlite tiem-step)
   SUBROUTINE cpl_comp_ocnsed_gem_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL cpl_comp_ocnsed(conv_kocn_ksedgem, conv_kocn_ksedgem, &
-         & conv_kocn_ksedgem, intrac_ocn_max, ilon1_ocn, ilat1_ocn, &
+         & conv_kocn_ksedgem, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfcocn1, genie_sfcsumocn)
   END SUBROUTINE cpl_comp_ocnsed_gem_wrapper
 
   SUBROUTINE cpl_comp_sedocn_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL cpl_comp_sedocn(intrac_sed_max, ilon1_ocn, ilat1_ocn, &
+    CALL cpl_comp_sedocn(ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfcsed1, genie_sfcsed)
   END SUBROUTINE cpl_comp_sedocn_wrapper
 
   SUBROUTINE rokgem_wrapper
+    USE rokgem
     IMPLICIT NONE
-    CALL rokgem(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
+    CALL step_rokgem(REAL(conv_kocn_krokgem * kocn_loop) * genie_timestep, &
          & genie_sfcatm1, runoff_land, el_photo, el_respveg, &
          & genie_sfxrok, genie_sfxatm1)
   END SUBROUTINE rokgem_wrapper
@@ -286,6 +242,7 @@ CONTAINS
   END SUBROUTINE cpl_flux_rokatm_gem_wrapper
 
   SUBROUTINE reinit_flux_rokatm_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokatm(genie_sfxsumatm1_gem)
   END SUBROUTINE reinit_flux_rokatm_gem_wrapper
@@ -305,20 +262,19 @@ CONTAINS
   END SUBROUTINE cpl_flux_rokocn_gem_wrapper
 
   SUBROUTINE reinit_flux_rokocn_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokocn(genie_sfxsumrok1)
   END SUBROUTINE reinit_flux_rokocn_wrapper
 
   SUBROUTINE reinit_flux_rokocn_gem_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL reinit_flux_rokocn(genie_sfxsumrok1_gem)
   END SUBROUTINE reinit_flux_rokocn_gem_wrapper
 
-  SUBROUTINE cpl_comp_rokEMBM_wrapper
-    ! EMPTY
-  END SUBROUTINE cpl_comp_rokEMBM_wrapper
-
   SUBROUTINE rokgem_save_restart_wrapper
+    USE rokgem
     IMPLICIT NONE
     CALL rest_rokgem()
   END SUBROUTINE rokgem_save_restart_wrapper
@@ -327,23 +283,27 @@ CONTAINS
   ! *** BIOGEM ***
 
   SUBROUTINE biogem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL biogem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
+    CALL step_biogem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
          & genie_clock, genie_sfcatm1, genie_sfxatm1, genie_sfcocn1, &
          & genie_sfxocn1, genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1)
   END SUBROUTINE biogem_wrapper
 
   SUBROUTINE biogem_tracercoupling_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_tracercoupling(go_ts, go_ts1)
   END SUBROUTINE biogem_tracercoupling_wrapper
 
   SUBROUTINE biogem_forcing_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_forcing(genie_clock)
   END SUBROUTINE biogem_forcing_wrapper
 
   SUBROUTINE biogem_climate_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_climate(hght_sic, frac_sic, go_cost, go_solfor, go_fxsw, &
          & go_uvw, go_tau, go_psi, eb_uv, eb_usurf, go_mldta, eb_evap, &
@@ -351,26 +311,31 @@ CONTAINS
   END SUBROUTINE biogem_climate_wrapper
 
   SUBROUTINE biogem_climate_sol_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_climate_sol(go_solfor, go_fxsw, genie_solar_constant)
   END SUBROUTINE biogem_climate_sol_wrapper
 
   SUBROUTINE diag_biogem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem(genie_clock, genie_sfcatm1, .FALSE.)
   END SUBROUTINE diag_biogem_wrapper
 
   SUBROUTINE diag_biogem_gem_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem(genie_clock, genie_sfcatm1, .TRUE.)
   END SUBROUTINE diag_biogem_gem_wrapper
 
   SUBROUTINE diag_biogem_pCO2_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_pCO2(genie_sfcatm1, gem_pCO2)
   END SUBROUTINE diag_biogem_pCO2_wrapper
 
   SUBROUTINE diag_biogem_timeslice_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeslice(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -380,6 +345,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_timeslice_wrapper
 
   SUBROUTINE diag_biogem_gem_timeslice_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeslice(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -389,6 +355,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_gem_timeslice_wrapper
 
   SUBROUTINE diag_biogem_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -398,6 +365,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_timeseries_wrapper
 
   SUBROUTINE diag_biogem_force_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -407,6 +375,7 @@ CONTAINS
   END SUBROUTINE diag_biogem_force_timeseries_wrapper
 
   SUBROUTINE diag_biogem_gem_timeseries_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL diag_biogem_timeseries(REAL(conv_kocn_kbiogem * kocn_loop) * &
          & genie_timestep, &
@@ -416,24 +385,25 @@ CONTAINS
   END SUBROUTINE diag_biogem_gem_timeseries_wrapper
 
   SUBROUTINE cpl_comp_ocngem_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_ocngem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
-         & intrac_ocn_max, ilon1_ocn, ilat1_ocn, inl1_ocn, genie_ocn)
+    CALL cpl_comp_ocngem(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, genie_ocn)
   END SUBROUTINE cpl_comp_ocngem_wrapper
 
   SUBROUTINE cpl_comp_gemocn_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_gemocn(intrac_ocn_max, ilon1_ocn, ilat1_ocn, inl1_ocn, &
-         & genie_ocn)
+    CALL cpl_comp_gemocn(genie_ocn)
   END SUBROUTINE cpl_comp_gemocn_wrapper
 
   SUBROUTINE cpl_comp_gematm1_wrapper
+    USE biogem
     IMPLICIT NONE
-    CALL cpl_comp_gematm1(intrac_atm_max, ilon1_ocn, ilat1_ocn, &
-         & genie_atm1, genie_sfcatm1)
+    CALL cpl_comp_gematm1(genie_atm1, genie_sfcatm1)
   END SUBROUTINE cpl_comp_gematm1_wrapper
 
   SUBROUTINE biogem_save_restart_wrapper
+    USE biogem
     IMPLICIT NONE
     CALL biogem_save_restart(genie_clock)
   END SUBROUTINE biogem_save_restart_wrapper
@@ -442,41 +412,44 @@ CONTAINS
   ! *** ATCHEM ***
 
   SUBROUTINE atchem_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL atchem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
+    CALL step_atchem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
          & genie_sfxsumatm, genie_sfcatm)
   END SUBROUTINE atchem_wrapper
 
   SUBROUTINE cpl_comp_atmgem_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmgem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, &
-         & intrac_atm_max, ilon1_ocn, ilat1_ocn, genie_atm1)
+    CALL cpl_comp_atmgem(REAL(conv_kocn_katchem * kocn_loop) * genie_timestep, genie_atm1)
   END SUBROUTINE cpl_comp_atmgem_wrapper
 
   SUBROUTINE cpl_comp_gematm_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_gematm(intrac_atm_max, ilon1_ocn, ilat1_ocn, genie_atm1)
+    CALL cpl_comp_gematm(genie_atm1)
   END SUBROUTINE cpl_comp_gematm_wrapper
 
   SUBROUTINE cpl_comp_atmocn_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmocn(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_ocn, ilat1_ocn, genie_sfcatm, genie_sfcatm1)
+    CALL cpl_comp_atmocn(intrac_atm_max, genie_sfcatm, genie_sfcatm1)
   END SUBROUTINE cpl_comp_atmocn_wrapper
 
   SUBROUTINE cpl_comp_EMBM_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_EMBM(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_ocn, ilat1_ocn, tstar_atm, surf_qstar_atm, genie_sfcatm1)
+    CALL cpl_comp_EMBM(tstar_atm, surf_qstar_atm, genie_sfcatm1)
   END SUBROUTINE cpl_comp_EMBM_wrapper
 
   SUBROUTINE cpl_comp_atmlnd_wrapper
+    USE atchem
     IMPLICIT NONE
-    CALL cpl_comp_atmlnd(intrac_atm_max, ilon1_atm, ilat1_atm, &
-         & ilon1_lnd, ilat1_lnd, genie_sfcatm, genie_sfcatm_lnd)
+    CALL cpl_comp_atmlnd(intrac_atm_max, genie_sfcatm, genie_sfcatm_lnd)
   END SUBROUTINE cpl_comp_atmlnd_wrapper
 
   SUBROUTINE atchem_save_restart_wrapper
+    USE atchem
     IMPLICIT NONE
     CALL atchem_save_rst(genie_clock)
   END SUBROUTINE atchem_save_restart_wrapper
@@ -485,26 +458,30 @@ CONTAINS
   ! *** SEDGEM ***
 
   SUBROUTINE sedgem_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
+    CALL step_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
          & .TRUE.)
   END SUBROUTINE sedgem_wrapper
 
   SUBROUTINE sedgem_glt_wrapper
+    USE sedgem
     IMPLICIT NONE
-    CALL sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
+    CALL step_sedgem(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
          & .FALSE.)
   END SUBROUTINE sedgem_glt_wrapper
 
   SUBROUTINE sedgem_dsedage_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL sedgem_dsedage(REAL(conv_kocn_ksedgem * kocn_loop) * genie_timestep, &
          & genie_sfxsumsed)
   END SUBROUTINE sedgem_dsedage_wrapper
 
   SUBROUTINE sedgem_save_restart_wrapper
+    USE sedgem
     IMPLICIT NONE
     CALL sedgem_save_rst(genie_clock, genie_sfxocn)
   END SUBROUTINE sedgem_save_restart_wrapper
@@ -513,47 +490,46 @@ CONTAINS
   ! *** GEMLITE ***
 
   SUBROUTINE gemlite_wrapper
+    USE gemlite
     IMPLICIT NONE
-    CALL gemlite(genie_sfcocn1, genie_sfxsumsed1, genie_sfxocn1, &
+    CALL step_gemlite(genie_sfcocn1, genie_sfxsumsed1, genie_sfxocn1, &
          & genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)
   END SUBROUTINE gemlite_wrapper
 
   SUBROUTINE gemlite_climate_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_climate(frac_sic)
   END SUBROUTINE gemlite_climate_wrapper
 
   SUBROUTINE gemlite_cycleinit_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_cycleinit()
   END SUBROUTINE gemlite_cycleinit_wrapper
 
-  SUBROUTINE gemlite_cycleclean_wrapper
-    IMPLICIT NONE
-    CALL gemlite_cycleclean(genie_sfxsumrok1_gem)
-  END SUBROUTINE gemlite_cycleclean_wrapper
-
   SUBROUTINE gemlite_gltts_wrapper
+    USE gemlite
     IMPLICIT NONE
     CALL gemlite_ts(go_ts, go_ts1)
   END SUBROUTINE gemlite_gltts_wrapper
 
   SUBROUTINE cpl_comp_gemglt_wrapper
+    USE gemlite
     IMPLICIT NONE
-    CALL cpl_comp_gemglt(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gemglt(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gemglt_wrapper
 
   SUBROUTINE cpl_comp_gltgem_d_wrapper
+    USE gemlite
     IMPLICIT NONE
-    CALL cpl_comp_gltgem_d(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gltgem_d(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_d_wrapper
 
   SUBROUTINE cpl_comp_gltgem_dsum_wrapper
+    USE gemlite
     IMPLICIT NONE
-    CALL cpl_comp_gltgem_dsum(intrac_atm_max, intrac_ocn_max, &
-         & ilon1_ocn, ilat1_ocn, inl1_ocn, genie_atm1, genie_ocn)
+    CALL cpl_comp_gltgem_dsum(genie_atm1, genie_ocn)
   END SUBROUTINE cpl_comp_gltgem_dsum_wrapper
 
 END MODULE genie_loop_wrappers

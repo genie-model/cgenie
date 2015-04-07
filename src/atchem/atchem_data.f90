@@ -7,15 +7,15 @@
 
 MODULE atchem_data
 
-  
+
   USE atchem_lib
   IMPLICIT NONE
   SAVE
-  
-  
+
+
 CONTAINS
-  
-  
+
+
   ! ****************************************************************************************************************************** !
   ! LOAD AtCheM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_atchem()
@@ -80,7 +80,7 @@ CONTAINS
   END SUBROUTINE sub_load_goin_atchem
   ! ****************************************************************************************************************************** !
 
-  
+
   ! ****************************************************************************************************************************** !
   ! *** LOAD Atchem RESTART DATA ************************************************************************************************* !
   ! ****************************************************************************************************************************** !
@@ -97,7 +97,7 @@ CONTAINS
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_atm                                       ! number of selected tracers in the re-start file
     integer,DIMENSION(n_atm)::loc_conv_iselected_ia            ! number of selected atmospheric tracers in restart
-    real,dimension(n_i,n_j)::loc_atm                           ! 
+    real,dimension(n_i,n_j)::loc_atm                           !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
     integer,ALLOCATABLE,dimension(:,:)::loc_varlen
@@ -106,6 +106,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
+    loc_atm = 0.0
     ! -------------------------------------------------------- ! set filename
     IF (ctrl_ncrst) THEN
        loc_filename = TRIM(par_rstdir_name)//par_ncrst_name
@@ -193,10 +194,10 @@ CONTAINS
     ! zero array
     phys_atm(:,:,:) = 0.0
     ! calculate local constants
-    loc_th0 = -const_pi/2 
-    loc_th1 = const_pi/2 
-    loc_s0 = sin(loc_th0)    
-    loc_s1 = sin(loc_th1)  
+    loc_th0 = -const_pi/2
+    loc_th1 = const_pi/2
+    loc_s0 = sin(loc_th0)
+    loc_s1 = sin(loc_th1)
     loc_ds = (loc_s1-loc_s0)/real(n_j)
     DO j=0,n_j
        loc_sv(j) = loc_s0 + real(j)*loc_ds
@@ -238,7 +239,7 @@ CONTAINS
              IF (atm_select(ia)) THEN
                 SELECT CASE (atm_type(ia))
                 CASE (0)
-                   if (ia == ia_T) atm(ia,i,j) = const_zeroC                
+                   if (ia == ia_T) atm(ia,i,j) = const_zeroC
                 CASE (1)
                    atm(ia,i,j) = atm_init(ia)
                 CASE (11,12,13,14)

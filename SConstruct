@@ -35,18 +35,6 @@ print('Using platform "' + platform + '"')
 execfile(os.path.join(U.cgenie_root, 'platforms', platform))
 
 
-# Set up model job configuration (the "dummy-job.py" thing is there to
-# allow us to run SCons in the root cgenie directory for development
-# purposes -- normal job builds will pick up an explicit job
-# configuration and model source directory file in their build
-# directory).
-
-if os.path.exists('job.py'):
-    execfile('job.py')
-else:
-    execfile(os.path.join(U.cgenie_root, 'src', 'dummy-job.py'))
-
-
 # NetCDF paths.
 
 netcdfinc = os.path.join(netcdf['base'], 'include')
@@ -79,18 +67,10 @@ subdirs = modules + utils
 modpath = map(lambda d: os.path.join('#/build', d), subdirs)
 
 
-# Set up coordinate definitions.
-
-defs = [ ]
-for d in coordvars:
-    if coordvars[d]:
-        defs.append(f90['define'] + d + '=' + str(coordvars[d]))
-
-
 # Set up model version marker.
 
 rev = ARGUMENTS['rev'] if 'rev' in ARGUMENTS else 'UNKNOWN'
-defs.append(f90['define'] + 'REV=' + rev)
+defs = [f90['define'] + "REV=" + rev]
 
 
 # Set up SCons environment: Fortran compiler definitions taken from

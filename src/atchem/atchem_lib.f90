@@ -4,16 +4,12 @@
 ! LIBRARY MODULE
 ! ******************************************************************************************************************************** !
 
-
 MODULE atchem_lib
 
-
-  use genie_control
   use gem_util
   use gem_carbchem
   IMPLICIT NONE
   SAVE
-
 
   ! ****************************************************************************************************************************** !
   ! *** NAMELIST DEFINITIONS ***************************************************************************************************** !
@@ -27,29 +23,29 @@ MODULE atchem_lib
   real::par_atm_F14C                                           ! Global cosmogenic production rate of 14C (mol yr-1)
   NAMELIST /ini_atchem_nml/par_atm_F14C
   ! ------------------- EMISSIONS-TO-ATMOSPHERE ---------------------------------------------------------------------------------- !
-  real::par_atm_wetlands_FCH4                                  ! Wetlands CH4 flux (mol yr-1) 
-  real::par_atm_wetlands_FCH4_d13C                             ! Wetlands CH4 d13C (o/oo) 
+  real::par_atm_wetlands_FCH4                                  ! Wetlands CH4 flux (mol yr-1)
+  real::par_atm_wetlands_FCH4_d13C                             ! Wetlands CH4 d13C (o/oo)
   NAMELIST /ini_atchem_nml/par_atm_wetlands_FCH4,par_atm_wetlands_FCH4_d13C
   ! ------------------- SLAB BIOSPHERE ------------------------------------------------------------------------------------------- !
-  real::par_atm_slabbiosphere_C                                  ! 
-  real::par_atm_slabbiosphere_C_d13C                             ! 
+  real::par_atm_slabbiosphere_C                                  !
+  real::par_atm_slabbiosphere_C_d13C                             !
   NAMELIST /ini_atchem_nml/par_atm_slabbiosphere_C,par_atm_slabbiosphere_C_d13C
-  real::par_atm_FterrCO2exchange          ! 
+  real::par_atm_FterrCO2exchange          !
   NAMELIST /ini_atchem_nml/par_atm_FterrCO2exchange
   ! ------------------- RUN CONTROL ---------------------------------------------------------------------------------------------- !
   logical::ctrl_continuing                                     ! continuing run?
   NAMELIST /ini_atchem_nml/ctrl_continuing
   ! ------------------- I/O DIRECTORY DEFINITIONS -------------------------------------------------------------------------------- !
-  CHARACTER(len=255)::par_indir_name                           ! 
-  CHARACTER(len=255)::par_outdir_name                          ! 
-  CHARACTER(len=255)::par_rstdir_name                          ! 
+  CHARACTER(len=255)::par_indir_name                           !
+  CHARACTER(len=255)::par_outdir_name                          !
+  CHARACTER(len=255)::par_rstdir_name                          !
   NAMELIST /ini_atchem_nml/par_indir_name,par_outdir_name,par_rstdir_name
-  CHARACTER(len=127)::par_infile_name,par_outfile_name         ! 
+  CHARACTER(len=127)::par_infile_name,par_outfile_name         !
   NAMELIST /ini_atchem_nml/par_infile_name,par_outfile_name
   ! ------------------- DATA SAVING: MISC ---------------------------------------------------------------------------------------- !
   LOGICAL::ctrl_ncrst                                          ! restart as netCDF format?
   NAMELIST /ini_atchem_nml/ctrl_ncrst
-  CHARACTER(len=127)::par_ncrst_name                           ! 
+  CHARACTER(len=127)::par_ncrst_name                           !
   NAMELIST /ini_atchem_nml/par_ncrst_name
   ! ############################################################################################################################## !
 
@@ -60,10 +56,9 @@ MODULE atchem_lib
 
   ! *** array dimensions ***
   ! grid dimensions
-  INTEGER,PARAMETER::n_i                                  = ilon1_atm ! 
-  INTEGER,PARAMETER::n_j                                  = ilat1_atm ! 
-  ! grid properties array dimensions 
-  INTEGER,PARAMETER::n_phys_atm                           = 15    ! number of grid properties descriptors
+  INTEGER :: n_i, n_j
+  ! grid properties array dimensions
+  INTEGER :: n_phys_atm
 
   ! *** array index values ***
   ! atmosperhic 'physics' properties array indices
@@ -84,23 +79,6 @@ MODULE atchem_lib
   INTEGER,PARAMETER::ipa_P                                = 15    ! pressure (atm)
 
   ! *** array index names ***
-  ! atmosphere interface 'physics'
-  CHARACTER(len=16),DIMENSION(n_phys_atm),PARAMETER::string_phys_atm = (/ &
-       & 'lat             ', &
-       & 'lon             ', &
-       & 'dlat            ', &
-       & 'dlon            ', &
-       & 'latn            ', &
-       & 'lone            ', &
-       & 'hmid            ', &
-       & 'dh              ', &
-       & 'hbot            ', &
-       & 'htop            ', &
-       & 'A               ', &
-       & 'rA              ', &
-       & 'V               ', &
-       & 'rV              ', &
-       & 'P               ' /)
 
   ! *** miscellaneous ***
   ! effective thickness of atmosphere (m) in the case of a 1-cell thick atmosphere
@@ -112,20 +90,16 @@ MODULE atchem_lib
   ! *********************************************************
 
   ! *** PRIMARY ATCHEM ARRAYS ***
-  real,dimension(n_atm,n_i,n_j)::atm                           ! 
-  real,dimension(n_atm,n_i,n_j)::fatm                          ! 
-  real,dimension(n_phys_atm,n_i,n_j)::phys_atm                 ! 
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: atm, fatm, phys_atm
 
   ! *** Miscellanenous ***
   !
-  real,dimension(n_atm,n_i,n_j)::atm_slabbiosphere             ! 
+  REAL, DIMENSION(:,:,:), ALLOCATABLE  :: atm_slabbiosphere
   ! netCDF and netCDF restart parameters
-  CHARACTER(len=31)::string_rstid                              ! 
-  CHARACTER(len=7) ::string_ncrunid                            ! 
-  CHARACTER(len=254) ::string_ncrst                            ! 
+  CHARACTER(len=31)::string_rstid                              !
+  CHARACTER(len=7) ::string_ncrunid                            !
+  CHARACTER(len=254) ::string_ncrst                            !
   integer::ncrst_ntrec                                         ! count for netcdf datasets
   integer::ncrst_iou                                           ! io for netcdf restart
 
-
 END MODULE atchem_lib
-

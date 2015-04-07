@@ -215,7 +215,6 @@ CONTAINS
     nvals2 = PRODUCT(dimlens2)
     IF (nvals1 /= nvals2) THEN
        do_comparison = 'ERRSIZE'
-       DEALLOCATE(dims1)    ; DEALLOCATE(dims2)
        DEALLOCATE(dimlens1) ; DEALLOCATE(dimlens2)
        RETURN
     END IF

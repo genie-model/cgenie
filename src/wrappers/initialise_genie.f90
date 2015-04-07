@@ -27,7 +27,10 @@ SUBROUTINE initialise_genie()
        & debug_init, debug_end, debug_loop, gem_yr, gem_yr_min, &
        & gem_yr_max, gem_notyr, gem_notyr_min, gem_notyr_max, gem_dyr, &
        & gem_adapt_auto, gem_adapt_dpCO2dt, gem_adapt_DpCO2, &
-       & gem_adapt_auto_unlimitedGEM, gem_adapt_diag_biogem_full
+       & gem_adapt_auto_unlimitedGEM, gem_adapt_diag_biogem_full, &
+       & dim_GENIENL, dim_GENIENX, dim_GENIENY, dim_GOLDSTEINNLONS, &
+       & dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, dim_GOLDSTEINNTRACS, &
+       & dim_SEDGEMNLONS, dim_SEDGEMNLATS, dim_ROKGEMNLONS, dim_ROKGEMNLATS
 
   ! Assign default values
   koverall_total = 0
@@ -75,6 +78,17 @@ SUBROUTINE initialise_genie()
   verbosity = 0
   debug_init = 1
   fname_topo = 'worbe2'
+  dim_GENIENL = 7
+  dim_GENIENX = 64
+  dim_GENIENY = 32
+  dim_GOLDSTEINNLONS = 36
+  dim_GOLDSTEINNLATS = 36
+  dim_GOLDSTEINNLEVS = 8
+  dim_GOLDSTEINNTRACS = 2
+  dim_SEDGEMNLONS = 36
+  dim_SEDGEMNLATS = 36
+  dim_ROKGEMNLONS = 36
+  dim_ROKGEMNLATS = 36
 
   CALL check_unit(unitNum, __LINE__, __FILE__)
   OPEN(UNIT=unitNum,FILE='data_genie',STATUS='old',IOSTAT=ios)
@@ -95,4 +109,36 @@ SUBROUTINE initialise_genie()
   IF (debug_init > 1) CALL message("read values for genie_control_nml:", 3)
   IF (verbosity >= 3) WRITE (UNIT=6,NML=genie_control_nml)
   IF (debug_init > 1) CALL message("read namelist: genie_control_nml", 1)
+
+  ilon1_atm = dim_GENIENX
+  ilat1_atm = dim_GENIENY
+  ilon2_atm = dim_GENIENX
+  ilat2_atm = dim_GENIENY
+  ilon3_atm = dim_GENIENX
+  ilat3_atm = dim_GENIENY
+  inl1_atm = dim_GENIENL
+  ilon1_ocn = dim_GOLDSTEINNLONS
+  ilat1_ocn = dim_GOLDSTEINNLATS
+  ilon2_ocn = dim_GOLDSTEINNLONS
+  ilat2_ocn = dim_GOLDSTEINNLATS
+  ilon3_ocn = dim_GOLDSTEINNLONS
+  ilat3_ocn = dim_GOLDSTEINNLATS
+  inl1_ocn = dim_GOLDSTEINNLEVS
+  inl2_ocn = inl1_ocn + 1
+  intrac_ocn = dim_GOLDSTEINNTRACS
+  ilon1_sic = dim_GOLDSTEINNLONS
+  ilat1_sic = dim_GOLDSTEINNLATS
+  ilon2_sic = dim_GOLDSTEINNLONS
+  ilat2_sic = dim_GOLDSTEINNLATS
+  ilon3_sic = dim_GOLDSTEINNLONS
+  ilat3_sic = dim_GOLDSTEINNLATS
+  ilon1_lic = dim_GOLDSTEINNLONS
+  ilat1_lic = dim_GOLDSTEINNLATS
+  ilon1_lnd = dim_GOLDSTEINNLONS
+  ilat1_lnd = dim_GOLDSTEINNLATS
+  ilon1_sed = dim_SEDGEMNLONS
+  ilat1_sed = dim_SEDGEMNLATS
+  ilon1_rok = dim_ROKGEMNLONS
+  ilat1_rok = dim_ROKGEMNLATS
+
 END SUBROUTINE initialise_genie

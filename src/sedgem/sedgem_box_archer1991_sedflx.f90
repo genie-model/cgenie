@@ -19,7 +19,7 @@ MODULE sedgem_box_archer1991_sedflx
   INTEGER,PARAMETER::nmax      = 300
   REAL,PARAMETER,DIMENSION(nzmax)::delz = (/0.0,0.5,0.5,1.0,2.0,3.0,3.0,5.0,5.0,5.0/)
 
-  
+
 CONTAINS
 
 
@@ -58,7 +58,7 @@ CONTAINS
     END DO
     !
     CALL set_pore(calpc,z,pore)
-    ! 
+    !
     expb = 3.0
     ! diffusion coefficient for o2
     difo2 = 12.1e-6
@@ -67,7 +67,7 @@ CONTAINS
     ! diffusion coefficient for hco3
     difc(2) = 6.4e-6
     ! diffusion coefficient for co3
-    difc(3) = 5.2e-6 
+    difc(3) = 5.2e-6
     ! dissolution rate constant, units of 1/s
     dissc = par_sed_archer1991_dissc ! 1. * 1.1574e-5
     ! dissolution rate order
@@ -79,22 +79,22 @@ CONTAINS
     carb(1,1) = co2
     carb(1,2) = hco3
     carb(1,3) = co3
-    
+
     CALL pore_2_form(pore,form,expb)
-    
+
     CALL o2org(rainorg,rc,difo2,db,z,form,pore,o2,zrct,orgml,orggg,resp_c)
-    
+
     DO l = 2, kmax
       calgg(l) = calpc
     END DO
 
     CALL sldcon(calml,calgg,100.,pore)
-    
+
     CALL co3ss(resp_c,dissc,dissn,calsat,k1,k2,difc,form, &
       & pore,calgg,carb,ttrorg,ttrcal,ttral,ttrtc,diftc,difal)
 
     fun_archer1991_sedflx = ttrcal
-    
+
   END function fun_archer1991_sedflx
 
 
@@ -109,31 +109,31 @@ CONTAINS
     REAL,INTENT(inout)::rc,difo2,zrct
     REAL,INTENT(inout),DIMENSION(:)::z,form,pore,o2,orgml,orggg
     REAL,INTENT(inout),DIMENSION(:,:)::resp_c
-    
+
     INTEGER::k,m
     REAL::zup,zdn,sed_cmky,rct_c,rms_c,rct_o2,rms_o2
     REAL,DIMENSION(nzmax)::dopls,domin
     REAL,DIMENSION(nzmax)::dbpls,dbmin
-    
+
     DO k = 2, kmax
       o2(k) = o2(1)
       orggg(k) = 0.0002
     END DO
 
     CALL sldcon(orgml,orggg,12.,pore)
-    
+
     CALL calc_o2_diff(difo2,form,pore,dopls,domin)
 
     CALL calc_db(db,dbpls,dbmin,z,pore,12.)
-    
+
     sed_cmky = 1.0
-    
+
     zrct = z(kmax)
-    
+
     CALL orgc(rainorg,rc,zrct,dbpls,dbmin,pore,orggg,orgml,z,rct_c,rms_c)
 
     CALL o2ss(o2,z,orgml,pore,dopls,domin,rc,zrct,rct_o2,rms_o2)
-    
+
 ! NOTE: the limit in this do loop was originally 20;
 !       it can be increased to improve numerical stability under potenitally-anoxic conditions
     IF(o2(kmax).LT.0) THEN
@@ -146,7 +146,7 @@ CONTAINS
         IF( ABS(o2(kmax)).LT. 1.e-7) EXIT
         IF(o2(kmax).LT.0) THEN
           zdn = zrct
-          zrct = (zrct + zup) / 2.           
+          zrct = (zrct + zup) / 2.
         ELSE
           zup = zrct
           zrct = (zrct + zdn) / 2.
@@ -155,7 +155,7 @@ CONTAINS
     ENDIF
 
     CALL get_resp(rc,orgml,zrct,z,resp_c)
-    
+
   END SUBROUTINE o2org
 
 
@@ -170,7 +170,7 @@ CONTAINS
     REAL,INTENT(inout),dimension(:,:)::resp_c
 
     INTEGER::i
-    
+
     DO i = 1, kmax
       IF(z(i).le.zrct) THEN
         resp_c(i,1) = rc * orgml(i)
@@ -184,24 +184,24 @@ CONTAINS
     END DO
 
   END SUBROUTINE get_resp
-         
+
 
 ! *************************************************************************************************
 ! *** orgc ****************************************************************************************
 ! *************************************************************************************************
 
   SUBROUTINE orgc(rainorg,rc,zrct,dbpls,dbmin,pore,orggg,orgml,z,smrct,rmserr)
-    
+
     REAL,INTENT(in)::rainorg
     REAL,INTENT(inout)::rc,zrct,smrct,rmserr
     REAL,INTENT(inout),DIMENSION(:)::dbpls,dbmin,pore,orggg,orgml,z
-    
+
     REAL:: res(nzmax), dres(nzmax,3)
     REAL:: react(nzmax), dreac(nzmax)
     REAL:: a(nzmax,nzmax), b(nzmax,1)
 
     INTEGER::i,j
-    
+
     smrct = 0.
 
 ! ***  ***
@@ -233,9 +233,9 @@ CONTAINS
 ! dr/dx(i-1)
       dres(i,3) = dbmin(i)
     END DO
-    
+
 ! ***  ***
-    
+
     i=2
 ! residual(2)
     res(i) = dbpls(i) * (orggg(i+1) - orggg(i)) + &
@@ -246,9 +246,9 @@ CONTAINS
     dres(i,2) = - dbpls(i) + dreac(i)
 ! dr/dx(i-1) (not defined anyway for i=2)
     dres(i,3) = 0.0
-    
+
 ! ***  ***
-    
+
     i = kmax
 ! residual(kmax)
     res(i) = - dbmin(i) * (orggg(i) - orggg(i-1)) + react(i)
@@ -258,9 +258,9 @@ CONTAINS
     dres(i,2) = - dbmin(i) + dreac(i)
 ! dr/dx(i-1)
     dres(i,3) = dbmin(i)
-    
+
 ! ***  ***
-    
+
 !   zero the arrays
     DO i=1,kmax
       b(i,1) = 0.
@@ -268,41 +268,41 @@ CONTAINS
         a(i,j) = 0.
       END DO
     END DO
-    
+
 ! set up the residual array
     DO i=1, kmax-1
       b(i,1) = - res(i+1)
 ! want res(2) into b(1), res(3) into b(2) etc.
     END DO
-    
+
 ! diagonal, dri/dxi
     DO i=1, kmax-1
       a(i,i) = dres(i+1,2)
 ! want dres(2,2) in a(1,1), dres(3,2) in a(2,2) etc
     END DO
-    
+
 ! upper off-diagonal, dri/dxi+1
     DO i=1,kmax-2
       a(i,i+1) = dres(i+1,1)
 ! want dres(2,1) in a(1,2), dres(3,1) in a(2,3) etc
     END DO
-    
+
 ! lower off-diagonal, dri/dxi-1
     DO i=1, kmax-2
       a(i+1,i) = dres(i+2,3)
 ! want dres(3,3) in a(2,1), dres(4,3) in a(3,2) etc
     END DO
-    
+
     CALL gaussj(a,kmax-1,b,1)
-    
+
 ! update the concentration array
     rmserr = 0
     DO i=1,kmax-1
       orggg(i+1) = orggg(i+1) + b(i,1)
       rmserr = rmserr + res(i+1)**2
     END DO
-    
-    CALL sldcon(orgml,orggg,12.,pore) 
+
+    CALL sldcon(orgml,orggg,12.,pore)
 
     DO i=2, kmax
       IF(z(i).le.zrct) THEN
@@ -318,25 +318,25 @@ CONTAINS
 ! [ cm3 sl / cm3 total ]
 ! [ cm (total) ]
 ! = [ g diss / cm2 yr ]
-      smrct = smrct + react(i) * 2.5 * ( 1 - pore(i) ) * delz(i)  
+      smrct = smrct + react(i) * 2.5 * ( 1 - pore(i) ) * delz(i)
     END DO
 ! into units of moles / cm2 yr
     smrct = - smrct / 12.
-    
+
     DO i=3, kmax-1
 ! residual(i)
       res(i) = dbpls(i) * (orggg(i+1) - orggg(i)) - dbmin(i) * (orggg(i) - orggg(i-1)) + react(i)
     END DO
-    
+
     i=2
 ! residual(2)
     res(i) = dbpls(i) * (orggg(i+1) - orggg(i)) + react(i) + &
       & rainorg * 12. / delz(i) / ( 1 - pore(i) ) / 2.5
-    
+
     i = kmax
 ! residual(kmax)
     res(i) = - dbmin(i) * (orggg(i) - orggg(i-1)) + react(i)
-    
+
     rmserr = 0.
     DO i=2, kmax
       rmserr = rmserr + res(i)**2
@@ -344,16 +344,16 @@ CONTAINS
       IF(orggg(i).LT.0) orggg(i) = 0.
     END DO
     rmserr = rmserr**(0.5)
-    
+
   END SUBROUTINE orgc
-  
-  
+
+
 ! *************************************************************************************************
 ! *** o2ss ****************************************************************************************
 ! *************************************************************************************************
-  
+
   SUBROUTINE o2ss(o2,z,orgml,pore,dopls,domin,rate,zrct,smrct,rmserr)
-    
+
     REAL,INTENT(inout)::rate,zrct,smrct,rmserr
     REAL,INTENT(inout),DIMENSION(:)::o2,z,orgml,pore,dopls,domin
 
@@ -361,9 +361,9 @@ CONTAINS
     REAL:: a(nzmax,nzmax),b(nzmax,1),r(nzmax)
 
     INTEGER::j,k
-    
+
     DO j=2,kmax-1
-      r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) ) 
+      r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) )
 ! units of m / cm2 (total) s
       IF(z(j).le.zrct) THEN
         r(j) = r(j) - 1.3*rate*orgml(j)/pore(j)
@@ -403,15 +403,15 @@ CONTAINS
     END DO
 
     CALL gaussj(a,kmax-1,b,1)
-    
+
     smrct = 0.
     DO j=2,kmax
-      o2(j) = o2(j) + b(j-1,1) 
+      o2(j) = o2(j) + b(j-1,1)
       IF(z(j).le.zrct) THEN
 ! units format:
 ! [ moles O2 / l total second ]
 ! [ moles O2 / cm3 yr ]
-! [ moles O2 / cm2 yr ] 
+! [ moles O2 / cm2 yr ]
         smrct = smrct - 1.3*rate*orgml(j) * 3.15e7 / 1000. * delz(j)
       ELSEIF(z(j-1).le.zrct) THEN
         smrct = smrct - 1.3*rate*orgml(j) * (zrct-z(j-1))/delz(j) * 3.15e7 / 1000. * delz(j)
@@ -421,7 +421,7 @@ CONTAINS
 ! Calculate RMS error
     rmserr = 0.
     DO j = 2, kmax-1
-      r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) ) 
+      r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) )
       IF(z(j).le.zrct) THEN
         r(j) = r(j) - 1.3*rate*orgml(j)/pore(j)
       ELSEIF(z(j-1).le.zrct) THEN
@@ -437,7 +437,7 @@ CONTAINS
       r(j) = r(j) - 1.3*rate*orgml(j) * (zrct-z(j-1))/delz(j)
     ENDIF
     rmserr = rmserr + r(j)**2
-    
+
     rmserr = rmserr**(0.5)
 
   END SUBROUTINE o2ss
@@ -446,12 +446,12 @@ CONTAINS
 ! *************************************************************************************************
 ! *** calc_o2_diff ********************************************************************************
 ! *************************************************************************************************
-  
+
   SUBROUTINE calc_o2_diff(difo2,form,pore,dopls,domin)
 
     REAL,INTENT(inout)::difo2
     REAL,INTENT(inout),DIMENSION(:)::form,pore,dopls,domin
-    
+
     INTEGER::i
 
     DO i=3,kmax-1
@@ -485,12 +485,12 @@ CONTAINS
     REAL,INTENT(inout),DIMENSION(:)::form,pore
     REAL,INTENT(in),DIMENSION(:)::calgg
     REAL,INTENT(inout),DIMENSION(:,:)::resp_c,carb
-    
+
     INTEGER::k,l
     REAL,DIMENSION(nzmax)::cal_c
     REAL,DIMENSION(nzmax,3)::dcpls
     REAL,DIMENSION(nzmax,3)::dcmin
-    
+
     CALL calcdc(difc,form,pore,dcpls,dcmin)
 
     DO k=2, kmax
@@ -500,7 +500,7 @@ CONTAINS
     END DO
     carb(2,3) = ( 2 * carb(1,3) + csat ) / 3
     carb(3,3) = ( carb(1,3) + 2 * csat ) / 3
-    
+
     DO l=1,20
       CALL calc_co3(resp_c,dissc,dissn,csat,u1,u2,dcpls,dcmin, &
         & pore,calgg,carb,cal_c)
@@ -510,19 +510,19 @@ CONTAINS
         IF(( ABS(1 - ABS(ttrtc / diftc)) .LT. 0.03 ) .AND. ( ABS(1 - ABS(ttral / difal)) .LT. 0.03 )) EXIT
       ENDIF
     END DO
-    
+
   END SUBROUTINE co3ss
-  
-  
+
+
 ! *************************************************************************************************
 ! *** calc_co3 ************************************************************************************
 ! *************************************************************************************************
-  
+
 ! routine calc_co3, which calculates a single iteration
-! of the carbonate system chemistry.  must be run 
-! several times because of the non-linearity of 
+! of the carbonate system chemistry.  must be run
+! several times because of the non-linearity of
 ! calcite dissolution kinetics.
-  
+
   SUBROUTINE calc_co3(resp_c,dissc,dissn,csat,disoc1,disoc2,dplus,dminus, &
        & pore,calgg,carb,cal_c)
 
@@ -564,7 +564,7 @@ CONTAINS
        ENDIF
 
        ! alkalinity equation
-       r(k,2) = dplus(k,3) * (carb(k+1,3)-carb(k,3)) & 
+       r(k,2) = dplus(k,3) * (carb(k+1,3)-carb(k,3)) &
             & - dminus(k,3) * (carb(k,3)-carb(k-1,3)) &
             & + 0.5 * dplus(k,2) * (carb(k+1,2)-carb(k,2)) &
             & - 0.5 * dminus(k,2) * (carb(k,2)-carb(k-1,2))
@@ -575,7 +575,7 @@ CONTAINS
        r(k,3) = carb(k,1) * carb(k,3) / carb(k,2)**2 - disoc2 / disoc1
     END DO
 
-    ! the derivitive terms: array (function, variable, 
+    ! the derivitive terms: array (function, variable,
     ! 'k+'= 3 to 'k-' = 1, and depth level k)
     DO k=2,kmax-1
        dr(1,1,3,k) = dplus(k,1)
@@ -595,7 +595,7 @@ CONTAINS
                &                      * calgg(k)&
                &                      * (2.5*1000)/100&
                &                      / csat&
-               &                 *((1-(carb(k,3)/csat))**(dissn-1.)) 
+               &                 *((1-(carb(k,3)/csat))**(dissn-1.))
        ENDIF
        dr(1,3,1,k) = dminus(k,3)
 
@@ -616,7 +616,7 @@ CONTAINS
                &                      * calgg(k) &
                &                      * (2.5*1000)/100 &
                &                      / csat &
-               &                 *((1-(carb(k,3)/csat))**(dissn-1.)) 
+               &                 *((1-(carb(k,3)/csat))**(dissn-1.))
        ENDIF
        dr(2,3,1,k) = dminus(k,3)
 
@@ -739,7 +739,7 @@ CONTAINS
        IF(carb(k,3).LT.csat) THEN
           cal_c(k) = dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k))*calgg(k)*(2.5*1000)/(100)
        ELSE
-          cal_c(k) = 0. 
+          cal_c(k) = 0.
        ENDIF
     END DO
 
@@ -751,13 +751,13 @@ CONTAINS
 ! *************************************************************************************************
 
   SUBROUTINE calcdc(difc,form,pore,dcpls,dcmin)
-    
+
     REAL,INTENT(inout),DIMENSION(:)::difc
     REAL,INTENT(inout),DIMENSION(:)::form,pore
     REAL,INTENT(inout),DIMENSION(:,:)::dcpls,dcmin
 
     INTEGER::i,j
-    
+
     DO i=3,kmax-1
       DO j=1,3
         dcpls(i,j)=difc(j) &
@@ -848,7 +848,7 @@ CONTAINS
 ! *************************************************************************************************
 ! *** gaussj **************************************************************************************
 ! *************************************************************************************************
-  
+
   SUBROUTINE gaussj(a,n,b,m)
 
     INTEGER,INTENT(in)::n,m
@@ -859,11 +859,11 @@ CONTAINS
     INTEGER,DIMENSION(nmax)::indxr,indxc
     REAL::big,dum,pivinv
     REAL,DIMENSION(nmax)::ipiv
-       
+
 ! numerical recipes, pages 28-29
     irow = 0
     icol = 0
-    
+
     DO j=1,n
       ipiv(j)=0
     END DO
@@ -934,7 +934,7 @@ CONTAINS
         END DO
       ENDIF
     END DO
-    
+
   END SUBROUTINE gaussj
 
 
@@ -943,7 +943,7 @@ CONTAINS
 ! *************************************************************************************************
 
   SUBROUTINE CALC_DB(db,dbpls,dbmin,z,pore,MLD)
-    
+
     REAL,INTENT(in)::mld
     REAL,INTENT(in)::db
     REAL,INTENT(inout),DIMENSION(:)::dbpls,dbmin,z,pore
@@ -951,7 +951,7 @@ CONTAINS
     INTEGER::I
 
     Z(KMAX+1) = MLD +1
-    
+
     DO I=2, kmax
       IF(I.EQ.2) THEN
         DBPLS(I) = DB * 2 / ( (DELZ(I) + DELZ(I+1)) * DELZ(I) ) * ( 1-PORE(I)+1-PORE(I+1) )/( 1-PORE(I) )
@@ -975,7 +975,7 @@ CONTAINS
 ! *************************************************************************************************
 ! *** pore_2_form *********************************************************************************
 ! *************************************************************************************************
-  
+
   SUBROUTINE pore_2_form(pore,form,expb)
 
     REAL,INTENT(inout)::expb
@@ -994,7 +994,7 @@ CONTAINS
 ! *** sldcon **************************************************************************************
 ! *************************************************************************************************
 
-  SUBROUTINE sldcon(temp_ml,temp_gg,molwt,pore) 
+  SUBROUTINE sldcon(temp_ml,temp_gg,molwt,pore)
 
     REAL,INTENT(in)::molwt
     REAL,INTENT(inout),dimension(:)::temp_ml,temp_gg,pore
@@ -1009,25 +1009,6 @@ CONTAINS
   END SUBROUTINE sldcon
 
 
-! *************************************************************************************************
-! *** sldfrc **************************************************************************************
-! *************************************************************************************************
-  
-  SUBROUTINE sldfrc(temp_ml,temp_gg,molwt,pore)
-
-    REAL,INTENT(inout)::molwt
-    REAL,INTENT(inout),dimension(:)::temp_ml,temp_gg,pore
-
-    INTEGER::i
-
-! Update the solid wt. pct. accounts
-    DO i=2,kmax
-      temp_gg(i) = temp_ml(i)*molwt/(2.5*(1-pore(i))*1000)
-    END DO
-
-  END SUBROUTINE sldfrc
-
-  
   ! ********************************************************************************************************************************
   ! SET UP POROSITY PROFILE
   ! NOTE: sub-surface porosity is calculated from the MASS fraction of CaCO3,
@@ -1056,6 +1037,6 @@ CONTAINS
 
   END SUBROUTINE set_pore
   ! ********************************************************************************************************************************
-  
+
 
 END MODULE sedgem_box_archer1991_sedflx

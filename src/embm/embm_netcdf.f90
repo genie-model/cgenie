@@ -10,8 +10,8 @@ MODULE embm_netcdf
   PUBLIC :: end_netcdf_embm
   PUBLIC :: nclon1, nclon2, nclon3, nclat1, nclat2, nclat3
 
-  REAL, DIMENSION(maxi) :: nclon1, nclon2, nclon3
-  REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclon1, nclon2, nclon3
+  REAL, DIMENSION(:), ALLOCATABLE :: nclat1, nclat2, nclat3
 
   INTEGER :: nco(nfiles), iddimo(nall, nfiles), idvaro(nall, nfiles)
 
@@ -35,7 +35,7 @@ CONTAINS
          & PRINT *, 'istep', istep, 'day', day, 'iyear', iyear, &
          & 'imonth', imonth, 'rtime',rtime
     CALL ini_netcdf_embm1(outdir_name, lenout, lout, imonth, rtime, &
-         & nclon1, nclat1, nclon2, nclat2, nclon3, nclat3, imax, jmax, imode)
+         & nclon1, nclat1, nclon2, nclat2, nclon3, nclat3, maxi, maxj, imode)
   END SUBROUTINE ini_netcdf_embm
 
 
@@ -61,7 +61,6 @@ CONTAINS
     CHARACTER(LEN=200), DIMENSION(nall) :: dimname, varname
     CHARACTER(LEN=200), DIMENSION(2,nmaxdims,nall) :: attdimname, attvarname
 
-    INTEGER, PARAMETER :: imax=100, jmax=100, kmax=100, lmax=10000
     INTEGER :: itime, ifname1
     CHARACTER(LEN=200) :: fname1
     CHARACTER(LEN=10) :: cyear
@@ -383,13 +382,13 @@ CONTAINS
   ! Reorganise data for netCDF file (e.g. re-orientation)
   SUBROUTINE prep_netcdf_embm(data_i, data_o, scale, iland)
     IMPLICIT NONE
-    REAL, INTENT(IN)  :: data_i(imax,jmax)
-    REAL, INTENT(OUT) :: data_o(imax,jmax)
+    REAL, INTENT(IN)  :: data_i(maxi,maxj)
+    REAL, INTENT(OUT) :: data_o(maxi,maxj)
     REAL, INTENT(IN) :: scale
-    INTEGER, INTENT(IN), OPTIONAL :: iland(0:imax+1,0:jmax+1)
+    INTEGER, INTENT(IN), OPTIONAL :: iland(0:maxi+1,0:maxj+1)
 
     IF (PRESENT(iland)) THEN
-       WHERE (iland(1:imax,1:jmax) >= 90)
+       WHERE (iland(1:maxi,1:maxj) >= 90)
           data_o = -99999.0
        ELSEWHERE
           data_o = data_i * scale

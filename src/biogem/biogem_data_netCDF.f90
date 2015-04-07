@@ -50,6 +50,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     loc_c0 = 0.0
     loc_c1 = 1.0
+    loc_lon_e = 0.0 ; loc_lat_e = 0.0 ; loc_zt_e = 0.0
+    loc_ijk = 0.0 ; loc_ijk_mask = 0.0
     ! -------------------------------------------------------- !
     ! WRITE TO FILE
     ! -------------------------------------------------------- !
@@ -486,6 +488,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout3d_iou
     loc_ntrec = ncout3d_ntrec
+    loc_ijk = 0.0
     loc_mask(:,:,:) = phys_ocn(ipo_mask_ocn,:,:,:)
     !-----------------------------------------------------------------------
     !       pH FIELD
@@ -899,6 +902,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     loc_mask_surf(:,:) = phys_ocnatm(ipoa_mask_ocn,:,:)
     !-----------------------------------------------------------------------
     !       CaCO3:POC surface ocean export 'rain ratio'
@@ -1150,6 +1154,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     loc_mask_surf(:,:)     = phys_ocnatm(ipoa_mask_ocn,:,:)
     loc_mask_surf_ALL(:,:) = 1.0
     !-----------------------------------------------------------------------
@@ -1562,6 +1567,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0 ; loc_ij_1 = 0.0 ; loc_ij_2 = 0.0
     loc_sed_mask(:,:) = phys_ocn(ipo_mask_ocn,:,:,n_k)
     !----------------------------------------------------------------
     !       save ocn->sed interface flux data
@@ -1894,6 +1900,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou = ncout2d_iou
     loc_ntrec = ncout2d_ntrec
+    loc_ij = 0.0
     !----------------------------------------------------------------
     !                  <fseaair_*>
     !       save flux density data
@@ -1966,6 +1973,8 @@ CONTAINS
     loc_iou = ncout3d_iou
     loc_ntrec = ncout3d_ntrec
     loc_mask = phys_ocn(ipo_mask_ocn,:,:,:)
+    loc_ijk = 0.0
+    loc_sed_mask = 0.0
     !----------------------------------------------------------------
     !       SAVE OCEAN TRACER FIELD
     !----------------------------------------------------------------
@@ -2321,6 +2330,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     loc_iou   = ncout3dsig_iou
     loc_ntrec = ncout3dsig_ntrec
+    loc_ijk = 0.0
     loc_mask  = phys_ocn(ipo_mask_ocn,:,:,:)
     !----------------------------------------------------------------
     !       SAVE OCEAN TRACER FIELD
@@ -2474,6 +2484,8 @@ CONTAINS
     loc_ntrec = ncout3d_ntrec
     loc_c0 = 0.0
     loc_mask = phys_ocn(ipo_mask_ocn,:,:,:)
+    loc_colbminusr = 0.0 ; loc_colboverr = 0.0
+    loc_colroverrplusb = 0.0 ; loc_colboverrplusb = 0.0
     !-----------------------------------------------------------------------
     !       CALCULATE DERIVED COLOR TRACER PROPERTIES
     !-----------------------------------------------------------------------
@@ -2988,127 +3000,6 @@ CONTAINS
     call sub_closefile (loc_iou)
 
   END SUBROUTINE sub_save_netcdf_runtime
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
-  ! WRITE RUN-TIME DIAGNOSTICS
-  SUBROUTINE sub_save_netcdf_tsi(dum_ntrec, dum_yr, dum_ocn_tot_M, dum_ocn_tot_A, &
-       & dum_ocnatm_tot_A, dum_opsi_scale, dum_opsia, dum_sfcatm1)
-    ! dummy arguments
-    REAL,    INTENT(in)::dum_yr
-    REAL,    INTENT(in)::dum_ocn_tot_M
-    REAL,    INTENT(in)::dum_ocn_tot_A
-    REAL,    INTENT(in)::dum_ocnatm_tot_A
-    REAL,    INTENT(in)::dum_opsi_scale
-    INTEGER,INTENT(OUT)::dum_ntrec
-    REAL,DIMENSION(0:n_j,0:n_k),INTENT(in)::dum_opsia
-    REAL,DIMENSION(0:n_atm,n_i,n_j),INTENT(in)::dum_sfcatm1
-    ! local variables
-    real           :: loc_tot, loc_frac, loc_standard, loc_tmp
-    logical        :: loc_defined
-    character(255) :: loc_title, loc_timunit
-    integer        :: loc_iou, loc_id_time, loc_lid
-    real           :: loc_c0, loc_c1, loc_c100
-
-    loc_c0 = 0.
-    loc_c1 = 1.
-    loc_c100 = 100.
-
-    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/dum_ocnatm_tot_A
-    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2_13C,:,:))/dum_ocnatm_tot_A
-    loc_standard = const_standards(atm_type(ia_pCO2_13C))
-    if (loc_frac < const_real_nullsmall) then
-       loc_frac = fun_calc_isotope_fraction(0.0,loc_standard)*loc_tot
-    end if
-    !-----------------------------------------------------------------------
-    !     open file and get latest record number
-    !-----------------------------------------------------------------------
-    loc_defined = .true.
-    if (dum_yr .eq. 1) then
-       loc_defined = .false.
-       dum_ntrec = 0
-    end if
-    call sub_opennext (string_nctsi, dum_yr, 0, dum_ntrec, loc_iou)
-
-    if ( dum_ntrec .eq. 1 ) then
-
-       !-----------------------------------------------------------------------
-       !       start definitions
-       !-----------------------------------------------------------------------
-       call sub_redef (loc_iou)
-
-       !-----------------------------------------------------------------------
-       !       set global attributes
-       !-----------------------------------------------------------------------
-       loc_title = 'Run-time diagnostics'
-       write (loc_timunit,'(a,F12.2)') 'equal_month_year since 0000-01-01 00:00:00'
-       call sub_putglobal (loc_iou, string_nctsi, loc_title, string_ncrunid, loc_timunit)
-
-       !-----------------------------------------------------------------------
-       !       define dimensions
-       !-----------------------------------------------------------------------
-       call sub_defdim ('time', loc_iou, 0, loc_id_time)
-       loc_lid = loc_id_time
-
-       !-----------------------------------------------------------------------
-       !       define 1d data (t)
-       !-----------------------------------------------------------------------
-       call sub_defvar_scalar('time',loc_iou,loc_lid,loc_c0,loc_c0,'T','D','Year','time',trim(loc_timunit))
-       call sub_defvar_scalar('pCO2',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','Atmospheric pCO2',' ','uatm')
-       call sub_defvar_scalar('d13CO2',loc_iou,loc_lid,-loc_c100,loc_c100,' ','F','Atmospheric c13C',' ','o/oo')
-       call sub_defvar_scalar('AMO',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','Atlantic meridional overturning',' ','Sv')
-       call sub_defvar_scalar('sea_ice_cover',loc_iou,loc_lid,-loc_c1,loc_c100,' ','F','Global sea ice cover',' ','%')
-       call sub_defvar_scalar('_surT',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','surface temperature',' ','degrees C')
-       call sub_defvar_scalar('_surS',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','surface salinity',' ','PSU')
-       call sub_defvar_scalar('dic',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','Global DIC',' ','umol kg-1')
-       call sub_defvar_scalar('alk',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','Global ALK',' ','umol kg-1')
-       call sub_defvar_scalar('_surWc',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','surface saturation (calcite)',' ','n/a')
-       call sub_defvar_scalar('_surWa',loc_iou,loc_lid,loc_c0,loc_c100,' ','F','surface saturation (aragonite)',' ','n/a')
-       !-----------------------------------------------------------------------
-       !       end definitions
-       !-----------------------------------------------------------------------
-       call sub_enddef (loc_iou)
-       if (dum_ntrec .eq. 0) dum_ntrec = 1
-
-    endif
-
-    !-----------------------------------------------------------------------
-    !     write 1d data (t)
-    !-----------------------------------------------------------------------
-    call sub_putvars ('time', loc_iou, dum_ntrec, dum_yr, loc_c1, loc_c0)
-    loc_tmp = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/dum_ocnatm_tot_A
-    call sub_putvars ('pCO2', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-    call sub_putvars ('d13CO2', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = dum_opsi_scale*maxval(dum_opsia(:,:))
-    call sub_putvars ('AMO', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = 100.0*(loc_c1/SUM(phys_ocn(ipo_A,:,:,n_k)))* &
-         &SUM(phys_ocn(ipo_A,:,:,n_k)*phys_ocnatm(ipoa_seaice,:,:))
-    call sub_putvars ('sea_ice_cover', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = SUM((loc_c1 - phys_ocnatm(ipoa_seaice,:,:))* &
-         &phys_ocn(ipo_A,:,:,n_k)*ocn(io_T,:,:,n_k))/dum_ocn_tot_A - const_zeroC
-    call sub_putvars ('_surT', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = SUM((loc_c1 - phys_ocnatm(ipoa_seaice,:,:))* &
-         &phys_ocn(ipo_A,:,:,n_k)*ocn(io_S,:,:,n_k))/dum_ocn_tot_A
-    call sub_putvars ('_surS', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = conv_mol_umol*SUM(phys_ocn(ipo_M,:,:,:)*ocn(io_DIC,:,:,:))/dum_ocn_tot_M
-    call sub_putvars ('DIC', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = conv_mol_umol*SUM(phys_ocn(ipo_M,:,:,:)*ocn(io_ALK,:,:,:))/dum_ocn_tot_M
-    call sub_putvars ('ALK', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = SUM((loc_c1 - phys_ocnatm(ipoa_seaice,:,:))* &
-         &phys_ocn(ipo_A,:,:,n_k)*carb(ic_ohm_cal,:,:,n_k))/dum_ocn_tot_A
-    call sub_putvars ('_surWc', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-    loc_tmp = SUM((loc_c1 - phys_ocnatm(ipoa_seaice,:,:))* &
-         &phys_ocn(ipo_A,:,:,n_k)*carb(ic_ohm_arg,:,:,n_k))/dum_ocn_tot_A
-    call sub_putvars ('_surWa', loc_iou, dum_ntrec, loc_tmp, loc_c1, loc_c0)
-
-    !-----------------------------------------------------------------------
-    !     close the file
-    !-----------------------------------------------------------------------
-    call sub_closefile (loc_iou)
-
-  END SUBROUTINE sub_save_netcdf_tsi
   ! ****************************************************************************************************************************** !
 
 

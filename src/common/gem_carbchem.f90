@@ -108,8 +108,8 @@ CONTAINS
     loc_TC       = loc_T - const_zeroC
     loc_rRtimesT = 1.0/(const_R*loc_T)
     loc_I        = fun_calc_I(loc_S)
-    loc_I_p05    = loc_I**0.5   
-    loc_I_p15    = loc_I**1.5   
+    loc_I_p05    = loc_I**0.5
+    loc_I_p15    = loc_I**1.5
     loc_I_p20    = loc_I*loc_I
     loc_Cl       = fun_calc_Cl(dum_S)
     loc_ION      = fun_calc_ION(loc_Cl)
@@ -165,14 +165,14 @@ CONTAINS
             & EXP( &
             &   fun_calc_lnk1_Roy(loc_rT,loc_T_ln,loc_S_p05,loc_S,loc_S_p15) + &
             &   loc_conv_molaritytoconc + &
-            &   loc_conv_totaltoSWS + & 
+            &   loc_conv_totaltoSWS + &
             &   fun_corr_p(loc_TC,loc_P,loc_rRtimesT,carbchem_dpH2CO3) &
             & )
        dum_carbconst(icc_k2)= &
             & EXP( &
             &   fun_calc_lnk2_Roy(loc_rT,loc_T_ln,loc_S_p05,loc_S,loc_S_p15) + &
             &   loc_conv_molaritytoconc + &
-            &   loc_conv_totaltoSWS + & 
+            &   loc_conv_totaltoSWS + &
             &   fun_corr_p(loc_TC,loc_P,loc_rRtimesT,carbchem_dpHCO3) &
             & )
     case default
@@ -218,7 +218,7 @@ CONTAINS
          & EXP( &
          &   fun_calc_lnkHSO4(loc_rT,loc_T_ln,loc_I_p05,loc_I,loc_I_p15,loc_I_p20) + &
          &   loc_conv_molaritytoconc + &
-         &   loc_conv_freetoSWS + & 
+         &   loc_conv_freetoSWS + &
          &   fun_corr_p(loc_TC,loc_P,loc_rRtimesT,carbchem_dpHSO4) &
          & )
     dum_carbconst(icc_kP1) = &
@@ -424,7 +424,7 @@ CONTAINS
             &   loc_ALK_DIC*dum_carbconst(icc_k) - dum_DIC*dum_carbconst(icc_k) - &
             &   4.0*loc_ALK_DIC + loc_zed &
             & ) &
-            & /(2.0*(dum_carbconst(icc_k) - 4.0))        
+            & /(2.0*(dum_carbconst(icc_k) - 4.0))
        loc_H1 = dum_carbconst(icc_k1)*loc_conc_CO2/loc_conc_HCO3
        loc_H2 = dum_carbconst(icc_k2)*loc_conc_HCO3/loc_conc_CO3
        ! test for -ve [H]
@@ -448,19 +448,19 @@ CONTAINS
           Print*,'          (A) incorrect ocean dimension compared to the compiled executable,'
           Print*,'          (B) incorrect number of biogeochem tracers in the ocean '
           Print*,'              compared to compiled executable.'
-          Print*,'          => Carry out a *** make cleanall *** (from ~/genie/genie-main).' 
+          Print*,'          => Carry out a *** make cleanall *** (from ~/genie/genie-main).'
           Print*,'   2) If the relative values of DIC and ALK differ by factor of ca. 2'
-          Print*,'       it may not be possible to solve for aqueous carbonate chemsitry.' 
+          Print*,'       it may not be possible to solve for aqueous carbonate chemsitry.'
           Print*,'       => View the netCDF distribution of DIC, ALK (or other tracers);'
           Print*,'          -> Extreme hotspots or minima may reflect problems associated with'
           Print*,'             circulation or sea-ice instabilities.'
           Print*,'             Extreme freshening (or salinity) in topographically restricted'
           Print*,'             (and/or shallow) seas can also cause problems.'
-          Print*,'   (3) Extreme values of Ca and SO4 (#3, #4) are only vanishingly possible' 
-          Print*,'       except due to incorrect compiled array dimension or extreme salinity.' 
+          Print*,'   (3) Extreme values of Ca and SO4 (#3, #4) are only vanishingly possible'
+          Print*,'       except due to incorrect compiled array dimension or extreme salinity.'
           Print*,' > NOTE: The circulation model is very robust and will not easily fall over.'
           Print*,'         BIOGEM is something of a canary in this respect and will report'
-          Print*,'         unrealistic chemistries diagnostic of problems elsewhere.' 
+          Print*,'         unrealistic chemistries diagnostic of problems elsewhere.'
           Print*,'         *** THIS ERROR MESSAGE THUS DOES NOT NECESSARILY INDICATE ***'
           Print*,'         *** SOMETHING AMISS WITH THE BIOGEOCHEMSITRY CODE PER SE. ***'
           Print*,' > Refer to user-manual for info on altering the error behavior.'
@@ -484,9 +484,9 @@ CONTAINS
           dum_carb(ic_conc_CO2)  = loc_conc_CO2
           dum_carb(ic_conc_CO3)  = loc_conc_CO3
           dum_carb(ic_conc_HCO3) = loc_conc_HCO3
-          dum_carb(ic_fug_CO2)   = loc_conc_CO2/dum_carbconst(icc_QCO2) 
+          dum_carb(ic_fug_CO2)   = loc_conc_CO2/dum_carbconst(icc_QCO2)
           dum_carb(ic_ohm_cal)   = dum_Ca*loc_conc_CO3/dum_carbconst(icc_kcal)
-          dum_carb(ic_ohm_arg)   = dum_Ca*loc_conc_CO3/dum_carbconst(icc_karg)  
+          dum_carb(ic_ohm_arg)   = dum_Ca*loc_conc_CO3/dum_carbconst(icc_karg)
           dum_carb(ic_H)         = loc_H
           ! calculate value of [CO3--] at calcite and aragonite saturation
           ! NOTE: this assumes that the value of omega is unity at saturation (definition!)
@@ -646,7 +646,7 @@ CONTAINS
             &   loc_ALK_DIC*dum_carbconst(icc_k) - loc_DIC_RFO*dum_carbconst(icc_k) - &
             &   4.0*loc_ALK_DIC + loc_zed &
             & ) &
-            & /(2.0*(dum_carbconst(icc_k) - 4.0))        
+            & /(2.0*(dum_carbconst(icc_k) - 4.0))
        loc_H1 = dum_carbconst(icc_k1)*loc_conc_CO2/loc_conc_HCO3
        loc_H2 = dum_carbconst(icc_k2)*loc_conc_HCO3/loc_conc_CO3
        ! the implicit bit!
@@ -677,7 +677,7 @@ CONTAINS
   subroutine sub_calc_carb_r13C(dum_T,dum_DIC,dum_DIC_13C,dum_carb,dum_carbisor)
     ! dummy variables
     REAL,INTENT(in)::dum_T,dum_DIC,dum_DIC_13C
-    REAL,DIMENSION(n_carb),INTENT(in)::dum_carb 
+    REAL,DIMENSION(n_carb),INTENT(in)::dum_carb
     REAL,DIMENSION(n_carbisor),INTENT(inout)::dum_carbisor
     ! local variables
     real::loc_TC
@@ -732,7 +732,7 @@ CONTAINS
   subroutine sub_calc_carb_r14C(dum_T,dum_DIC,dum_DIC_14C,dum_carb,dum_carbisor)
     ! dummy variables
     REAL,INTENT(in)::dum_T,dum_DIC,dum_DIC_14C
-    REAL,DIMENSION(n_carb),INTENT(in)::dum_carb 
+    REAL,DIMENSION(n_carb),INTENT(in)::dum_carb
     REAL,DIMENSION(n_carbisor),INTENT(inout)::dum_carbisor
     ! local variables
     real::loc_TC
@@ -1016,22 +1016,6 @@ CONTAINS
          & + (-771.54 + 35474.0*dum_rT + 114.723*dum_T_ln)*dum_I &
          & -2698.0*dum_rT*dum_I_p15 + 1776.0*dum_rT*dum_I_p20
   END FUNCTION fun_calc_lnkHSO4
-  ! ****************************************************************************************************************************** !
-
-
-  ! ****************************************************************************************************************************** !
-  ! CALCULATE LN(KHSO4)
-  ! NOTE: this particular (alternative) empirical relationship is not currently employed
-  FUNCTION fun_calc_lnkHSO4_Khoo(dum_T,dum_I_p05)
-    IMPLICIT NONE
-    ! result variable
-    REAL::fun_calc_lnkHSO4_Khoo
-    ! dummy arguments
-    REAL,INTENT(IN)::dum_T,dum_I_p05
-    ! calculation of the dissociation constant of HSO4 [Khoo et al. 1977]
-    ! NOTE: free pH scale; [mol (kg-sol)-1] (???)
-    fun_calc_lnkHSO4_Khoo = LOG(10**(647.59/dum_T - 6.3451 + 0.019085*dum_T - 0.5208*dum_I_p05))
-  END FUNCTION fun_calc_lnkHSO4_Khoo
   ! ****************************************************************************************************************************** !
 
 
@@ -1444,5 +1428,3 @@ CONTAINS
 
 
 END MODULE gem_carbchem
-
-

@@ -3,19 +3,10 @@ MODULE ents_lib
   IMPLICIT NONE
   SAVE
 
-! For GOLDSTEIN ocean
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-
-  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxnyr=220
-  INTEGER, PARAMETER :: imax=GOLDSTEINNLONS, jmax=GOLDSTEINNLATS
-  INTEGER :: ents_k1(maxi,maxj), ents_kmax, ents_nyear
-  REAL :: ents_lat(maxj)
+  INTEGER :: maxi, maxj
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: ents_k1
+  INTEGER :: ents_kmax, ents_nyear
+  REAL, DIMENSION(:), ALLOCATABLE :: ents_lat
 
   ! The par_output_years_0d and _2d, rstdir_name, start_year,
   ! opt_timeseries_output, opt_append_data vars are defined to be a
@@ -72,7 +63,7 @@ MODULE ents_lib
   INTEGER :: msimpleland        ! How often simple land called (units of istep)
 
   ! Carbon reservoirs
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & Cveg,  &              ! Veg carbon reservoir (kgC/m2)
        & Csoil, &              ! Soil carbon reservoir (kgC/m2)
        & fv,    &              ! Fractional veget. cover (/gridbox)
@@ -81,7 +72,7 @@ MODULE ents_lib
 
   REAL :: dtland                   ! time (seconds) of each land timestep
 
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & leaf,     &            ! leaf litter (kgC/m2/yr)
        & respveg,  &            ! veget. respiration (kgC/m2/yr)
        & respsoil, &            ! soil respiration (kgC/m2/yr)
@@ -89,7 +80,7 @@ MODULE ents_lib
 
   ! Arrays used to calculate .sland.avg files.  Used in annav_diags
   ! (these arrays only used to calculate .avg files)
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & sphoto,  &          ! summed photosynth
        & srveg,   &          ! summed veg resp
        & sleaf,   &          ! summed leaf litter
@@ -110,15 +101,16 @@ MODULE ents_lib
        & ssnow,   &          ! summed snow over land
        & sz0                 ! summed roughness length over land
   REAL :: &
-       & pco2ld_tot, &          ! for use in timeseries summing
-       & tot_mass_ocn_c, &      ! for use in timeseries summing
-       & stqld(2,maxi,maxj)     ! summed land temp (1) and water (2)
+       & pco2ld_tot, &       ! for use in timeseries summing
+       & tot_mass_ocn_c      ! for use in timeseries summing
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & stqld               ! summed land temp (1) and water (2)
 
   ! Land radiation and hydrology arrays
-  REAL, DIMENSION(2,maxi,maxj) :: &
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        &  tqld, &            ! land temp(1) oC and bucket fullness(2) m
        & tqldavg             ! avg version of above
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & bcap,    &           ! bucket capacity m
        & bcapavg, &           ! avg bucket capacity (m)
        & snowavg, &           ! avg fractional snow cover
@@ -129,7 +121,8 @@ MODULE ents_lib
        & pptnavg, &           ! average pptn (m/s)
        & runavg,  &           ! average runoff (m/s)
        & fvfv                 ! vegetation fraction for fixed vegetation
-  REAL :: fxavg(7,maxi,maxj)  ! avg heat fluxes (W/m2)/timescale avg over
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & fxavg                ! avg heat fluxes (W/m2)/timescale avg over
   REAL :: albedol, &          ! land albedo
         & dtdim,   &          ! length of ocean timestep (s)
         & lambda,  &          ! decay timescale for new pptn scheme

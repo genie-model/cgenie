@@ -3,33 +3,23 @@ MODULE embm_lib
   IMPLICIT NONE
   SAVE
 
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
+  INTEGER :: maxi, maxj, maxk, maxnyr
+  INTEGER :: ntot, intot, nyear
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: ku
 
-  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=2
-  INTEGER, PARAMETER :: maxnyr=400
-  INTEGER :: imax, jmax, kmax, lmax, ntot, intot, k1(0:maxi+1,0:maxj+1)
-  INTEGER :: ku(2,maxi,maxj), mk(maxi+1,maxj), nyear
-
-  REAL :: dt(maxk), phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
-       & dz(maxk), time, s(0:maxj), c(0:maxj), dzu(2,maxk), &
-       & tau(2,maxi,maxj), drag(2,maxi+1,maxj), dztau(2,maxi,maxj), &
-       & diff(2), ec(4), sv(0:maxj)
-  REAL :: cv(0:maxj), dza(maxk), dztav(2,maxi,maxj), ez0, &
-       & sda1, sdomg, dzz, tau0(maxi,maxj), dztav0(maxi,maxj), &
-       & tau1(maxi,maxj), dztav1(maxi,maxj), tsa0(maxj), t0
+  REAL :: phi0, dphi, time, diff(2), ec(4)
+  REAL, DIMENSION(:), ALLOCATABLE :: dt, ds, dsv, rds2, dz, s, c, sv
+  REAL, DIMENSION(:,:), ALLOCATABLE :: dzu
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: tau, drag, dztau
+  REAL :: ez0, sda1, sdomg, dzz, t0
+  REAL, DIMENSION(:), ALLOCATABLE :: cv, dza, tsa0
+  REAL, DIMENSION(:,:), ALLOCATABLE :: tau0, dztav0, tau1, dztav1
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: dztav
   ! Reciprocal and other variables to speed up fortran
-  REAL :: rc(0:maxj), rcv(1:maxj-1), rdphi, rds(maxj), rdsv(1:maxj-1), &
-       & cv2(1:maxj-1), rc2(0:maxj), rtv(maxi,maxj), rtv3(maxi,maxj), &
-       & rdz(maxk), rdza(maxk)
+  REAL :: rdphi
+  REAL, DIMENSION(:), ALLOCATABLE :: rc, rcv, rds, rdsv, cv2, rc2, rdz, rdza
+  REAL, DIMENSION(:,:), ALLOCATABLE :: rtv, rtv3
 
   ! dztau and dztav are used in c-GOLDSTEIN to hold the d(tau)/dz fields
   ! at, respectively, the u and v points of the grid.  Values are read
@@ -40,7 +30,7 @@ MODULE embm_lib
   ! passed between modules.  In the case of the EMBM and surflux, this
   ! means that the unscaled fields need a separate identity to the
   ! scaled fields, hence these new variable names
-  REAL :: us_dztau(2, maxi, maxj), us_dztav(2, maxi, maxj)
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: us_dztau, us_dztav
 
   ! Dimensional scale values
   REAL, PARAMETER :: pi = 4 * ATAN(1.0)
@@ -72,7 +62,7 @@ MODULE embm_lib
   REAL, PARAMETER :: alphach4 = 0.036, alphan2o = 0.12
 
   ! grid cell area
-  REAL :: asurf(maxj)
+  REAL, DIMENSION(:), ALLOCATABLE :: asurf
 
   ! Constants used in OLW parameterization
   REAL, PARAMETER :: b00 = 2.43414E2, b10 = -3.47968E1, b20 = 1.02790E1
@@ -96,23 +86,21 @@ MODULE embm_lib
 
 
   INTEGER :: igrid, ndta
-  REAL :: tq(2,maxi,maxj), tq1(2,maxi,maxj), qsata(maxi,maxj), &
-       & qsato(maxi,maxj), co2(maxi,maxj), ch4(maxi,maxj), n2o(maxi,maxj), &
-       & varice(2,maxi,maxj), varice1(2,maxi,maxj), dtatm, &
-       & tqa(2,maxi,maxj), solfor(maxj,maxnyr), ghs, rdtdim, scf, z1_embm
+  REAL :: dtatm, ghs, rdtdim, scf, z1_embm
+  REAL, DIMENSION(:,:), ALLOCATABLE :: qsata, qsato, co2, ch4, n2o
+  REAL, DIMENSION(:,:), ALLOCATABLE :: solfor
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: tq, tq1, varice, varice1, tqa
 
   REAL :: rfluxsca, delf2x, &
        & rate_co2, rate_ch4, rate_n2o, &
        & ryear, olr_adj0, olr_adj, t_eqm, aerofac, volfac, solfac
 
-  REAL :: albcl(maxi,maxj), fxsw(maxi,maxj), fxplw(maxi,maxj), &
-       & fx0a(maxi,maxj), fx0o(maxi,maxj), fxsen(maxi,maxj), &
-       & pmeadj(maxi,maxj), pptn(maxi,maxj), evap(maxi,maxj), &
-       & usurf(maxi,maxj), fxlata(maxi,maxj), fxlato(maxi,maxj), &
-       & fxlw(maxi,maxj), diffa(2,2,maxj), betam(2), betaz(2), hatmbl(2), &
-       & ca(maxi,maxj), qb(maxi,maxj), qbsic(maxi,maxj)
-  REAL :: fx0sic(maxi,maxj), fx0neto(maxi,maxj), fwfxneto(maxi,maxj), &
-       & evapsic(maxi,maxj), tsfreez(maxi,maxj)
+  REAL :: betam(2), betaz(2), hatmbl(2)
+  REAL, dimension(:,:), allocatable :: albcl, fxsw, fxplw, fx0a, fx0o, fxsen, &
+       & pmeadj, pptn, evap, usurf, fxlata, fxlato, fxlw, ca, qb, qbsic
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: diffa
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & fx0sic, fx0neto, fwfxneto, evapsic, tsfreez
 
   ! Forcing stuff
   LOGICAL :: useforc
@@ -123,7 +111,7 @@ MODULE embm_lib
   ! Constants and parameters
   REAL :: rmax, rpmesca, ppmin, ppmax
   ! Prescribed/diagnosed atmospheric transports and velocities
-  REAL :: uatm(2,maxi,maxj)
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: uatm
 
   ! Constants and parameters for sea ice
   REAL, PARAMETER :: tsic = -1.8
@@ -144,10 +132,9 @@ MODULE embm_lib
   REAL :: yearlen
 
   ! Seasonal diagnostics
-  REAL :: tqavg(2,maxi,maxj), fxlatavg(maxi,maxj), fxsenavg(maxi,maxj), &
-       & fxswavg(maxi,maxj), fxlwavg(maxi,maxj), fwpptavg(maxi,maxj), &
-       & fwevpavg(maxi,maxj)
-  REAL :: fx0avg(4,maxi,maxj), fwavg(2,maxi,maxj)
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & fxlatavg, fxsenavg, fxswavg, fxlwavg, fwpptavg, fwevpavg
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: tqavg, fx0avg, fwavg
 
   INTEGER(KIND=8) :: nsteps
   INTEGER :: npstp, iwstp, itstp, iw, ianav
@@ -179,46 +166,48 @@ MODULE embm_lib
   CHARACTER(LEN=1) :: atchem_radfor, orbit_radfor
 
   ! Orbital parameters for albedo calculation
-  INTEGER, PARAMETER :: en_ntimes_max=2000
   CHARACTER(LEN=200) :: filenameorbit
   INTEGER :: t_orbit, norbit,orbitsteps
-  REAL, DIMENSION(en_ntimes_max) :: &
+  REAL, DIMENSION(:), ALLOCATABLE :: &
        & orbitecc_vect, orbitobl_vect, orbitpre_vect, orbittau_vect
 
   ! CO2 time series
   CHARACTER(LEN=200) :: filenameco2
   INTEGER :: t_co2, nco2, co2steps
-  REAL :: co2_vect(en_ntimes_max)
+  REAL, DIMENSION(:), ALLOCATABLE :: co2_vect
 
   ! Albedo paramters from ENTS
-  REAL :: albo(maxj,maxnyr), palb(maxi,maxj), palbavg(maxi,maxj)
+  REAL, DIMENSION(:,:), ALLOCATABLE :: albo, palb, palbavg
 
   ! Run-time seasonality and debug options
   LOGICAL :: dosc, debug_init, debug_end, debug_loop
 
   ! Orography
-  REAL :: lapse_rate, orog_vect(maxi,maxj,en_ntimes_max)
+  REAL :: lapse_rate
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: orog_vect
   INTEGER :: orogswitch, t_orog, norog, orogsteps
   CHARACTER(LEN=200) :: filenameorog
 
   ! Land ice sheet
   CHARACTER(LEN=200) :: filenamelice
   INTEGER :: t_lice, nlice, licesteps
-  REAL :: lice_vect(maxi,maxj,en_ntimes_max), lice_k9
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: lice_vect
+  REAL :: lice_k9
 
   ! d18o derived orography and ice sheet
   CHARACTER(LEN=200) :: filenamed18o, filenamed18oicethresh, &
        & filenamed18oorogmin, filenamed18ooroggrad
   INTEGER :: t_d18o, nd18o, d18osteps
-  REAL :: d18o_vect(en_ntimes_max)
-  REAL, DIMENSION(maxi,maxj) :: d18o_ice_thresh, d18o_orog_min, d18o_orog_grad
+  REAL, DIMENSION(:), ALLOCATABLE :: d18o_vect
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & d18o_ice_thresh, d18o_orog_min, d18o_orog_grad
   REAL :: d18o_k, scale_mwfx
 
   ! Interpolated seasonal fields
   INTEGER :: ents_seasonswitch, ents_offlineswitch
   INTEGER, PARAMETER :: nmth=12
-  REAL :: uatml(2,maxi,maxj,maxnyr)  ! u and v wind comp.'s
-  REAL, DIMENSION(maxi,maxj,maxnyr) :: &
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: uatml  ! u and v wind comp.'s
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
        & usurfl,  &  ! windspeed (m/s)
        & tncep,   &  ! NCEP air temperature (oC)
        & pncep,   &  ! NCEP pptn (m/s)
@@ -226,17 +215,17 @@ MODULE embm_lib
        & atm_alb     ! atmospheric albedo
 
   ! Transfer coefficients for land grid boxes
-  REAL, DIMENSION(maxi,maxj) :: chl, cel
+  REAL, DIMENSION(:,:), ALLOCATABLE :: chl, cel
 
   ! Precipitation timescale and land radiation
   REAL :: lambdapptn, rhcld
 
   ! Diagnostics of precipitation-adjusted specific and relative humidity
   ! (i.e., specific and relative humidity after precipitation)
-  REAL, DIMENSION(maxi,maxj) :: q_pa, rq_pa, q_pa_avg, rq_pa_avg
+  REAL, DIMENSION(:,:), ALLOCATABLE :: q_pa, rq_pa, q_pa_avg, rq_pa_avg
 
   ! Integer arrays for runoff scheme
-  INTEGER, DIMENSION(maxi,maxj) :: iroff, jroff
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: iroff, jroff
   ! ENTS runoff scheme
   REAL :: par_runoff_b, par_runoff_tau, runoff_factor_1, runoff_factor_2
   INTEGER :: par_runoff_scheme

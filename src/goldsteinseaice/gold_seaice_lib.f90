@@ -3,29 +3,19 @@ MODULE gold_seaice_lib
   IMPLICIT NONE
   SAVE
 
-! For GOLDSTEIN seaice
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
+  INTEGER :: maxi, maxj, maxk
 
-  INTEGER, PARAMETER :: maxi = GOLDSTEINNLONS
-  INTEGER, PARAMETER :: maxj = GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk = GOLDSTEINNLEVS
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1
+  INTEGER :: nyear
 
-  INTEGER :: imax, jmax, kmax, k1(0:maxi+1,0:maxj+1), nyear
-
-  REAL, DIMENSION(0:maxj) :: s, c, sv, cv
-  REAL :: dtsic, phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1), &
-       & u(2,0:maxi,0:maxj), t0
+  REAL, DIMENSION(:), ALLOCATABLE :: s, c, sv, cv
+  REAL :: dtsic, phi0, dphi, t0
+  REAL, DIMENSION(:), ALLOCATABLE :: ds, dsv, rds2
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: u
   ! Reciprocal and other variables to speed up fortran
-  REAL, DIMENSION(0:maxj) :: rc, rcv, cv2, rc2
-  REAL :: rdphi, rds(maxj), rdsv(1:maxj-1)
+  REAL, DIMENSION(:), ALLOCATABLE :: rc, rcv, cv2, rc2
+  REAL :: rdphi
+  REAL, DIMENSION(:), ALLOCATABLE :: rds, rdsv
 
   ! Dimensional scale values
   REAL, PARAMETER :: pi = 4 * ATAN(1.0)
@@ -36,10 +26,10 @@ MODULE gold_seaice_lib
   REAL, PARAMETER :: cpsc = 3981.1
 
   ! Grid cell area.
-  REAL, DIMENSION(maxj) :: asurf
+  REAL, DIMENSION(:), ALLOCATABLE :: asurf
 
-  REAL, DIMENSION(2,maxi,maxj) :: varice, varice1, dtha, varicedy, variceth
-  REAL, DIMENSION(maxi,maxj) :: tice, albice
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: varice, varice1, dtha, varicedy, variceth
+  REAL, DIMENSION(:,:), ALLOCATABLE :: tice, albice
   REAL, PARAMETER :: rho0 = 1.0E3, rhoice = 913.0
   REAL, PARAMETER :: hmin = 0.01, rhmin = 1.0 / hmin
   REAL :: dtatm, ghs, rdtdim, ryear, rho0sea, diffsic, rhoio, rhooi
@@ -51,8 +41,8 @@ MODULE gold_seaice_lib
   REAL :: yearlen
 
   ! v2 seasonal diagnostics
-  REAL, DIMENSION(2,maxi,maxj) :: haavg, dthaavg
-  REAL, DIMENSION(maxi,maxj) :: ticeavg, albiceavg, fxdelavg ,fwdelavg
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: haavg, dthaavg
+  REAL, DIMENSION(:,:), ALLOCATABLE :: ticeavg, albiceavg, fxdelavg, fwdelavg
 
   INTEGER(KIND=8) :: nsteps
   INTEGER :: npstp, iwstp, itstp, iw, ianav

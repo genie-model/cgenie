@@ -5,4 +5,4 @@ if [ ! -f ~/.cgenierc ]; then
 fi
 cgenie_root=`grep cgenie_root ~/.cgenierc | cut -d: -f2 | sed -e 's/^ *//'`
 source $cgenie_root/tools/find_python
-exec $PYTHON $cgenie_root/tools/run-cupcake.py $*
+exec $PYTHON $cgenie_root/tools/coverage.py $*

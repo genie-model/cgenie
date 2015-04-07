@@ -697,7 +697,7 @@ CONTAINS
     loc_t = dum_t
 
     ! *** initialize local arrays
-    loc_carbisor(:) = 0.0
+    loc_carbisor = 0.0
 
     ! *** <sig_ocn_*> ***
     ! write ocean tracer data
@@ -1713,7 +1713,7 @@ CONTAINS
     USE genie_util, ONLY:check_unit,check_iostat
     ! dummy arguments
     REAL,INTENT(IN)::dum_t
-    REAL,DIMENSION(n_atm,n_i,n_j),INTENT(in)::dum_sfcatm1      ! atmosphere composition interface array
+    REAL,DIMENSION(:,:,:),INTENT(in)::dum_sfcatm1      ! atmosphere composition interface array
     ! local variables
     INTEGER::l,ia,io,is,ios
     real::loc_tot,loc_frac,loc_standard
@@ -1863,11 +1863,11 @@ CONTAINS
     REAL,DIMENSION(n_carbalk,n_i,n_j,n_k)::loc_carbalk         !
 
     ! *** initialize local variables ***
-    loc_phys_ocn(:,:,:,:)  = 0.0
-    loc_ocn(:,:,:,:)       = 0.0
-    loc_carbconst(:,:,:,:) = 0.0
-    loc_carb(:,:,:,:)      = 0.0
-    loc_carbalk(:,:,:,:)   = 0.0
+    loc_phys_ocn  = 0.0
+    loc_ocn       = 0.0
+    loc_carbconst = 0.0
+    loc_carb      = 0.0
+    loc_carbalk   = 0.0
 
     ! *** set local parameters ***
     loc_dt = int_t_timeslice
@@ -2210,7 +2210,7 @@ CONTAINS
     REAL,INTENT(in)::dum_yr
     REAL,INTENT(in)::dum_opsi_scale
     REAL,DIMENSION(2),INTENT(in)::dum_opsia_minmax
-    REAL,DIMENSION(n_atm,n_i,n_j),INTENT(in)::dum_sfcatm1
+    REAL,DIMENSION(:,:,:),INTENT(in)::dum_sfcatm1
     logical,intent(in)::dum_gemlite                                     ! in GEMlite phase of cycle?
     ! local variables
     real::loc_tot,loc_frac,loc_standard

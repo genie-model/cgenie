@@ -442,12 +442,12 @@ CONTAINS
 
     ! dummy variables
     REAL,INTENT(in)::dum_dts
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_io,n_jo)                   ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)                   ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)                            ! run-off array (taken from EMBM)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                            ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)            ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_io,n_jo)                             ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)                             ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k
@@ -537,27 +537,23 @@ CONTAINS
 
     ! calculate current mean surface land (air) temperature SLT (degrees C)
 
-    IF ((n_i.EQ.n_io).AND.(n_j.EQ.n_jo)) THEN
-
-       ! for equal area grid:
-       loc_avSLT = 0.0
-       loc_maxSLT = -100.0
-       loc_minSLT = 100.0
-       DO i=1,n_i
-          DO j=1,n_j
-             m = landmask(i,j) * loc_SLT(i,j)
-             loc_avSLT = loc_avSLT + m
-             IF ((m.GT.loc_maxSLT).AND.(landmask(i,j).EQ.1)) THEN
-                loc_maxSLT = m
-             ENDIF
-             IF ((m.LT.loc_minSLT).AND.(landmask(i,j).EQ.1)) THEN
-                loc_minSLT = m
-             ENDIF
-          END DO
+    ! for equal area grid:
+    loc_avSLT = 0.0
+    loc_maxSLT = -100.0
+    loc_minSLT = 100.0
+    DO i=1,n_i
+       DO j=1,n_j
+          m = landmask(i,j) * loc_SLT(i,j)
+          loc_avSLT = loc_avSLT + m
+          IF ((m.GT.loc_maxSLT).AND.(landmask(i,j).EQ.1)) THEN
+             loc_maxSLT = m
+          ENDIF
+          IF ((m.LT.loc_minSLT).AND.(landmask(i,j).EQ.1)) THEN
+             loc_minSLT = m
+          ENDIF
        END DO
-       loc_avSLT = loc_avSLT/nlandcells
-
-    ENDIF
+    END DO
+    loc_avSLT = loc_avSLT/nlandcells
 
     ! Put runoff into local array
     loc_runoff(:,:) = dum_runoff(:,:)
@@ -806,7 +802,7 @@ CONTAINS
     ! NOTE: does not matter how the standard is derived -- it is al the same standard! (13C)
     loc_standard = const_standards(atm_type(ia_pCO2_13C))
     loc_d13C = fun_calc_isotope_delta( &
-         & dum_sfcatm1(ia_pCO2,n_io,n_jo),dum_sfcatm1(ia_pCO2_13C,n_io,n_jo),loc_standard,.FALSE.,const_nulliso &
+         & dum_sfcatm1(ia_pCO2,n_i,n_j),dum_sfcatm1(ia_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
          & )
     IF (opt_short_circuit_atm.eqv..true.) THEN
        IF (opt_outgas_eq_Si.eqv..true.) THEN
@@ -1311,54 +1307,6 @@ CONTAINS
   END SUBROUTINE sub_GEM_CO2
 
 
-  ! ======= SUM UP THE WEATHERING FLUX ====================================================!
-
-  ! Subroutine: sum_calcium_flux
-  !
-  ! Subroutine to sum up calcium fluxes.
-  !
-  ! Calls:
-  !
-  ! - <sub_save_data_ij>
-  !
-  ! Input:
-  !
-  ! dum_calcium_flux - array containing fluxes of calcium for each lithological type
-  !
-  ! Output:
-  !
-  ! dum_total_calcium_flux - array containing total fluxes of calcium from each grid cell
-
-  SUBROUTINE sum_calcium_flux(dum_calcium_flux,dum_total_calcium_flux)
-
-    REAL, INTENT(in)                :: dum_calcium_flux(par_nliths,n_i,n_j)            ! F_HCO_3- is sum of this
-    REAL, INTENT(inout)             :: dum_total_calcium_flux(n_i,n_j)                 ! F_HCO_3-
-
-    INTEGER                         :: i, j, k
-
-    dum_total_calcium_flux(:,:) = 0.0
-
-    DO k=1,par_nliths
-       DO i=1,n_i
-          DO j=1,n_j
-             dum_total_calcium_flux(i,j) = dum_total_calcium_flux(i,j) +               &
-                  &        dum_calcium_flux(k,i,j)
-          END DO
-       END DO
-    END DO
-
-    ! Save data to file calcium_total.dat
-    IF (tstep_count.eq.output_tsteps_2d(output_counter_2d)) THEN
-       IF (opt_2d_ascii_output) THEN
-          CALL sub_save_data_ij( &
-               & TRIM(par_outdir_name)//'calcium_total_year_'//TRIM(year_text)//'.dat',n_i,n_j,dum_total_calcium_flux(:,:) &
-               & )
-       ENDIF
-    ENDIF
-
-  END SUBROUTINE sum_calcium_flux
-
-
   ! ======= DIVIDE WEATHERING FLUX INTO CARBONATE AND SILICATE WEATHERING ==================!
 
   ! Subroutine: sum_calcium_flux_CaSi
@@ -1454,12 +1402,12 @@ CONTAINS
     ! Based on SUBROUTINE sub_glob_avg_weath - see above
 
     ! dummy variables
-    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_io,n_jo)      ! atmosphere composition interface array
+    REAL,INTENT(in)                 :: dum_sfcatm1(n_atm,n_i,n_j)      ! atmosphere composition interface array
     REAL,INTENT(in)                 :: dum_runoff(n_i,n_j)
     REAL,INTENT(in)                 :: dum_photo(n_i,n_j)                ! photosythesis from land veg module (ENTS)
     REAL,INTENT(in)                 :: dum_respveg(n_i,n_j)              ! vegetation respiration from land veg module (ENTS)
        REAL,INTENT(inout)              :: dum_sfxrok(n_ocn,n_i,n_j)                                ! ocean flux interface array (same no of tracers as used in biogem ocean)
-    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_io,n_jo)      ! atmosphere flux interface array
+    REAL,INTENT(inout)              :: dum_sfxatm1(n_atm,n_i,n_j)      ! atmosphere flux interface array
 
     ! local variables
     INTEGER                         :: i, j, k

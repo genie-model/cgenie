@@ -10,88 +10,43 @@
 MODULE genie_control
 
   ! ======================================================================
-  ! Assigning grid sizes (add your own [commented] entries below)
-
-  ! For IGCM
-#ifndef GENIENL
-#define GENIENL 7
-#endif
-#ifndef GENIENX
-#define GENIENX 64
-#endif
-#ifndef GENIENY
-#define GENIENY 32
-#endif
-
-  ! For GOLDSTEIN ocean
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
-#ifndef GOLDSTEINNTRACS
-#define GOLDSTEINNTRACS 2
-#endif
-#ifndef GOLDSTEINMAXISLES
-#define GOLDSTEINMAXISLES 5
-#endif
-
-  ! For sediments
-#ifndef SEDGEMNLONS
-#define SEDGEMNLONS 36
-#endif
-#ifndef SEDGEMNLATS
-#define SEDGEMNLATS 36
-#endif
-
-  ! For weathering
-#ifndef ROKGEMNLONS
-#define ROKGEMNLONS 36
-#endif
-#ifndef ROKGEMNLATS
-#define ROKGEMNLATS 36
-#endif
-
-
-  ! ======================================================================
   ! Grid dimension variables for tracer (1), u (2) and v (3) points
   ! Atmosphere
-  INTEGER, PARAMETER :: ilon1_atm=GENIENX, ilat1_atm=GENIENY
-  INTEGER, PARAMETER :: ilon2_atm=GENIENX, ilat2_atm=GENIENY
-  INTEGER, PARAMETER :: ilon3_atm=GENIENX, ilat3_atm=GENIENY
-  INTEGER, PARAMETER :: inl1_atm=GENIENL
+  INTEGER :: ilon1_atm, ilat1_atm
+  INTEGER :: ilon2_atm, ilat2_atm
+  INTEGER :: ilon3_atm, ilat3_atm
+  INTEGER :: inl1_atm
 
   ! Ocean
-  INTEGER, PARAMETER :: ilon1_ocn=GOLDSTEINNLONS, ilat1_ocn=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_ocn=GOLDSTEINNLONS, ilat2_ocn=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_ocn=GOLDSTEINNLONS, ilat3_ocn=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: inl1_ocn=GOLDSTEINNLEVS, inl2_ocn=inl1_ocn+1
-  INTEGER, PARAMETER :: intrac_ocn=GOLDSTEINNTRACS
+  INTEGER :: ilon1_ocn, ilat1_ocn
+  INTEGER :: ilon2_ocn, ilat2_ocn
+  INTEGER :: ilon3_ocn, ilat3_ocn
+  INTEGER :: inl1_ocn, inl2_ocn
+  INTEGER :: intrac_ocn
 
   ! For c-GOLDSTEIN sea-ice
-  INTEGER, PARAMETER :: ilon1_sic=GOLDSTEINNLONS, ilat1_sic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_sic=GOLDSTEINNLONS, ilat2_sic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_sic=GOLDSTEINNLONS, ilat3_sic=GOLDSTEINNLATS
+  INTEGER :: ilon1_sic, ilat1_sic
+  INTEGER :: ilon2_sic, ilat2_sic
+  INTEGER :: ilon3_sic, ilat3_sic
 
   ! For ice sheets in EMBM and ENTS
-  INTEGER, PARAMETER :: ilon1_lic=GOLDSTEINNLONS, ilat1_lic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_lic=GOLDSTEINNLONS, ilat2_lic=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_lic=GOLDSTEINNLONS, ilat3_lic=GOLDSTEINNLATS
+  INTEGER :: ilon1_lic, ilat1_lic
 
   ! For ENTS
-  INTEGER, PARAMETER :: ilon1_lnd=GOLDSTEINNLONS, ilat1_lnd=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon2_lnd=GOLDSTEINNLONS, ilat2_lnd=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: ilon3_lnd=GOLDSTEINNLONS, ilat3_lnd=GOLDSTEINNLATS
+  INTEGER :: ilon1_lnd, ilat1_lnd
 
   ! For sediments
-  INTEGER, PARAMETER :: ilon1_sed=SEDGEMNLONS, ilat1_sed=SEDGEMNLATS
+  INTEGER :: ilon1_sed, ilat1_sed
 
   ! For weathering
-  INTEGER, PARAMETER :: ilon1_rok=ROKGEMNLONS, ilat1_rok=ROKGEMNLATS
+  INTEGER :: ilon1_rok, ilat1_rok
+
+  ! Coordinate definitions.
+  INTEGER :: dim_GENIENL, dim_GENIENX, dim_GENIENY
+  INTEGER :: dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS
+  INTEGER :: dim_GOLDSTEINNLEVS, dim_GOLDSTEINNTRACS
+  INTEGER :: dim_SEDGEMNLONS, dim_SEDGEMNLATS
+  INTEGER :: dim_ROKGEMNLONS, dim_ROKGEMNLATS
 
   ! ======================================================================
   ! Miscellaneous control variables

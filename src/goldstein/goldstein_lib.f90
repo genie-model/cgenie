@@ -3,66 +3,46 @@ MODULE goldstein_lib
   IMPLICIT NONE
   SAVE
 
-#ifndef GOLDSTEINNLONS
-#define GOLDSTEINNLONS 36
-#endif
-#ifndef GOLDSTEINNLATS
-#define GOLDSTEINNLATS 36
-#endif
-#ifndef GOLDSTEINNLEVS
-#define GOLDSTEINNLEVS 8
-#endif
-#ifndef GOLDSTEINNTRACS
-#define GOLDSTEINNTRACS 2
-#endif
-#ifndef GOLDSTEINMAXISLES
-#define GOLDSTEINMAXISLES 5
-#endif
+  INTEGER :: maxi, maxj, maxk, maxl, mpxi, mpxj, mpi
 
-  INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
-  INTEGER, PARAMETER :: maxk=GOLDSTEINNLEVS, maxl=GOLDSTEINNTRACS
-  INTEGER, PARAMETER :: maxnyr=720
-  INTEGER, PARAMETER :: mpxi=maxi, mpxj=maxj+1
-  INTEGER, PARAMETER :: maxisles=GOLDSTEINMAXISLES, mpi=2 * (maxi + maxj)
+  INTEGER :: isles, ntot, intot, nyear
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: k1, mk
+  INTEGER, DIMENSION(:,:,:), ALLOCATABLE :: ku
+  INTEGER :: jsf
+  INTEGER, DIMENSION(:), ALLOCATABLE :: ips, ipf, ias, iaf
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: lpisl, ipisl, jpisl
+  INTEGER, DIMENSION(:), ALLOCATABLE :: npi
 
-  INTEGER :: isles
-  INTEGER :: imax, jmax, kmax, lmax, ntot, intot
-  INTEGER :: k1(0:maxi+1,0:maxj+1), ku(2,maxi,maxj), mk(maxi+1,maxj), nyear
-  INTEGER :: ips(maxj), ipf(maxj), ias(maxj), iaf(maxj), jsf
-  INTEGER :: lpisl(mpi,maxisles), ipisl(mpi,maxisles), jpisl(mpi,maxisles)
-  INTEGER :: npi(maxisles)
+  REAL :: phi0, dphi, ez0
+  REAL, DIMENSION(:), ALLOCATABLE :: dt, ds, dsv, rds2, dz, s, c, sv
+  REAL, DIMENSION(:,:), ALLOCATABLE :: dzu, ratm, gap, cost
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: &
+       & tau, drag, dztau, dztav, ub, rho, dztva, rh
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: u, ts, ts1, u1
+  REAL :: diff(2), ec(5), cn
 
-  REAL :: dt(maxk), phi0, dphi, ds(maxj), dsv(1:maxj-1), rds2(2:maxj-1)
-  REAL :: dz(maxk), u(3,0:maxi,0:maxj,maxk), ts(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
-  REAL :: s(0:maxj), c(0:maxj), dzu(2,maxk), tau(2,maxi,maxj)
-  REAL :: drag(2,maxi+1,maxj), dztau(2,maxi,maxj), diff(2), ec(5), cn
-  REAL :: ratm(mpxi*mpxj,mpxi+1), ub(2,0:maxi+1,0:maxj)
-  REAL :: rho(0:maxi+1,0:maxj+1,0:maxk), ts1(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
-  REAL :: sv(0:maxj)
+  REAL, DIMENSION(:), ALLOCATABLE :: cv, dza, gb, gbold, tsa0, zro, zw
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & tau0, dztav0, tau1, dztav1, fw_hosing, rhosing
 
-  REAL :: cv(0:maxj), dza(maxk), dztav(2,maxi,maxj), gb(mpxi*mpxj)
-  REAL :: gap(mpxi*mpxj,2*mpxi+3), ez0, cost(maxi,maxj), rh(3,0:maxi+1,0:maxj+1)
-  REAL :: gbold(mpxi*mpxj), sda1, sdomg, dzz, tau0(maxi,maxj), dztav0(maxi,maxj)
-  REAL :: tau1(maxi,maxj), dztav1(maxi,maxj), tsa0(maxj), t0
-  REAL :: fw_hosing(maxi,maxj), rhosing(maxi,maxj), zro(maxk), zw(0:maxk)
-  REAL :: dzg(maxk,maxk), z2dzg(maxk,maxk), rdzg(maxk,maxk)
-  REAL :: fw_anom(maxi,maxj), fw_anom_rate(maxi,maxj)
+  REAL :: sda1, sdomg, dzz, t0, rel, rdphi
 
-  REAL :: psi(0:maxi,0:maxj)
-  REAL :: rel, u1(3,0:maxi,0:maxj,maxk)
-  REAL :: rdphi
-  REAL, DIMENSION(0:maxj) :: rc, rc2
-  REAL, DIMENSION(maxi,maxj) :: rtv, rtv3
-  REAL, DIMENSION(1:maxj-1) :: rcv, rdsv, cv2
-  REAL :: rds(maxj), rdz(maxk), rdza(maxk)
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
+       & dzg, z2dzg, rdzg, fw_anom, fw_anom_rate, psi
+
+  REAL, DIMENSION(:), ALLOCATABLE :: rc, rc2, rcv, rdsv, cv2, rds, rdz, rdza
+  REAL, DIMENSION(:,:), ALLOCATABLE :: rtv, rtv3
 
   CHARACTER(LEN=6) :: gridnam   ! Topography and grid
 
-  REAL :: bp(maxi+1,maxj,maxk), sbp(maxi+1,maxj)   ! Pressure integral arrays
+  ! Pressure integral arrays
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: bp
+  REAL, DIMENSION(:,:), ALLOCATABLE :: sbp
 
   ! Diagnostics
   REAL :: dmax
-  INTEGER :: limps, icosd(maxi,maxj)
+  INTEGER :: limps
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: icosd
 
   ! Dimensional scale values
   REAL, PARAMETER :: pi = 4 * ATAN(1.0)
@@ -116,14 +96,13 @@ MODULE goldstein_lib
   REAL, PARAMETER :: rrholf = 1.0 / (rhoice * hlf)
 
 
-  REAL :: asurf(maxj)      ! Grid cell area
+  REAL, DIMENSION(:), ALLOCATABLE :: asurf ! Grid cell area
   REAL :: yearlen          ! Days per year
   INTEGER :: overdep       ! Depth level for OPSIT min/max overturning
 
   ! Seasonal diagnostics
-  REAL :: tsavg(maxl,0:maxi+1,0:maxj+1,0:maxk+1)
-  REAL :: uavg(3,0:maxi,0:maxj,maxk), rhoavg(0:maxi+1,0:maxj+1,0:maxk)
-  REAL :: fx0avg(5,maxi,maxj), fwavg(4,maxi,maxj), windavg(4,maxi,maxj)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: tsavg, uavg
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: rhoavg, fx0avg, fwavg, windavg
 
   ! Flux scaling parameters
   REAL :: cd, saln0, rpmesco, scf, rsictscsf
@@ -146,15 +125,17 @@ MODULE goldstein_lib
   INTEGER :: lentdata, lensdata, lentvar, lensvar
   LOGICAL :: flat
 
-  REAL :: psisl(0:maxi,0:maxj,maxisles), ubisl(2,0:maxi+1,0:maxj,maxisles)
-  REAL :: erisl(maxisles,maxisles+1), psibc(maxisles)
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: psisl
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: ubisl
+  REAL, DIMENSION(:,:), ALLOCATABLE :: erisl
+  REAL, DIMENSION(:), ALLOCATABLE :: psibc
 
   ! Need this variable to store T and S between iterations (otherwise
   ! these values are lost)
-  REAL :: ts_store(maxl,maxi,maxj,maxk)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: ts_store
 
   ! Climatological albedo array
-  REAL :: albcl(maxi,maxj)
+  REAL, DIMENSION(:,:), ALLOCATABLE :: albcl
 
   REAL :: albocn, gust, ene_tune
 
@@ -173,28 +154,31 @@ MODULE goldstein_lib
   INTEGER :: conserv_per        ! For energy/water check
 
   ! For delay in goldstien energy and evap fluxes
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & evap_save1, late_save1, sens_save1, evap_save2, late_save2, sens_save2
 
   ! For mixed layer calc
-  REAL, DIMENSION(maxi,maxj) :: &
+  REAL, DIMENSION(:,:), ALLOCATABLE :: &
        & mldpebuoy, mldpeconv, mldpelayer1, mldketau, mldemix, mld
-  REAL, DIMENSION(maxk) :: mlddec, mlddecd
+  REAL, DIMENSION(:), allocatable :: mlddec, mlddecd
   REAL :: mldpebuoycoeff, mldketaucoeff, mldwindkedec
-  INTEGER :: mldk(maxi,maxj), imld
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: mldk
+  INTEGER :: imld
 
   ! For variable diapycnal diffusivity calc
-  REAL :: ediff0, ediffpow1, ediffpow2, ediffvar, &
-       & ediff1(maxi,maxj,maxk-1), diffmax(maxk)
+  REAL :: ediff0, ediffpow1, ediffpow2, ediffvar
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: ediff1
+  REAL, DIMENSION(:), ALLOCATABLE :: diffmax
   INTEGER :: iediff, ediffpow2i
 
   INTEGER :: ieos                               ! Equation of state switch
-  REAL :: ssmaxsurf, ssmaxdeep, ssmax(maxk-1)   ! For isopycnal mixing
+  REAL :: ssmaxsurf, ssmaxdeep                  ! For isopycnal mixing
+  REAL, DIMENSION(:), ALLOCATABLE :: ssmax
 
   LOGICAL :: dosc, diso, ctrl_diagend, &
        & debug_init, debug_end, debug_loop, rst_reset_T
 
-  LOGICAL :: getj(maxi,maxj)
+  LOGICAL, DIMENSION(:,:), ALLOCATABLE :: getj
 
 CONTAINS
 
