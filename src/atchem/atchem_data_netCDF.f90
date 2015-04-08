@@ -98,9 +98,8 @@ CONTAINS
     loc_ij_mask(:,:) = 1.0
     loc_ij(:,:)= 0.0
     DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       loc_ij(:,:) = atm(ias,:,:)
-       CALL sub_putvar2d('atm_' // TRIM(string_atm(ias)), loc_iou, n_i, n_j, &
+       loc_ij(:,:) = atm(ia,:,:)
+       CALL sub_putvar2d('atm_' // TRIM(string_atm(ia_ias(ia))), loc_iou, n_i, n_j, &
             & loc_ntrec, loc_ij(:,:), loc_ij_mask(:,:))
     end DO
     ! -------------------------------------------------------- ! close file and return IOU

@@ -279,12 +279,12 @@ CONTAINS
   ! INITIALIZE DECAY CONSTANT ARRAYS
   SUBROUTINE sub_def_tracer_decay()
     ! set default array values
-    const_lambda_atm(:) = 0.0
+    ALLOCATE(const_lambda_atm(n_atm)) ; const_lambda_atm = 0.0
     const_lambda_ocn(:) = 0.0
     const_lambda_sed(:) = 0.0
     ! atm tracers
-    const_lambda_atm(ias_pCO2_14C) = const_lambda_14C
-    const_lambda_atm(ias_pCH4_14C) = const_lambda_14C
+    IF (atm_select(ias_pCO2_14C)) const_lambda_atm(ia_pCO2_14C) = const_lambda_14C
+    IF (atm_select(ias_pCH4_14C)) const_lambda_atm(ia_pCH4_14C) = const_lambda_14C
     ! ocn tracers
     const_lambda_ocn(io_DIC_14C) = const_lambda_14C
     const_lambda_ocn(io_DOM_C_14C) = const_lambda_14C

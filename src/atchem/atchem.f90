@@ -26,6 +26,8 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm    ! atmosphere-surface tracer composition; atm grid
 
+    INTEGER :: ia
+
     print*,'======================================================='
     print*,' >>> Initialising ATCHEM atmospheric chem. module ...'
 
@@ -33,13 +35,13 @@ CONTAINS
     n_j = dim_GENIENY
     n_phys_atm = 15
 
-    ALLOCATE(atm(n_atm_all,n_i,n_j),STAT=alloc_error)               ; atm = 0.0
+    ALLOCATE(atm(n_atm,n_i,n_j),STAT=alloc_error)               ; atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(fatm(n_atm_all,n_i,n_j),STAT=alloc_error)              ; fatm = 0.0
+    ALLOCATE(fatm(n_atm,n_i,n_j),STAT=alloc_error)              ; fatm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(phys_atm(n_phys_atm,n_i,n_j),STAT=alloc_error)     ; phys_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(atm_slabbiosphere(n_atm_all,n_i,n_j),STAT=alloc_error) ; atm_slabbiosphere = 0.0
+    ALLOCATE(atm_slabbiosphere(n_atm,n_i,n_j),STAT=alloc_error) ; atm_slabbiosphere = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     CALL sub_load_goin_atchem()
@@ -50,7 +52,9 @@ CONTAINS
     IF (ctrl_continuing) CALL sub_data_load_rst()
 
     dum_sfxsumatm = 0.0
-    dum_sfcatm = atm
+    DO ia = 1, n_atm
+       dum_sfcatm(ia_ias(ia),:,:) = atm(ia,:,:)
+    END DO
 
     CALL sub_init_slabbiosphere()
 
@@ -66,13 +70,13 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm
     REAL, DIMENSION(:,:,:), INTENT(OUT) :: dum_sfcatm
 
-    integer::ia,i,j,ias
-    real::loc_dtyr
-    REAL::loc_atm_tot_V
-    REAL,DIMENSION(n_atm_all)::loc_atm_tot
-    REAL,DIMENSION(n_i,n_j)::loc_conv_atm_mol,loc_conv_mol_atm
-    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_fatm                  ! local flux to atmosphere (mol)
-    REAL,DIMENSION(n_atm_all)::loc_fracdecay_atm                   ! local reduction factor for decaying atmospheric tracers
+    INTEGER :: ia, i, j
+    REAL :: loc_dtyr
+    REAL :: loc_atm_tot_V
+    REAL, DIMENSION(n_atm)         :: loc_atm_tot
+    REAL, DIMENSION(n_i,n_j)       :: loc_conv_atm_mol, loc_conv_mol_atm
+    REAL, DIMENSION(n_atm,n_i,n_j) :: locij_fatm           ! local flux to atmosphere (mol)
+    REAL, DIMENSION(n_atm)         :: loc_fracdecay_atm    ! local reduction factor for decaying atmospheric tracers
 
     ! *** INITIALIZE LOCAL VARIABLES ***
     loc_atm_tot = 0.0 ; loc_conv_atm_mol = 0.0 ; loc_conv_mol_atm = 0.0
@@ -80,7 +84,7 @@ CONTAINS
 
     ! *** CALCULATE LOCAL CONSTANTS ***
     ! local constants for converting between partial pressure and molar quantity
-    loc_conv_atm_mol = phys_atm(ipa_V,:,:) / (conv_Pa_atm * const_R_SI * atm(ias_T,:,:))
+    loc_conv_atm_mol = phys_atm(ipa_V,:,:) / (conv_Pa_atm * const_R_SI * atm(ia_T,:,:))
     loc_conv_mol_atm = 1.0 / loc_conv_atm_mol
     ! time
     loc_dtyr = dum_dts / conv_yr_s
@@ -96,10 +100,9 @@ CONTAINS
 
           ! *** DECAY RADIOACTIVE TRACERS ***
           DO ia = 3, n_atm
-             ias = ia_ias(ia)
              ! radioactive decay of isotopes
-             IF (ABS(const_lambda_atm(ias)) > const_real_nullsmall) THEN
-                atm(ias,i,j) = loc_fracdecay_atm(ias) * atm(ias,i,j)
+             IF (ABS(const_lambda_atm(ia)) > const_real_nullsmall) THEN
+                atm(ia,i,j) = loc_fracdecay_atm(ia) * atm(ia,i,j)
              END if
           end do
 
@@ -132,29 +135,33 @@ CONTAINS
 
     ! *** UPDATE ATMOSPHERIC COMPOSITION ***
     ! set internal atmospheric flux
-    fatm = dum_sfxsumatm
+    fatm = 0.0
+    DO ia = 1, n_atm
+       fatm(ia,:,:) = dum_sfxsumatm(ia_ias(ia),:,:)
+    END DO
 
     ! NOTE: flux <fatm> in (mol m-2 per timestep)
     ! update atmospheric composition
     ! NOTE: units of partial pressure (atm)
     ! NOTE: carry out at every (i.e, wet + dry) grid point
     DO ia = 3, n_atm
-       ias = ia_ias(ia)
        ! update atmospheric tracers
-       atm(ias,:,:) = atm(ias,:,:) + loc_conv_mol_atm(:,:)*phys_atm(ipa_A,:,:)*fatm(ias,:,:) + loc_conv_mol_atm(:,:)*locij_fatm(ias,:,:)
+       atm(ia,:,:) = atm(ia,:,:) + loc_conv_mol_atm(:,:) * &
+            & (phys_atm(ipa_A,:,:) * fatm(ia,:,:) + locij_fatm(ia,:,:))
        ! <HACK TO HOMOGENIZE ATMOSPHERIC COMPOSITION>
        ! homogenize the partial pressure of tracers in the atmopshere across (all grid points)
-       loc_atm_tot(ias) = SUM(loc_conv_atm_mol(:,:)*atm(ias,:,:))
+       loc_atm_tot(ia) = SUM(loc_conv_atm_mol(:,:) * atm(ia,:,:))
        loc_atm_tot_V = SUM(phys_atm(ipa_V,:,:))
-       atm(ias,:,:) = (loc_atm_tot(ias)/loc_atm_tot_V)*conv_Pa_atm*const_R_SI*atm(ias_T,:,:)
-    end do
+       atm(ia,:,:) = (loc_atm_tot(ia) / loc_atm_tot_V) * conv_Pa_atm * const_R_SI * atm(ia_T,:,:)
+    END DO
 
     ! *** UPDATE INTERFACE ARRAYS ***
     ! return new <atm>
-    dum_sfcatm = atm
+    DO ia = 1, n_atm
+       dum_sfcatm(ia_ias(ia),:,:) = atm(ia,:,:)
+    END DO
     ! reset integrated flux array
     dum_sfxsumatm = 0.0
-
   END SUBROUTINE step_atchem
 
 
@@ -185,10 +192,7 @@ CONTAINS
        !       also means that arrays can be written directly to file without needing to loop thought data
        loc_filename = TRIM(par_outdir_name) // TRIM(par_outfile_name)
        OPEN(UNIT=out,STATUS='replace',FILE=loc_filename,FORM='unformatted',ACTION='write')
-       WRITE(unit=out)                                    &
-            & n_atm,                                    &
-            & (ia_ias(l),l=1,n_atm),         &
-            & (atm(ia_ias(l),:,:),l=1,n_atm)
+       WRITE(unit=out) n_atm, (ia_ias(l),l=1,n_atm), (atm(l,:,:),l=1,n_atm)
        CLOSE(UNIT=out)
     END IF
   END SUBROUTINE atchem_save_rst
@@ -215,7 +219,11 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! create time-averaged tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
-    dum_genie_atm1 = dum_genie_atm1 + dum_dts * atm / conv_yr_s
+    INTEGER :: ia, ias
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_genie_atm1(ias,:,:) = dum_genie_atm1(ias,:,:) + dum_dts * atm(ia,:,:) / conv_yr_s
+    END DO
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmgem
   ! ******************************************************************************************************************************** !
@@ -234,7 +242,11 @@ CONTAINS
     ! update tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
     ! NTOE: <dum_genie_atm1> is passed as an ANOMALY
-    atm = atm + dum_genie_datm1
+    INTEGER :: ia, ias
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       atm(ia,:,:) = atm(ia,:,:) + dum_genie_datm1(ias,:,:)
+    END DO
     ! reset anomaly array
     dum_genie_datm1 = 0.0
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !

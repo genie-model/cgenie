@@ -699,7 +699,7 @@ MODULE gem_cmn
   REAL,PARAMETER::const_lambda_234U          = const_ln2/245250.
   REAL,PARAMETER::const_lambda_235U          = 9.8485e-10
   ! radioactive decay tracer arrays
-  REAL,DIMENSION(n_atm_all)::const_lambda_atm
+  REAL, DIMENSION(:), ALLOCATABLE :: const_lambda_atm
   REAL,DIMENSION(n_ocn)::const_lambda_ocn
   REAL,DIMENSION(n_sed)::const_lambda_sed
 

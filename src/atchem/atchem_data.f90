@@ -20,7 +20,7 @@ CONTAINS
   ! LOAD AtCheM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_atchem()
     ! local variables
-    integer::ia,ias                                              ! tracer counter
+    integer::ia                                                  ! tracer counter
     integer::ios                                                 !
     ! read data_ATCHEM file
     open(unit=in,file='data_ATCHEM',status='old',action='read',iostat=ios)
@@ -44,8 +44,7 @@ CONTAINS
        ! --- TRACER INITIALIZATION ----------------------------------------------------------------------------------------------- !
        print*,'--- TRACER INITIALIZATION --------------------------'
        DO ia = 1, n_atm
-          ias = ia_ias(ia)
-          print*,'atm tracer initial value: ',trim(string_atm(ias)),' = ',atm_init(ias)
+          print*,'atm tracer initial value: ',trim(string_atm(ia_ias(ia))),' = ',atm_init(ia_ias(ia))
        end do
        ! --- COSMOGENIC & RADIOGENIC PRODUCTION ---------------------------------------------------------------------------------- !
        print*,'--- COSMOGENIC & RADIOGENIC PRODUCTION -------------'
@@ -91,7 +90,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    integer::l,ia,iv,ias                                       ! local counting variables
+    integer::l,ia,iv                                           ! local counting variables
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
@@ -147,12 +146,11 @@ CONTAINS
           IF (ctrl_debug_init == 1) print*,' * Loading restart tracers: '
           DO iv = 1, loc_nvars
              DO ia = 1, n_atm
-                ias = ia_ias(ia)
-                IF ('atm_' // TRIM(string_atm(ias)) == TRIM(loc_varname(iv))) THEN
+                IF ('atm_' // TRIM(string_atm(ia_ias(ia))) == TRIM(loc_varname(iv))) THEN
                    IF (ctrl_debug_init == 1) PRINT *, '   ', TRIM(loc_varname(iv))
                    loc_atm = 0.0
-                   CALL sub_getvarij(loc_ncid, 'atm_' // TRIM(string_atm(ias)), n_i, n_j, loc_atm)
-                   atm(ias, :, :) = loc_atm(:,:)
+                   CALL sub_getvarij(loc_ncid, 'atm_' // TRIM(string_atm(ia_ias(ia))), n_i, n_j, loc_atm)
+                   atm(ia,:,:) = loc_atm(:,:)
                 endif
              end do
           end DO
@@ -169,10 +167,7 @@ CONTAINS
           call sub_closefile(loc_ncid)
        else
           OPEN(unit=in,status='old',file=loc_filename,form='unformatted',action='read',IOSTAT=ios)
-          read(unit=in) &
-               & loc_n_l_atm,                                          &
-               & (loc_conv_iselected_ia(l),l=1,loc_n_l_atm),           &
-               & (atm(loc_conv_iselected_ia(l),:,:),l=1,loc_n_l_atm)
+          read(unit=in) loc_n_l_atm, (loc_conv_iselected_ia(l),l=1,loc_n_l_atm), (atm(l,:,:),l=1,loc_n_l_atm)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        endif
@@ -227,25 +222,24 @@ CONTAINS
   ! CONFIGURE AND INITIALIZE TRACER COMPOSITION - ATMOSPHERE
   SUBROUTINE sub_init_tracer_atm_comp()
     IMPLICIT NONE
-    INTEGER :: ias
+    INTEGER :: ia, ias
     REAL :: loc_frac, loc_standard
 
     atm = 0.0
     ! set <atm> array
     ! NOTE: need to seed ias_T as temperature is required in order to convert between mole (total) and partial pressure
-    DO ias = 1, n_atm_all
-       IF (atm_select(ias)) THEN
-          SELECT CASE (atm_type(ias))
-          CASE (0)
-             IF (ias == ias_T) atm(ias,:,:) = const_zeroC
-          CASE (1)
-             atm(ias,:,:) = atm_init(ias)
-          CASE (11, 12, 13, 14)
-             loc_standard = const_standards(atm_type(ias))
-             loc_frac = fun_calc_isotope_fraction(atm_init(ias),loc_standard)
-             atm(ias,:,:) = loc_frac * atm_init(atm_dep(ias))
-          END SELECT
-       end if
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       SELECT CASE (atm_type(ias))
+       CASE (0)
+          IF (ia == ia_T) atm(ia,:,:) = const_zeroC
+       CASE (1)
+          atm(ia,:,:) = atm_init(ias)
+       CASE (11, 12, 13, 14)
+          loc_standard = const_standards(atm_type(ias))
+          loc_frac = fun_calc_isotope_fraction(atm_init(ias), loc_standard)
+          atm(ia,:,:) = loc_frac * atm_init(atm_dep(ias))
+       END SELECT
     END DO
   END SUBROUTINE sub_init_tracer_atm_comp
   ! ****************************************************************************************************************************** !
@@ -255,27 +249,26 @@ CONTAINS
   ! CONFIGURE AND INITIALIZE SLAB BIOSPHERE
   SUBROUTINE sub_init_slabbiosphere()
     ! local variables
-    INTEGER::i,j
-    real::loc_tot,loc_frac,loc_standard
-    ! initialize global arrays
-    atm_slabbiosphere(:,:,:)  = 0.0
+    INTEGER :: i, j
+    REAL :: loc_tot, loc_frac, loc_standard
+
+    atm_slabbiosphere = 0.0
     ! set <atm> array
     ! NOTE: units of (mol)
-    DO i=1,n_i
-       DO j=1,n_j
-          IF (atm_select(ias_pCO2)) THEN
-             atm_slabbiosphere(ias_pCO2,i,j) = par_atm_slabbiosphere_C/real(n_i*n_j)
-          end if
-          IF (atm_select(ias_pCO2_13C)) THEN
-             loc_tot  = atm_slabbiosphere(ias_pCO2,i,j)
+    IF (atm_select(ias_pCO2)) THEN
+       atm_slabbiosphere(ia_pCO2,:,:) = par_atm_slabbiosphere_C / REAL(n_i * n_j)
+    END IF
+    IF (atm_select(ias_pCO2_13C)) THEN
+       DO i = 1, n_i
+          DO j = 1, n_j
+             loc_tot = atm_slabbiosphere(ia_pCO2,i,j)
              loc_standard = const_standards(atm_type(ias_pCO2_13C))
-             loc_frac = fun_calc_isotope_fraction(par_atm_slabbiosphere_C_d13C,loc_standard)
-             atm_slabbiosphere(ias_pCO2_13C,i,j) = loc_frac*loc_tot
-          end if
+             loc_frac = fun_calc_isotope_fraction(par_atm_slabbiosphere_C_d13C, loc_standard)
+             atm_slabbiosphere(ia_pCO2_13C,i,j) = loc_frac * loc_tot
+          END DO
        END DO
-    END DO
+    END IF
   END SUBROUTINE sub_init_slabbiosphere
   ! ****************************************************************************************************************************** !
-
 
 END MODULE atchem_data
