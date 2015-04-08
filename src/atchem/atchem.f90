@@ -213,11 +213,7 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! create time-averaged tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
-    INTEGER :: ia, ias
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       dum_genie_atm1(ias,:,:) = dum_genie_atm1(ias,:,:) + dum_dts * atm(ia,:,:) / conv_yr_s
-    END DO
+    dum_genie_atm1 = dum_genie_atm1 + dum_dts * atm / conv_yr_s
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmgem
   ! ******************************************************************************************************************************** !
@@ -236,11 +232,7 @@ CONTAINS
     ! update tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
     ! NTOE: <dum_genie_atm1> is passed as an ANOMALY
-    INTEGER :: ia, ias
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       atm(ia,:,:) = atm(ia,:,:) + dum_genie_datm1(ias,:,:)
-    END DO
+    atm = atm + dum_genie_datm1
     ! reset anomaly array
     dum_genie_datm1 = 0.0
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
@@ -294,11 +286,7 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    INTEGER :: ia, ias
-    DO ia = 3, n_atm
-       ias = ia_ias(ia)
-       dum_sfcatm_lnd(ias,:,:) = dum_sfcatm(ia,:,:)
-    END DO
+    dum_sfcatm_lnd = dum_sfcatm
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmlnd
   ! ******************************************************************************************************************************** !

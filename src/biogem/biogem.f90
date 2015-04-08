@@ -3205,11 +3205,7 @@ CONTAINS
     ! update atm interface tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
     ! NOTE: <dum_genie_datm1> is passed in as an ANOMALY
-    integer :: ia, ias
-    do ia = 1, n_atm
-       ias = ia_ias(ia)
-       dum_sfcatm1(ia,:,:) = dum_sfcatm1(ia,:,:) + dum_genie_datm1(ias,:,:)
-    end do
+    dum_sfcatm1 = dum_sfcatm1 + dum_genie_datm1
     ! reset anomoly array
     dum_genie_datm1 = 0.0
   end SUBROUTINE cpl_comp_gematm1

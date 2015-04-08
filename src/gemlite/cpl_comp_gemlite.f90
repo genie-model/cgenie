@@ -14,12 +14,9 @@ SUBROUTINE cpl_comp_gemglt(dum_genie_atm1, dum_genie_ocn)
   real,dimension(:,:,:),intent(inout)::dum_genie_atm1 !
   real,dimension(:,:,:,:),intent(inout)::dum_genie_ocn !
   ! local variables
-  integer::l,ia,io,ias
+  integer::l,io
   ! copy tracer array
-  DO ia = 1, n_atm
-     ias = ia_ias(ia)
-     atm(ias,:,:) = dum_genie_atm1(ias,:,:)
-  end do
+  atm = dum_genie_atm1
   DO l=1,n_l_ocn
      io = conv_iselected_io(l)
      ocn(l,:,:,:) = dum_genie_ocn(io,:,:,:)

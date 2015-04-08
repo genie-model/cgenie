@@ -674,12 +674,9 @@ CONTAINS
     real,dimension(:,:,:),intent(inout)::dum_genie_atm1 !
     real,dimension(:,:,:,:),intent(inout)::dum_genie_ocn !
     ! local variables
-    integer::l,ia,io,ias
+    integer::l,io
     ! copy tracer array
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       atm(ia,:,:) = dum_genie_atm1(ias,:,:)
-    end do
+    atm = dum_genie_atm1
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
        ocn(l,:,:,:) = dum_genie_ocn(io,:,:,:)
@@ -701,15 +698,12 @@ CONTAINS
     real,dimension(:,:,:),intent(out)::dum_genie_datm1 !
     real,dimension(:,:,:,:),intent(out)::dum_genie_docn !
     ! local variables
-    integer::l,ia,io,ias
+    integer::l,io
     ! initialize arrays
     dum_genie_datm1 = 0.0
     dum_genie_docn = 0.0
     ! copy tracer anomaly arrays
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       dum_genie_datm1(ias,:,:) = datm(ia,:,:)
-    end do
+    dum_genie_datm1 = datm
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
        dum_genie_docn(io,:,:,:) = docn(l,:,:,:)
@@ -731,16 +725,13 @@ CONTAINS
     real,dimension(:,:,:),intent(out)::dum_genie_datm1 !
     real,dimension(:,:,:,:),intent(out)::dum_genie_docn !
     ! local variables
-    integer::l,ia,io,ias
+    integer::l,io
     ! initialize receiving arrays
     dum_genie_datm1 = 0.0
     dum_genie_docn = 0.0
     ! copy tracer anomaly arrays
     ! NOTE: do not re-set integrated composition anomaly arrays yet ...
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       dum_genie_datm1(ias,:,:) = datm_sum(ia,:,:)
-    end do
+    dum_genie_datm1 = datm_sum
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
        dum_genie_docn(io,:,:,:) = docn_sum(l,:,:,:)

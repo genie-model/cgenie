@@ -490,6 +490,7 @@ CONTAINS
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
+    USE gem_cmn, ONLY: ia_pCO2
     USE netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, nyear
@@ -553,11 +554,11 @@ CONTAINS
        ! Note, the index for the atmospheric pCO2 tracer is 3
        ! TODO: define this index globally
        IF (atchem_fert) THEN
-          CALL carbon(torog_atm, sfcatm_lnd(3,:,:), landice_slicemask_lic, &
-               & sfxatm_lnd(3,:,:))
+          CALL carbon(torog_atm, sfcatm_lnd(ia_pCO2,:,:), landice_slicemask_lic, &
+               & sfxatm_lnd(ia_pCO2,:,:))
        ELSE
           CALL carbon(torog_atm, dum_co2_out, landice_slicemask_lic, &
-               & sfxatm_lnd(3,:,:))
+               & sfxatm_lnd(ia_pCO2,:,:))
        END IF
     END IF
 
