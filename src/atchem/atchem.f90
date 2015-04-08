@@ -133,7 +133,7 @@ CONTAINS
     ! set internal atmospheric flux
     fatm = 0.0
     DO ia = 1, n_atm
-       fatm(ia,:,:) = dum_sfxsumatm(ia_ias(ia),:,:)
+       fatm(ia,:,:) = dum_sfxsumatm(ia,:,:)
     END DO
 
     ! NOTE: flux <fatm> in (mol m-2 per timestep)
@@ -320,7 +320,11 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! integrate flux to atmosphere <dum_sfxatm1> (mol m-2 s-1)
     ! running total <dum_sfxsumatm> is in units of (mol m-2)
-    dum_sfxsumatm = dum_sfxsumatm + dum_dts * dum_sfxatm1
+    INTEGER :: ia, ias
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_sfxsumatm(ia,:,:) = dum_sfxsumatm(ia,:,:) + dum_dts * dum_sfxatm1(ias,:,:)
+    END DO
     ! zero flux
     dum_sfxatm1 = 0.0
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
@@ -340,7 +344,11 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! integrate flux to atmosphere <dum_sfxatm_lnd> (mol m-2 s-1)
     ! running total <dum_sfxsumatm> is in units of (mol m-2)
-    dum_sfxsumatm = dum_sfxsumatm + dum_dts * dum_sfxatm_lnd
+    INTEGER :: ia, ias
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_sfxsumatm(ia,:,:) = dum_sfxsumatm(ia,:,:) + dum_dts * dum_sfxatm_lnd(ias,:,:)
+    END DO
     ! zero flux
     dum_sfxatm_lnd = 0.0
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !

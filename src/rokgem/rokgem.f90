@@ -502,37 +502,32 @@ CONTAINS
 
   ! ******************************************************************************************************************************** !
   ! COUPLE FLUXES: rok->atm
-  SUBROUTINE cpl_flux_rokatm(    &
-       & dum_dts,                 &
-       & dum_nr_maxi,dum_nr_maxj, &
-       & dum_n_maxi,dum_n_maxj,   &
-       & dum_sfxatm1,             &
-       & dum_sfxsumatm,           &
-       & dum_gem                  &
-       & )
+  SUBROUTINE cpl_flux_rokatm(dts, nr_maxi, nr_maxj, n_maxi,n_maxj, sfxatm1, sfxsumatm, gem)
     IMPLICIT NONE
     ! dummy arguments
-    real,intent(in)::dum_dts
-    integer,intent(in)::dum_nr_maxi,dum_nr_maxj
-    integer,intent(in)::dum_n_maxi,dum_n_maxj
-    real,dimension(:,:,:),intent(inout)::dum_sfxatm1
-    real,dimension(:,:,:),intent(out)::dum_sfxsumatm
-    logical,intent(in)::dum_gem
+    real,intent(in)::dts
+    integer,intent(in)::nr_maxi,nr_maxj
+    integer,intent(in)::n_maxi,n_maxj
+    real,dimension(:,:,:),intent(inout)::sfxatm1
+    real,dimension(:,:,:),intent(out)::sfxsumatm
+    logical,intent(in)::gem
     ! local variables
     integer::loc_scalei,loc_scalej
     real::loc_scale
+    INTEGER :: ia, ias
     ! initialize local variables!
-    loc_scalei = dum_nr_maxi/dum_n_maxi
-    loc_scalej = dum_nr_maxj/dum_n_maxj
-    loc_scale = 1.0/real(loc_scalei*loc_scalej)
+    loc_scalei = nr_maxi/n_maxi
+    loc_scalej = nr_maxj/n_maxj
+    loc_scale = 1.0 / REAL(loc_scalei*loc_scalej)
     ! set return (dissolution) flux to ocean
-    ! NOTE: rok->atm flux (rok grid) <dum_sfxatm> in units of (mol m-2 s-1)
-    ! NOTE: rok->atm flux (atm grid) <dum_sfxatm1> in units of (mol m-2 s-1)
+    ! NOTE: rok->atm flux (rok grid) <sfxatm> in units of (mol m-2 s-1)
+    ! NOTE: rok->atm flux (atm grid) <sfxatm1> in units of (mol m-2 s-1)
 !!! *** KLUDGE (works for matching grids) ***
-    dum_sfxsumatm(:,:,:) = dum_sfxsumatm(:,:,:) + dum_dts*dum_sfxatm1(:,:,:)
-    if (.NOT. dum_gem) then
-       dum_sfxatm1(:,:,:) = 0.0
-    end if
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       sfxsumatm(ia,:,:) = sfxsumatm(ia,:,:) + dts*sfxatm1(ias,:,:)
+    END DO
+    if (.NOT. gem) sfxatm1 = 0.0
 !!! *****************************************
   end SUBROUTINE cpl_flux_rokatm
 

@@ -1022,7 +1022,7 @@ CONTAINS
 
     ALLOCATE(genie_sfcatm(n_atm,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsumatm(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
+    ALLOCATE(genie_sfxsumatm(n_atm,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
     ALLOCATE(genie_sfcatm1(n_atm_all,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcatm1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
