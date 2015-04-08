@@ -541,7 +541,7 @@ CONTAINS
     REAL, INTENT(INOUT), DIMENSION(:,:,:) :: dum_sfxsed1       ! ocean -> sediment flux; ocn grid
     REAL, INTENT(INOUT), DIMENSION(:,:,:) :: dum_sfxsumrok1    ! coastal (weathering) -> ocean flux; ocn grid
 
-    INTEGER::i,j,k,l,io,ia,is,n                                    ! counting indices
+    INTEGER::i,j,k,l,io,ia,is,n,ias                                ! counting indices
     integer::lo,ls
     integer::loc_k1                                                ! local topography
     integer::loc_i,loc_j,loc_tot_i                                 !
@@ -655,10 +655,10 @@ CONTAINS
        ! recalculate time-varying restoring and flux forcings of the system & fractional relaxation
        ! NOTE: updating of restoring time-series position calculated seperately (sub: biogem_forcing)
        ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          IF (force_restore_atm_select(ia)) THEN
-             loc_force_restore_atm_tmod(ia) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ia))
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
+          IF (force_restore_atm_select(ias)) THEN
+             loc_force_restore_atm_tmod(ias) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ias))
           END IF
        END DO
        ! OCEAN TRACERS
@@ -1094,23 +1094,23 @@ CONTAINS
                 ! NOTE: do not force restore if time is outside the specified restoring interval
                 !       (indicated by the time indices being identical)
                 ! NOTE: do not calculate a restoring flux if there is also a flux forcing [special case]
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
-                   IF (force_restore_atm_select(ia) .AND. (.NOT. force_flux_atm_select(ia))) THEN
-                      IF (force_restore_atm_sig_i(ia,1) /= force_restore_atm_sig_i(ia,2)) THEN
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
+                   IF (force_restore_atm_select(ias) .AND. (.NOT. force_flux_atm_select(ias))) THEN
+                      IF (force_restore_atm_sig_i(ias,1) /= force_restore_atm_sig_i(ias,2)) THEN
                          ! catch missing restoring data (non-isotope tracer values < 0.0) => force restoring flux to zero
                          ! also catch 'null' isotopic values
                          SELECT CASE (atm_type(ia))
                          CASE (1)
-                            if (force_restore_atm(ia,i,j) < 0.0) force_restore_atm(ia,i,j) = dum_sfcatm1(ia,i,j)
+                            if (force_restore_atm(ias,i,j) < 0.0) force_restore_atm(ias,i,j) = dum_sfcatm1(ias,i,j)
                          case default
-                            if (force_restore_atm(ia,i,j) <= const_real_null) force_restore_atm(ia,i,j) = dum_sfcatm1(ia,i,j)
+                            if (force_restore_atm(ias,i,j) <= const_real_null) force_restore_atm(ias,i,j) = dum_sfcatm1(ias,i,j)
                          end select
                          ! set restoring flux
-                         loc_datm_restore(ia) = (force_restore_atm(ia,i,j) - dum_sfcatm1(ia,i,j))*loc_force_restore_atm_tmod(ia)
-                         locij_fatm(ia,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ia)*loc_rdtyr
+                         loc_datm_restore(ias) = (force_restore_atm(ias,i,j) - dum_sfcatm1(ias,i,j))*loc_force_restore_atm_tmod(ias)
+                         locij_fatm(ias,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ias)*loc_rdtyr
                          ! record (atmopsheric) flux (diagnosed from restoring) forcing
-                         diag_forcing(ia,i,j) = locij_fatm(ia,i,j)
+                         diag_forcing(ias,i,j) = locij_fatm(ias,i,j)
                       END IF
                    end IF
                 END DO
@@ -1122,14 +1122,14 @@ CONTAINS
                 ! NOTE: assume one-to-one mapping between atm and ocn tracers
                 !       => array need not be looped through to fine io corresponding to any chosen ia
                 ! NOTE: if no correspondence, the NULL index of the ocean tracer array provides the dustbin
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
                    IF (atm_type(ia) == 1) THEN
-                      if (ocnatm_airsea_eqm(ia)) then
-                         loc_tot_i = conv_atm_ocn_i(0,ia)
+                      if (ocnatm_airsea_eqm(ias)) then
+                         loc_tot_i = conv_atm_ocn_i(0,ias)
                          do loc_i=1,loc_tot_i
-                            io = conv_atm_ocn_i(loc_i,ia)
-                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ia,i,j)*dum_sfcatm1(ia,i,j)
+                            io = conv_atm_ocn_i(loc_i,ias)
+                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ias,i,j)*dum_sfcatm1(ias,i,j)
                             ! ### INSERT CODE TO DEAL WITH RELATED ISOTOPE COMPOSITION BOUNDARY CONDITIONS ######################### !
                             !
                             ! ###################################################################################################### !
@@ -1191,12 +1191,12 @@ CONTAINS
                 ! calculate value of applied flux forcings
                 ! NOTE: <force_flux*> in units of (mol yr-1)
                 ! ATMOSPHERIC TRACERS (applied at the ocean-atmosphere interface)
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
-                   IF (force_flux_atm_select(ia)) THEN
-                      locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ia,i,j)
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
+                   IF (force_flux_atm_select(ias)) THEN
+                      locij_fatm(ias,i,j) = locij_fatm(ias,i,j) + force_flux_atm(ias,i,j)
                       ! record (atmopsheric) flux forcing
-                      diag_forcing(ia,i,j) = force_flux_atm(ia,i,j)
+                      diag_forcing(ias,i,j) = force_flux_atm(ias,i,j)
                    END IF
                 END DO
                 ! OCEAN TRACERS
@@ -1577,13 +1577,13 @@ CONTAINS
                 !                       => it is not used in the updating of mass balance anywhere
                 locij_focnatm(:,i,j) = fun_calc_ocnatm_flux(i,j,dum_sfcatm1(:,i,j),loc_dtyr)
                 ! set local flux arrays for the updating of ocean and atmosphere reservoirs
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
-                   locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + locij_focnatm(ia,i,j)
-                   loc_tot_i = conv_atm_ocn_i(0,ia)
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
+                   locij_fatm(ias,i,j) = locij_fatm(ias,i,j) + locij_focnatm(ias,i,j)
+                   loc_tot_i = conv_atm_ocn_i(0,ias)
                    do loc_i=1,loc_tot_i
-                      io = conv_atm_ocn_i(loc_i,ia)
-                      locijk_focn(io,i,j,n_k) = locijk_focn(io,i,j,n_k) - conv_atm_ocn(io,ia)*locij_focnatm(ia,i,j)
+                      io = conv_atm_ocn_i(loc_i,ias)
+                      locijk_focn(io,i,j,n_k) = locijk_focn(io,i,j,n_k) - conv_atm_ocn(io,ias)*locij_focnatm(ias,i,j)
                    end do
                 end DO
                 diag_airsea(:,i,j) = locij_focnatm(:,i,j)
@@ -1694,9 +1694,9 @@ CONTAINS
                 ! NOTE: convert units from (mol yr-1) to (mol m-2 s-1)
                 ! NOTE: update external interface array with TOTAL flux to atmosphere
                 !       (i.e., due to both air-sea exchange and any forcing of the atmosphere)
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
-                   dum_sfxatm1(ia,i,j) = phys_ocnatm(ipoa_rA,i,j)*conv_s_yr*locij_fatm(ia,i,j)
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
+                   dum_sfxatm1(ias,i,j) = phys_ocnatm(ipoa_rA,i,j)*conv_s_yr*locij_fatm(ias,i,j)
                 end do
                 ! (2) set bottom-water tracers
                 ! NOTE: estimate Ca and borate concentrations from salinity (if not selected and therefore not explicitly treated)
@@ -2037,7 +2037,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock                 ! genie clock (ms since start) NOTE: 8-byte integer
 
-    INTEGER::l,io,ia,is                                            ! counting indices
+    INTEGER::l,io,ia,is,ias                                        ! counting indices
     real::loc_t                                                    ! local time
 
     ! *** CALCULATE GEM TIME ***
@@ -2049,13 +2049,13 @@ CONTAINS
     IF (ctrl_debug_lvl1) print*, '*** UPDATE FORCING TIME SERIES DATA ***'
     ! recalculate time-varying restoring and flux forcings of the system & fractional relaxation
     ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       IF (force_restore_atm_select(ia)) THEN
-          CALL sub_update_force_restore_atm(loc_t,ia)
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       IF (force_restore_atm_select(ias)) THEN
+          CALL sub_update_force_restore_atm(loc_t,ias)
        END IF
-       IF (force_flux_atm_select(ia)) THEN
-          CALL sub_update_force_flux_atm(loc_t,ia)
+       IF (force_flux_atm_select(ias)) THEN
+          CALL sub_update_force_flux_atm(loc_t,ias)
        END IF
     END DO
     ! OCEAN TRACERS
@@ -2380,7 +2380,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: dum_save                         ! average and save data?
     LOGICAL, INTENT(IN) :: dum_gemlite                      ! in GEMlite phase of cycle?
 
-    INTEGER::i,j,k,l,io,ia,is
+    INTEGER::i,j,k,l,io,ia,is,ias
     integer::loc_k1                                                !
     real::loc_t,loc_dts,loc_dtyr                                   !
     real::loc_yr_save                                              !
@@ -2427,9 +2427,9 @@ CONTAINS
                       IF (n_k >= loc_k1) THEN
                          ! ocn->atm
                          ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                         DO l=3,n_atm
-                            ia = conv_iselected_ia(l)
-                            locij_focnatm(ia,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ia,i,j)
+                         DO ia = 3, n_atm
+                            ias = ia_ias(ia)
+                            locij_focnatm(ias,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ias,i,j)
                          end do
                          ! ocn->sed
                          ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
@@ -2665,7 +2665,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: dum_forcesave                    ! force data saving?
     LOGICAL, INTENT(IN) :: dum_gemlite                      ! in GEMlite phase of cycle?
 
-    INTEGER::i,j,l,io,ia,is,ic
+    INTEGER::i,j,l,io,ia,is,ic,ias
     integer::ib,id,i2D                                             ! counting variables
     integer::loc_k1                                                !
     real::loc_t,loc_dts,loc_dtyr                                   !
@@ -2752,9 +2752,9 @@ CONTAINS
                    IF (n_k >= loc_k1) THEN
                       ! ocn->atm
                       ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                      DO l=3,n_atm
-                         ia = conv_iselected_ia(l)
-                         locij_focnatm(ia,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ia,i,j)
+                      DO ia = 3, n_atm
+                         ias = ia_ias(ia)
+                         locij_focnatm(ias,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ias,i,j)
                       end do
                       ! ocn->sed
                       ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
@@ -2807,10 +2807,10 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_ocnatm) THEN
-                DO l=1,n_atm
-                   ia = conv_iselected_ia(l)
-                   int_ocnatm_sig(ia) = int_ocnatm_sig(ia) + &
-                        & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))*loc_ocnatm_rtot_A
+                DO ia = 1, n_atm
+                   ias = ia_ias(ia)
+                   int_ocnatm_sig(ias) = int_ocnatm_sig(ias) + &
+                        & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))*loc_ocnatm_rtot_A
                 END DO
              end if
              IF (ctrl_data_save_sig_fexport) THEN
@@ -2821,10 +2821,10 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_focnatm) THEN
-                DO l=3,n_atm
-                   ia = conv_iselected_ia(l)
-                   int_focnatm_sig(ia) = int_focnatm_sig(ia) + &
-                        & loc_dtyr*SUM(locij_focnatm(ia,:,:))
+                DO ia = 3, n_atm
+                   ias = ia_ias(ia)
+                   int_focnatm_sig(ias) = int_focnatm_sig(ias) + &
+                        & loc_dtyr*SUM(locij_focnatm(ias,:,:))
                 END DO
              end if
              IF (ctrl_data_save_sig_focnsed) THEN
@@ -3002,13 +3002,13 @@ CONTAINS
                       int_diag_weather_sig(io) = int_diag_weather_sig(io) + SUM(dum_sfxsumrok1(io,:,:))
                    end if
                 END DO
-                DO l=1,n_atm
-                   ia = conv_iselected_ia(l)
-                   int_diag_airsea_sig(ia) = int_diag_airsea_sig(ia) + loc_dtyr*SUM(diag_airsea(ia,:,:))
+                DO ia = 1, n_atm
+                   ias = ia_ias(ia)
+                   int_diag_airsea_sig(ias) = int_diag_airsea_sig(ias) + loc_dtyr*SUM(diag_airsea(ias,:,:))
                 END DO
-                DO l=1,n_atm
-                   ia = conv_iselected_ia(l)
-                   int_diag_forcing_sig(ia) = int_diag_forcing_sig(ia) + loc_dtyr*SUM(diag_forcing(ia,:,:))
+                DO ia = 1, n_atm
+                   ias = ia_ias(ia)
+                   int_diag_forcing_sig(ias) = int_diag_forcing_sig(ias) + loc_dtyr*SUM(diag_forcing(ias,:,:))
                 END DO
              end if
              ! high resolution 3D tracer data

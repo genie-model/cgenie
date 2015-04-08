@@ -28,13 +28,13 @@ CONTAINS
     ! dummy arguments
     integer,INTENT(in)::dum_i,dum_j
     ! local variables
-    integer::l,ia
+    integer::ia, ias
     ! calculate Solubility Coefficients (mol/(kg atm))
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       IF (atm_type(ia) == 1) then
-          ocnatm_airsea_solconst(ia,dum_i,dum_j) = &
-               & fun_calc_solconst(ia,ocn(io_T,dum_i,dum_j,n_k),ocn(io_S,dum_i,dum_j,n_k),phys_ocn(ipo_rho,dum_i,dum_j,n_k))
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       IF (atm_type(ias) == 1) then
+          ocnatm_airsea_solconst(ias,dum_i,dum_j) = &
+               & fun_calc_solconst(ias,ocn(io_T,dum_i,dum_j,n_k),ocn(io_S,dum_i,dum_j,n_k),phys_ocn(ipo_rho,dum_i,dum_j,n_k))
        end if
     end do
   end subroutine sub_calc_solconst
@@ -82,7 +82,7 @@ CONTAINS
     ! dummy arguments
     INTEGER::dum_i,dum_j
     ! local variables
-    integer::l,ia
+    integer::ia,ias
     REAL::loc_Sc
     REAL::loc_TC,loc_TC2,loc_TC3
     real::loc_u2
@@ -98,20 +98,20 @@ CONTAINS
     ! wind speed^2
     loc_u2 = phys_ocnatm(ipoa_wspeed,dum_i,dum_j)**2
     !  calculate piston velocity
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       IF (atm_type(ia) == 1) then
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       IF (atm_type(ias) == 1) then
           ! calculate gas transfer Schmidt number
           loc_Sc =                           &
-               & par_Sc_coef(1,ia)         - &
-               & par_Sc_coef(2,ia)*loc_TC  + &
-               & par_Sc_coef(3,ia)*loc_TC2 - &
-               & par_Sc_coef(4,ia)*loc_TC3
+               & par_Sc_coef(1,ias)         - &
+               & par_Sc_coef(2,ias)*loc_TC  + &
+               & par_Sc_coef(3,ias)*loc_TC2 - &
+               & par_Sc_coef(4,ias)*loc_TC3
           ! calculate CO2 gas transfer velocity (piston velocity)
           ! NOTE: from Wanninkhof [1992] equation 1/3
           ! NOTE: convert from units of (cm hr-1) to (m yr-1)
           ! NOTE: pre-calculate 1.0/660 (= 1.515E-3)
-          ocnatm_airsea_pv(ia,dum_i,dum_j) = conv_cm_m*conv_yr_hr*par_gastransfer_a*loc_u2*(loc_Sc*1.515E-3)**(-0.5)
+          ocnatm_airsea_pv(ias,dum_i,dum_j) = conv_cm_m*conv_yr_hr*par_gastransfer_a*loc_u2*(loc_Sc*1.515E-3)**(-0.5)
        end if
     end do
   END SUBROUTINE sub_calc_pv
@@ -128,7 +128,7 @@ CONTAINS
     REAL,dimension(:),INTENT(in)::dum_atm
     REAL,INTENT(in)::dum_dt
     ! local variables
-    integer::l,ia,io
+    integer::ia,ias,io
     REAL,dimension(n_atm_all)::loc_focnatm,loc_fatmocn
     real::loc_alpha_k,loc_alpha_alpha
     real::loc_alpha_sa,loc_alpha_as
@@ -156,14 +156,14 @@ CONTAINS
     loc_A = (1.0 - phys_ocnatm(ipoa_seaice,dum_i,dum_j))*phys_ocnatm(ipoa_A,dum_i,dum_j)
 
     ! *** calculate air-sea gas exchange fluxes ***
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       if (.NOT. ocnatm_airsea_eqm(ia)) then
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       if (.NOT. ocnatm_airsea_eqm(ias)) then
           ! set corresponding ocean tracer
           ! NOTE: assume that there is a one-to-one mapping from atm tracers to ocn tracers,
           !       with the corresponding ocean tracer index given in the i=1 index position of the conv_atm_ocn_i array
-          io = conv_atm_ocn_i(1,ia)
-          SELECT CASE (atm_type(ia))
+          io = conv_atm_ocn_i(1,ias)
+          SELECT CASE (atm_type(ias))
           CASE (1)
              ! calculate bulk gas exchange
              ! set local ocean and atmosphere tracer variables
@@ -175,7 +175,7 @@ CONTAINS
              !          => set a relative buffering factor for CO2,
              !             chosen to ensure numerical stability yet not unduely restrict air-sea CO2 exchange
              ! NOTE: local atmospheric tracer value has Bunsen Solubility Coefficient implicit in its value
-             loc_atm = ocnatm_airsea_solconst(ia,dum_i,dum_j)*dum_atm(ia)
+             loc_atm = ocnatm_airsea_solconst(ias,dum_i,dum_j)*dum_atm(ias)
              if (io == io_DIC) then
                 loc_ocn = carb(ic_conc_CO2,dum_i,dum_j,n_k)
                 ! calculate limitation of air-sea exchange of CO2 based on Revelle factor (see: Zeebe and Wolf-Gladwor [2001])
@@ -201,8 +201,8 @@ CONTAINS
              ! calculate gas exchange fluxes ocn->atm and atm->ocn
              ! NOTE: units of (mol yr-1)
              ! NOTE: the solubility coefficient must be converted to units of mol/(kg atm) from a Bunsen Solubility Coefficient
-             loc_focnatm(ia) = ocnatm_airsea_pv(ia,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
-             loc_fatmocn(ia) = ocnatm_airsea_pv(ia,dum_i,dum_j)*loc_A*loc_rho*loc_atm
+             loc_focnatm(ias) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
+             loc_fatmocn(ias) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_atm
              ! check for 'excessive' gas transfer (i.e., with the potential to lead to numerical instability)
              ! => rescale the fluxes to that the ocean surface is brought exactly into equilibrium
              ! NOTE: in the case of DIC, only CO2(aq) is considered
@@ -210,16 +210,16 @@ CONTAINS
              ! calculate the molar magnitude of ocean deficit or surfit w.r.t. the atmosphere
              loc_deqm(io) = phys_ocn(ipo_dD,dum_i,dum_j,n_k)*phys_ocnatm(ipoa_A,dum_i,dum_j)*loc_rho*loc_buff*abs(loc_atm - loc_ocn)
              ! calculate the molar transfer that would normally then be applied
-             loc_dflux(ia) = dum_dt*abs(loc_focnatm(ia) - loc_fatmocn(ia))
+             loc_dflux(ias) = dum_dt*abs(loc_focnatm(ias) - loc_fatmocn(ias))
              ! ensure that molar transfer does not exceed the current disequilibrium
              ! (i.e., ensure that a +ve disequilibrium is not turned into a larger -ve disequilibrium at the next time-step)
              If (loc_deqm(io) > const_real_nullsmall) then
-                loc_r_dflux_deqm = loc_dflux(ia)/loc_deqm(io)
+                loc_r_dflux_deqm = loc_dflux(ias)/loc_deqm(io)
                 if (loc_r_dflux_deqm > par_airsea_r_dflux_deqm_max) then
-                   loc_focnatm(ia) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_focnatm(ia)
-                   loc_fatmocn(ia) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_fatmocn(ia)
+                   loc_focnatm(ias) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_focnatm(ias)
+                   loc_fatmocn(ias) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_fatmocn(ias)
                    IF (ctrl_debug_reportwarnings) then
-                      print*,'WARNING: excessive air-sea flux of ',trim(string_atm(ia)), &
+                      print*,'WARNING: excessive air-sea flux of ', TRIM(string_atm(ias)), &
                            & ' prevented at (',fun_conv_num_char_n(2,dum_i),',',fun_conv_num_char_n(2,dum_j),')'
                    end IF
                 end if
@@ -237,7 +237,7 @@ CONTAINS
              ! NOTE: convert r (13C/(13C + 12C)) ratio to R (13C/12C) before applying fractionation factor alpha
              ! NOTE: assume that the total mass of C is approximately equal to 12C + 13C
              ! NOTE: for 14C, the standard is already in the form: 14C/C
-             SELECT CASE (ia)
+             SELECT CASE (ias)
              CASE (ias_pCO2_13C)
                 ! isotopic fluxes - 13C
                 loc_r13C_atm = dum_atm(ias_pCO2_13C)/dum_atm(ias_pCO2)
@@ -292,7 +292,7 @@ CONTAINS
              end SELECT
           end SELECT
           ! calculate net gas transfer and set results variable
-          fun_calc_ocnatm_flux(ia) = loc_focnatm(ia) - loc_fatmocn(ia)
+          fun_calc_ocnatm_flux(ias) = loc_focnatm(ias) - loc_fatmocn(ias)
        end if
     end do
 

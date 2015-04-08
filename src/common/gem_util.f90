@@ -1604,7 +1604,7 @@ CONTAINS
   ! DEFINE AND INITIALIZE ATMOSPHERIC (atm) TRACERS
   SUBROUTINE sub_init_tracer_atm()
     ! local variables
-    INTEGER::n,ia,l
+    INTEGER::n,ia,l,ias
     INTEGER::loc_n_elements,loc_n_start
     INTEGER::loc_index,loc_dep,loc_type
     real::loc_min,loc_max
@@ -1613,13 +1613,9 @@ CONTAINS
     CHARACTER(len=12)::loc_string_unit
     CHARACTER(len=255)::loc_filename
     ! initialize global arrays
-    atm_dep(:)    = 0
-    atm_type(:)   = 0
-    string_atm_tname(:)  = ' '
-    string_atm_unit(:)   = ' '
-    string_atm_tlname(:) = ' '
-    atm_mima(:,:)        = 0.0
-    conv_ia_lselected(:) = 0
+    atm_dep = 0
+    atm_type = 0
+    atm_mima = 0.0
     ! check file format and determine number of lines of data
     loc_filename = TRIM(par_gem_indir_name)//'tracer_define.atm'
     CALL sub_check_fileformat(loc_filename,loc_n_elements,loc_n_start)
@@ -1631,6 +1627,7 @@ CONTAINS
     END DO
     ! Count number of incuded ('active') tracers and set up indexes.
     l = 0
+    ias_ia = -1
     DO n = 1,loc_n_elements
        IF (atm_select(n)) THEN
           l = l + 1
@@ -1674,12 +1671,19 @@ CONTAINS
           CASE (ias_pCFC12)
              ia_pCFC12 = l
           END SELECT
+          ias_ia(n) = l
        end if
     END DO
     ! set number of active tracers and allocate tracer index conversion array size
     n_atm = l
-    ALLOCATE(conv_iselected_ia(n_atm),STAT=error)
-    ALLOCATE(l2ia(n_atm),STAT=error)
+    ALLOCATE(ia_ias(n_atm))
+    l = 1
+    DO n = 1, loc_n_elements
+       IF (ias_ia(n) > 0) THEN
+          ia_ias(l) = n
+          l = l + 1
+       END IF
+    END DO
     ! re-set filepipe
     REWIND(unit=in)
     ! goto start-of-file tag
@@ -1705,37 +1709,33 @@ CONTAINS
        string_longname_atm(ia) = loc_string_longname
        atm_dep(ia) = loc_dep
        atm_type(ia) = loc_type
-       IF (atm_select(ia)) THEN
-          l = l + 1
-          conv_iselected_ia(l) = ia
-          l2ia(l) = ia
-          conv_ia_lselected(ia) = l
-          ia2l(ia) = l
-          string_atm_tname(l) = loc_string_name
-          string_atm_unit(l) = loc_string_unit
-          string_atm_tlname(l) = loc_string_longname
-          atm_mima(l,1) = loc_min
-          atm_mima(l,2) = loc_max
-       ENDIF
+       string_atm_unit(ia) = loc_string_unit
+       atm_mima(ia,1) = loc_min
+       atm_mima(ia,2) = loc_max
     END DO
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    do ia=1,n_atm_all
-       IF (atm_select(ia)) THEN
-          if (.not. atm_select(atm_dep(ia))) then
-             CALL sub_report_error( &
-                  & 'atchem_data','sub_init_tracer_atm', &
-                  & 'If an isotopic tracer is selected, the associated bulk atmosphere tracer '// &
-                  & TRIM(string_atm(atm_dep(ia)))//' '// &
-                  & 'must be selected (FILE: gem_config_atm.par)', &
-                  & 'OFFENDING TRACER HAS BEEN DE-SELECTED', &
-                  & (/const_real_null/),.false. &
-                  & )
-             atm_select(ia) = .FALSE.
-          end if
-       end IF
+    print *, 'IAS:'
+    do ias = 1, n_atm_all
+       print *, ias, string_atm(ias), atm_select(ias), ias_ia(ias)
     end do
+    print *, 'IA:'
+    do ia = 1, n_atm
+       print *, ia, ia_ias(ia)
+    end do
+    DO ias = 1, n_atm_all
+       IF (atm_select(ias) .AND. .NOT. atm_select(atm_dep(ias))) then
+          CALL sub_report_error( &
+               & 'atchem_data','sub_init_tracer_atm', &
+               & 'If an isotopic tracer is selected, the associated bulk atmosphere tracer '// &
+               & TRIM(string_atm(atm_dep(ias)))//' '// &
+               & 'must be selected (FILE: gem_config_atm.par)', &
+               & 'STOPPING', &
+               & (/const_real_null/),.TRUE. &
+               & )
+       END IF
+    END DO
   END SUBROUTINE sub_init_tracer_atm
   ! ****************************************************************************************************************************** !
 

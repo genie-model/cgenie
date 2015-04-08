@@ -66,7 +66,7 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm
     REAL, DIMENSION(:,:,:), INTENT(OUT) :: dum_sfcatm
 
-    integer::ia,l,i,j
+    integer::ia,i,j,ias
     real::loc_dtyr
     REAL::loc_atm_tot_V
     REAL,DIMENSION(n_atm_all)::loc_atm_tot
@@ -95,11 +95,11 @@ CONTAINS
        block_jloop: DO j=1,n_j
 
           ! *** DECAY RADIOACTIVE TRACERS ***
-          DO l=3,n_atm
-             ia = conv_iselected_ia(l)
+          DO ia = 3, n_atm
+             ias = ia_ias(ia)
              ! radioactive decay of isotopes
-             IF (ABS(const_lambda_atm(ia)) > const_real_nullsmall) THEN
-                atm(ia,i,j) = loc_fracdecay_atm(ia) * atm(ia,i,j)
+             IF (ABS(const_lambda_atm(ias)) > const_real_nullsmall) THEN
+                atm(ias,i,j) = loc_fracdecay_atm(ias) * atm(ias,i,j)
              END if
           end do
 
@@ -133,19 +133,20 @@ CONTAINS
     ! *** UPDATE ATMOSPHERIC COMPOSITION ***
     ! set internal atmospheric flux
     fatm = dum_sfxsumatm
+
     ! NOTE: flux <fatm> in (mol m-2 per timestep)
     ! update atmospheric composition
     ! NOTE: units of partial pressure (atm)
     ! NOTE: carry out at every (i.e, wet + dry) grid point
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
        ! update atmospheric tracers
-       atm(ia,:,:) = atm(ia,:,:) + loc_conv_mol_atm(:,:)*phys_atm(ipa_A,:,:)*fatm(ia,:,:) + loc_conv_mol_atm(:,:)*locij_fatm(ia,:,:)
+       atm(ias,:,:) = atm(ias,:,:) + loc_conv_mol_atm(:,:)*phys_atm(ipa_A,:,:)*fatm(ias,:,:) + loc_conv_mol_atm(:,:)*locij_fatm(ias,:,:)
        ! <HACK TO HOMOGENIZE ATMOSPHERIC COMPOSITION>
        ! homogenize the partial pressure of tracers in the atmopshere across (all grid points)
-       loc_atm_tot(ia) = SUM(loc_conv_atm_mol(:,:)*atm(ia,:,:))
+       loc_atm_tot(ias) = SUM(loc_conv_atm_mol(:,:)*atm(ias,:,:))
        loc_atm_tot_V = SUM(phys_atm(ipa_V,:,:))
-       atm(ia,:,:) = (loc_atm_tot(ia)/loc_atm_tot_V)*conv_Pa_atm*const_R_SI*atm(ias_T,:,:)
+       atm(ias,:,:) = (loc_atm_tot(ias)/loc_atm_tot_V)*conv_Pa_atm*const_R_SI*atm(ias_T,:,:)
     end do
 
     ! *** UPDATE INTERFACE ARRAYS ***
@@ -186,8 +187,8 @@ CONTAINS
        OPEN(UNIT=out,STATUS='replace',FILE=loc_filename,FORM='unformatted',ACTION='write')
        WRITE(unit=out)                                    &
             & n_atm,                                    &
-            & (conv_iselected_ia(l),l=1,n_atm),         &
-            & (atm(conv_iselected_ia(l),:,:),l=1,n_atm)
+            & (ia_ias(l),l=1,n_atm),         &
+            & (atm(ia_ias(l),:,:),l=1,n_atm)
        CLOSE(UNIT=out)
     END IF
   END SUBROUTINE atchem_save_rst
@@ -243,17 +244,16 @@ CONTAINS
 
   ! ******************************************************************************************************************************** !
   ! COUPLE AtChem atmospheric composition
-  SUBROUTINE cpl_comp_atmocn(dum_n_atm, dum_sfcatm, dum_sfcatm1)
+  SUBROUTINE cpl_comp_atmocn(dum_sfcatm, dum_sfcatm1)
     IMPLICIT NONE
     ! dummy arguments
-    INTEGER, INTENT(IN) :: dum_n_atm
     REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_sfcatm     ! atmosphere-surface tracer composition; atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm1 ! atmosphere-surface tracer composition; ocn grid
     ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    dum_sfcatm1(3:dum_n_atm,:,:) = dum_sfcatm(3:dum_n_atm,:,:)
+    dum_sfcatm1(3:,:,:) = dum_sfcatm(3:,:,:)
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmocn
   ! ******************************************************************************************************************************** !
@@ -279,17 +279,16 @@ CONTAINS
 
   ! ******************************************************************************************************************************** !
   ! COUPLE AtChem atmospheric composition
-  SUBROUTINE cpl_comp_atmlnd(dum_n_atm, dum_sfcatm, dum_sfcatm_lnd)
+  SUBROUTINE cpl_comp_atmlnd(dum_sfcatm, dum_sfcatm_lnd)
     IMPLICIT NONE
     ! dummy arguments
-    integer,intent(in)::dum_n_atm
     REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_sfcatm        ! atmosphere-surface tracer composition; atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm_lnd ! atmosphere-surface tracer composition; lnd grid
     ! \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ !
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    dum_sfcatm_lnd(3:dum_n_atm,:,:) = dum_sfcatm(3:dum_n_atm,:,:)
+    dum_sfcatm_lnd(3:,:,:) = dum_sfcatm(3:,:,:)
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmlnd
   ! ******************************************************************************************************************************** !

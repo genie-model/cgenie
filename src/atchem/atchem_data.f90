@@ -20,7 +20,7 @@ CONTAINS
   ! LOAD AtCheM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_atchem()
     ! local variables
-    integer::l,ia                                                ! tracer counter
+    integer::ia,ias                                              ! tracer counter
     integer::ios                                                 !
     ! read data_ATCHEM file
     open(unit=in,file='data_ATCHEM',status='old',action='read',iostat=ios)
@@ -43,9 +43,9 @@ CONTAINS
     if (ctrl_debug_init > 0) then
        ! --- TRACER INITIALIZATION ----------------------------------------------------------------------------------------------- !
        print*,'--- TRACER INITIALIZATION --------------------------'
-       DO l=1,n_atm
-          ia = conv_iselected_ia(l)
-          print*,'atm tracer initial value: ',trim(string_atm(ia)),' = ',atm_init(ia)
+       DO ia = 1, n_atm
+          ias = ia_ias(ia)
+          print*,'atm tracer initial value: ',trim(string_atm(ias)),' = ',atm_init(ias)
        end do
        ! --- COSMOGENIC & RADIOGENIC PRODUCTION ---------------------------------------------------------------------------------- !
        print*,'--- COSMOGENIC & RADIOGENIC PRODUCTION -------------'
@@ -91,7 +91,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    integer::l,ia,iv                                           ! local counting variables
+    integer::l,ia,iv,ias                                       ! local counting variables
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
@@ -145,14 +145,14 @@ CONTAINS
           call sub_inqvars(loc_ncid,loc_ndims,loc_nvars,loc_dimlen,loc_varname,loc_vdims,loc_varlen)
           ! -------------------------------------------------------- ! load and apply only tracers that are selected
           IF (ctrl_debug_init == 1) print*,' * Loading restart tracers: '
-          DO iv=1,loc_nvars
-             DO l=1,n_atm
-                ia = conv_iselected_ia(l)
-                if ('atm_'//trim(string_atm(ia)) == trim(loc_varname(iv))) then
-                   IF (ctrl_debug_init == 1) print*,'   ',trim(loc_varname(iv))
+          DO iv = 1, loc_nvars
+             DO ia = 1, n_atm
+                ias = ia_ias(ia)
+                IF ('atm_' // TRIM(string_atm(ias)) == TRIM(loc_varname(iv))) THEN
+                   IF (ctrl_debug_init == 1) PRINT *, '   ', TRIM(loc_varname(iv))
                    loc_atm = 0.0
-                   call sub_getvarij(loc_ncid,'atm_'//trim(string_atm(ia)),n_i,n_j,loc_atm)
-                   atm(ia,:,:) = loc_atm(:,:)
+                   CALL sub_getvarij(loc_ncid, 'atm_' // TRIM(string_atm(ias)), n_i, n_j, loc_atm)
+                   atm(ias, :, :) = loc_atm(:,:)
                 endif
              end do
           end DO
@@ -226,31 +226,26 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! CONFIGURE AND INITIALIZE TRACER COMPOSITION - ATMOSPHERE
   SUBROUTINE sub_init_tracer_atm_comp()
-    ! local variables
-    INTEGER::i,j,ia
-    real::loc_tot,loc_frac,loc_standard
-    ! initialize global arrays
-    atm(:,:,:)  = 0.0
+    IMPLICIT NONE
+    INTEGER :: ias
+    REAL :: loc_frac, loc_standard
+
+    atm = 0.0
     ! set <atm> array
     ! NOTE: need to seed ias_T as temperature is required in order to convert between mole (total) and partial pressure
-    DO i=1,n_i
-       DO j=1,n_j
-          DO ia=1,n_atm_all
-             IF (atm_select(ia)) THEN
-                SELECT CASE (atm_type(ia))
-                CASE (0)
-                   if (ia == ias_T) atm(ia,i,j) = const_zeroC
-                CASE (1)
-                   atm(ia,i,j) = atm_init(ia)
-                CASE (11,12,13,14)
-                   loc_tot  = atm_init(atm_dep(ia))
-                   loc_standard = const_standards(atm_type(ia))
-                   loc_frac = fun_calc_isotope_fraction(atm_init(ia),loc_standard)
-                   atm(ia,i,j) = loc_frac*loc_tot
-                END SELECT
-             end if
-          END DO
-       END DO
+    DO ias = 1, n_atm_all
+       IF (atm_select(ias)) THEN
+          SELECT CASE (atm_type(ias))
+          CASE (0)
+             IF (ias == ias_T) atm(ias,:,:) = const_zeroC
+          CASE (1)
+             atm(ias,:,:) = atm_init(ias)
+          CASE (11, 12, 13, 14)
+             loc_standard = const_standards(atm_type(ias))
+             loc_frac = fun_calc_isotope_fraction(atm_init(ias),loc_standard)
+             atm(ias,:,:) = loc_frac * atm_init(atm_dep(ias))
+          END SELECT
+       end if
     END DO
   END SUBROUTINE sub_init_tracer_atm_comp
   ! ****************************************************************************************************************************** !

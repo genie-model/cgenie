@@ -1141,7 +1141,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     !       local variables
     !-----------------------------------------------------------------------
-    INTEGER::l,i,j,ia,io,is
+    INTEGER::l,i,j,ia,io,is,ias
     integer::ib,id,ip,ic
     integer::loc_k1
     integer::loc_iou,loc_ntrec
@@ -1162,27 +1162,27 @@ CONTAINS
     !       save ocean-atmosphere interface tracer data field
     !-----------------------------------------------------------------------
     If (ctrl_data_save_slice_ocnatm) then
-       DO l=1,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 1, n_atm
+          ias = ia_ias(ia)
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
              DO j=1,n_j
-                SELECT CASE (atm_type(ia))
+                SELECT CASE (atm_type(ias))
                 CASE (0,1)
-                   loc_ij(i,j) = int_sfcatm1_timeslice(ia,i,j)/int_t_timeslice
+                   loc_ij(i,j) = int_sfcatm1_timeslice(ias,i,j)/int_t_timeslice
                 case (n_itype_min:n_itype_max)
-                   loc_tot  = int_sfcatm1_timeslice(atm_dep(ia),i,j)/int_t_timeslice
-                   loc_frac = int_sfcatm1_timeslice(ia,i,j)/int_t_timeslice
-                   loc_standard = const_standards(atm_type(ia))
+                   loc_tot  = int_sfcatm1_timeslice(atm_dep(ias),i,j)/int_t_timeslice
+                   loc_frac = int_sfcatm1_timeslice(ias,i,j)/int_t_timeslice
+                   loc_standard = const_standards(atm_type(ias))
                    loc_ij(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                 END SELECT
              end DO
           end DO
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (0,1,n_itype_min:n_itype_max)
-             call sub_adddef_netcdf(loc_iou,3,'atm_'//trim(string_atm_tname(l)), &
-                  & trim(string_atm_tlname(l)),trim(string_atm_unit(l)),atm_mima(l,1),atm_mima(l,2))
-             call sub_putvar2d('atm_'//trim(string_atm(ia)),loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_mask_surf_ALL)
+             call sub_adddef_netcdf(loc_iou,3,'atm_'//trim(string_atm(ias)), &
+                  & trim(string_longname_atm(ias)),trim(string_atm_unit(ias)),atm_mima(ias,1),atm_mima(ias,2))
+             call sub_putvar2d('atm_'//trim(string_atm(ias)),loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_mask_surf_ALL)
           END SELECT
        END DO
     end if
@@ -1891,7 +1891,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     !       local variables
     !-----------------------------------------------------------------------
-    INTEGER::l,ia
+    INTEGER::l,ia,ias
     integer::loc_iou,loc_ntrec
     CHARACTER(len=255)::loc_unitsname
     real,DIMENSION(n_i,n_j)::loc_ij,loc_mask
@@ -1911,17 +1911,17 @@ CONTAINS
     If (ctrl_data_save_slice_carb) then
        loc_mask = phys_ocnatm(ipoa_mask_ocn,:,:)
        loc_ij(:,:) = 0.0
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          SELECT CASE (atm_type(ia))
+       DO ia = 3, n_atm
+          ias = ia_ias(l)
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_ij(:,:) = int_diag_airsea_timeslice(ia,:,:)/int_t_timeslice
+             loc_ij(:,:) = int_diag_airsea_timeslice(ias,:,:)/int_t_timeslice
              loc_unitsname = 'mol yr-1'
              call sub_adddef_netcdf(                                                                                     &
-                  & loc_iou,3,'fseaair_'//trim(string_atm(ia)),trim(string_atm(ia))//': net sea->air gas exchange flux', &
+                  & loc_iou,3,'fseaair_'//trim(string_atm(ias)),trim(string_atm(ias))//': net sea->air gas exchange flux', &
                   & trim(loc_unitsname),const_real_zero,const_real_zero                                                  &
                   & )
-             call sub_putvar2d ('fseaair_'//trim(string_atm(ia)),loc_iou,n_i,n_j, &
+             call sub_putvar2d ('fseaair_'//trim(string_atm(ias)),loc_iou,n_i,n_j, &
                   & loc_ntrec,loc_ij,loc_mask)
           end SELECT
        END DO
@@ -2541,7 +2541,7 @@ CONTAINS
     ! dummy arguments
     REAL,INTENT(in)::dum_t
     ! local variables
-    INTEGER :: l,io,ia,is,ic
+    INTEGER :: l,io,ia,is,ic,ias
     REAL :: loc_t
     real :: loc_opsi_scale
     real :: loc_ocn_tot_M, loc_ocn_tot_A
@@ -2734,31 +2734,31 @@ CONTAINS
     ! NOTE: write data both as the total inventory, and as the equivalent
     !       mean partial pressure simple conversion factor from atm to mol is used
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          SELECT CASE (atm_type(ia))
+       DO ia = 3,n_atm
+          ias = ia_ias(l)
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_ocnatm_sig(ia)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_ocnatm_tot', &
-                  & trim(string_atm_tlname(l))//'_ocnatm_tot', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_ocnatm_tot', loc_iou, loc_ntrec, &
+             loc_sig = int_ocnatm_sig(ias)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_tot', &
+                  & trim(string_longname_atm(ias))//'_ocnatm_tot', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_ocnatm_tot', loc_iou, loc_ntrec, &
                   & conv_atm_mol*loc_sig*loc_cr1e15, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_ocnatm_conc', &
-                  & trim(string_atm_tlname(l))//'_ocnatm_conc', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_ocnatm_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_conc', &
+                  & trim(string_longname_atm(ias))//'_ocnatm_conc', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_ocnatm_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_ocnatm_sig(atm_dep(ia))/int_t_sig
-             loc_frac = int_ocnatm_sig(ia)/int_t_sig
-             loc_standard = const_standards(atm_type(ia))
+             loc_tot  = int_ocnatm_sig(atm_dep(ias))/int_t_sig
+             loc_frac = int_ocnatm_sig(ias)/int_t_sig
+             loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_ocnatm_tot', &
-                  & trim(string_atm_tlname(l))//'_ocnatm_tot', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_ocnatm_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_tot', &
+                  & trim(string_longname_atm(ias))//'_ocnatm_tot', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_ocnatm_tot', loc_iou, loc_ntrec, &
                   & conv_atm_mol*loc_frac, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_ocnatm_conc', &
-                  & trim(string_atm_tlname(l))//'_ocnatm_conc', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_ocnatm_conc', loc_iou, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_conc', &
+                  & trim(string_longname_atm(ias))//'_ocnatm_conc', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_ocnatm_conc', loc_iou, &
                   & loc_ntrec, loc_sig, loc_c1, loc_c0)
 
           end SELECT
@@ -2823,18 +2823,18 @@ CONTAINS
     ! NOTE: write data both as the total flux, and as the equivalent mean
     !       flux density
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          SELECT CASE (atm_type(ia))
+       DO ia = 3, n_atm
+          ias = ia_ias(l)
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_focnatm_sig(ia)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_focnatm_tot', &
-                  & trim(string_atm_tlname(l))//'_focnatm_tot', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_focnatm_tot', loc_iou, loc_ntrec, &
+             loc_sig = int_focnatm_sig(ias)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_focnatm_tot', &
+                  & trim(string_longname_atm(ias))//'_focnatm_tot', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_focnatm_tot', loc_iou, loc_ntrec, &
                   & loc_sig*loc_cr1e15/loc_ocn_tot_A, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm_tname(l))//'_focnatm_conc', &
-                  & trim(string_atm_tlname(l))//'_focnatm_conc', string_atm_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_atm_tname(l))//'_focnatm_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_focnatm_conc', &
+                  & trim(string_longname_atm(ias))//'_focnatm_conc', string_atm_unit(ias), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_atm(ias))//'_focnatm_conc', loc_iou, loc_ntrec, &
                   & loc_sig*loc_cr1e15, loc_c1, loc_c0)
           end SELECT
        END DO

@@ -148,7 +148,7 @@ CONTAINS
     real,dimension(:,:,:),intent(inout)::dum_sfxsumatm1_gem       ! atmospheric fluxes: outgassing and weathering
     ! LOCAL VARIABLES
     INTEGER::i,j,k                                                        ! counting indices
-    INTEGER::l,ia,io,is                                                      ! counting indices
+    INTEGER::l,ia,io,is,ias                                                      ! counting indices
     integer::loc_i,loc_tot_i                                              !
     integer::loc_k1                                                       ! topography
     real::loc_T,loc_S,loc_DIC,loc_ALK                                     !
@@ -473,9 +473,9 @@ CONTAINS
        DO j=1,n_j
           ! (1) FULL GRID
           ! calculate atm exchange fluxes -- CO2 outgassing and weathering consumption (assuming no weathering short-circuiting)
-          DO l=3,n_atm
-             ia = conv_iselected_ia(l)
-             loc_tot_fatm(l) = loc_tot_fatm(l) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(ia,i,j)
+          DO ia = 3, n_atm
+             ias = ia_ias(ia)
+             loc_tot_fatm(ia) = loc_tot_fatm(ia) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(ias,i,j)
           end do
           ! (2) OCEAN GRID
           loc_k1 = goldstein_k1(i,j)
@@ -530,9 +530,9 @@ CONTAINS
        loc_tot_fsed(conv_io_lselected(io_O2)) = 0.0
        ! update atmosphere
        loc_datm_pO2(:,:)    = loc_tot_DpO2/real(n_i*n_j)/loc_conv_atm_mol(:,:)
-       datm(ia2l(ias_pO2),:,:)     = datm(ia2l(ias_pO2),:,:)     + loc_datm_pO2(:,:)
-       datm_sum(conv_ia_lselected(ias_pO2),:,:) = datm_sum(conv_ia_lselected(ias_pO2),:,:) + loc_datm_pO2(:,:)
-       atm(conv_ia_lselected(ias_pO2),:,:)      = atm(conv_ia_lselected(ias_pO2),:,:)      + loc_datm_pO2(:,:)
+       datm(ia_pO2,:,:)     = datm(ia_pO2,:,:)     + loc_datm_pO2(:,:)
+       datm_sum(ia_pO2,:,:) = datm_sum(ia_pO2,:,:) + loc_datm_pO2(:,:)
+       atm(ia_pO2,:,:)      = atm(ia_pO2,:,:)      + loc_datm_pO2(:,:)
     endif
 
     ! *** !!! DECAY TRACERS !!! ***
@@ -544,12 +544,11 @@ CONTAINS
           ! (1) atmosphere
           !     NOTE: /real(n_i*n_j) is used once in calculating a mean conversion between atm and mol,
           !           and a second time in dividing up the total flux between atm grid points
-          DO l=3,n_atm
-             ia = conv_iselected_ia(l)
-             loc_datm_flux   = loc_tot_fatm(l)/(sum(loc_conv_atm_mol(:,:))/real(n_i*n_j))/real(n_i*n_j)
-             atm(l,i,j)      = atm(l,i,j)      + loc_datm_flux
-             datm(l,i,j)     = datm(l,i,j)     + loc_datm_flux
-             datm_sum(l,i,j) = datm_sum(l,i,j) + loc_datm_flux
+          DO ia = 3, n_atm
+             loc_datm_flux   = loc_tot_fatm(ia)/(sum(loc_conv_atm_mol(:,:))/real(n_i*n_j))/real(n_i*n_j)
+             atm(ia,i,j)      = atm(ia,i,j)      + loc_datm_flux
+             datm(ia,i,j)     = datm(ia,i,j)     + loc_datm_flux
+             datm_sum(ia,i,j) = datm_sum(ia,i,j) + loc_datm_flux
           end do
           ! (2) ocean
           ! set local depth loop limit
@@ -678,11 +677,11 @@ CONTAINS
     real,dimension(:,:,:),intent(inout)::dum_genie_atm1 !
     real,dimension(:,:,:,:),intent(inout)::dum_genie_ocn !
     ! local variables
-    integer::l,ia,io
+    integer::l,ia,io,ias
     ! copy tracer array
-    DO l=1,n_atm
-       ia = conv_iselected_ia(l)
-       atm(l,:,:) = dum_genie_atm1(ia,:,:)
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       atm(ia,:,:) = dum_genie_atm1(ias,:,:)
     end do
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
@@ -705,14 +704,14 @@ CONTAINS
     real,dimension(:,:,:),intent(out)::dum_genie_datm1 !
     real,dimension(:,:,:,:),intent(out)::dum_genie_docn !
     ! local variables
-    integer::l,ia,io
+    integer::l,ia,io,ias
     ! initialize arrays
     dum_genie_datm1 = 0.0
     dum_genie_docn = 0.0
     ! copy tracer anomaly arrays
-    DO l=1,n_atm
-       ia = conv_iselected_ia(l)
-       dum_genie_datm1(ia,:,:) = datm(l,:,:)
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_genie_datm1(ias,:,:) = datm(ia,:,:)
     end do
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
@@ -735,15 +734,15 @@ CONTAINS
     real,dimension(:,:,:),intent(out)::dum_genie_datm1 !
     real,dimension(:,:,:,:),intent(out)::dum_genie_docn !
     ! local variables
-    integer::l,ia,io
+    integer::l,ia,io,ias
     ! initialize receiving arrays
     dum_genie_datm1 = 0.0
     dum_genie_docn = 0.0
     ! copy tracer anomaly arrays
     ! NOTE: do not re-set integrated composition anomaly arrays yet ...
-    DO l=1,n_atm
-       ia = conv_iselected_ia(l)
-       dum_genie_datm1(ia,:,:) = datm_sum(l,:,:)
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_genie_datm1(ias,:,:) = datm_sum(ia,:,:)
     end do
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)

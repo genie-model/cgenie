@@ -4,7 +4,7 @@ SUBROUTINE initialise_gem()
   USE gem_util
   USE gem_data
   ! local variables
-  integer::ia,io,is                                              ! tracer counter
+  integer::ia,ias,io,is                                           ! tracer counter
 
   print*,'======================================================='
   print*,' >>> Initialising GEM geochemistry module ...'
@@ -51,9 +51,10 @@ SUBROUTINE initialise_gem()
   if (ctrl_debug_init > 0) then
      print*,'--- TRACER SELECTION ---'
      print*,'Selected atmosphere tracers:                        : '
-     do ia=1,n_atm_all
-        if (atm_select(ia)) print*,ia,' = ',trim(string_longname_atm(ia))
-     end do
+     DO ia = 1, n_atm
+        ias = ia_ias(ia)
+        PRINT *, ias, ' = ', TRIM(string_longname_atm(ias))
+     END DO
      print*,'Selected ocean tracers:                             : '
      do io=1,n_ocn
         if (ocn_select(io)) print*,io,' = ',trim(string_longname_ocn(io))

@@ -23,7 +23,7 @@ CONTAINS
   SUBROUTINE sub_init_data_save_runtime()
     USE genie_util, ONLY:check_unit,check_iostat
     ! local variables
-    INTEGER::l,io,ia,is,ic,ios,idm2D
+    INTEGER::l,io,ia,is,ic,ios,idm2D,ias
     integer::ib,id
     CHARACTER(len=255)::loc_filename
     CHARACTER(len=255)::loc_string
@@ -78,21 +78,21 @@ CONTAINS
     END IF
     ! atmospheric tracer
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO l=1,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 1, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ia)),string_results_ext &
+               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (0)
-             If (ia == ias_T) loc_string = '% time (yr) / surface air temperature (degrees C)'
-             If (ia == ias_q) loc_string = '% time (yr) / surface humidity (???)'
+             If (ias == ias_T) loc_string = '% time (yr) / surface air temperature (degrees C)'
+             If (ias == ias_q) loc_string = '% time (yr) / surface humidity (???)'
           CASE (1)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' (mol) / global ' //TRIM(string_atm(ia))//' (atm)'
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' (mol) / global ' //TRIM(string_atm(ias))//' (atm)'
           CASE (n_itype_min:n_itype_max)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' (mol) / global ' //TRIM(string_atm(ia))//' (o/oo)'
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' (mol) / global ' //TRIM(string_atm(ias))//' (o/oo)'
           end SELECT
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (0,1,n_itype_min:n_itype_max)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='replace',iostat=ios)
@@ -139,20 +139,20 @@ CONTAINS
     END IF
     ! air-sea gas exchange
     IF (ctrl_data_save_sig_fairsea) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ia)),string_results_ext &
+               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))// ' sea->air transfer flux (mol yr-1) / '//&
-                  & 'global '//TRIM(string_atm(ia))// ' density (mol m-2 yr-1)'
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))// ' sea->air transfer flux (mol yr-1) / '//&
+                  & 'global '//TRIM(string_atm(ias))// ' density (mol m-2 yr-1)'
           CASE (n_itype_min:n_itype_max)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' sea->air transfer flux (mol yr-1) / ' //&
-                  & 'global '//TRIM(string_atm(ia))//' (o/oo)'
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' sea->air transfer flux (mol yr-1) / ' //&
+                  & 'global '//TRIM(string_atm(ias))//' (o/oo)'
           end SELECT
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1,n_itype_min:n_itype_max)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='replace',iostat=ios)
@@ -166,22 +166,22 @@ CONTAINS
     end IF
     ! ocean-atmosphere interface flux
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ia)),string_results_ext &
+               & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' flux (mol yr-1) / global '// &
-                  & TRIM(string_atm(ia))//' density (mol m-2 yr-1) '//&
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' flux (mol yr-1) / global '// &
+                  & TRIM(string_atm(ias))//' density (mol m-2 yr-1) '//&
                   & ' NOTE: is the atmospheric forcing flux *net* of the sea-air gas exchange flux.'
           CASE (n_itype_min:n_itype_max)
-             loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' flux (mol yr-1) / global '// &
-                  & TRIM(string_atm(ia))//' (o/oo)'//&
+             loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' flux (mol yr-1) / global '// &
+                  & TRIM(string_atm(ias))//' (o/oo)'//&
                   & ' NOTE: is the atmospheric forcing flux *net* of the sea-air gas exchange flux.'
           end SELECT
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1,n_itype_min:n_itype_max)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='replace',iostat=ios)
@@ -546,23 +546,23 @@ CONTAINS
     END IF
     ! forcing flux
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
+          if (force_flux_atm_select(ias) .OR. force_restore_atm_select(ias)) then
              loc_filename=fun_data_timeseries_filename( &
                   & loc_t,par_outdir_name, &
-                  & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ia)),string_results_ext &
+                  & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ias)),string_results_ext &
                   & )
-             SELECT CASE (atm_type(ia))
+             SELECT CASE (atm_type(ias))
              CASE (1)
-                loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' flux (mol yr-1) '//&
+                loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' flux (mol yr-1) '//&
                      & ' NOTE: is the instantaneous atmospheric forcing flux.'
              CASE (n_itype_min:n_itype_max)
-                loc_string = '% time (yr) / global '//TRIM(string_atm(ia))//' flux (mol yr-1) / global '// &
-                     & TRIM(string_atm(ia))//' (o/oo)'//&
+                loc_string = '% time (yr) / global '//TRIM(string_atm(ias))//' flux (mol yr-1) / global '// &
+                     & TRIM(string_atm(ias))//' (o/oo)'//&
                      & ' NOTE: is the instantaneous atmospheric forcing flux.'
              end SELECT
-             SELECT CASE (atm_type(ia))
+             SELECT CASE (atm_type(ias))
              CASE (1,n_itype_min:n_itype_max)
                 call check_unit(out,__LINE__,__FILE__)
                 OPEN(unit=out,file=loc_filename,action='write',status='replace',iostat=ios)
@@ -671,7 +671,7 @@ CONTAINS
     ! dummy arguments
     REAL,INTENT(in)::dum_t
     ! local variables
-    INTEGER::l,io,ia,is,ic,ios,idm2D
+    INTEGER::l,io,ia,is,ic,ios,idm2D,ias
     integer::ib,id
     REAL::loc_t
     real::loc_opsi_scale
@@ -903,14 +903,14 @@ CONTAINS
     ! NOTE: write data both as the total inventory, and as the equivalent mean partial pressure
     ! NOTE: simple conversion factor from atm to mol is used
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO l=1,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 1, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ia)),string_results_ext &
+               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (0)
-             loc_sig = int_ocnatm_sig(ia)/int_t_sig
+             loc_sig = int_ocnatm_sig(ias)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -921,7 +921,7 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           CASE (1)
-             loc_sig = int_ocnatm_sig(ia)/int_t_sig
+             loc_sig = int_ocnatm_sig(ias)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -933,9 +933,9 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_ocnatm_sig(atm_dep(ia))/int_t_sig
-             loc_frac = int_ocnatm_sig(ia)/int_t_sig
-             loc_standard = const_standards(atm_type(ia))
+             loc_tot  = int_ocnatm_sig(atm_dep(ias))/int_t_sig
+             loc_frac = int_ocnatm_sig(ias)/int_t_sig
+             loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -1013,14 +1013,14 @@ CONTAINS
     ! NOTE: write data both as the total flux, and as the equivalent mean flux density
     ! NOTE: a positive value of the array represents net ocean to atmosphere transfer
     IF (ctrl_data_save_sig_fairsea) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ia)),string_results_ext &
+               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_diag_airsea_sig(ia)/int_t_sig
+             loc_sig = int_diag_airsea_sig(ias)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -1032,9 +1032,9 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_diag_airsea_sig(atm_dep(ia))/int_t_sig
-             loc_frac = int_diag_airsea_sig(ia)/int_t_sig
-             loc_standard = const_standards(atm_type(ia))
+             loc_tot  = int_diag_airsea_sig(atm_dep(ias))/int_t_sig
+             loc_frac = int_diag_airsea_sig(ias)/int_t_sig
+             loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -1054,14 +1054,14 @@ CONTAINS
     ! write ocean-atmopshere interface flux data
     ! NOTE: write data both as the total flux, and as the equivalent mean flux density
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
-               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ia)),string_results_ext &
+               & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ias)),string_results_ext &
                & )
-          SELECT CASE (atm_type(ia))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_focnatm_sig(ia)/int_t_sig
+             loc_sig = int_focnatm_sig(ias)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -1073,9 +1073,9 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_focnatm_sig(atm_dep(ia))/int_t_sig
-             loc_frac = int_focnatm_sig(ia)/int_t_sig
-             loc_standard = const_standards(atm_type(ia))
+             loc_tot  = int_focnatm_sig(atm_dep(ias))/int_t_sig
+             loc_frac = int_focnatm_sig(ias)/int_t_sig
+             loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -1564,16 +1564,16 @@ CONTAINS
     !       loc_tot  = int_focnatm_sig(atm_dep(ia))/int_t_sig - int_diag_airsea_sig(atm_dep(ia))/int_t_sig
     !       loc_frac = int_focnatm_sig(ia)/int_t_sig - int_diag_airsea_sig(ia)/int_t_sig
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
-       DO l=3,n_atm
-          ia = conv_iselected_ia(l)
-          if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
+       DO ia = 3, n_atm
+          ias = ia_ias(ia)
+          if (force_flux_atm_select(ias) .OR. force_restore_atm_select(ias)) then
              loc_filename=fun_data_timeseries_filename( &
                   & dum_t,par_outdir_name, &
-                  & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ia)),string_results_ext &
+                  & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ias)),string_results_ext &
                   & )
-             SELECT CASE (atm_type(ia))
+             SELECT CASE (atm_type(ias))
              CASE (1)
-                loc_sig = int_diag_forcing_sig(ia)/int_t_sig
+                loc_sig = int_diag_forcing_sig(ias)/int_t_sig
                 call check_unit(out,__LINE__,__FILE__)
                 OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
                 call check_iostat(ios,__LINE__,__FILE__)
@@ -1584,9 +1584,9 @@ CONTAINS
                 CLOSE(unit=out,iostat=ios)
                 call check_iostat(ios,__LINE__,__FILE__)
              case (n_itype_min:n_itype_max)
-                loc_tot = int_diag_forcing_sig(atm_dep(ia))/int_t_sig
-                loc_frac = int_diag_forcing_sig(ia)/int_t_sig
-                loc_standard = const_standards(atm_type(ia))
+                loc_tot = int_diag_forcing_sig(atm_dep(ias))/int_t_sig
+                loc_frac = int_diag_forcing_sig(ias)/int_t_sig
+                loc_standard = const_standards(atm_type(ias))
                 loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
                 call check_unit(out,__LINE__,__FILE__)
                 OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
@@ -1715,7 +1715,7 @@ CONTAINS
     REAL,INTENT(IN)::dum_t
     REAL,DIMENSION(:,:,:),INTENT(in)::dum_sfcatm1      ! atmosphere composition interface array
     ! local variables
-    INTEGER::l,ia,io,is,ios
+    INTEGER::l,ia,io,is,ios,ias
     real::loc_tot,loc_frac,loc_standard
     real::loc_atm_ave,loc_ocn_ave,loc_sed_ave
     real::loc_ocn_tot_M,loc_ocn_tot_A
@@ -1737,14 +1737,14 @@ CONTAINS
 
     ! *** save data - ALL ***
     ! write atmospheric data
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       SELECT CASE (atm_type(ia))
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       SELECT CASE (atm_type(ias))
        CASE (1)
           loc_atm_ave = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
           write(unit=out,fmt='(A13,A16,A3,f10.3,A15,A5,E15.7,A4)',iostat=ios) &
-               & ' Atmospheric ',string_atm(ia),' : ', &
+               & ' Atmospheric ',string_atm(ias),' : ', &
                & conv_mol_umol*loc_atm_ave, &
                & ' uatm          ', &
                & ' <-> ', &
@@ -1753,13 +1753,13 @@ CONTAINS
           call check_iostat(ios,__LINE__,__FILE__)
        case (n_itype_min:n_itype_max)
           loc_tot = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(atm_dep(ia),:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(atm_dep(ias),:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_frac =  &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
-          loc_standard = const_standards(atm_type(ia))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+          loc_standard = const_standards(atm_type(ias))
           loc_atm_ave = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
-               & ' Atmospheric ',string_atm(ia),' : ', &
+               & ' Atmospheric ',string_atm(ias),' : ', &
                & loc_atm_ave, &
                & ' o/oo'
           call check_iostat(ios,__LINE__,__FILE__)
@@ -1849,7 +1849,7 @@ CONTAINS
   SUBROUTINE sub_data_save_global_av()
     USE genie_util, ONLY:check_unit,check_iostat
     ! local variables
-    INTEGER::i,j,k,l,ia,io,is,ios,ic
+    INTEGER::i,j,k,l,ia,io,is,ios,ic,ias
     integer::loc_k1
     real::loc_t,loc_dt,loc_K
     real::loc_tot,loc_frac,loc_standard
@@ -2001,26 +2001,26 @@ CONTAINS
     Write(unit=out,fmt=*) '--------------------------'
     Write(unit=out,fmt=*) 'ATMOSPHERIC PROPERTIES'
     Write(unit=out,fmt=*) ' '
-    DO l=3,n_atm
-       ia = conv_iselected_ia(l)
-       SELECT CASE (atm_type(ia))
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       SELECT CASE (atm_type(ias))
        CASE (1)
           loc_atm_ave = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ia,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ias,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
-               & ' Atmospheric ',string_atm(ia),' : ', &
+               & ' Atmospheric ',string_atm(ias),' : ', &
                & conv_mol_umol*loc_atm_ave, &
                & ' uatm'
           call check_iostat(ios,__LINE__,__FILE__)
        case (n_itype_min:n_itype_max)
           loc_tot = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(atm_dep(ia),:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(atm_dep(ias),:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_frac =  &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ia,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
-          loc_standard = const_standards(atm_type(ia))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ias,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+          loc_standard = const_standards(atm_type(ias))
           loc_atm_ave = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
-               & ' Atmospheric ',string_atm(ia),' : ', &
+               & ' Atmospheric ',string_atm(ias),' : ', &
                & loc_atm_ave, &
                & ' o/oo'
           call check_iostat(ios,__LINE__,__FILE__)

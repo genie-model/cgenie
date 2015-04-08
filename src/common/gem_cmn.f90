@@ -360,26 +360,24 @@ MODULE gem_cmn
 
   ! *** tracer arrays ***
   ! tracer description - 'type'
-  integer,DIMENSION(n_atm_all)::atm_type
+  INTEGER, DIMENSION(n_atm_all) :: atm_type
   integer,DIMENSION(n_ocn)::ocn_type
   integer,DIMENSION(n_sed)::sed_type
   ! tracer description - 'dependency'
-  integer,DIMENSION(n_atm_all)::atm_dep
+  INTEGER, DIMENSION(n_atm_all) :: atm_dep
   integer,DIMENSION(n_ocn)::ocn_dep
   integer,DIMENSION(n_sed)::sed_dep
   ! tracer short names
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn
-  CHARACTER(len=16),DIMENSION(n_atm_all)::string_atm
+  CHARACTER(len=16), DIMENSION(n_atm_all) :: string_atm
   CHARACTER(len=16),DIMENSION(n_sed)::string_sed
   ! tracer long names (i.e., full description)
   CHARACTER(len=128),DIMENSION(n_ocn)::string_longname_ocn
-  CHARACTER(len=128),DIMENSION(n_atm_all)::string_longname_atm
+  CHARACTER(len=128), DIMENSION(n_atm_all) :: string_longname_atm
   CHARACTER(len=128),DIMENSION(n_sed)::string_longname_sed !
   ! tracer descriptions (for netCDF)
-  CHARACTER(len=16),DIMENSION(n_atm_all)::string_atm_tname       ! names of active atm tracers
-  CHARACTER(len=128),DIMENSION(n_atm_all)::string_atm_tlname     ! longnames of active atm tracers
-  CHARACTER(len=12),DIMENSION(n_atm_all)::string_atm_unit        ! main units of active atm tracers
-  REAL,DIMENSION(n_atm_all,2)::atm_mima                          ! atm tracer min and max (for netcdf file)
+  CHARACTER(len=12), DIMENSION(n_atm_all) :: string_atm_unit        ! main units of active atm tracers
+  REAL, DIMENSION(n_atm_all,2) :: atm_mima                          ! atm tracer min and max (for netcdf file)
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn_tname       ! names of active ocn tracers
   CHARACTER(len=128),DIMENSION(n_ocn)::string_ocn_tlname     ! longnames of active ocn tracers
   CHARACTER(len=12),DIMENSION(n_ocn)::string_ocn_unit        ! main units of active ocn tracers
@@ -392,19 +390,20 @@ MODULE gem_cmn
   integer::n_atm
   integer::n_l_ocn
   integer::n_l_sed
+
+  ! Conversions for atmospheric tracer indexes.
+  INTEGER, DIMENSION(n_atm_all) :: ias_ia        ! "ALL" to "SELECTED"
+  INTEGER, DIMENSION(:), ALLOCATABLE :: ia_ias   ! "SELECTED" to "ALL"
+
   ! conversion of selected tracer index -> absolute index
-  INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_ia
   INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_io
   INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_is
   ! conversion of absolute index -> selected tracer index
-  INTEGER,DIMENSION(n_atm_all)::conv_ia_lselected
   INTEGER,DIMENSION(n_ocn)::conv_io_lselected
   INTEGER,DIMENSION(n_sed)::conv_is_lselected
   ! tracer index conversion [short array name version]
-  INTEGER,ALLOCATABLE,DIMENSION(:)::l2ia
   INTEGER,ALLOCATABLE,DIMENSION(:)::l2io
   INTEGER,ALLOCATABLE,DIMENSION(:)::l2is
-  INTEGER,DIMENSION(n_atm_all)::ia2l
   INTEGER,DIMENSION(n_ocn)::io2l
   INTEGER,DIMENSION(n_sed)::is2l
   ! tracer conversion - transformation ratios

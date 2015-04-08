@@ -29,7 +29,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    integer::ia,l
+    integer::ia,ias
     integer::loc_ntrec,loc_iou
     integer::loc_id_lonm,loc_id_latm,loc_id_lon_e,loc_id_lat_e
     integer,dimension(1:2)::loc_it_1
@@ -75,11 +75,13 @@ CONTAINS
     loc_it_2(1) = loc_id_lonm
     loc_it_2(2) = loc_id_latm
     ! -------------------------------------------------------- ! define (2D) tracer variables
-    DO l=1,n_atm
-       ia = conv_iselected_ia(l)
-       call sub_defvar('atm_'//trim(string_atm(ia)),loc_iou,2,loc_it_2,loc_c0,loc_c0,' ','F', &
-            & string_longname_atm(ia),'Atmosphere tracer - '//trim(string_atm(ia)),' ')
-    end DO
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       CALL sub_defvar('atm_' // TRIM(string_atm(ias)), &
+            & loc_iou, 2, loc_it_2, loc_c0, loc_c0, ' ', 'F', &
+            & string_longname_atm(ias), &
+            & 'Atmosphere tracer - ' // TRIM(string_atm(ias)), ' ')
+    END DO
     ! -------------------------------------------------------- ! end definitions
     call sub_enddef (loc_iou)
     call sub_sync(loc_iou)
@@ -95,10 +97,11 @@ CONTAINS
     ! -------------------------------------------------------- ! write (2D) tracer variables
     loc_ij_mask(:,:) = 1.0
     loc_ij(:,:)= 0.0
-    DO l=1,n_atm
-       ia = conv_iselected_ia(l)
-       loc_ij(:,:) = atm(ia,:,:)
-       call sub_putvar2d('atm_'//trim(string_atm(ia)),loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_ij_mask(:,:))
+    DO ia = 1, n_atm
+       ias = ia_ias(ia)
+       loc_ij(:,:) = atm(ias,:,:)
+       CALL sub_putvar2d('atm_' // TRIM(string_atm(ias)), loc_iou, n_i, n_j, &
+            & loc_ntrec, loc_ij(:,:), loc_ij_mask(:,:))
     end DO
     ! -------------------------------------------------------- ! close file and return IOU
     call sub_closefile(loc_iou)
