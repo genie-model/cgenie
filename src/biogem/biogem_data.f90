@@ -966,8 +966,8 @@ CONTAINS
     int_ocn_tot_V_sig       = 0.0
     int_ocn_sig(:)          = 0.0
     int_fexport_sig(:)      = 0.0
-    int_ocnatm_sig(:)       = 0.0
-    int_focnatm_sig(:)      = 0.0
+    int_ocnatm_sig = 0.0
+    int_focnatm_sig = 0.0
     int_focnsed_sig(:)      = 0.0
     int_fsedocn_sig(:)      = 0.0
     int_ocn_sur_sig(:)      = 0.0
@@ -990,9 +990,9 @@ CONTAINS
     int_diag_bio_sig(:)     = 0.0
     int_diag_geochem_sig(:) = 0.0
     int_diag_weather_sig(:) = 0.0
-    int_diag_airsea_sig(:)  = 0.0
+    int_diag_airsea_sig  = 0.0
     int_diag_misc_2D_sig(:) = 0.0
-    int_diag_forcing_sig(:) = 0.0
+    int_diag_forcing_sig = 0.0
     ! high resolution 3D! (an exception to the time-series concept that rather spoils things)
     if (ctrl_data_save_3d_sig) int_misc_3D_sig(:,:,:,:) = 0.0
     ! ### ADD ADDITIONAL TIME-SERIES ARRAY INITIALIZATIONS HERE ################################################################## !
@@ -2428,7 +2428,7 @@ CONTAINS
     ! local variables
     INTEGER::i,j
     ! zero arrays
-    ocnatm_airsea_solconst(:,:,:) = 0.0
+    ocnatm_airsea_solconst = 0.0
     ! initialize array
     DO i=1,n_i
        DO j=1,n_j

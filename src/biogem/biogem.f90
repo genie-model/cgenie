@@ -63,9 +63,9 @@ CONTAINS
 
     ALLOCATE(ocn(n_ocn,n_i,n_j,n_k),STAT=alloc_error)                   ; ocn = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(ocnatm_airsea_pv(n_atm_all,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
+    ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(ocnatm_airsea_solconst(n_atm_all,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
+    ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -95,7 +95,7 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_airsea(n_atm,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(diag_forcing(n_atm_all,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
+    ALLOCATE(diag_forcing(n_atm,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_misc_2D(n_diag_misc_2D,n_i,n_j),STAT=alloc_error)     ; diag_misc_2D = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -226,6 +226,15 @@ CONTAINS
     ALLOCATE(goldstein_s(0:n_j),STAT=alloc_error)    ; goldstein_s = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(goldstein_sv(0:n_j),STAT=alloc_error)   ; goldstein_sv = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+
+    ALLOCATE(int_diag_airsea_sig(n_atm),STAT=alloc_error)  ; int_diag_airsea_sig = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_diag_forcing_sig(n_atm),STAT=alloc_error) ; int_diag_forcing_sig = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_ocnatm_sig(n_atm),STAT=alloc_error)   ; int_ocnatm_sig = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(int_focnatm_sig(n_atm),STAT=alloc_error)  ; int_focnatm_sig = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ! ---------------------------------------------------------- ! set time
@@ -1110,7 +1119,7 @@ CONTAINS
                          loc_datm_restore(ia) = (force_restore_atm(ias,i,j) - dum_sfcatm1(ia,i,j))*loc_force_restore_atm_tmod(ia)
                          locij_fatm(ia,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ia)*loc_rdtyr
                          ! record (atmopsheric) flux (diagnosed from restoring) forcing
-                         diag_forcing(ias,i,j) = locij_fatm(ia,i,j)
+                         diag_forcing(ia,i,j) = locij_fatm(ia,i,j)
                       END IF
                    end IF
                 END DO
@@ -1129,7 +1138,7 @@ CONTAINS
                          loc_tot_i = conv_atm_ocn_i(0,ias)
                          do loc_i=1,loc_tot_i
                             io = conv_atm_ocn_i(loc_i,ias)
-                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ias,i,j)*dum_sfcatm1(ia,i,j)
+                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ia,i,j)*dum_sfcatm1(ia,i,j)
                             ! ### INSERT CODE TO DEAL WITH RELATED ISOTOPE COMPOSITION BOUNDARY CONDITIONS ######################### !
                             !
                             ! ###################################################################################################### !
@@ -1196,7 +1205,7 @@ CONTAINS
                    IF (force_flux_atm_select(ias)) THEN
                       locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ias,i,j)
                       ! record (atmopsheric) flux forcing
-                      diag_forcing(ias,i,j) = force_flux_atm(ias,i,j)
+                      diag_forcing(ia,i,j) = force_flux_atm(ias,i,j)
                    END IF
                 END DO
                 ! OCEAN TRACERS
@@ -1615,7 +1624,7 @@ CONTAINS
                    if ((1.0 - phys_ocnatm(ipoa_seaice,i,j)) > const_real_nullsmall) then
                       phys_ocnatm(ipoa_KCO2,i,j) = conv_umol_mol*phys_ocn(ipo_rA,i,j,n_k)* &
                            & (locij_focnatm(ia_pCO2,i,j)/(1.0 - phys_ocnatm(ipoa_seaice,i,j)))/ &
-                           & ((carb(ic_conc_CO2,i,j,n_k)/ocnatm_airsea_solconst(ias_pCO2,i,j)) - dum_sfcatm1(ia_pCO2,i,j))
+                           & ((carb(ic_conc_CO2,i,j,n_k)/ocnatm_airsea_solconst(ia_pCO2,i,j)) - dum_sfcatm1(ia_pCO2,i,j))
                    end if
                 end IF
 
@@ -2799,8 +2808,7 @@ CONTAINS
              end if
              IF (ctrl_data_save_sig_ocnatm) THEN
                 DO ia = 1, n_atm
-                   ias = ia_ias(ia)
-                   int_ocnatm_sig(ias) = int_ocnatm_sig(ias) + &
+                   int_ocnatm_sig(ia) = int_ocnatm_sig(ia) + &
                         & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))*loc_ocnatm_rtot_A
                 END DO
              end if
@@ -2813,8 +2821,7 @@ CONTAINS
              end if
              IF (ctrl_data_save_sig_focnatm) THEN
                 DO ia = 3, n_atm
-                   ias = ia_ias(ia)
-                   int_focnatm_sig(ias) = int_focnatm_sig(ias) + &
+                   int_focnatm_sig(ia) = int_focnatm_sig(ia) + &
                         & loc_dtyr*SUM(locij_focnatm(ia,:,:))
                 END DO
              end if
@@ -2994,12 +3001,10 @@ CONTAINS
                    end if
                 END DO
                 DO ia = 1, n_atm
-                   ias = ia_ias(ia)
-                   int_diag_airsea_sig(ias) = int_diag_airsea_sig(ias) + loc_dtyr*SUM(diag_airsea(ia,:,:))
+                   int_diag_airsea_sig(ia) = int_diag_airsea_sig(ia) + loc_dtyr*SUM(diag_airsea(ia,:,:))
                 END DO
                 DO ia = 1, n_atm
-                   ias = ia_ias(ia)
-                   int_diag_forcing_sig(ias) = int_diag_forcing_sig(ias) + loc_dtyr*SUM(diag_forcing(ias,:,:))
+                   int_diag_forcing_sig(ia) = int_diag_forcing_sig(ia) + loc_dtyr*SUM(diag_forcing(ia,:,:))
                 END DO
              end if
              ! high resolution 3D tracer data

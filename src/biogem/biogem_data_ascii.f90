@@ -910,7 +910,7 @@ CONTAINS
                & )
           SELECT CASE (atm_type(ias))
           CASE (0)
-             loc_sig = int_ocnatm_sig(ias)/int_t_sig
+             loc_sig = int_ocnatm_sig(ia)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -921,7 +921,7 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           CASE (1)
-             loc_sig = int_ocnatm_sig(ias)/int_t_sig
+             loc_sig = int_ocnatm_sig(ia)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -933,8 +933,8 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_ocnatm_sig(atm_dep(ias))/int_t_sig
-             loc_frac = int_ocnatm_sig(ias)/int_t_sig
+             loc_tot  = int_ocnatm_sig(ias_ia(atm_dep(ias)))/int_t_sig
+             loc_frac = int_ocnatm_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
@@ -1020,7 +1020,7 @@ CONTAINS
                & )
           SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_diag_airsea_sig(ias)/int_t_sig
+             loc_sig = int_diag_airsea_sig(ia)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -1032,8 +1032,8 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_diag_airsea_sig(atm_dep(ias))/int_t_sig
-             loc_frac = int_diag_airsea_sig(ias)/int_t_sig
+             loc_tot  = int_diag_airsea_sig(ia_ias(atm_dep(ias)))/int_t_sig
+             loc_frac = int_diag_airsea_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
@@ -1061,7 +1061,7 @@ CONTAINS
                & )
           SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_focnatm_sig(ias)/int_t_sig
+             loc_sig = int_focnatm_sig(ia)/int_t_sig
              call check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
@@ -1073,8 +1073,8 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_focnatm_sig(atm_dep(ias))/int_t_sig
-             loc_frac = int_focnatm_sig(ias)/int_t_sig
+             loc_tot  = int_focnatm_sig(ias_ia(atm_dep(ias)))/int_t_sig
+             loc_frac = int_focnatm_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
              call check_unit(out,__LINE__,__FILE__)
@@ -1296,11 +1296,11 @@ CONTAINS
        call check_iostat(ios,__LINE__,__FILE__)
        ! atmospheric CO2 D14C
        IF (atm_select(ias_pCO2_14C)) THEN
-          loc_tot  = int_ocnatm_sig(atm_dep(ias_pCO2))/int_t_sig
-          loc_frac = int_ocnatm_sig(ias_pCO2_13C)/int_t_sig
+          loc_tot  = int_ocnatm_sig(ias_ia(atm_dep(ias_pCO2)))/int_t_sig
+          loc_frac = int_ocnatm_sig(ia_pCO2_13C)/int_t_sig
           loc_standard = const_standards(atm_type(ias_pCO2_13C))
           loc_d13C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
-          loc_frac = int_ocnatm_sig(ias_pCO2_14C)/int_t_sig
+          loc_frac = int_ocnatm_sig(ias_ia(ias_pCO2_14C))/int_t_sig
           loc_standard = const_standards(atm_type(ias_pCO2_14C))
           loc_d14C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           loc_sig = fun_convert_delta14CtoD14C(loc_d13C,loc_d14C)
@@ -1573,7 +1573,7 @@ CONTAINS
                   & )
              SELECT CASE (atm_type(ias))
              CASE (1)
-                loc_sig = int_diag_forcing_sig(ias)/int_t_sig
+                loc_sig = int_diag_forcing_sig(ia)/int_t_sig
                 call check_unit(out,__LINE__,__FILE__)
                 OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
                 call check_iostat(ios,__LINE__,__FILE__)
@@ -1584,8 +1584,8 @@ CONTAINS
                 CLOSE(unit=out,iostat=ios)
                 call check_iostat(ios,__LINE__,__FILE__)
              case (n_itype_min:n_itype_max)
-                loc_tot = int_diag_forcing_sig(atm_dep(ias))/int_t_sig
-                loc_frac = int_diag_forcing_sig(ias)/int_t_sig
+                loc_tot = int_diag_forcing_sig(ia_ias(atm_dep(ias)))/int_t_sig
+                loc_frac = int_diag_forcing_sig(ia)/int_t_sig
                 loc_standard = const_standards(atm_type(ias))
                 loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
                 call check_unit(out,__LINE__,__FILE__)

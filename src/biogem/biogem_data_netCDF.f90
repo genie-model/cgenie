@@ -2738,7 +2738,7 @@ CONTAINS
           ias = ia_ias(l)
           SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_ocnatm_sig(ias)/int_t_sig
+             loc_sig = int_ocnatm_sig(ia)/int_t_sig
              call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_tot', &
                   & trim(string_longname_atm(ias))//'_ocnatm_tot', string_atm_unit(ias), loc_c1, loc_c0)
              call sub_putvars ( trim(string_atm(ias))//'_ocnatm_tot', loc_iou, loc_ntrec, &
@@ -2748,8 +2748,8 @@ CONTAINS
              call sub_putvars ( trim(string_atm(ias))//'_ocnatm_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_ocnatm_sig(atm_dep(ias))/int_t_sig
-             loc_frac = int_ocnatm_sig(ias)/int_t_sig
+             loc_tot  = int_ocnatm_sig(ias_ia(atm_dep(ias)))/int_t_sig
+             loc_frac = int_ocnatm_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
              call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_ocnatm_tot', &
@@ -2827,7 +2827,7 @@ CONTAINS
           ias = ia_ias(l)
           SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_sig = int_focnatm_sig(ias)/int_t_sig
+             loc_sig = int_focnatm_sig(ia)/int_t_sig
              call sub_adddef_netcdf (loc_iou, 1, trim(string_atm(ias))//'_focnatm_tot', &
                   & trim(string_longname_atm(ias))//'_focnatm_tot', string_atm_unit(ias), loc_c1, loc_c0)
              call sub_putvars ( trim(string_atm(ias))//'_focnatm_tot', loc_iou, loc_ntrec, &
@@ -2978,11 +2978,11 @@ CONTAINS
 
        ! atmospheric CO2 D14C
        IF (atm_select(ias_pCO2_14C)) THEN
-          loc_tot  = int_ocnatm_sig(atm_dep(ias_pCO2))/int_t_sig
-          loc_frac = int_ocnatm_sig(ias_pCO2_13C)/int_t_sig
+          loc_tot  = int_ocnatm_sig(ias_ia(atm_dep(ias_pCO2)))/int_t_sig
+          loc_frac = int_ocnatm_sig(ia_pCO2_13C)/int_t_sig
           loc_standard = const_standards(atm_type(ias_pCO2_13C))
           loc_d13C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-          loc_frac = int_ocnatm_sig(ias_pCO2_14C)/int_t_sig
+          loc_frac = int_ocnatm_sig(ia_pCO2_14C)/int_t_sig
           loc_standard = const_standards(atm_type(ias_pCO2_14C))
           loc_d14C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
           loc_sig = fun_convert_delta14CtoD14C(loc_d13C,loc_d14C)

@@ -159,7 +159,7 @@ CONTAINS
     ! weathering flux from atmosphere - land
     ! CO2
     loc_unitsname = 'mol CO2 / yr'
-    loc_ij(:,:) = dum_force_flux_weather_a_land(ias_PCO2,:,:)
+    loc_ij(:,:) = dum_force_flux_weather_a_land(ia_PCO2,:,:)
     call sub_adddef_netcdf(loc_iou,3,'CO2_land','CO2 weathering flux - land',trim(loc_unitsname),const_real_zero,const_real_zero)
     call sub_putvar2d('CO2_land',loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_mask_surf)
 

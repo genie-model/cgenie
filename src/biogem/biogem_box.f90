@@ -24,20 +24,20 @@ CONTAINS
 
   ! ****************************************************************************************************************************** !
   ! CALCULATE SOLUBILITY COEFFICIENT
-  subroutine sub_calc_solconst(dum_i,dum_j)
-    ! dummy arguments
-    integer,INTENT(in)::dum_i,dum_j
-    ! local variables
-    integer::ia, ias
+  SUBROUTINE sub_calc_solconst(i, j)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: i, j
+
+    INTEGER :: ia, ias
     ! calculate Solubility Coefficients (mol/(kg atm))
     DO ia = 3, n_atm
        ias = ia_ias(ia)
        IF (atm_type(ias) == 1) then
-          ocnatm_airsea_solconst(ias,dum_i,dum_j) = &
-               & fun_calc_solconst(ias,ocn(io_T,dum_i,dum_j,n_k),ocn(io_S,dum_i,dum_j,n_k),phys_ocn(ipo_rho,dum_i,dum_j,n_k))
-       end if
-    end do
-  end subroutine sub_calc_solconst
+          ocnatm_airsea_solconst(ia,i,j) = &
+               & fun_calc_solconst(ias,ocn(io_T,i,j,n_k),ocn(io_S,i,j,n_k),phys_ocn(ipo_rho,i,j,n_k))
+       END IF
+    END DO
+  END subroutine sub_calc_solconst
   ! ****************************************************************************************************************************** !
 
 
@@ -111,7 +111,7 @@ CONTAINS
           ! NOTE: from Wanninkhof [1992] equation 1/3
           ! NOTE: convert from units of (cm hr-1) to (m yr-1)
           ! NOTE: pre-calculate 1.0/660 (= 1.515E-3)
-          ocnatm_airsea_pv(ias,dum_i,dum_j) = conv_cm_m*conv_yr_hr*par_gastransfer_a*loc_u2*(loc_Sc*1.515E-3)**(-0.5)
+          ocnatm_airsea_pv(ia,dum_i,dum_j) = conv_cm_m*conv_yr_hr*par_gastransfer_a*loc_u2*(loc_Sc*1.515E-3)**(-0.5)
        end if
     end do
   END SUBROUTINE sub_calc_pv
@@ -175,7 +175,7 @@ CONTAINS
              !          => set a relative buffering factor for CO2,
              !             chosen to ensure numerical stability yet not unduely restrict air-sea CO2 exchange
              ! NOTE: local atmospheric tracer value has Bunsen Solubility Coefficient implicit in its value
-             loc_atm = ocnatm_airsea_solconst(ias,dum_i,dum_j)*dum_atm(ia)
+             loc_atm = ocnatm_airsea_solconst(ia,dum_i,dum_j)*dum_atm(ia)
              if (io == io_DIC) then
                 loc_ocn = carb(ic_conc_CO2,dum_i,dum_j,n_k)
                 ! calculate limitation of air-sea exchange of CO2 based on Revelle factor (see: Zeebe and Wolf-Gladwor [2001])
@@ -201,8 +201,8 @@ CONTAINS
              ! calculate gas exchange fluxes ocn->atm and atm->ocn
              ! NOTE: units of (mol yr-1)
              ! NOTE: the solubility coefficient must be converted to units of mol/(kg atm) from a Bunsen Solubility Coefficient
-             loc_focnatm(ia) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
-             loc_fatmocn(ia) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_atm
+             loc_focnatm(ia) = ocnatm_airsea_pv(ia,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
+             loc_fatmocn(ia) = ocnatm_airsea_pv(ia,dum_i,dum_j)*loc_A*loc_rho*loc_atm
              ! check for 'excessive' gas transfer (i.e., with the potential to lead to numerical instability)
              ! => rescale the fluxes to that the ocean surface is brought exactly into equilibrium
              ! NOTE: in the case of DIC, only CO2(aq) is considered

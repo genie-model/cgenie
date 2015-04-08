@@ -11,7 +11,6 @@
 MODULE genie_global
 
   USE genie_control
-  USE gem_cmn, ONLY: n_atm_all
   IMPLICIT NONE
 
   ! STANDARD VARAIBLE NAMES

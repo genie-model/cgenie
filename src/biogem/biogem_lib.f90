@@ -816,9 +816,9 @@ MODULE biogem_lib
   REAL::int_ocn_tot_M_sur_sig                                    !
   REAL::int_ocn_tot_V_sig                                        !
   REAL,DIMENSION(n_ocn)::int_ocn_sig                             !
-  REAL,DIMENSION(n_atm_all)::int_ocnatm_sig                          !
+  REAL, DIMENSION(:), ALLOCATABLE :: int_ocnatm_sig
   REAL,DIMENSION(n_sed)::int_fexport_sig                         !
-  REAL,DIMENSION(n_atm_all)::int_focnatm_sig                         !
+  REAL, DIMENSION(:), ALLOCATABLE :: int_focnatm_sig
   REAL,DIMENSION(n_sed)::int_focnsed_sig                         !
   REAL,DIMENSION(n_ocn)::int_fsedocn_sig                         !
   REAL,DIMENSION(n_ocn)::int_ocn_sur_sig                         !
@@ -835,8 +835,8 @@ MODULE biogem_lib
   REAL,DIMENSION(n_diag_bio)::int_diag_bio_sig                   ! biology diagnostics
   REAL,DIMENSION(n_diag_geochem)::int_diag_geochem_sig           ! geochemistry diagnostics
   REAL,DIMENSION(n_ocn)::int_diag_weather_sig                    ! weathering diagnostics
-  REAL,DIMENSION(n_atm_all)::int_diag_airsea_sig                     ! air-sea gas exchange diagnostics
-  REAL,DIMENSION(n_atm_all)::int_diag_forcing_sig                    ! forcing diagnostics
+  REAL, DIMENSION(:), ALLOCATABLE :: int_diag_airsea_sig         ! air-sea gas exchange diagnostics
+  REAL, DIMENSION(:), ALLOCATABLE :: int_diag_forcing_sig        ! forcing diagnostics
   REAL,DIMENSION(n_diag_misc_2D)::int_diag_misc_2D_sig           !
   ! misc
   real::int_misc_ocn_solfor_sig                                  !
