@@ -21,13 +21,13 @@ PROGRAM GENIE
   ! *** INITIALIZE ***
 
   CALL initialise_genie
+  IF (flag_atchem.or.flag_biogem.or.flag_sedgem.or.flag_rokgem) &
+       & CALL initialise_gem_wrapper
   CALL allocate_genie_global
   IF (flag_goldsteinocean) CALL initialise_goldocean_wrapper
   IF (flag_ebatmos) CALL initialise_embm_wrapper
   IF (flag_goldsteinseaice) CALL ini_goldsteinseaice_wrapper
   IF (flag_ents) CALL initialise_ents_wrapper
-  IF (flag_atchem.or.flag_biogem.or.flag_sedgem.or.flag_rokgem) &
-       & CALL initialise_gem_wrapper
   IF (flag_biogem) CALL initialise_biogem_wrapper
   IF (flag_atchem) THEN
      CALL initialise_atchem_wrapper

@@ -1716,14 +1716,6 @@ CONTAINS
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    print *, 'IAS:'
-    do ias = 1, n_atm_all
-       print *, ias, string_atm(ias), atm_select(ias), ias_ia(ias)
-    end do
-    print *, 'IA:'
-    do ia = 1, n_atm
-       print *, ia, ia_ias(ia)
-    end do
     DO ias = 1, n_atm_all
        IF (atm_select(ias) .AND. .NOT. atm_select(atm_dep(ias))) then
           CALL sub_report_error( &

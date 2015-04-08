@@ -26,8 +26,6 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm    ! atmosphere-surface tracer composition; atm grid
 
-    INTEGER :: ia
-
     print*,'======================================================='
     print*,' >>> Initialising ATCHEM atmospheric chem. module ...'
 
@@ -52,9 +50,7 @@ CONTAINS
     IF (ctrl_continuing) CALL sub_data_load_rst()
 
     dum_sfxsumatm = 0.0
-    DO ia = 1, n_atm
-       dum_sfcatm(ia_ias(ia),:,:) = atm(ia,:,:)
-    END DO
+    dum_sfcatm = atm
 
     CALL sub_init_slabbiosphere()
 
@@ -157,9 +153,7 @@ CONTAINS
 
     ! *** UPDATE INTERFACE ARRAYS ***
     ! return new <atm>
-    DO ia = 1, n_atm
-       dum_sfcatm(ia_ias(ia),:,:) = atm(ia,:,:)
-    END DO
+    dum_sfcatm = atm
     ! reset integrated flux array
     dum_sfxsumatm = 0.0
   END SUBROUTINE step_atchem
@@ -265,7 +259,11 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    dum_sfcatm1(3:,:,:) = dum_sfcatm(3:,:,:)
+    INTEGER :: ia, ias
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       dum_sfcatm1(ias,:,:) = dum_sfcatm(ia,:,:)
+    END DO
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmocn
   ! ******************************************************************************************************************************** !
@@ -300,7 +298,11 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    dum_sfcatm_lnd(3:,:,:) = dum_sfcatm(3:,:,:)
+    INTEGER :: ia, ias
+    DO ia = 3, n_atm
+       ias = ia_ias(ia)
+       dum_sfcatm_lnd(ias,:,:) = dum_sfcatm(ia,:,:)
+    END DO
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmlnd
   ! ******************************************************************************************************************************** !

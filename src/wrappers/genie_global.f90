@@ -434,7 +434,8 @@ CONTAINS
     STOP
   END SUBROUTINE alloc_die
 
-  SUBROUTINE allocate_genie_global()
+  SUBROUTINE allocate_genie_global
+    USE gem_cmn, ONLY: n_atm
     IMPLICIT NONE
 
     INTEGER :: status
@@ -1019,7 +1020,7 @@ CONTAINS
     ALLOCATE(el_photo(ilon1_ocn,ilat1_ocn),STAT=status)    ; el_photo = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfcatm(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
+    ALLOCATE(genie_sfcatm(n_atm,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
     ALLOCATE(genie_sfxsumatm(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)

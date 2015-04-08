@@ -94,8 +94,8 @@ CONTAINS
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
-    integer::loc_n_l_atm                                       ! number of selected tracers in the re-start file
-    integer,DIMENSION(n_atm_all)::loc_conv_iselected_ia            ! number of selected atmospheric tracers in restart
+    INTEGER :: loc_n_atm                                       ! number of selected tracers in the re-start file
+    INTEGER, DIMENSION(n_atm_all) :: dummy_ias_ia              ! number of selected atmospheric tracers in restart
     real,dimension(n_i,n_j)::loc_atm                           !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
@@ -167,7 +167,7 @@ CONTAINS
           call sub_closefile(loc_ncid)
        else
           OPEN(unit=in,status='old',file=loc_filename,form='unformatted',action='read',IOSTAT=ios)
-          read(unit=in) loc_n_l_atm, (loc_conv_iselected_ia(l),l=1,loc_n_l_atm), (atm(l,:,:),l=1,loc_n_l_atm)
+          read(unit=in) loc_n_atm, (dummy_ias_ia(l),l=1,loc_n_atm), (atm(l,:,:),l=1,loc_n_atm)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        endif
