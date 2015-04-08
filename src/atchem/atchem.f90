@@ -259,11 +259,7 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! NOTE: currently no summation done!
     ! NOTE: do not copy the first 2 tracers (SAT and humidity) as these values are set directly by the EMBM
-    INTEGER :: ia, ias
-    DO ia = 3, n_atm
-       ias = ia_ias(ia)
-       dum_sfcatm1(ias,:,:) = dum_sfcatm(ia,:,:)
-    END DO
+    dum_sfcatm1(3:,:,:) = dum_sfcatm(3:,:,:)
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !
   end SUBROUTINE cpl_comp_atmocn
   ! ******************************************************************************************************************************** !
@@ -320,11 +316,7 @@ CONTAINS
     ! ANY DIFFERENCE BETWEEN OCEAN AND ATMOSPHERE GRIDS WILL HAVE TO BE TAKEN INTO ACCOUNT HERE
     ! integrate flux to atmosphere <dum_sfxatm1> (mol m-2 s-1)
     ! running total <dum_sfxsumatm> is in units of (mol m-2)
-    INTEGER :: ia, ias
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       dum_sfxsumatm(ia,:,:) = dum_sfxsumatm(ia,:,:) + dum_dts * dum_sfxatm1(ias,:,:)
-    END DO
+    dum_sfxsumatm = dum_sfxsumatm + dum_dts * dum_sfxatm1
     ! zero flux
     dum_sfxatm1 = 0.0
     ! /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ !

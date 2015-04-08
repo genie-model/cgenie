@@ -1169,10 +1169,10 @@ CONTAINS
              DO j=1,n_j
                 SELECT CASE (atm_type(ias))
                 CASE (0,1)
-                   loc_ij(i,j) = int_sfcatm1_timeslice(ias,i,j)/int_t_timeslice
+                   loc_ij(i,j) = int_sfcatm1_timeslice(ia,i,j)/int_t_timeslice
                 case (n_itype_min:n_itype_max)
-                   loc_tot  = int_sfcatm1_timeslice(atm_dep(ias),i,j)/int_t_timeslice
-                   loc_frac = int_sfcatm1_timeslice(ias,i,j)/int_t_timeslice
+                   loc_tot  = int_sfcatm1_timeslice(ias_ia(atm_dep(ias)),i,j)/int_t_timeslice
+                   loc_frac = int_sfcatm1_timeslice(ia,i,j)/int_t_timeslice
                    loc_standard = const_standards(atm_type(ias))
                    loc_ij(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                 END SELECT
@@ -1200,11 +1200,11 @@ CONTAINS
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
              DO j=1,n_j
-                loc_tot  = int_sfcatm1_timeslice(ias_pCO2,i,j)/int_t_timeslice
-                loc_frac = int_sfcatm1_timeslice(ias_pCO2_13C,i,j)/int_t_timeslice
+                loc_tot  = int_sfcatm1_timeslice(ia_pCO2,i,j)/int_t_timeslice
+                loc_frac = int_sfcatm1_timeslice(ia_pCO2_13C,i,j)/int_t_timeslice
                 loc_standard = const_standards(atm_type(ias_pCO2_13C))
                 loc_d13C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-                loc_frac = int_sfcatm1_timeslice(ias_pCO2_14C,i,j)/int_t_timeslice
+                loc_frac = int_sfcatm1_timeslice(ia_pCO2_14C,i,j)/int_t_timeslice
                 loc_standard = const_standards(atm_type(ias_pCO2_14C))
                 loc_d14C = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                 loc_ij(i,j) = fun_convert_delta14CtoD14C(loc_d13C,loc_d14C)
@@ -1225,7 +1225,7 @@ CONTAINS
           ! air-sea delta pCO2
           loc_ij(:,:) = const_real_zero
           loc_ij(:,:) = phys_ocn(ipo_mask_ocn,:,:,n_k) * &
-               & (int_carb_timeslice(ic_fug_CO2,:,:,n_k) - int_sfcatm1_timeslice(ias_pCO2,:,:))/int_t_timeslice
+               & (int_carb_timeslice(ic_fug_CO2,:,:,n_k) - int_sfcatm1_timeslice(ia_pCO2,:,:))/int_t_timeslice
           loc_unitsname = 'atm'
           call sub_adddef_netcdf(loc_iou,3,'atm_dpCO2','air-sea pCO2 diff',trim(loc_unitsname),const_real_zero,const_real_zero)
           call sub_putvar2d('atm_dpCO2',loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_mask_surf)
@@ -1915,7 +1915,7 @@ CONTAINS
           ias = ia_ias(l)
           SELECT CASE (atm_type(ias))
           CASE (1)
-             loc_ij(:,:) = int_diag_airsea_timeslice(ias,:,:)/int_t_timeslice
+             loc_ij(:,:) = int_diag_airsea_timeslice(ia,:,:)/int_t_timeslice
              loc_unitsname = 'mol yr-1'
              call sub_adddef_netcdf(                                                                                     &
                   & loc_iou,3,'fseaair_'//trim(string_atm(ias)),trim(string_atm(ias))//': net sea->air gas exchange flux', &
@@ -1932,14 +1932,14 @@ CONTAINS
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_carb) then
        if (opt_select(iopt_select_ocnatm_CO2)) then
-          loc_ij(:,:) = (int_diag_airsea_timeslice(ias_pCO2,:,:)/phys_ocnatm(ipoa_A,:,:))/int_t_timeslice
+          loc_ij(:,:) = (int_diag_airsea_timeslice(ia_pCO2,:,:)/phys_ocnatm(ipoa_A,:,:))/int_t_timeslice
           loc_unitsname = 'mol m-2 yr-1'
           call sub_adddef_netcdf(                                                    &
                & loc_iou,3,'fseaair_pCO2','pCO2 net sea->air gas exchange flux density', &
                & trim(loc_unitsname),const_real_zero,const_real_zero                 &
                & )
           call sub_putvar2d('fseaair_pCO2',loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_mask)
-          loc_ij(:,:) = (int_diag_airsea_timeslice(ias_pCO2,:,:)/int_t_timeslice) * &
+          loc_ij(:,:) = (int_diag_airsea_timeslice(ia_pCO2,:,:)/int_t_timeslice) * &
                & (5.0/phys_ocnatm(ipoa_dlon,:,:))*(4.0/phys_ocnatm(ipoa_dlat,:,:))
           loc_unitsname = 'mol (5x4)-1 yr-1'
           call sub_adddef_netcdf(                                                                &

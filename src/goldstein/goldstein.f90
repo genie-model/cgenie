@@ -200,35 +200,37 @@ CONTAINS
     CALL jbar
     CALL ubarsolv(ub, psi)
 
-    ! Find island path integral due to wind and jbar terms
-    DO isl = 1, isles
-       CALL island(ub, erisl(isl,isles+1), isl, 1)
-    END DO
-
-    ! Solve system of simultaneous equations. Zero division here might
-    ! suggest not enough islands in the .psiles file
-    IF (isles > 1) THEN
-       CALL matmult(isles, erisl(:,1:isles), erisl(:,isles+1))
+    IF (isles > 0) THEN
+       ! Find island path integral due to wind and jbar terms
        DO isl = 1, isles
-          psibc(isl) = -erisl(isl,isles+1)
+          CALL island(ub, erisl(isl,isles+1), isl, 1)
        END DO
-    ELSE
-       psibc(1) = -erisl(1,2) / erisl(1,1)
+
+       ! Solve system of simultaneous equations. Zero division here might
+       ! suggest not enough islands in the .psiles file
+       IF (isles > 1) THEN
+          CALL matmult(isles, erisl(:,1:isles), erisl(:,isles+1))
+          DO isl = 1, isles
+             psibc(isl) = -erisl(isl,isles+1)
+          END DO
+       ELSE
+          psibc(1) = -erisl(1,2) / erisl(1,1)
+       END IF
+
+       DO j = 1, maxj
+          DO i = 0, maxi+1
+             ub(1,i,j) = ub(1,i,j) + SUM(ubisl(1,i,j,1:isles) * psibc(1:isles))
+             ub(2,i,j) = ub(2,i,j) + SUM(ubisl(2,i,j,1:isles) * psibc(1:isles))
+          END DO
+       END DO
+
+       ! Update diagnostic psi, not always necessary
+       DO j = 0, maxj
+          DO i = 0, maxi
+             psi(i,j) = psi(i,j) + SUM(psisl(i,j,1:isles) * psibc(1:isles))
+          END DO
+       END DO
     END IF
-
-    DO j = 1, maxj
-       DO i = 0, maxi+1
-          ub(1,i,j) = ub(1,i,j) + SUM(ubisl(1,i,j,1:isles) * psibc(1:isles))
-          ub(2,i,j) = ub(2,i,j) + SUM(ubisl(2,i,j,1:isles) * psibc(1:isles))
-       END DO
-    END DO
-
-    ! Update diagnostic psi, not always necessary
-    DO j = 0, maxj
-       DO i = 0, maxi
-          psi(i,j) = psi(i,j) + SUM(psisl(i,j,1:isles) * psibc(1:isles))
-       END DO
-    END DO
 
     ! Update velocities
     CALL velc
@@ -1550,10 +1552,18 @@ CONTAINS
     IF (status /= 0) CALL die("Could not allocate memory")
     ALLOCATE(ubisl(2,0:maxi+1,0:maxj,isles),STAT=status)   ; ubisl = 0.0
     IF (status /= 0) CALL die("Could not allocate memory")
-    ALLOCATE(erisl(isles,isles+1),STAT=status)             ; erisl = 0.0
-    IF (status /= 0) CALL die("Could not allocate memory")
-    ALLOCATE(psibc(isles),STAT=status)                     ; psibc = 0.0
-    IF (status /= 0) CALL die("Could not allocate memory")
+    IF (isles > 0) THEN
+       ALLOCATE(erisl(isles,isles+1),STAT=status)
+       IF (status /= 0) CALL die("Could not allocate memory")
+       ALLOCATE(psibc(isles),STAT=status)                     ; psibc = 0.0
+       IF (status /= 0) CALL die("Could not allocate memory")
+    ELSE
+       ALLOCATE(erisl(1,2),STAT=status)
+       IF (status /= 0) CALL die("Could not allocate memory")
+       ALLOCATE(psibc(1),STAT=status)
+       IF (status /= 0) CALL die("Could not allocate memory")
+    END IF
+    erisl = 0.0 ; psibc = 0.0
 
     ! read island path integral data, read isles+1 paths only if want last path
     ! for testing

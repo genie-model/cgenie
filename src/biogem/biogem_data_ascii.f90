@@ -1742,7 +1742,7 @@ CONTAINS
        SELECT CASE (atm_type(ias))
        CASE (1)
           loc_atm_ave = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
           write(unit=out,fmt='(A13,A16,A3,f10.3,A15,A5,E15.7,A4)',iostat=ios) &
                & ' Atmospheric ',string_atm(ias),' : ', &
                & conv_mol_umol*loc_atm_ave, &
@@ -1753,9 +1753,9 @@ CONTAINS
           call check_iostat(ios,__LINE__,__FILE__)
        case (n_itype_min:n_itype_max)
           loc_tot = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(atm_dep(ias),:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_ia(atm_dep(ias)),:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_frac =  &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_standard = const_standards(atm_type(ias))
           loc_atm_ave = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
@@ -2006,7 +2006,7 @@ CONTAINS
        SELECT CASE (atm_type(ias))
        CASE (1)
           loc_atm_ave = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ias,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ia,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
                & ' Atmospheric ',string_atm(ias),' : ', &
                & conv_mol_umol*loc_atm_ave, &
@@ -2014,9 +2014,9 @@ CONTAINS
           call check_iostat(ios,__LINE__,__FILE__)
        case (n_itype_min:n_itype_max)
           loc_tot = &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(atm_dep(ias),:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ias_ia(atm_dep(ias)),:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_frac =  &
-               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ias,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
+               & SUM(phys_ocnatm(ipoa_A,:,:)*int_sfcatm1_timeslice(ia,:,:)/int_t_timeslice)/SUM(phys_ocnatm(ipoa_A,:,:))
           loc_standard = const_standards(atm_type(ias))
           loc_atm_ave = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           write(unit=out,fmt='(A13,A16,A3,f10.3,A5)',iostat=ios) &
@@ -2224,8 +2224,8 @@ CONTAINS
     ! total ocean-atmosphere interface area
     loc_ocnatm_tot_A = sum(phys_ocnatm(ipoa_A,:,:))
     ! calculate local isotopic variables
-    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
-    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2_13C,:,:))/loc_ocnatm_tot_A
+    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
+    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2_13C,:,:))/loc_ocnatm_tot_A
     loc_standard = const_standards(atm_type(ias_pCO2_13C))
     if (loc_frac < const_real_nullsmall) then
        loc_frac = fun_calc_isotope_fraction(0.0,loc_standard)*loc_tot
@@ -2257,7 +2257,7 @@ CONTAINS
              par_misc_t_echo_header = .FALSE.
           end if
           ! calculate local variables
-          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
+          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
           ! print values
           if (dum_gemlite) then
              PRINT'(A5,F11.2,3X,F11.3,F9.3,3X,F9.3,F8.3,F8.3,F8.3,3X,F11.3,F11.3)', &
@@ -2309,7 +2309,7 @@ CONTAINS
              par_misc_t_echo_header = .FALSE.
           end if
           ! calculate local variables
-          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/loc_ocnatm_tot_A
+          loc_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
           ! print values
           if (dum_gemlite) then
              PRINT'(A5,F11.2,3X,F11.3,F9.3,3X,F8.3,F8.3,F8.3,3X,F11.3,F11.3)', &

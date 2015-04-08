@@ -2601,6 +2601,7 @@ CONTAINS
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, flag_ents, lowestlu2_atm, lowestlv3_atm)
     USE genie_util, ONLY: check_unit, check_iostat
+    USE gem_cmn, ONLY: atm_select, ias_pCO2, ias_pCH4, ias_pN2O, ia_pCO2, ia_pCH4, ia_pN2O
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
     REAL, DIMENSION(:,:), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
@@ -2879,20 +2880,23 @@ CONTAINS
     IF (atchem_radfor == 'y' .OR. atchem_radfor == 'Y') THEN
        DO j = 1, maxj
           DO i = 1, maxi
-             IF (dum_sfcatm(3,i,j) < (co20 / 1000.0)) THEN
+             IF (.NOT. atm_select(ias_pCO2) .OR. &
+                  & dum_sfcatm(ia_pCO2,i,j) < (co20 / 1000.0)) THEN
                 co2(i,j) = co20
              ELSE
-                co2(i,j) = dum_sfcatm(3,i,j)
+                co2(i,j) = dum_sfcatm(ia_pCO2,i,j)
              END IF
-             IF (dum_sfcatm(10,i,j) < (ch40 / 1000.0)) THEN
+             IF (.NOT. atm_select(ias_pCH4) .OR. &
+                  & dum_sfcatm(ia_pCH4,i,j) < (ch40 / 1000.0)) THEN
                 ch4(i,j) = ch40
              ELSE
-                ch4(i,j) = dum_sfcatm(10,i,j)
+                ch4(i,j) = dum_sfcatm(ia_pCH4,i,j)
              END IF
-             IF (dum_sfcatm(14,i,j) < (n2o0 / 1000.0)) THEN
+             IF (.NOT. atm_select(ias_pN2O) .OR. &
+                  & dum_sfcatm(ia_pN2O,i,j) < (n2o0 / 1000.0)) THEN
                 n2o(i,j) = n2o0
              ELSE
-                n2o(i,j) = dum_sfcatm(14,i,j)
+                n2o(i,j) = dum_sfcatm(ia_pN2O,i,j)
              END IF
           END DO
        END DO

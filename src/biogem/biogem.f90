@@ -93,7 +93,7 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_geochem(n_diag_geochem,n_i,n_j,n_k),STAT=alloc_error) ; diag_geochem = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(diag_airsea(n_atm_all,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
+    ALLOCATE(diag_airsea(n_atm,n_i,n_j),STAT=alloc_error)               ; diag_airsea = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(diag_forcing(n_atm_all,n_i,n_j),STAT=alloc_error)              ; diag_forcing = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -120,9 +120,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_carbisor_timeslice(n_carbisor,n_i,n_j,n_k),STAT=alloc_error)         ; int_carbisor_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_sfcatm1_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)                   ; int_sfcatm1_timeslice = 0.0
+    ALLOCATE(int_sfcatm1_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_sfcatm1_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_focnatm_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
+    ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_sfcsed1_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -148,7 +148,7 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_diag_weather_timeslice(n_ocn,n_i,n_j),STAT=alloc_error)              ; int_diag_weather_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_diag_airsea_timeslice(n_atm_all,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
+    ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_restore_ocn_k1 = 0
@@ -286,8 +286,8 @@ CONTAINS
     ! *** set-up biogem-sedgem and biogem-atchem interfacing ***
     ! ---------------------------------------------------------- !
     ! ---------------------------------------------------------- ! initialize interface arrays
-    dum_sfcatm1(:,:,:) = 0.0
-    dum_sfxatm1(:,:,:) = 0.0
+    dum_sfcatm1 = 0.0
+    dum_sfxatm1 = 0.0
     dum_sfcocn1(:,:,:) = 0.0
     dum_sfxocn1(:,:,:) = 0.0
     dum_sfcsed1(:,:,:) = 0.0
@@ -554,15 +554,15 @@ CONTAINS
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_focn                 ! local ocean tracer flux array
     REAL,DIMENSION(n_sed,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
-    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
-    REAL,DIMENSION(n_atm_all)::loc_datm_restore                        !
+    REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
+    REAL,DIMENSION(n_atm)::loc_datm_restore                        !
     REAL,DIMENSION(n_ocn)::loc_force_flux_dust                     !
     real::loc_ocn_tot_M,loc_ocn_rtot_M                             ! ocean mass and reciprocal
     real::loc_ocn_tot_V,loc_ocn_rtot_V                             ! ocean volume  and reciprocal
     real::loc_fS,loc_fT                                            !
     REAL,DIMENSION(n_ocn)::loc_force_restore_ocn_tmod              ! relaxation modifier
-    REAL,DIMENSION(n_atm_all)::loc_force_restore_atm_tmod              ! relaxation modifier
-    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency), units (mol yr-1)
+    REAL,DIMENSION(n_atm)::loc_force_restore_atm_tmod              ! relaxation modifier
+    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency), units (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_frokocn                   ! local rok->ocean change (ocn tracer currency), units (mol)
@@ -658,7 +658,7 @@ CONTAINS
        DO ia = 3, n_atm
           ias = ia_ias(ia)
           IF (force_restore_atm_select(ias)) THEN
-             loc_force_restore_atm_tmod(ias) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ias))
+             loc_force_restore_atm_tmod(ia) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ias))
           END IF
        END DO
        ! OCEAN TRACERS
@@ -1102,15 +1102,15 @@ CONTAINS
                          ! also catch 'null' isotopic values
                          SELECT CASE (atm_type(ia))
                          CASE (1)
-                            if (force_restore_atm(ias,i,j) < 0.0) force_restore_atm(ias,i,j) = dum_sfcatm1(ias,i,j)
+                            if (force_restore_atm(ias,i,j) < 0.0) force_restore_atm(ias,i,j) = dum_sfcatm1(ia,i,j)
                          case default
-                            if (force_restore_atm(ias,i,j) <= const_real_null) force_restore_atm(ias,i,j) = dum_sfcatm1(ias,i,j)
+                            if (force_restore_atm(ias,i,j) <= const_real_null) force_restore_atm(ias,i,j) = dum_sfcatm1(ia,i,j)
                          end select
                          ! set restoring flux
-                         loc_datm_restore(ias) = (force_restore_atm(ias,i,j) - dum_sfcatm1(ias,i,j))*loc_force_restore_atm_tmod(ias)
-                         locij_fatm(ias,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ias)*loc_rdtyr
+                         loc_datm_restore(ia) = (force_restore_atm(ias,i,j) - dum_sfcatm1(ia,i,j))*loc_force_restore_atm_tmod(ia)
+                         locij_fatm(ia,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ia)*loc_rdtyr
                          ! record (atmopsheric) flux (diagnosed from restoring) forcing
-                         diag_forcing(ias,i,j) = locij_fatm(ias,i,j)
+                         diag_forcing(ias,i,j) = locij_fatm(ia,i,j)
                       END IF
                    end IF
                 END DO
@@ -1129,7 +1129,7 @@ CONTAINS
                          loc_tot_i = conv_atm_ocn_i(0,ias)
                          do loc_i=1,loc_tot_i
                             io = conv_atm_ocn_i(loc_i,ias)
-                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ias,i,j)*dum_sfcatm1(ias,i,j)
+                            force_restore_locn(io2l(io),i,j,n_k) = ocnatm_airsea_solconst(ias,i,j)*dum_sfcatm1(ia,i,j)
                             ! ### INSERT CODE TO DEAL WITH RELATED ISOTOPE COMPOSITION BOUNDARY CONDITIONS ######################### !
                             !
                             ! ###################################################################################################### !
@@ -1194,7 +1194,7 @@ CONTAINS
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
                    IF (force_flux_atm_select(ias)) THEN
-                      locij_fatm(ias,i,j) = locij_fatm(ias,i,j) + force_flux_atm(ias,i,j)
+                      locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ias,i,j)
                       ! record (atmopsheric) flux forcing
                       diag_forcing(ias,i,j) = force_flux_atm(ias,i,j)
                    END IF
@@ -1250,7 +1250,7 @@ CONTAINS
                    IF (force_restore_atm_select(ias_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
                       ! (2a) ocean ALK [GEOENGINEEGING of pCO2]
                       ! NOTE: re-scale the 'target' in case the atm flux forcing has been scaled (same param applied to both)
-                      loc_force_actual = dum_sfcatm1(ias_pCO2,i,j)
+                      loc_force_actual = dum_sfcatm1(ia_pCO2,i,j)
                       loc_force_target = force_restore_atm(ias_pCO2,i,j)/par_atm_force_scale_val(ias_pCO2)
                       ! calculate the sign of the ALK input
                       if (loc_force_target < loc_force_actual) then
@@ -1328,9 +1328,9 @@ CONTAINS
                 else
                    ! (2) INVERSIONS: ATMOSPHERIC pCO2
                    IF (force_restore_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2)) THEN
-                      locij_fatm(ias_pCO2,i,j) = 0.0
+                      locij_fatm(ia_pCO2,i,j) = 0.0
                       IF (force_restore_atm_select(ias_pCO2_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) THEN
-                         locij_fatm(ias_pCO2_13C,i,j) = 0.0
+                         locij_fatm(ia_pCO2_13C,i,j) = 0.0
                          ! (2a) atmosphere pCO2-13C
                          ! NOTE: this code has a similar effect of restoring forcing, except that it allows
                          !       isotopic properties of a target signal to be followed via input/loss of carbon with a prescribed d13C
@@ -1338,7 +1338,7 @@ CONTAINS
                          loc_frac = force_flux_atm(ias_pCO2_13C,i,j)/force_flux_atm(ias_pCO2,i,j)
                          loc_standard = const_standards(atm_type(ias_pCO2_13C))
                          loc_delta_actual = fun_calc_isotope_delta( &
-                              & dum_sfcatm1(ias_pCO2,i,j),dum_sfcatm1(ias_pCO2_13C,i,j),loc_standard,.FALSE.,const_real_null &
+                              & dum_sfcatm1(ia_pCO2,i,j),dum_sfcatm1(ia_pCO2_13C,i,j),loc_standard,.FALSE.,const_real_null &
                               & )
                          loc_delta_target = fun_calc_isotope_delta( &
                               & force_restore_atm(ias_pCO2,i,j),force_restore_atm(ias_pCO2_13C,i,j), &
@@ -1365,21 +1365,21 @@ CONTAINS
                          end If
                          ! calculate flux of CO2 to atmosphere with specified d13C to approach atmospheric d13C target
                          ! NOTE: units of (mol yr-1)
-                         locij_fatm(ias_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
-                         locij_fatm(ias_pCO2_13C,i,j) = loc_frac*locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ias_pCO2_13C,i,j)
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                         locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
                       else
                          ! (2b) atmospheric pCO2
                          ! NOTE: this code has a similar effect of restoring forcing, except that it allows
                          !       the isotopic properties of the flux to be prescribed rather than just the final isotopic state
                          ! NOTE: the threshold is set via a prescribed restoring signal
-                         If (dum_sfcatm1(ias_pCO2,i,j) > force_restore_atm(ias_pCO2,i,j)) then
-                            locij_fatm(ias_pCO2,i,j)     = 0.0
-                            locij_fatm(ias_pCO2_13C,i,j) = 0.0
+                         If (dum_sfcatm1(ia_pCO2,i,j) > force_restore_atm(ias_pCO2,i,j)) then
+                            locij_fatm(ia_pCO2,i,j)     = 0.0
+                            locij_fatm(ia_pCO2_13C,i,j) = 0.0
                          else
-                            locij_fatm(ias_pCO2,i,j)     = force_flux_atm(ias_pCO2,i,j)
-                            locij_fatm(ias_pCO2_13C,i,j) = force_flux_atm(ias_pCO2_13C,i,j)
+                            locij_fatm(ia_pCO2,i,j)     = force_flux_atm(ias_pCO2,i,j)
+                            locij_fatm(ia_pCO2_13C,i,j) = force_flux_atm(ias_pCO2_13C,i,j)
                          end If
                       end if
                    elseif ( &
@@ -1443,13 +1443,13 @@ CONTAINS
                          locijk_focn(io_DIC_13C,i,j,n_k) = loc_frac*locijk_focn(io_DIC,i,j,n_k)
                          diag_misc_2D(idiag_misc_2D_FDIC,i,j)     = locijk_focn(io_DIC,i,j,n_k)
                          diag_misc_2D(idiag_misc_2D_FDIC_13C,i,j) = locijk_focn(io_DIC_13C,i,j,n_k)
-                         locij_fatm(ias_pCO2,i,j) = 0.0
-                         locij_fatm(ias_pCO2_13C,i,j) = 0.0
+                         locij_fatm(ia_pCO2,i,j) = 0.0
+                         locij_fatm(ia_pCO2_13C,i,j) = 0.0
                       elseIF (force_flux_atm_select(ias_pCO2_13C)) then
-                         locij_fatm(ias_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
-                         locij_fatm(ias_pCO2_13C,i,j) = loc_frac*locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ias_pCO2_13C,i,j)
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                         locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
                          locijk_focn(io_DIC,i,j,n_k) = 0.0
                          locijk_focn(io_DIC_13C,i,j,n_k) = 0.0
                       end IF
@@ -1558,10 +1558,10 @@ CONTAINS
                          end IF
                          ! calculate flux of CO2 to atmosphere with specified d13C to approach atmospheric d13C target
                          ! NOTE: units of (mol yr-1)
-                         locij_fatm(ias_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
-                         locij_fatm(ias_pCO2_13C,i,j) = loc_frac*locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ias_pCO2,i,j)
-                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ias_pCO2_13C,i,j)
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                         locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
+                         diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
                       end if
                    end if
                 end IF
@@ -1579,11 +1579,11 @@ CONTAINS
                 ! set local flux arrays for the updating of ocean and atmosphere reservoirs
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
-                   locij_fatm(ias,i,j) = locij_fatm(ias,i,j) + locij_focnatm(ias,i,j)
+                   locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + locij_focnatm(ia,i,j)
                    loc_tot_i = conv_atm_ocn_i(0,ias)
                    do loc_i=1,loc_tot_i
                       io = conv_atm_ocn_i(loc_i,ias)
-                      locijk_focn(io,i,j,n_k) = locijk_focn(io,i,j,n_k) - conv_atm_ocn(io,ias)*locij_focnatm(ias,i,j)
+                      locijk_focn(io,i,j,n_k) = locijk_focn(io,i,j,n_k) - conv_atm_ocn(io,ias)*locij_focnatm(ia,i,j)
                    end do
                 end DO
                 diag_airsea(:,i,j) = locij_focnatm(:,i,j)
@@ -1593,18 +1593,18 @@ CONTAINS
                 ! NOTE: only do anythign if there is O2 in the atmosphere!!!
                 if (ocn_select(io_H2S)) then
                    IF (                                                       &
-                        & (locij_focnatm(ias_pH2S,i,j) > const_real_nullsmall) &
+                        & (locij_focnatm(ia_pH2S,i,j) > const_real_nullsmall) &
                         &  .AND.                                              &
-                        & (dum_sfcatm1(ias_pO2,i,j) > const_real_nullsmall)    &
+                        & (dum_sfcatm1(ia_pO2,i,j) > const_real_nullsmall)    &
                         & ) THEN
                       ! mass balance adjustments
-                      locijk_focn(io_ALK,i,j,n_k) = locijk_focn(io_ALK,i,j,n_k) - 2.0*locij_focnatm(ias_pH2S,i,j)
-                      locijk_focn(io_SO4,i,j,n_k) = locijk_focn(io_SO4,i,j,n_k) + locij_focnatm(ias_pH2S,i,j)
-                      locij_fatm(ias_pO2,i,j)  = locij_fatm(ias_pO2,i,j) - 2.0*locij_focnatm(ias_pH2S,i,j)
-                      locij_fatm(ias_pH2S,i,j) = 0.0
+                      locijk_focn(io_ALK,i,j,n_k) = locijk_focn(io_ALK,i,j,n_k) - 2.0*locij_focnatm(ia_pH2S,i,j)
+                      locijk_focn(io_SO4,i,j,n_k) = locijk_focn(io_SO4,i,j,n_k) + locij_focnatm(ia_pH2S,i,j)
+                      locij_fatm(ia_pO2,i,j)  = locij_fatm(ia_pO2,i,j) - 2.0*locij_focnatm(ia_pH2S,i,j)
+                      locij_fatm(ia_pH2S,i,j) = 0.0
                       ! update flux reporting
-                      locij_focnatm(ias_pO2,i,j)  = locij_focnatm(ias_pO2,i,j) - 2.0*locij_focnatm(ias_pH2S,i,j)
-                      locij_focnatm(ias_pH2S,i,j) = 0.0
+                      locij_focnatm(ia_pO2,i,j)  = locij_focnatm(ia_pO2,i,j) - 2.0*locij_focnatm(ia_pH2S,i,j)
+                      locij_focnatm(ia_pH2S,i,j) = 0.0
                       ! ### INSERT CODE FOR ISOTOPES ############################################################################### !
                       !
                       ! ############################################################################################################ !
@@ -1614,8 +1614,8 @@ CONTAINS
                    ! record air-sea gas exchange coefficient for posterity
                    if ((1.0 - phys_ocnatm(ipoa_seaice,i,j)) > const_real_nullsmall) then
                       phys_ocnatm(ipoa_KCO2,i,j) = conv_umol_mol*phys_ocn(ipo_rA,i,j,n_k)* &
-                           & (locij_focnatm(ias_pCO2,i,j)/(1.0 - phys_ocnatm(ipoa_seaice,i,j)))/ &
-                           & ((carb(ic_conc_CO2,i,j,n_k)/ocnatm_airsea_solconst(ias_pCO2,i,j)) - dum_sfcatm1(ias_pCO2,i,j))
+                           & (locij_focnatm(ia_pCO2,i,j)/(1.0 - phys_ocnatm(ipoa_seaice,i,j)))/ &
+                           & ((carb(ic_conc_CO2,i,j,n_k)/ocnatm_airsea_solconst(ias_pCO2,i,j)) - dum_sfcatm1(ia_pCO2,i,j))
                    end if
                 end IF
 
@@ -1694,10 +1694,7 @@ CONTAINS
                 ! NOTE: convert units from (mol yr-1) to (mol m-2 s-1)
                 ! NOTE: update external interface array with TOTAL flux to atmosphere
                 !       (i.e., due to both air-sea exchange and any forcing of the atmosphere)
-                DO ia = 3, n_atm
-                   ias = ia_ias(ia)
-                   dum_sfxatm1(ias,i,j) = phys_ocnatm(ipoa_rA,i,j)*conv_s_yr*locij_fatm(ias,i,j)
-                end do
+                dum_sfxatm1(:,i,j) = phys_ocnatm(ipoa_rA,i,j)*conv_s_yr*locij_fatm(:,i,j)
                 ! (2) set bottom-water tracers
                 ! NOTE: estimate Ca and borate concentrations from salinity (if not selected and therefore not explicitly treated)
                 DO l=1,n_l_ocn
@@ -1758,9 +1755,9 @@ CONTAINS
                 end IF
 
                 IF (force_restore_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2)) THEN
-                   locij_fatm(ias_pCO2,i,j) = 0.0
-                   if (force_restore_atm_select(ias_pCO2_13C)) locij_fatm(ias_pCO2_13C,i,j) = 0.0
-                   if (force_restore_atm_select(ias_pCO2_14C)) locij_fatm(ias_pCO2_14C,i,j) = 0.0
+                   locij_fatm(ia_pCO2,i,j) = 0.0
+                   if (force_restore_atm_select(ias_pCO2_13C)) locij_fatm(ia_pCO2_13C,i,j) = 0.0
+                   if (force_restore_atm_select(ias_pCO2_14C)) locij_fatm(ia_pCO2_14C,i,j) = 0.0
                 end if
              end if
 
@@ -2223,7 +2220,7 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(IN) :: dum_sfcatm1
     REAL, INTENT(INOUT) :: dum_pCO2
     ! calculate pCO2
-    dum_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias_pCO2,:,:))/sum(phys_ocnatm(ipoa_A,:,:))
+    dum_pCO2 = conv_mol_umol*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/sum(phys_ocnatm(ipoa_A,:,:))
   END SUBROUTINE diag_biogem_pCO2
 
 
@@ -2352,7 +2349,7 @@ CONTAINS
        ! ########################################################################################################################## !
        if (error_stop) par_misc_t_echo_header = .TRUE.
        CALL sub_calc_psi(phys_ocn(ipo_gu:ipo_gw,:,:,:),loc_opsi,loc_opsia,loc_opsip,loc_zpsi,loc_opsia_minmax,loc_opsip_minmax)
-       call sub_echo_runtime(loc_yr,loc_opsi_scale,loc_opsia_minmax,dum_sfcatm1(:,:,:),dum_gemlite)
+       call sub_echo_runtime(loc_yr,loc_opsi_scale,loc_opsia_minmax,dum_sfcatm1,dum_gemlite)
        ! carry out tracer audit + echo max,min ocean tracer values (and location)
        ! NOTE: use audit switch to turn on/off
        IF (ctrl_audit) THEN
@@ -2380,12 +2377,12 @@ CONTAINS
     LOGICAL, INTENT(IN) :: dum_save                         ! average and save data?
     LOGICAL, INTENT(IN) :: dum_gemlite                      ! in GEMlite phase of cycle?
 
-    INTEGER::i,j,k,l,io,ia,is,ias
+    INTEGER::i,j,k,l,io,is
     integer::loc_k1                                                !
     real::loc_t,loc_dts,loc_dtyr                                   !
     real::loc_yr_save                                              !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi,loc_opsia,loc_opsip !
-    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
+    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
@@ -2427,10 +2424,7 @@ CONTAINS
                       IF (n_k >= loc_k1) THEN
                          ! ocn->atm
                          ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                         DO ia = 3, n_atm
-                            ias = ia_ias(ia)
-                            locij_focnatm(ias,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ias,i,j)
-                         end do
+                         locij_focnatm(3:n_atm,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(3:n_atm,i,j)
                          ! ocn->sed
                          ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
                          DO l=1,n_l_sed
@@ -2530,8 +2524,8 @@ CONTAINS
              int_carbconst_timeslice(:,:,:,:)  = int_carbconst_timeslice(:,:,:,:)  + loc_dtyr*carbconst(:,:,:,:)
              int_carbisor_timeslice(:,:,:,:)   = int_carbisor_timeslice(:,:,:,:)   + loc_dtyr*carbisor(:,:,:,:)
              ! update time slice data - ocean-atmosphere interface
-             int_sfcatm1_timeslice(:,:,:)      = int_sfcatm1_timeslice(:,:,:)     + loc_dtyr*dum_sfcatm1(:,:,:)
-             int_focnatm_timeslice(:,:,:)      = int_focnatm_timeslice(:,:,:)     + loc_dtyr*locij_focnatm(:,:,:)
+             int_sfcatm1_timeslice = int_sfcatm1_timeslice + loc_dtyr * dum_sfcatm1
+             int_focnatm_timeslice = int_focnatm_timeslice + loc_dtyr * locij_focnatm
              int_phys_ocnatm_timeslice(:,:,:)  = int_phys_ocnatm_timeslice(:,:,:) + loc_dtyr*phys_ocnatm(:,:,:)
              ! update time slice data - ocean-sediment interface
              int_sfcsed1_timeslice(:,:,:)  = int_sfcsed1_timeslice(:,:,:) + loc_dtyr*dum_sfcsed1(:,:,:)
@@ -2553,7 +2547,7 @@ CONTAINS
              else
                 int_diag_weather_timeslice(:,:,:)   = int_diag_weather_timeslice(:,:,:)   + dum_sfxsumrok1(:,:,:)
              end if
-             int_diag_airsea_timeslice(:,:,:)    = int_diag_airsea_timeslice(:,:,:)    + diag_airsea(:,:,:)
+             int_diag_airsea_timeslice = int_diag_airsea_timeslice + diag_airsea
 
           end if if_save3
 
@@ -2626,7 +2620,7 @@ CONTAINS
                 end if
                 ! save global diagnostics
                 If (ctrl_data_save_GLOBAL) call sub_data_save_global_av()
-                If (ctrl_data_save_GLOBAL .AND. ctrl_data_save_derived) call sub_data_save_global_snap(loc_t,dum_sfcatm1(:,:,:))
+                If (ctrl_data_save_GLOBAL .AND. ctrl_data_save_derived) call sub_data_save_global_snap(loc_t,dum_sfcatm1)
 
              end if if_save3b
 
@@ -2672,7 +2666,7 @@ CONTAINS
     real::loc_yr,loc_yr_save                                       !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi                 !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsia,loc_opsip               !
-    REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
+    REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
     REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_ocn_ben                   ! local benthic ocean composition
@@ -2752,10 +2746,7 @@ CONTAINS
                    IF (n_k >= loc_k1) THEN
                       ! ocn->atm
                       ! NOTE: convert units from (mol m-2 s-1) to (mol yr-1)
-                      DO ia = 3, n_atm
-                         ias = ia_ias(ia)
-                         locij_focnatm(ias,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(ias,i,j)
-                      end do
+                      locij_focnatm(3:n_atm,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(3:n_atm,i,j)
                       ! ocn->sed
                       ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
                       DO l=1,n_l_sed
@@ -2810,7 +2801,7 @@ CONTAINS
                 DO ia = 1, n_atm
                    ias = ia_ias(ia)
                    int_ocnatm_sig(ias) = int_ocnatm_sig(ias) + &
-                        & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ias,:,:))*loc_ocnatm_rtot_A
+                        & loc_dtyr*SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia,:,:))*loc_ocnatm_rtot_A
                 END DO
              end if
              IF (ctrl_data_save_sig_fexport) THEN
@@ -2824,7 +2815,7 @@ CONTAINS
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
                    int_focnatm_sig(ias) = int_focnatm_sig(ias) + &
-                        & loc_dtyr*SUM(locij_focnatm(ias,:,:))
+                        & loc_dtyr*SUM(locij_focnatm(ia,:,:))
                 END DO
              end if
              IF (ctrl_data_save_sig_focnsed) THEN
@@ -2890,7 +2881,7 @@ CONTAINS
                    DO j=1,n_j
                       loc_k1 = goldstein_k1(i,j)
                       IF (n_k < loc_k1) THEN
-                         loc_sig = loc_sig + phys_ocnatm(ipoa_A,i,j)*dum_sfcatm1(ias_T,i,j)
+                         loc_sig = loc_sig + phys_ocnatm(ipoa_A,i,j)*dum_sfcatm1(ia_T,i,j)
                          loc_tot_A = loc_tot_A + phys_ocnatm(ipoa_A,i,j)
                       end IF
                    end DO
@@ -3004,7 +2995,7 @@ CONTAINS
                 END DO
                 DO ia = 1, n_atm
                    ias = ia_ias(ia)
-                   int_diag_airsea_sig(ias) = int_diag_airsea_sig(ias) + loc_dtyr*SUM(diag_airsea(ias,:,:))
+                   int_diag_airsea_sig(ias) = int_diag_airsea_sig(ias) + loc_dtyr*SUM(diag_airsea(ia,:,:))
                 END DO
                 DO ia = 1, n_atm
                    ias = ia_ias(ia)
@@ -3089,7 +3080,7 @@ CONTAINS
                    CALL sub_calc_psi( &
                         & phys_ocn(ipo_gu:ipo_gw,:,:,:),loc_opsi,loc_opsia,loc_opsip,loc_zpsi,loc_opsia_minmax,loc_opsip_minmax &
                         & )
-                   call sub_echo_runtime(loc_yr ,loc_opsi_scale,loc_opsia_minmax,dum_sfcatm1(:,:,:),dum_gemlite)
+                   call sub_echo_runtime(loc_yr ,loc_opsi_scale,loc_opsia_minmax,dum_sfcatm1,dum_gemlite)
                 endif
              end if
 
@@ -3214,7 +3205,11 @@ CONTAINS
     ! update atm interface tracer array
     ! NOTE: currently, the GENIE arrays are defiend with the max number of atm tracers (not selected number)
     ! NOTE: <dum_genie_datm1> is passed in as an ANOMALY
-    dum_sfcatm1 = dum_sfcatm1 + dum_genie_datm1
+    integer :: ia, ias
+    do ia = 1, n_atm
+       ias = ia_ias(ia)
+       dum_sfcatm1(ia,:,:) = dum_sfcatm1(ia,:,:) + dum_genie_datm1(ias,:,:)
+    end do
     ! reset anomoly array
     dum_genie_datm1 = 0.0
   end SUBROUTINE cpl_comp_gematm1

@@ -514,7 +514,6 @@ CONTAINS
     ! local variables
     integer::loc_scalei,loc_scalej
     real::loc_scale
-    INTEGER :: ia, ias
     ! initialize local variables!
     loc_scalei = nr_maxi/n_maxi
     loc_scalej = nr_maxj/n_maxj
@@ -523,10 +522,7 @@ CONTAINS
     ! NOTE: rok->atm flux (rok grid) <sfxatm> in units of (mol m-2 s-1)
     ! NOTE: rok->atm flux (atm grid) <sfxatm1> in units of (mol m-2 s-1)
 !!! *** KLUDGE (works for matching grids) ***
-    DO ia = 1, n_atm
-       ias = ia_ias(ia)
-       sfxsumatm(ia,:,:) = sfxsumatm(ia,:,:) + dts*sfxatm1(ias,:,:)
-    END DO
+    sfxsumatm = sfxsumatm + dts * sfxatm1
     if (.NOT. gem) sfxatm1 = 0.0
 !!! *****************************************
   end SUBROUTINE cpl_flux_rokatm

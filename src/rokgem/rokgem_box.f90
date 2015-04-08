@@ -520,7 +520,7 @@ CONTAINS
     ! extract temperature to local array this way to please intel compilers
     DO i=1,n_i
        DO j=1,n_j
-          loc_SLT(i,j) = dum_sfcatm1(ias_T,i,j)
+          loc_SLT(i,j) = dum_sfcatm1(ia_T,i,j)
           ! do calibrations if requested
           IF (opt_calibrate_T_0D) THEN
              loc_SLT(i,j) = loc_SLT(i,j) + 273.15
@@ -592,7 +592,7 @@ CONTAINS
     ! convert atm pCO2 to ppm
     DO i=1,n_i
        DO j=1,n_j
-          loc_CO22(i,j) = 1.0E+06*dum_sfcatm1(ias_PCO2,i,j)
+          loc_CO22(i,j) = 1.0E+06*dum_sfcatm1(ia_PCO2,i,j)
        END DO
     END DO
     ! calculate mean co2 (ppm)
@@ -802,7 +802,7 @@ CONTAINS
     ! NOTE: does not matter how the standard is derived -- it is al the same standard! (13C)
     loc_standard = const_standards(atm_type(ias_pCO2_13C))
     loc_d13C = fun_calc_isotope_delta( &
-         & dum_sfcatm1(ias_pCO2,n_i,n_j),dum_sfcatm1(ias_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
+         & dum_sfcatm1(ia_pCO2,n_i,n_j),dum_sfcatm1(ia_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
          & )
     IF (opt_short_circuit_atm.eqv..true.) THEN
        IF (opt_outgas_eq_Si.eqv..true.) THEN
@@ -926,8 +926,8 @@ CONTAINS
     END DO
     ! no need to route to the atmosphere - just take it straight from the cells above the land (assuming same grid)
        ! convert from Mol/yr to Mol/sec/m^2 and put it into passing array (only take variable altered here - pCO2)
-    dum_sfxatm1(ias_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
-    dum_sfxatm1(ias_PCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_PCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ia_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ia_PCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_PCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
        ! Spread out ocean variables' fluxes onto land
     DO k=1,n_ocn
        IF(k.gt.2) THEN
@@ -1468,7 +1468,7 @@ CONTAINS
     !                     print*,"before calib", loc_SLT(:,1)
     DO i=1,n_i
        DO j=1,n_j
-          loc_SLT(i,j) = dum_sfcatm1(ias_T,i,j)
+          loc_SLT(i,j) = dum_sfcatm1(ia_T,i,j)
           ! do calibrations if requested
           IF (opt_calibrate_T_0D) THEN
              loc_SLT(i,j) = loc_SLT(i,j) + 273.15
@@ -1518,7 +1518,7 @@ CONTAINS
     ! convert atm pCO2 to ppm
     DO i=1,n_i
        DO j=1,n_j
-          loc_CO2(i,j) = 1.0E+06*dum_sfcatm1(ias_PCO2,i,j)
+          loc_CO2(i,j) = 1.0E+06*dum_sfcatm1(ia_PCO2,i,j)
        END DO
     END DO
 
@@ -1529,7 +1529,7 @@ CONTAINS
        DO i=1,n_i
           DO j=1,n_j
              ! make sure that numbers stay positive
-             n = 1.0 + par_k_Ca*(dum_sfcatm1(ias_T,i,j) - loc_SLT0)
+             n = 1.0 + par_k_Ca*(dum_sfcatm1(ia_T,i,j) - loc_SLT0)
              IF (n.lt.0.0) THEN
                 n = 0
              ENDIF
@@ -1550,7 +1550,7 @@ CONTAINS
     IF (opt_weather_T_Si) THEN
        DO i=1,n_i
           DO j=1,n_j
-             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ias_T,i,j) - loc_SLT0))
+             loc_weather_ratio_CaSiO3(i,j) = exp(k_T*(dum_sfcatm1(ia_T,i,j) - loc_SLT0))
           END DO
        END DO
     ENDIF
@@ -1654,8 +1654,8 @@ CONTAINS
        ENDIF
     END DO
 
-    dum_sfxatm1(ias_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
-    dum_sfxatm1(ias_pCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_pCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ia_PCO2,:,:) =  loc_force_flux_weather_a_land(ias_PCO2,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
+    dum_sfxatm1(ia_pCO2_13C,:,:) =  loc_force_flux_weather_a_land(ias_pCO2_13C,:,:)/(phys_rok(ipr_A,:,:)*conv_yr_s)
 
     dum_sfxrok(:,:,:) = loc_force_flux_weather_o_ocean(:,:,:)
     ! convert from Mol/yr to Mol/sec for passing out

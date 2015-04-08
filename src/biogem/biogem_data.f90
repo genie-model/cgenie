@@ -927,8 +927,8 @@ CONTAINS
     int_carbconst_timeslice(:,:,:,:)  = 0.0
     int_carbisor_timeslice(:,:,:,:)   = 0.0
     ! initialize time-slice data - ocn-atm
-    int_sfcatm1_timeslice(:,:,:)     = 0.0
-    int_focnatm_timeslice(:,:,:)     = 0.0
+    int_sfcatm1_timeslice = 0.0
+    int_focnatm_timeslice = 0.0
     int_phys_ocnatm_timeslice(:,:,:) = 0.0
     ! initialize time-slice data - ocn-sed
     int_sfcsed1_timeslice(:,:,:) = 0.0
@@ -945,7 +945,7 @@ CONTAINS
     int_diag_bio_timeslice(:,:,:)       = 0.0
     int_diag_geochem_timeslice(:,:,:,:) = 0.0
     int_diag_weather_timeslice(:,:,:)   = 0.0
-    int_diag_airsea_timeslice(:,:,:)    = 0.0
+    int_diag_airsea_timeslice = 0.0
     ! ### ADD ADDITIONAL TIME-SLICE ARRAY INITIALIZATIONS HERE ################################################################### !
     !
     ! ############################################################################################################################ !

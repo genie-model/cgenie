@@ -148,7 +148,7 @@ CONTAINS
     real,dimension(:,:,:),intent(inout)::dum_sfxsumatm1_gem       ! atmospheric fluxes: outgassing and weathering
     ! LOCAL VARIABLES
     INTEGER::i,j,k                                                        ! counting indices
-    INTEGER::l,ia,io,is,ias                                                      ! counting indices
+    INTEGER::l,ia,io,is                                                      ! counting indices
     integer::loc_i,loc_tot_i                                              !
     integer::loc_k1                                                       ! topography
     real::loc_T,loc_S,loc_DIC,loc_ALK                                     !
@@ -473,10 +473,7 @@ CONTAINS
        DO j=1,n_j
           ! (1) FULL GRID
           ! calculate atm exchange fluxes -- CO2 outgassing and weathering consumption (assuming no weathering short-circuiting)
-          DO ia = 3, n_atm
-             ias = ia_ias(ia)
-             loc_tot_fatm(ia) = loc_tot_fatm(ia) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(ias,i,j)
-          end do
+          loc_tot_fatm(3:n_atm) = loc_tot_fatm(3:n_atm) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(3:n_atm,i,j)
           ! (2) OCEAN GRID
           loc_k1 = goldstein_k1(i,j)
           IF (n_k >= loc_k1) THEN

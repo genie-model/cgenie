@@ -122,14 +122,14 @@ CONTAINS
   ! CALCULATE AIR-SEA GAS EXCHANGE
   FUNCTION fun_calc_ocnatm_flux(dum_i,dum_j,dum_atm,dum_dt)
     ! result variable
-    REAL,dimension(n_atm_all)::fun_calc_ocnatm_flux ! units of (mol yr-1)
+    REAL,dimension(n_atm)::fun_calc_ocnatm_flux ! units of (mol yr-1)
     ! dummy arguments
     INTEGER,INTENT(in)::dum_i,dum_j
     REAL,dimension(:),INTENT(in)::dum_atm
     REAL,INTENT(in)::dum_dt
     ! local variables
     integer::ia,ias,io
-    REAL,dimension(n_atm_all)::loc_focnatm,loc_fatmocn
+    REAL, DIMENSION(n_atm) :: loc_focnatm, loc_fatmocn
     real::loc_alpha_k,loc_alpha_alpha
     real::loc_alpha_sa,loc_alpha_as
     real::loc_rho
@@ -141,7 +141,7 @@ CONTAINS
     real::loc_A
     real::loc_r_dflux_deqm
     real::loc_buff
-    REAL,dimension(n_atm_all)::loc_dflux
+    REAL, DIMENSION(n_atm) :: loc_dflux
     REAL,dimension(n_ocn)::loc_deqm
 
     ! *** INITIALIZE VARIABLES ***
@@ -175,7 +175,7 @@ CONTAINS
              !          => set a relative buffering factor for CO2,
              !             chosen to ensure numerical stability yet not unduely restrict air-sea CO2 exchange
              ! NOTE: local atmospheric tracer value has Bunsen Solubility Coefficient implicit in its value
-             loc_atm = ocnatm_airsea_solconst(ias,dum_i,dum_j)*dum_atm(ias)
+             loc_atm = ocnatm_airsea_solconst(ias,dum_i,dum_j)*dum_atm(ia)
              if (io == io_DIC) then
                 loc_ocn = carb(ic_conc_CO2,dum_i,dum_j,n_k)
                 ! calculate limitation of air-sea exchange of CO2 based on Revelle factor (see: Zeebe and Wolf-Gladwor [2001])
@@ -201,8 +201,8 @@ CONTAINS
              ! calculate gas exchange fluxes ocn->atm and atm->ocn
              ! NOTE: units of (mol yr-1)
              ! NOTE: the solubility coefficient must be converted to units of mol/(kg atm) from a Bunsen Solubility Coefficient
-             loc_focnatm(ias) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
-             loc_fatmocn(ias) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_atm
+             loc_focnatm(ia) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_ocn
+             loc_fatmocn(ia) = ocnatm_airsea_pv(ias,dum_i,dum_j)*loc_A*loc_rho*loc_atm
              ! check for 'excessive' gas transfer (i.e., with the potential to lead to numerical instability)
              ! => rescale the fluxes to that the ocean surface is brought exactly into equilibrium
              ! NOTE: in the case of DIC, only CO2(aq) is considered
@@ -210,14 +210,14 @@ CONTAINS
              ! calculate the molar magnitude of ocean deficit or surfit w.r.t. the atmosphere
              loc_deqm(io) = phys_ocn(ipo_dD,dum_i,dum_j,n_k)*phys_ocnatm(ipoa_A,dum_i,dum_j)*loc_rho*loc_buff*abs(loc_atm - loc_ocn)
              ! calculate the molar transfer that would normally then be applied
-             loc_dflux(ias) = dum_dt*abs(loc_focnatm(ias) - loc_fatmocn(ias))
+             loc_dflux(ia) = dum_dt*abs(loc_focnatm(ia) - loc_fatmocn(ia))
              ! ensure that molar transfer does not exceed the current disequilibrium
              ! (i.e., ensure that a +ve disequilibrium is not turned into a larger -ve disequilibrium at the next time-step)
              If (loc_deqm(io) > const_real_nullsmall) then
-                loc_r_dflux_deqm = loc_dflux(ias)/loc_deqm(io)
+                loc_r_dflux_deqm = loc_dflux(ia)/loc_deqm(io)
                 if (loc_r_dflux_deqm > par_airsea_r_dflux_deqm_max) then
-                   loc_focnatm(ias) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_focnatm(ias)
-                   loc_fatmocn(ias) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_fatmocn(ias)
+                   loc_focnatm(ia) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_focnatm(ia)
+                   loc_fatmocn(ia) = (par_airsea_r_dflux_deqm_max/loc_r_dflux_deqm)*loc_fatmocn(ia)
                    IF (ctrl_debug_reportwarnings) then
                       print*,'WARNING: excessive air-sea flux of ', TRIM(string_atm(ias)), &
                            & ' prevented at (',fun_conv_num_char_n(2,dum_i),',',fun_conv_num_char_n(2,dum_j),')'
@@ -240,7 +240,7 @@ CONTAINS
              SELECT CASE (ias)
              CASE (ias_pCO2_13C)
                 ! isotopic fluxes - 13C
-                loc_r13C_atm = dum_atm(ias_pCO2_13C)/dum_atm(ias_pCO2)
+                loc_r13C_atm = dum_atm(ia_pCO2_13C)/dum_atm(ia_pCO2)
                 loc_r13C_ocn = carbisor(ici_CO2_r13C,dum_i,dum_j,n_k)
                 loc_R_atm = loc_r13C_atm/(1.0 - loc_r13C_atm)
                 loc_R_ocn = loc_r13C_ocn/(1.0 - loc_r13C_ocn)
@@ -257,33 +257,33 @@ CONTAINS
                 loc_alpha_as = loc_alpha_alpha*loc_alpha_k
                 loc_alpha_sa = loc_alpha_k
                 ! calculate fluxes
-                loc_fatmocn(ias_pCO2_13C) = (loc_alpha_as*loc_R_atm/(1.0 + loc_alpha_as*loc_R_atm))*loc_fatmocn(ias_pCO2)
-                loc_focnatm(ias_pCO2_13C) = (loc_alpha_sa*loc_R_ocn/(1.0 + loc_alpha_sa*loc_R_ocn))*loc_focnatm(ias_pCO2)
+                loc_fatmocn(ia_pCO2_13C) = (loc_alpha_as*loc_R_atm/(1.0 + loc_alpha_as*loc_R_atm))*loc_fatmocn(ia_pCO2)
+                loc_focnatm(ia_pCO2_13C) = (loc_alpha_sa*loc_R_ocn/(1.0 + loc_alpha_sa*loc_R_ocn))*loc_focnatm(ia_pCO2)
              CASE (ias_pCO2_14C)
                 ! isotopic fluxes - 14C
-                loc_r14C_atm = dum_atm(ias_pCO2_14C)/dum_atm(ias_pCO2)
+                loc_r14C_atm = dum_atm(ia_pCO2_14C)/dum_atm(ia_pCO2)
                 loc_r14C_ocn = carbisor(ici_CO2_r14C,dum_i,dum_j,n_k)
                 loc_R_atm = loc_r14C_atm/(1.0 - loc_r14C_atm)
                 loc_R_ocn = loc_r14C_ocn/(1.0 - loc_r14C_ocn)
-                loc_fatmocn(ias_pCO2_14C) = (loc_alpha_as**2*loc_R_atm/(1.0 + loc_alpha_as**2*loc_R_atm))*loc_fatmocn(ias_pCO2)
-                loc_focnatm(ias_pCO2_14C) = (loc_alpha_sa**2*loc_R_ocn/(1.0 + loc_alpha_sa**2*loc_R_ocn))*loc_focnatm(ias_pCO2)
+                loc_fatmocn(ia_pCO2_14C) = (loc_alpha_as**2*loc_R_atm/(1.0 + loc_alpha_as**2*loc_R_atm))*loc_fatmocn(ia_pCO2)
+                loc_focnatm(ia_pCO2_14C) = (loc_alpha_sa**2*loc_R_ocn/(1.0 + loc_alpha_sa**2*loc_R_ocn))*loc_focnatm(ia_pCO2)
              CASE (ias_pCH4_13C)
-                if (dum_atm(ias_pCH4) > const_real_nullsmall) then
-                   loc_r13C_atm = dum_atm(ias_pCH4_13C)/dum_atm(ias_pCH4)
-                   loc_fatmocn(ias_pCH4_13C) = loc_r13C_atm*loc_fatmocn(ias_pCH4)
+                if (dum_atm(ia_pCH4) > const_real_nullsmall) then
+                   loc_r13C_atm = dum_atm(ia_pCH4_13C)/dum_atm(ia_pCH4)
+                   loc_fatmocn(ia_pCH4_13C) = loc_r13C_atm*loc_fatmocn(ia_pCH4)
                 end if
                 if (ocn(io_CH4,dum_i,dum_j,n_k) > const_real_nullsmall) then
                    loc_r13C_ocn = ocn(io_CH4_13C,dum_i,dum_j,n_k)/ocn(io_CH4,dum_i,dum_j,n_k)
-                   loc_focnatm(ias_pCH4_13C) = loc_r13C_ocn*loc_focnatm(ias_pCH4)
+                   loc_focnatm(ia_pCH4_13C) = loc_r13C_ocn*loc_focnatm(ia_pCH4)
                 end if
              CASE (ias_pCH4_14C)
-                if (dum_atm(ias_pCH4) > const_real_nullsmall) then
-                   loc_r14C_atm = dum_atm(ias_pCH4_14C)/dum_atm(ias_pCH4)
-                   loc_fatmocn(ias_pCH4_14C) = loc_r14C_atm*loc_fatmocn(ias_pCH4)
+                if (dum_atm(ia_pCH4) > const_real_nullsmall) then
+                   loc_r14C_atm = dum_atm(ia_pCH4_14C)/dum_atm(ia_pCH4)
+                   loc_fatmocn(ia_pCH4_14C) = loc_r14C_atm*loc_fatmocn(ia_pCH4)
                 end if
                 if (ocn(io_CH4,dum_i,dum_j,n_k) > const_real_nullsmall) then
                    loc_r14C_ocn = ocn(io_CH4_14C,dum_i,dum_j,n_k)/ocn(io_CH4,dum_i,dum_j,n_k)
-                   loc_focnatm(ias_pCH4_14C) = loc_r14C_ocn*loc_focnatm(ias_pCH4)
+                   loc_focnatm(ia_pCH4_14C) = loc_r14C_ocn*loc_focnatm(ia_pCH4)
                 end if
              case default
                 ! ### INSERT CODE TO DEAL WITH ADDITIONAL ISOTOPES ############################################################### !
@@ -292,7 +292,7 @@ CONTAINS
              end SELECT
           end SELECT
           ! calculate net gas transfer and set results variable
-          fun_calc_ocnatm_flux(ias) = loc_focnatm(ias) - loc_fatmocn(ias)
+          fun_calc_ocnatm_flux(ia) = loc_focnatm(ia) - loc_fatmocn(ia)
        end if
     end do
 
