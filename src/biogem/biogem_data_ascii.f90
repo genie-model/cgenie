@@ -1032,7 +1032,7 @@ CONTAINS
              CLOSE(unit=out,iostat=ios)
              call check_iostat(ios,__LINE__,__FILE__)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_diag_airsea_sig(ia_ias(atm_dep(ias)))/int_t_sig
+             loc_tot  = int_diag_airsea_sig(ias_ia(atm_dep(ias)))/int_t_sig
              loc_frac = int_diag_airsea_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
@@ -1584,7 +1584,7 @@ CONTAINS
                 CLOSE(unit=out,iostat=ios)
                 call check_iostat(ios,__LINE__,__FILE__)
              case (n_itype_min:n_itype_max)
-                loc_tot = int_diag_forcing_sig(ia_ias(atm_dep(ias)))/int_t_sig
+                loc_tot = int_diag_forcing_sig(ias_ia(atm_dep(ias)))/int_t_sig
                 loc_frac = int_diag_forcing_sig(ia)/int_t_sig
                 loc_standard = const_standards(atm_type(ias))
                 loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
@@ -1868,6 +1868,7 @@ CONTAINS
     loc_carbconst = 0.0
     loc_carb      = 0.0
     loc_carbalk   = 0.0
+    loc_atm_ave = 0.0 ; loc_sed_ave = 0.0 ; loc_ocn_ave = 0.0
 
     ! *** set local parameters ***
     loc_dt = int_t_timeslice
