@@ -58,13 +58,12 @@ CONTAINS
     loc_fracdecay = dtyr / loc_tau
 
     ! *** ATMOSPHERIC CH4->CO2 ***
-    atm(ia_pO2,i,j)      = atm(ia_pO2,i,j)      - 2.0*loc_fracdecay * atm(ia_pCH4,i,j)
-    atm(ia_pCO2,i,j)     = atm(ia_pCO2,i,j)     + loc_fracdecay * atm(ia_pCH4,i,j)
-    atm(ia_pCO2_13C,i,j) = atm(ia_pCO2_13C,i,j) + loc_fracdecay * atm(ia_pCH4_13C,i,j)
-    atm(ia_pCO2_14C,i,j) = atm(ia_pCO2_14C,i,j) + loc_fracdecay * atm(ia_pCH4_14C,i,j)
-    atm(ia_pCH4,i,j)     = (1.0 - loc_fracdecay) * atm(ia_pCH4,i,j)
-    atm(ia_pCH4_13C,i,j) = (1.0 - loc_fracdecay) * atm(ia_pCH4_13C,i,j)
-    atm(ia_pCH4_14C,i,j) = (1.0 - loc_fracdecay) * atm(ia_pCH4_14C,i,j)
+    IF (atm_select(ias_pCO2_13C) .AND. atm_select(ias_pCH4_13C)) &
+         & atm(ia_pCO2_13C,i,j) = atm(ia_pCO2_13C,i,j) + loc_fracdecay * atm(ia_pCH4_13C,i,j)
+    IF (atm_select(ias_pCO2_14C) .AND. atm_select(ias_pCH4_14C)) &
+         & atm(ia_pCO2_14C,i,j) = atm(ia_pCO2_14C,i,j) + loc_fracdecay * atm(ia_pCH4_14C,i,j)
+    IF (atm_select(ias_pCH4_13C)) atm(ia_pCH4_13C,i,j) = (1.0 - loc_fracdecay) * atm(ia_pCH4_13C,i,j)
+    IF (atm_select(ias_pCH4_14C)) atm(ia_pCH4_14C,i,j) = (1.0 - loc_fracdecay) * atm(ia_pCH4_14C,i,j)
   END SUBROUTINE sub_calc_oxidize_CH4
 
   ! ****************************************************************************************************************************** !

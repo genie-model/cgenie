@@ -2668,7 +2668,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: dum_forcesave                    ! force data saving?
     LOGICAL, INTENT(IN) :: dum_gemlite                      ! in GEMlite phase of cycle?
 
-    INTEGER::i,j,l,io,ia,is,ic,ias
+    INTEGER::i,j,l,io,ia,is,ic
     integer::ib,id,i2D                                             ! counting variables
     integer::loc_k1                                                !
     real::loc_t,loc_dts,loc_dtyr                                   !

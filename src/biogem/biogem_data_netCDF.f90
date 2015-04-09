@@ -2735,7 +2735,7 @@ CONTAINS
     !       mean partial pressure simple conversion factor from atm to mol is used
     IF (ctrl_data_save_sig_ocnatm) THEN
        DO ia = 3,n_atm
-          ias = ia_ias(l)
+          ias = ia_ias(ia)
           SELECT CASE (atm_type(ias))
           CASE (1)
              loc_sig = int_ocnatm_sig(ia)/int_t_sig
@@ -2824,7 +2824,7 @@ CONTAINS
     !       flux density
     IF (ctrl_data_save_sig_focnatm) THEN
        DO ia = 3, n_atm
-          ias = ia_ias(l)
+          ias = ia_ias(ia)
           SELECT CASE (atm_type(ias))
           CASE (1)
              loc_sig = int_focnatm_sig(ia)/int_t_sig
