@@ -173,7 +173,7 @@ CONTAINS
     USE sedgem
     IMPLICIT NONE
     CALL cpl_flux_ocnsed(REAL(conv_kocn_kbiogem * kocn_loop) * genie_timestep, &
-         & intrac_sed_max, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
+         & nt_sed_all, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
          & genie_sfxsed1, genie_sfxsumsed)
   END SUBROUTINE cpl_flux_ocnsed_wrapper
 
@@ -187,7 +187,7 @@ CONTAINS
   SUBROUTINE cpl_flux_sedsed1_wrapper
     USE sedgem
     IMPLICIT NONE
-    CALL cpl_flux_sedsed1(intrac_sed_max, ilon1_ocn, ilat1_ocn, &
+    CALL cpl_flux_sedsed1(nt_sed_all, ilon1_ocn, ilat1_ocn, &
          & ilon1_sed, ilat1_sed, genie_sfxsumsed, genie_sfxsumsed1)
   END SUBROUTINE cpl_flux_sedsed1_wrapper
 

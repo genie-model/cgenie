@@ -11,6 +11,7 @@
 MODULE genie_global
 
   USE genie_control
+  USE gem_cmn, ONLY: nt_sed_all
   IMPLICIT NONE
 
   ! STANDARD VARAIBLE NAMES
@@ -1041,15 +1042,15 @@ CONTAINS
     ALLOCATE(genie_sfxsumatm1_gem(nt_atm,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumatm1_gem = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfcsed(intrac_sed_max,ilon1_sed,ilat1_sed),STAT=status)     ; genie_sfcsed = 0.0
+    ALLOCATE(genie_sfcsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)     ; genie_sfcsed = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsumsed(intrac_sed_max,ilon1_sed,ilat1_sed),STAT=status)  ; genie_sfxsumsed = 0.0
+    ALLOCATE(genie_sfxsumsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)  ; genie_sfxsumsed = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsumsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumsed1 = 0.0
+    ALLOCATE(genie_sfxsumsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumsed1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfcsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcsed1 = 0.0
+    ALLOCATE(genie_sfcsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcsed1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsed1(intrac_sed_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxsed1 = 0.0
+    ALLOCATE(genie_sfxsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxsed1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
     ALLOCATE(genie_sfcsumocn(intrac_ocn_max,ilon1_sed,ilat1_sed),STAT=status)  ; genie_sfcsumocn = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)

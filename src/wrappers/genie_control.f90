@@ -65,7 +65,7 @@ MODULE genie_control
 
   ! Total defined tracer numbers
   ! WARNING: parameter information duplicated in gem_cmn.f90
-  INTEGER, PARAMETER :: intrac_ocn_max=95, intrac_sed_max=79
+  INTEGER, PARAMETER :: intrac_ocn_max=95
 
   ! Others
   INTEGER(KIND=8) :: koverall_total
