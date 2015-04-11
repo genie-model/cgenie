@@ -817,9 +817,9 @@ MODULE biogem_lib
   REAL::int_ocn_tot_V_sig                                        !
   REAL,DIMENSION(n_ocn)::int_ocn_sig                             !
   REAL, DIMENSION(:), ALLOCATABLE :: int_ocnatm_sig
-  REAL,DIMENSION(n_sed)::int_fexport_sig                         !
+  REAL,DIMENSION(n_sed_all)::int_fexport_sig                         !
   REAL, DIMENSION(:), ALLOCATABLE :: int_focnatm_sig
-  REAL,DIMENSION(n_sed)::int_focnsed_sig                         !
+  REAL,DIMENSION(n_sed_all)::int_focnsed_sig                         !
   REAL,DIMENSION(n_ocn)::int_fsedocn_sig                         !
   REAL,DIMENSION(n_ocn)::int_ocn_sur_sig                         !
   REAL,DIMENSION(n_ocn)::int_ocn_ben_sig                         !
@@ -831,7 +831,7 @@ MODULE biogem_lib
   real::int_misc_opsia_min_sig,int_misc_opsia_max_sig            !
   real::int_misc_SLT_sig                                         !
   real::int_misc_det_Fe_tot_sig,int_misc_det_Fe_dis_sig          !
-  REAL,DIMENSION(n_sed)::int_ocnsed_sig                          !
+  REAL,DIMENSION(n_sed_all)::int_ocnsed_sig                          !
   REAL,DIMENSION(n_diag_bio)::int_diag_bio_sig                   ! biology diagnostics
   REAL,DIMENSION(n_diag_geochem)::int_diag_geochem_sig           ! geochemistry diagnostics
   REAL,DIMENSION(n_ocn)::int_diag_weather_sig                    ! weathering diagnostics
@@ -940,23 +940,23 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_I
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_II
-  REAL,DIMENSION(n_sed,2,n_data_max)::force_flux_sed_sig         !
-  REAL,DIMENSION(n_sed)::force_flux_sed_sig_x                    !
-  INTEGER,DIMENSION(n_sed,2)::force_flux_sed_sig_i               !
-  LOGICAL,DIMENSION(n_sed)::force_flux_sed_select                !
-  LOGICAL,DIMENSION(n_sed)::force_flux_sed_scale                 !
+  REAL,DIMENSION(n_sed_all,2,n_data_max)::force_flux_sed_sig         !
+  REAL,DIMENSION(n_sed_all)::force_flux_sed_sig_x                    !
+  INTEGER,DIMENSION(n_sed_all,2)::force_flux_sed_sig_i               !
+  LOGICAL,DIMENSION(n_sed_all)::force_flux_sed_select                !
+  LOGICAL,DIMENSION(n_sed_all)::force_flux_sed_scale                 !
   ! forcing - misc
   REAL,DIMENSION(2,n_data_max)::force_solconst_sig               !
   real,DIMENSION(n_ocn)::force_restore_docn_nuts                 !
   INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_uniform
   integer,DIMENSION(n_ocn)::force_ocn_uniform                    !
-  integer,DIMENSION(n_sed)::force_sed_uniform                    !
+  integer,DIMENSION(n_sed_all)::force_sed_uniform                    !
   INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_point_i
   integer,DIMENSION(n_ocn)::force_ocn_point_i                    !
-  integer,DIMENSION(n_sed)::force_sed_point_i                    !
+  integer,DIMENSION(n_sed_all)::force_sed_point_i                    !
   INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_point_j
   integer,DIMENSION(n_ocn)::force_ocn_point_j                    !
-  integer,DIMENSION(n_sed)::force_sed_point_j                    !
+  integer,DIMENSION(n_sed_all)::force_sed_point_j                    !
   integer,DIMENSION(n_ocn)::force_ocn_point_k                    !
   ! ### ADD ADDITIONAL FORCINGS ARRAY DEFINITIONS HERE ########################################################################### !
   !
@@ -1263,7 +1263,7 @@ CONTAINS
     ! dummy valiables
     type(fieldocn),DIMENSION(:)::dum_vsed                        !
     ! result variable
-    REAL,DIMENSION(n_sed,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed    !
+    REAL,DIMENSION(n_sed_all,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed    !
     ! local variables
     integer::loc_i,loc_j,k,n
     integer::l,is

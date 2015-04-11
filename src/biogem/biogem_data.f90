@@ -446,7 +446,7 @@ CONTAINS
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_ocn,loc_n_l_sed                           ! number of selected tracers in the re-start file
     integer,DIMENSION(n_ocn)::loc_conv_iselected_io            ! number of selected ocean tracers in restart
-    integer,DIMENSION(n_sed)::loc_conv_iselected_is            !
+    integer,DIMENSION(n_sed_all)::loc_conv_iselected_is            !
     real,dimension(n_i,n_j,n_k)::loc_ocn,loc_part              !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
@@ -726,8 +726,8 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    real,dimension(1:n_ocn,1:n_sed)::loc_conv_sed_ocn          !
-    integer,dimension(0:n_ocn,0:n_sed)::loc_tracerrelationships
+    real,dimension(1:n_ocn,1:n_sed_all)::loc_conv_sed_ocn          !
+    integer,dimension(0:n_ocn,0:n_sed_all)::loc_tracerrelationships
     ! -------------------------------------------------------- !
     ! INITIALIZE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -1911,7 +1911,7 @@ CONTAINS
        end IF
     end do
     ! SEDIMENT TRACERS
-    do is=1,n_sed
+    do is=1,n_sed_all
        IF (sed_select(is)) THEN
           if (.not. sed_select(sed_dep(is))) then
              loc_string1 = string_sed(is)
@@ -1968,7 +1968,7 @@ CONTAINS
     ENDIF
 
     ! *** parameter consistency check - selected tracers and sediment-sediment option combinations ***
-    do is=1,n_sed
+    do is=1,n_sed_all
        if (sed_type(is) == par_sed_type_frac) then
           if (( .NOT. sed_select(is)) .AND. (sed_select(sed_dep(is)))) then
              loc_string2 = string_sed(is)

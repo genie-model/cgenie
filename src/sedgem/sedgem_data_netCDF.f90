@@ -278,7 +278,7 @@ CONTAINS
     real::loc_ash_max
     real::loc_ash_max_depth
     real::loc_ash_conv_dbs_age
-    real,dimension(n_sed)::loc_sed                             !
+    real,dimension(n_sed_all)::loc_sed                             !
     real::loc_tot,loc_frac,loc_standard,loc_delta              !
     real::loc_CaCO3_D14C
     ! -------------------------------------------------------- !
@@ -1228,8 +1228,8 @@ CONTAINS
     ! local variables
     INTEGER::i,j,l,io,is,ic
     CHARACTER(len=255)::loc_unitsname
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_coretop
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_preservation
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_coretop
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_preservation
     REAL,DIMENSION(n_i,n_j)::loc_ij,loc_mask
     REAL,DIMENSION(n_i,n_j)::loc_mask_reef,loc_mask_muds       !
     REAL,DIMENSION(n_i,n_j)::loc_mask_dsea                     !
@@ -1422,7 +1422,7 @@ CONTAINS
 
     ! SAVE DEEP-SEA SEDIMENT DATA
     ! core-top data
-    DO is=1,n_sed
+    DO is=1,n_sed_all
        IF (sed_select(is)) THEN
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio, &
@@ -1545,7 +1545,7 @@ CONTAINS
     call sub_adddef_netcdf(ntrec_siou,3,'grid_topo_sedcore','sediment core topo',trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('grid_topo_sedcore',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:)*phys_sed(ips_D,:,:),loc_mask)
     ! core-top data @ sedcore locations
-    DO is=1,n_sed
+    DO is=1,n_sed_all
        IF (sed_select(is)) THEN
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio, &

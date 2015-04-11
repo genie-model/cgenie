@@ -69,13 +69,13 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
+    ALLOCATE(bio_part(n_sed_all,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_remin(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; bio_remin = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(bio_settle(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; bio_settle = 0.0
+    ALLOCATE(bio_settle(n_sed_all,n_i,n_j,n_k),STAT=alloc_error)            ; bio_settle = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(bio_part_red(n_sed,n_sed,n_i,n_j),STAT=alloc_error)        ; bio_part_red = 0.0
+    ALLOCATE(bio_part_red(n_sed_all,n_sed_all,n_i,n_j),STAT=alloc_error)        ; bio_part_red = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(phys_ocn(n_phys_ocn,n_i,n_j,n_k),STAT=alloc_error)         ; phys_ocn = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -106,9 +106,9 @@ CONTAINS
 
     ALLOCATE(int_ocn_timeslice(n_ocn,n_i,n_j,n_k),STAT=alloc_error)                   ; int_ocn_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_bio_part_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; int_bio_part_timeslice = 0.0
+    ALLOCATE(int_bio_part_timeslice(n_sed_all,n_i,n_j,n_k),STAT=alloc_error)              ; int_bio_part_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_bio_settle_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; int_bio_settle_timeslice = 0.0
+    ALLOCATE(int_bio_settle_timeslice(n_sed_all,n_i,n_j,n_k),STAT=alloc_error)            ; int_bio_settle_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_bio_remin_timeslice(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; int_bio_remin_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -126,9 +126,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_focnatm_timeslice(n_atm,n_i,n_j),STAT=alloc_error)                   ; int_focnatm_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_sfcsed1_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_sfcsed1_timeslice = 0.0
+    ALLOCATE(int_sfcsed1_timeslice(n_sed_all,n_i,n_j),STAT=alloc_error)                   ; int_sfcsed1_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_focnsed_timeslice(n_sed,n_i,n_j),STAT=alloc_error)                   ; int_focnsed_timeslice = 0.0
+    ALLOCATE(int_focnsed_timeslice(n_sed_all,n_i,n_j),STAT=alloc_error)                   ; int_focnsed_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_fsedocn_timeslice(n_ocn,n_i,n_j),STAT=alloc_error)                   ; int_fsedocn_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -197,11 +197,11 @@ CONTAINS
     ALLOCATE(force_flux_atm_scale(n_atm),STAT=alloc_error)            ; force_flux_atm_scale = .FALSE.
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
-    ALLOCATE(force_flux_sed(n_sed,n_i,n_j),STAT=alloc_error)    ; force_flux_sed = 0.0
+    ALLOCATE(force_flux_sed(n_sed_all,n_i,n_j),STAT=alloc_error)    ; force_flux_sed = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_sed_I(n_sed,n_i,n_j),STAT=alloc_error)  ; force_flux_sed_I = 0.0
+    ALLOCATE(force_flux_sed_I(n_sed_all,n_i,n_j),STAT=alloc_error)  ; force_flux_sed_I = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_sed_II(n_sed,n_i,n_j),STAT=alloc_error) ; force_flux_sed_II = 0.0
+    ALLOCATE(force_flux_sed_II(n_sed_all,n_i,n_j),STAT=alloc_error) ; force_flux_sed_II = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(par_phys_seaice(n_i,n_j),STAT=alloc_error)             ; par_phys_seaice = 0.0
@@ -590,7 +590,7 @@ CONTAINS
     logical,DIMENSION(n_ocn)::locio_mask                           !
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_focn                 ! local ocean tracer flux array
-    REAL,DIMENSION(n_sed,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
+    REAL,DIMENSION(n_sed_all,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
     REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
     REAL,DIMENSION(n_atm)::loc_datm_restore                        !
     REAL,DIMENSION(n_ocn)::loc_force_flux_dust                     !
@@ -600,12 +600,12 @@ CONTAINS
     REAL,DIMENSION(n_ocn)::loc_force_restore_ocn_tmod              ! relaxation modifier
     REAL,DIMENSION(n_atm)::loc_force_restore_atm_tmod              ! relaxation modifier
     REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency), units (mol yr-1)
-    REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency), units (mol)
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency), units (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_frokocn                   ! local rok->ocean change (ocn tracer currency), units (mol)
     REAL,DIMENSION(n_ocn)::loc_ocnsed_audit                        ! temporary ocn->sed auditing array, units (mol)
     REAL,DIMENSION(n_ocn)::loc_fracdecay_ocn                       ! local reduction factor for decaying ocanic tracers
-    REAL,DIMENSION(n_sed)::loc_fracdecay_sed                       ! local reduction factor for decaying sediment tracers
+    REAL,DIMENSION(n_sed_all)::loc_fracdecay_sed                       ! local reduction factor for decaying sediment tracers
     real::loc_det_tot,loc_det_sol_tot,loc_det_Fe_sol_sf            !
     REAL,DIMENSION(n_ocn)::loc_fweather_tot,loc_fseddis_tot        ! local total weathering flux, dissolution flux
     REAL,DIMENSION(n_ocn)::loc_fsedpres_tot,loc_fsedsettle_tot     !
@@ -2414,7 +2414,7 @@ CONTAINS
     real::loc_yr_save                                              !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi,loc_opsia,loc_opsip !
     REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
-    REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
 
@@ -2698,7 +2698,7 @@ CONTAINS
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsi,loc_zpsi                 !
     REAL,DIMENSION(0:n_j,0:n_k)::loc_opsia,loc_opsip               !
     REAL,DIMENSION(n_atm,n_i,n_j)::locij_focnatm                   ! local ocn->atm flux (atm tracer currency) (mol yr-1)
-    REAL,DIMENSION(n_sed,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::locij_focnsed                   ! local ocn->sed change (sed tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_ocn_ben                   ! local benthic ocean composition
     REAL,DIMENSION(n_i,n_j)::locij_mask_ben                        ! benthic save mask

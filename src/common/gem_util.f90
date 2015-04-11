@@ -1265,7 +1265,7 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for ocn -> sed
     do io=1,n_ocn
        loc_tot_i = 0
-       do is=1,n_sed
+       do is=1,n_sed_all
           if (abs(conv_ocn_sed(is,io)) > const_real_nullsmall) then
              loc_tot_i = loc_tot_i + 1
              conv_ocn_sed_i(loc_tot_i,io) = is
@@ -1274,7 +1274,7 @@ CONTAINS
        conv_ocn_sed_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_sed_ocn(io,is)) > const_real_nullsmall) then
@@ -1309,7 +1309,7 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for DOM -> POM
     do io=1,n_ocn
        loc_tot_i = 0
-       do is=1,n_sed
+       do is=1,n_sed_all
           if (abs(conv_DOM_POM(is,io)) > const_real_nullsmall) then
              loc_tot_i = loc_tot_i + 1
              conv_DOM_POM_i(loc_tot_i,io) = is
@@ -1318,7 +1318,7 @@ CONTAINS
        conv_DOM_POM_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for POM -> DOM
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_POM_DOM(io,is)) > const_real_nullsmall) then
@@ -1331,7 +1331,7 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for RDOM -> POM
     do io=1,n_ocn
        loc_tot_i = 0
-       do is=1,n_sed
+       do is=1,n_sed_all
           if (abs(conv_RDOM_POM(is,io)) > const_real_nullsmall) then
              loc_tot_i = loc_tot_i + 1
              conv_RDOM_POM_i(loc_tot_i,io) = is
@@ -1340,7 +1340,7 @@ CONTAINS
        conv_RDOM_POM_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for POM -> RDOM
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_POM_RDOM(io,is)) > const_real_nullsmall) then
@@ -1352,7 +1352,7 @@ CONTAINS
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: N-reduction redox conditions
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_sed_ocn_N(io,is)) > const_real_nullsmall) then
@@ -1364,7 +1364,7 @@ CONTAINS
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: S-reduction redox conditions
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_sed_ocn_S(io,is)) > const_real_nullsmall) then
@@ -1376,7 +1376,7 @@ CONTAINS
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
     ! NOTE: methanogenesis
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(conv_sed_ocn_meth(io,is)) > const_real_nullsmall) then
@@ -1396,17 +1396,17 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(1:n_ocn,1:n_sed),INTENT(in)::dum_conv_sed_ocn              !
+    real,dimension(1:n_ocn,1:n_sed_all),INTENT(in)::dum_conv_sed_ocn              !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_ocn,0:n_sed)::fun_recalc_tracerrelationships_i         !
+    integer,dimension(0:n_ocn,0:n_sed_all)::fun_recalc_tracerrelationships_i         !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
     integer::loc_tot_i
-    integer,dimension(0:n_ocn,0:n_sed)::loc_conv_sed_ocn_i         !
+    integer,dimension(0:n_ocn,0:n_sed_all)::loc_conv_sed_ocn_i         !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1415,7 +1415,7 @@ CONTAINS
     ! Re-CALCULATE INDICES
     ! -------------------------------------------------------- !
     ! identify the indices of all non-zero transformation values in the conversion array for sed -> ocn
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_tot_i = 0
        do io=1,n_ocn
           if (abs(dum_conv_sed_ocn(io,is)) > const_real_nullsmall) then
@@ -1440,7 +1440,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(n_ocn,n_sed),INTENT(in)::dum_sed_ocn !
+    real,dimension(n_ocn,n_sed_all),INTENT(in)::dum_sed_ocn !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
@@ -1458,7 +1458,7 @@ CONTAINS
     ! TRANSFORM INDICES
     ! -------------------------------------------------------- !
     ! re-index array to compact tracer format
-    do is=1,n_sed
+    do is=1,n_sed_all
        do io=1,n_ocn
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_sed_ocn(io,is)) > const_real_nullsmall)) then
              loc_lslo(io2l(io),is2l(is)) = dum_sed_ocn(io,is)
@@ -1480,7 +1480,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_ocn,0:n_sed),INTENT(in)::dum_sed_ocn_i !
+    integer,dimension(0:n_ocn,0:n_sed_all),INTENT(in)::dum_sed_ocn_i !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
@@ -1502,7 +1502,7 @@ CONTAINS
     !       (the specific ocean tracer number is held in dum_sed_ocn_i(io,is)
     !       hence, it is dum_sed_ocn_i(io,is) that is converted to the compact tracer numbering format for ocean tracers
     !       ('is' is converted to the compact tracer numbering format for solid tracers as normal)
-    do is=1,n_sed
+    do is=1,n_sed_all
        loc_lslo_i(0,is2l(is)) = dum_sed_ocn_i(0,is)
        do io=1,n_ocn
           if (abs(dum_sed_ocn_i(io,is)) > 0) then
@@ -1525,7 +1525,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    real,dimension(n_sed,n_ocn),INTENT(in)::dum_ocn_sed !
+    real,dimension(n_sed_all,n_ocn),INTENT(in)::dum_ocn_sed !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
@@ -1544,7 +1544,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! re-index array to compact tracer format
     do io=1,n_ocn
-       do is=1,n_sed
+       do is=1,n_sed_all
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_ocn_sed(is,io)) > const_real_nullsmall)) then
              loc_lols(is2l(is),io2l(io)) = dum_ocn_sed(is,io)
           end if
@@ -1565,7 +1565,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_sed,0:n_ocn),INTENT(in)::dum_ocn_sed_i !
+    integer,dimension(0:n_sed_all,0:n_ocn),INTENT(in)::dum_ocn_sed_i !
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
@@ -1584,7 +1584,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! re-index array to compact tracer format
     do io=1,n_ocn
-       do is=1,n_sed
+       do is=1,n_sed_all
           loc_lols_i(0,io2l(io)) = dum_ocn_sed_i(0,io)
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_ocn_sed_i(is,io)) > 0)) then
              loc_lols_i(is2l(is),io2l(io)) = is2l(dum_ocn_sed_i(is,io))
@@ -1915,7 +1915,7 @@ CONTAINS
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    do is=1,n_sed
+    do is=1,n_sed_all
        IF (sed_select(is)) THEN
           if (.not. sed_select(sed_dep(is))) then
              CALL sub_report_error( &

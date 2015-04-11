@@ -210,7 +210,7 @@ CONTAINS
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_sed                                       ! number of selected tracers in the re-start file
-    integer,DIMENSION(n_sed)::loc_conv_iselected_is            ! number of selected sediment tracers in restart
+    integer,DIMENSION(n_sed_all)::loc_conv_iselected_is            ! number of selected sediment tracers in restart
     real,dimension(n_i,n_j)::loc_ij                            !
 !!!real,dimension(n_i,n_j,n_sed_tot)::loc_ijk
     integer::loc_ndims,loc_nvars
@@ -661,7 +661,7 @@ CONTAINS
     ! set up the mask for defining which sedimentary components contribute to the actual volume of the sediments
     ! (and which are therefore 'virtual')
     ! => POC, CaCO3, opal, miscellaneous detrital material ('det'), ash, iron oxides (FeO)
-    do is=1,n_sed
+    do is=1,n_sed_all
        SELECT CASE (sed_type(is))
        case (par_sed_type_bio,par_sed_type_abio)
           conv_sed_mask(is) = 1.0
@@ -979,7 +979,7 @@ CONTAINS
     CHARACTER(len=255)::loc_filename                             !
     real::loc_age                                                !
     real::loc_sed_tot_wt                                         !
-    REAL,DIMENSION(n_sed)::loc_sed                               !
+    REAL,DIMENSION(n_sed_all)::loc_sed                               !
     real::loc_ocn_DIC_d13C,loc_sed_CaCO3_d13C                                      !
     real::loc_sed_fsed_POC_d13C,loc_sed_fsed_CaCO3_d13C          !
     real::loc_sed_fdis_POC_d13C,loc_sed_fdis_CaCO3_d13C          !
@@ -1118,14 +1118,14 @@ CONTAINS
     INTEGER::i,j,l,is
     integer::ios  ! for file checks
     CHARACTER(len=255)::loc_filename
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_coretop
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_preservation
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_coretop
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_preservation
     real::loc_tot1_sedgrid
     real::loc_tot2_sedgrid
     real::loc_pres_sedgrid
     real::loc_rain_sedgrid
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_fsed                    !
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_fdis                    !
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_fsed                    !
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_fdis                    !
     real::loc_mean_sedgrid                                     !
     real::loc_tot_mask_area                                    !
     real::loc_sed_d13C_mean                                    !
@@ -1705,7 +1705,7 @@ CONTAINS
     ! allocate array for holding sediment data reordered for writing to file
     ! NOTE: the array bounds extend from ZERO up to 'n_sedtot'
     !       so that core top layer data can be more easily assimilated
-    ALLOCATE(loc_sed_save(n_sed,n_i,n_j,0:n_sed_tot),STAT=alloc_error)
+    ALLOCATE(loc_sed_save(n_sed_all,n_i,n_j,0:n_sed_tot),STAT=alloc_error)
     call check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(loc_sed_save_age_cal(n_i,n_j,0:n_sed_tot),STAT=alloc_error)
     call check_iostat(alloc_error,__LINE__,__FILE__)
@@ -2069,8 +2069,8 @@ CONTAINS
     ! local variables
     INTEGER::i,j,l,io,is,ic,ips          !
     CHARACTER(len=255)::loc_filename
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_coretop
-    REAL,DIMENSION(n_sed,n_i,n_j)::loc_sed_preservation
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_coretop
+    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed_preservation
     REAL,DIMENSION(n_i,n_j)::loc_ij
     real::loc_tot,loc_frac,loc_standard
     ! *** array index names ***

@@ -75,9 +75,9 @@ CONTAINS
     real::loc_frac_CaCO3_top                                   !
     real::loc_fPOC,loc_sed_pres_fracC                          !
     real::loc_sed_dis_frac_max                                 ! maximum fraction that can be remineralized
-    REAL,DIMENSION(n_sed)::loc_new_sed                         ! new (sedimenting) top layer material
-    REAL,DIMENSION(n_sed)::loc_dis_sed                         ! remineralized top layer material
-    REAL,DIMENSION(n_sed)::loc_exe_sed                         ! top layer material to be exchanged with stack
+    REAL,DIMENSION(n_sed_all)::loc_new_sed                         ! new (sedimenting) top layer material
+    REAL,DIMENSION(n_sed_all)::loc_dis_sed                         ! remineralized top layer material
+    REAL,DIMENSION(n_sed_all)::loc_exe_sed                         ! top layer material to be exchanged with stack
     logical::loc_flag_stackgrow,loc_flag_stackshrink           ! growing or shrinking of stack occurs (by a 1 cm layer)
 
     ! *** (a) initialize variables
@@ -632,15 +632,15 @@ CONTAINS
           print*,'sed_carb(:)'
           print*,sed_carb(:,dum_i,dum_j)
           PRINT*,'new_sed(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),loc_new_sed(is)
           end do
           PRINT*,'dis_sed(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),loc_dis_sed(is)
           end do
           PRINT*,'sed_top(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),sed_top(is,par_misc_debug_i,par_misc_debug_j)
           end do
           PRINT*,'new sed age = ',loc_new_sed(is_CaCO3_age) / (loc_new_sed(is_CaCO3) + 1.0E-14)
@@ -732,9 +732,9 @@ CONTAINS
     real::loc_r_sed_por                                      ! thickness ratio due to porosity differences (stack / surface layer)
     real::loc_frac_CaCO3                                     !
     real::loc_frac_CaCO3_top                                 !
-    REAL,DIMENSION(n_sed)::loc_new_sed                       ! new (sedimenting) top layer material
-    REAL,DIMENSION(n_sed)::loc_dis_sed                       ! remineralized top layer material
-    REAL,DIMENSION(n_sed)::loc_exe_sed                       ! top layer material to be exchanged with stack
+    REAL,DIMENSION(n_sed_all)::loc_new_sed                       ! new (sedimenting) top layer material
+    REAL,DIMENSION(n_sed_all)::loc_dis_sed                       ! remineralized top layer material
+    REAL,DIMENSION(n_sed_all)::loc_exe_sed                       ! top layer material to be exchanged with stack
     real::loc_delta_CaCO3,loc_delta_Corg
     real::loc_alpha                                          !
     real::loc_R,loc_r7Li,loc_r44Ca                           ! local isotope R, local (isotope specific) r's
@@ -1088,15 +1088,15 @@ CONTAINS
           print*,'sed_carb(:)'
           print*,sed_carb(:,dum_i,dum_j)
           PRINT*,'new_sed(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),loc_new_sed(is)
           end do
           PRINT*,'dis_sed(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),loc_dis_sed(is)
           end do
           PRINT*,'sed_top(:)'
-          do is=1,n_sed
+          do is=1,n_sed_all
              if (sed_select(is)) print*,is,string_sed(is),sed_top(is,par_misc_debug_i,par_misc_debug_j)
           end do
           PRINT*,'new sed age = ',loc_new_sed(is_CaCO3_age) / (loc_new_sed(is_CaCO3) + 1.0E-14)
@@ -1153,9 +1153,9 @@ CONTAINS
     real::loc_frac_CaCO3_top                                   !
     real::loc_fPOC,loc_sed_pres_fracC                          !
     real::loc_sed_dis_frac_max                                 ! maximum fraction that can be remineralized
-    REAL,DIMENSION(n_sed)::loc_new_sed                         ! new (sedimenting) top layer material
-    REAL,DIMENSION(n_sed)::loc_dis_sed                         ! remineralized top layer material
-    REAL,DIMENSION(n_sed)::loc_exe_sed                         ! top layer material to be exchanged with stack
+    REAL,DIMENSION(n_sed_all)::loc_new_sed                         ! new (sedimenting) top layer material
+    REAL,DIMENSION(n_sed_all)::loc_dis_sed                         ! remineralized top layer material
+    REAL,DIMENSION(n_sed_all)::loc_exe_sed                         ! top layer material to be exchanged with stack
 
     ! *** INITIALIZE VARIABLES ****************************************************************************************************
     ! zero local sediment arrays
@@ -1560,9 +1560,9 @@ CONTAINS
     real,intent(in),DIMENSION(n_ocn)::dum_ocn
     REAL,intent(in),DIMENSION(n_carbconst)::dum_carbconst
     REAL,INTENT(in),DIMENSION(n_carb)::dum_carb
-    REAL,INTENT(inout),DIMENSION(n_sed)::dum_sed_dis
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed_new
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed_top
+    REAL,INTENT(inout),DIMENSION(n_sed_all)::dum_sed_dis
+    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed_new
+    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed_top
     real,intent(in)::dum_sed_mix_k
     ! local variables
     INTEGER::is,l              ! COUNTERS
@@ -1734,9 +1734,9 @@ CONTAINS
     ! dummy arguments
     real,intent(in)::dum_dtyr
     real::dum_T,dum_SiO2
-    REAL,INTENT(inout),DIMENSION(n_sed)::dum_sed_dis
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed_new
-    REAL,INTENT(in),DIMENSION(n_sed)::dum_sed_top
+    REAL,INTENT(inout),DIMENSION(n_sed_all)::dum_sed_dis
+    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed_new
+    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed_top
     ! local variables
     INTEGER::is,l              ! COUNTERS
     REAL::loc_frac_opal        ! volume fraction of opal in the sediment (cm3 cm-3 solids)
@@ -1937,8 +1937,8 @@ CONTAINS
        & )
     IMPLICIT NONE
     ! dummy arguments
-    REAL,INTENT(inout),DIMENSION(n_sed,0:par_n_sed_mix)::dum_sed
-    REAL,INTENT(inout),DIMENSION(n_sed)::dum_sed_top
+    REAL,INTENT(inout),DIMENSION(n_sed_all,0:par_n_sed_mix)::dum_sed
+    REAL,INTENT(inout),DIMENSION(n_sed_all)::dum_sed_top
     REAL,INTENT(in),DIMENSION(0:par_n_sed_mix)::dum_sed_mix_k
     REAL,INTENT(in)::dum_sed_stack_top_th
     ! local variables
