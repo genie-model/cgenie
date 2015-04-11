@@ -1014,14 +1014,14 @@ CONTAINS
     force_restore_ocn_tconst      = 0.0
     force_restore_ocn_select(:)   = .FALSE.
     force_restore_ocn_sur(:)      = .FALSE.
-    force_restore_atm(:,:,:)      = 0.0
-    force_restore_atm_I(:,:,:)    = 0.0
-    force_restore_atm_II(:,:,:)   = 0.0
-    force_restore_atm_sig(:,:,:)  = 0.0
-    force_restore_atm_sig_x(:)    = 0.0
-    force_restore_atm_sig_i(:,:)  = 0
-    force_restore_atm_tconst      = 0.0
-    force_restore_atm_select(:)   = .FALSE.
+    force_restore_atm        = 0.0
+    force_restore_atm_I      = 0.0
+    force_restore_atm_II     = 0.0
+    force_restore_atm_sig    = 0.0
+    force_restore_atm_sig_x  = 0.0
+    force_restore_atm_sig_i  = 0
+    force_restore_atm_tconst = 0.0
+    force_restore_atm_select = .FALSE.
     force_flux_locn(:,:,:,:)       = 0.0
     force_flux_locn_I(:,:,:,:)     = 0.0
     force_flux_locn_II(:,:,:,:)    = 0.0
@@ -1030,13 +1030,14 @@ CONTAINS
     force_flux_ocn_sig_i(:,:)     = 0
     force_flux_ocn_select(:)      = .FALSE.
     force_flux_ocn_scale(:)       = .FALSE.
-    force_flux_atm(:,:,:)         = 0.0
-    force_flux_atm_I(:,:,:)       = 0.0
-    force_flux_atm_II(:,:,:)      = 0.0
-    force_flux_atm_sig(:,:,:)     = 0.0
-    force_flux_atm_sig_x(:)       = 0.0
-    force_flux_atm_sig_i(:,:)     = 0
-    force_flux_atm_select(:)      = .FALSE.
+    force_flux_atm        = 0.0
+    force_flux_atm_I      = 0.0
+    force_flux_atm_II     = 0.0
+    force_flux_atm_sig    = 0.0
+    force_flux_atm_sig_x  = 0.0
+    force_flux_atm_sig_i  = 0
+    force_flux_atm_scale = .FALSE.
+    force_flux_atm_select = .FALSE.
     force_flux_sed_scale(:)       = .FALSE.
     force_flux_sed(:,:,:)         = 0.0
     force_flux_sed_I(:,:,:)       = 0.0
@@ -1309,20 +1310,20 @@ CONTAINS
   SUBROUTINE sub_init_tracer_forcing_atm()
     USE genie_util, ONLY:check_unit,check_iostat
     ! local variables
-    INTEGER::n,ia,ios
+    INTEGER::n,ios,ia
     INTEGER::loc_n_elements,loc_n_start
     REAL::loc_force_restore_tconst
     LOGICAL::loc_force_restore_select,loc_force_flux_select,loc_force_flux_scale
     logical::loc_airsea_eqm
-    integer::loc_ia
+    integer::loc_ias
     integer::loc_force_uniform
     integer::loc_force_point_i,loc_force_point_j
     CHARACTER(len=255)::loc_filename
     ! initialize global variables.
-    force_restore_atm_select(:)   = .FALSE.
-    force_flux_atm_select(:)      = .FALSE.
-    force_flux_atm_scale(:)       = .FALSE.
-    ocnatm_airsea_eqm(:)          = .FALSE.
+    force_restore_atm_select = .FALSE.
+    force_flux_atm_select    = .FALSE.
+    force_flux_atm_scale     = .FALSE.
+    ocnatm_airsea_eqm        = .FALSE.
     ! check file format
     loc_filename = TRIM(par_fordir_name)//'configure_forcings_atm.dat'
     CALL sub_check_fileformat(loc_filename,loc_n_elements,loc_n_start)
@@ -1339,7 +1340,7 @@ CONTAINS
     DO n = 1,loc_n_elements
        if (ctrl_force_oldformat) then
           READ(unit=in,FMT=*,iostat=ios)   &
-               & loc_ia,                   & ! COLUMN #00: TRACER NUMBER
+               & loc_ias,                  & ! COLUMN #00: TRACER NUMBER
                & loc_force_restore_select, & ! COLUMN #01: include restoring forcing of tracer?
                & loc_force_restore_tconst, & ! COLUMN #02: time constant of restoring forcing (years)
                & loc_force_flux_select,    & ! COLUMN #03: include flux forcing of tracer?
@@ -1351,7 +1352,7 @@ CONTAINS
           loc_force_point_j = 0
        else
           READ(unit=in,FMT=*,iostat=ios)   &
-               & loc_ia,                   & ! COLUMN #00: TRACER NUMBER
+               & loc_ias,                  & ! COLUMN #00: TRACER NUMBER
                & loc_force_restore_select, & ! COLUMN #01: include restoring forcing of tracer?
                & loc_force_restore_tconst, & ! COLUMN #02: time constant of restoring forcing (years)
                & loc_force_flux_select,    & ! COLUMN #03: include flux forcing of tracer?
@@ -1362,7 +1363,7 @@ CONTAINS
                & loc_force_point_j           ! COLUMN #08: j grid location of point forcing
           call check_iostat(ios,__LINE__,__FILE__)
        end if
-       ia = loc_ia
+       ia = ias_ia(loc_ias)
        force_restore_atm_select(ia) = loc_force_restore_select
        force_restore_atm_tconst(ia) = loc_force_restore_tconst
        force_flux_atm_select(ia)    = loc_force_flux_select
@@ -1395,7 +1396,7 @@ CONTAINS
     CLOSE(unit=in,iostat=ios)
     call check_iostat(ios,__LINE__,__FILE__)
     ! blanket namelist over-ride of forcing point source
-    IF ((par_force_point_i > 0) .AND. (par_force_point_j > 0)) then
+    IF (par_force_point_i > 0 .AND. par_force_point_j > 0) then
        force_atm_point_i(:) = par_force_point_i
        force_atm_point_j(:) = par_force_point_j
     end IF
@@ -1591,7 +1592,7 @@ CONTAINS
     integer::loc_i,loc_tot_i
     CHARACTER(len=255)::loc_string
     CHARACTER(len=255)::loc_string1,loc_string2
-    integer::l,io,is,ias
+    integer::l,io,is,ias,ia
 
     ! *** set-up ***
     ! initialize variables
@@ -1830,6 +1831,7 @@ CONTAINS
     end do
     ! ATMOSPHERE TRACERS
     do ias=1,n_atm_all
+       ia = ias_ia(ias)
        IF (atm_select(ias)) THEN
           if (.not. atm_select(atm_dep(ias))) then
              loc_string = string_atm(atm_dep(ias))
@@ -1843,9 +1845,9 @@ CONTAINS
           end if
           if (atm_select(atm_dep(ias)) .AND. (io /= atm_type(ias))) then
              if ( &
-                  & (force_restore_atm_select(ias) .AND. (.NOT. force_restore_atm_select(atm_dep(ias)))) &
+                  & (force_restore_atm_select(ia) .AND. (.NOT. force_restore_atm_select(ias_ia(atm_dep(ias))))) &
                   & .OR. &
-                  & (.NOT. (force_restore_atm_select(ias)) .AND. force_restore_atm_select(atm_dep(ias))) &
+                  & (.NOT. (force_restore_atm_select(ia)) .AND. force_restore_atm_select(ias_ia(atm_dep(ias)))) &
                   & ) then
                 loc_string1 = string_atm(ias)
                 loc_string2 = string_atm(atm_dep(ias))
@@ -1858,9 +1860,9 @@ CONTAINS
                      & )
              end if
              if ( &
-                  & (force_flux_atm_select(ias) .AND. (.NOT. force_flux_atm_select(atm_dep(ias)))) &
+                  & (force_flux_atm_select(ia) .AND. (.NOT. force_flux_atm_select(ias_ia(atm_dep(ias))))) &
                   & .OR. &
-                  & (.NOT. (force_flux_atm_select(ias)) .AND. force_flux_atm_select(atm_dep(ias))) &
+                  & (.NOT. (force_flux_atm_select(ia)) .AND. force_flux_atm_select(ias_ia(atm_dep(ias)))) &
                   & ) then
                 loc_string1 = string_atm(ias)
                 loc_string2 = string_atm(atm_dep(ias))
@@ -1884,7 +1886,7 @@ CONTAINS
              end if
           end if
        else
-          if (force_restore_atm_select(ias)) then
+          if (ia > 0 .AND. force_restore_atm_select(ia)) then
              loc_string = string_atm(ias)
              CALL sub_report_error( &
                   & 'biogem_data','sub_check_par', &
@@ -1893,9 +1895,9 @@ CONTAINS
                   & 'RESTORING HAS BEEN DE-SELECTED; CONTINUING', &
                   & (/const_real_null/),.false. &
                   & )
-             force_restore_atm_select(ias) = .FALSE.
+             force_restore_atm_select(ia) = .FALSE.
           end if
-          if (force_flux_atm_select(ias)) then
+          if (ia > 0 .AND. force_flux_atm_select(ia)) then
              loc_string = string_atm(ias)
              CALL sub_report_error( &
                   & 'biogem_data','sub_check_par', &
@@ -1904,7 +1906,7 @@ CONTAINS
                   & 'RESTORING HAS BEEN DE-SELECTED; CONTINUING', &
                   & (/const_real_null/),.false. &
                   & )
-             force_flux_atm_select(ias) = .FALSE.
+             force_flux_atm_select(ia) = .FALSE.
           end if
        end IF
     end do
@@ -2306,11 +2308,11 @@ CONTAINS
     ! detrmine whether to save inversion diagnostics
     ctrl_data_save_inversion = .false.
     IF ( &
-         & (force_restore_ocn_select(io_colr) .AND. (force_flux_atm_select(ias_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
+         & (force_restore_ocn_select(io_colr) .AND. (force_flux_atm_select(ia_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
          & .OR. &
-         & (force_restore_atm_select(ias_pCO2_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) &
+         & (force_restore_atm_select(ia_pCO2_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
          & .OR. &
-         & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) &
+         & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
          & .OR. &
          & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_ocn_select(io_DIC_13C)) &
          & .OR. &
@@ -2708,15 +2710,15 @@ CONTAINS
     ! LOOP
     DO ia = 3, n_atm
        ias = ia_ias(ia)
-       IF (force_restore_atm_select(ias)) THEN
-          force_restore_atm_sig_i(ias,:) = n_data_max
-          force_restore_atm_sig(ias,:,:) = 0.0
+       IF (force_restore_atm_select(ia)) THEN
+          force_restore_atm_sig_i(ia,:) = n_data_max
+          force_restore_atm_sig(ia,:,:) = 0.0
           ! load forcing data array #I
           loc_ij(:,:) = const_real_zero
-          if (force_atm_uniform(ias) == 2) then
+          if (force_atm_uniform(ia) == 2) then
              loc_ij(:,:) = 0.0
-          elseif (force_atm_uniform(ias) == 0) then
-             loc_ij(force_atm_point_i(ias),force_atm_point_j(ias)) = 0.0
+          elseif (force_atm_uniform(ia) == 0) then
+             loc_ij(force_atm_point_i(ia),force_atm_point_j(ia)) = 0.0
           else
              loc_filename = TRIM(par_fordir_name)//'biogem_force_restore_atm_'//TRIM(string_atm(ias))//'_I'//TRIM(string_data_ext)
              CALL sub_load_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
@@ -2724,16 +2726,16 @@ CONTAINS
           DO i=1,n_i
              DO j=1,n_j
                 IF (n_k >= goldstein_k1(i,j)) THEN
-                   force_restore_atm_I(ias,i,j) = loc_ij(i,j)
+                   force_restore_atm_I(ia,i,j) = loc_ij(i,j)
                 end IF
              end DO
           end DO
           ! load forcing data array #II
           loc_ij(:,:) = const_real_zero
-          if (force_atm_uniform(ias) == 2) then
+          if (force_atm_uniform(ia) == 2) then
              loc_ij(:,:) = phys_ocn(ipo_mask_ocn,:,:,n_k)
-          elseif (force_atm_uniform(ias) == 0) then
-             loc_ij(force_atm_point_i(ias),force_atm_point_j(ias)) = 1.0
+          elseif (force_atm_uniform(ia) == 0) then
+             loc_ij(force_atm_point_i(ia),force_atm_point_j(ia)) = 1.0
           else
              loc_filename = TRIM(par_fordir_name)//'biogem_force_restore_atm_'//TRIM(string_atm(ias))//'_II'//TRIM(string_data_ext)
              CALL sub_load_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
@@ -2741,14 +2743,14 @@ CONTAINS
           DO i=1,n_i
              DO j=1,n_j
                 IF (n_k >= goldstein_k1(i,j)) THEN
-                   force_restore_atm_II(ias,i,j) = loc_ij(i,j)
+                   force_restore_atm_II(ia,i,j) = loc_ij(i,j)
                 end IF
              end DO
           end DO
           ! load forcing time series data
           loc_filename = TRIM(par_fordir_name)//'biogem_force_restore_atm_'//TRIM(string_atm(ias))//'_sig'//TRIM(string_data_ext)
           loc_data_scale(:) = (/par_atm_force_scale_time(ias), par_atm_force_scale_val(ias)/)
-          CALL sub_load_data_t2(loc_filename,loc_data_scale(:),force_restore_atm_sig(ias,:,:),loc_n_elements)
+          CALL sub_load_data_t2(loc_filename,loc_data_scale(:),force_restore_atm_sig(ia,:,:),loc_n_elements)
           ! set default forcing index values
           ! NOTE: catch missing time series data
           if (loc_n_elements == 0) THEN
@@ -2758,7 +2760,7 @@ CONTAINS
                   & (/const_real_null/),.TRUE. &
                   & )
           else
-             force_restore_atm_sig_i(ias,:) = loc_n_elements
+             force_restore_atm_sig_i(ia,:) = loc_n_elements
           end if
           ! warn if forcing information appears to be 'incomplete'
           ! NOTE: this will catch both possible mismatches of forcing signal and model integration specification
@@ -2767,9 +2769,9 @@ CONTAINS
           !             or a signal time year that is before the model end year
           !             (or visa versa for a BP time scale)
           if ( &
-               & (minval(force_restore_atm_sig(ias,1,1:loc_n_elements)) > 0.0) &
+               & (minval(force_restore_atm_sig(ia,1,1:loc_n_elements)) > 0.0) &
                & .OR. &
-               & (maxval(force_restore_atm_sig(ias,1,1:loc_n_elements)) < par_misc_t_runtime) &
+               & (maxval(force_restore_atm_sig(ia,1,1:loc_n_elements)) < par_misc_t_runtime) &
                & ) then
              CALL sub_report_error( &
                   & 'biogem_data','sub_init_force_restore_atm', &
@@ -2927,16 +2929,16 @@ CONTAINS
     ! LOOP
     DO ia = 3, n_atm
        ias = ia_ias(ia)
-       IF (force_flux_atm_select(ias)) THEN
-          force_flux_atm_sig_i(ias,:) = n_data_max
-          force_flux_atm_sig(ias,:,:) = 0.0
+       IF (force_flux_atm_select(ia)) THEN
+          force_flux_atm_sig_i(ia,:) = n_data_max
+          force_flux_atm_sig(ia,:,:) = 0.0
           ! load forcing data array #I
           loc_ij(:,:) = const_real_zero
-          if (force_atm_uniform(ias) == 2) then
+          if (force_atm_uniform(ia) == 2) then
              loc_ij(:,:) = 0.0
-          elseif (force_atm_uniform(ias) == 0) then
-             loc_ij(force_atm_point_i(ias),force_atm_point_j(ias)) = 0.0
-          elseif (force_atm_uniform(ias) == -1) then
+          elseif (force_atm_uniform(ia) == 0) then
+             loc_ij(force_atm_point_i(ia),force_atm_point_j(ia)) = 0.0
+          elseif (force_atm_uniform(ia) == -1) then
              loc_ij(:,:) = 0.0
           else
              loc_filename = TRIM(par_fordir_name)//'biogem_force_flux_atm_'//TRIM(string_atm(ias))//'_I'//TRIM(string_data_ext)
@@ -2945,17 +2947,17 @@ CONTAINS
           DO i=1,n_i
              DO j=1,n_j
                 IF (n_k >= goldstein_k1(i,j)) THEN
-                   force_flux_atm_I(ias,i,j) = loc_ij(i,j)
+                   force_flux_atm_I(ia,i,j) = loc_ij(i,j)
                 end IF
              end DO
           end DO
           ! load forcing data array #II
           loc_ij(:,:) = const_real_zero
-          if (force_atm_uniform(ias) == 2) then
+          if (force_atm_uniform(ia) == 2) then
              loc_ij(:,:) = phys_ocn(ipo_mask_ocn,:,:,n_k)
-          elseif (force_atm_uniform(ias) == 0) then
-             loc_ij(force_atm_point_i(ias),force_atm_point_j(ias)) = 1.0
-          elseif (force_atm_uniform(ias) == -1) then
+          elseif (force_atm_uniform(ia) == 0) then
+             loc_ij(force_atm_point_i(ia),force_atm_point_j(ia)) = 1.0
+          elseif (force_atm_uniform(ia) == -1) then
              loc_filename = TRIM(par_fordir_name)//'biogem_force_flux_atm_'//TRIM(string_atm(ias))//'_SUR'//TRIM(string_data_ext)
              CALL sub_load_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
           else
@@ -2965,14 +2967,14 @@ CONTAINS
           DO i=1,n_i
              DO j=1,n_j
                 IF (n_k >= goldstein_k1(i,j)) THEN
-                   force_flux_atm_II(ias,i,j) = loc_ij(i,j)
+                   force_flux_atm_II(ia,i,j) = loc_ij(i,j)
                 end IF
              end DO
           end DO
           ! load forcing time series data
           loc_filename = TRIM(par_fordir_name)//'biogem_force_flux_atm_'//TRIM(string_atm(ias))//'_sig'//TRIM(string_data_ext)
           loc_data_scale(:) = (/par_atm_force_scale_time(ias), par_atm_force_scale_val(ias)/)
-          CALL sub_load_data_t2(loc_filename,loc_data_scale(:),force_flux_atm_sig(ias,:,:),loc_n_elements)
+          CALL sub_load_data_t2(loc_filename,loc_data_scale(:),force_flux_atm_sig(ia,:,:),loc_n_elements)
           ! set default forcing index values
           if (loc_n_elements == 0) THEN
              CALL sub_report_error( &
@@ -2981,13 +2983,13 @@ CONTAINS
                   & (/const_real_null/),.TRUE. &
                   & )
           else
-             force_flux_atm_sig_i(ias,:) = loc_n_elements
+             force_flux_atm_sig_i(ia,:) = loc_n_elements
           end if
           ! warn if forcing information appears to be 'incomplete'
           if ( &
-               & (minval(force_flux_atm_sig(ias,1,1:loc_n_elements)) > 0.0) &
+               & (minval(force_flux_atm_sig(ia,1,1:loc_n_elements)) > 0.0) &
                & .OR. &
-               & (maxval(force_flux_atm_sig(ias,1,1:loc_n_elements)) < par_misc_t_runtime) &
+               & (maxval(force_flux_atm_sig(ia,1,1:loc_n_elements)) < par_misc_t_runtime) &
                & ) then
              CALL sub_report_error( &
                   & 'biogem_data','sub_init_force_flux_atm', &

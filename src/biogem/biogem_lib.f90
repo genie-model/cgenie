@@ -784,7 +784,7 @@ MODULE biogem_lib
   ! NOTE: ocean tracers (dissolved and particulate) are stored as concentrations (mol kg-1)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: ocn             ! ocean tracer array
   ! atmosphere
-  LOGICAL, DIMENSION(n_atm_all) :: ocnatm_airsea_eqm
+  LOGICAL, DIMENSION(:), ALLOCATABLE :: ocnatm_airsea_eqm
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_pv
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_solconst
   ! 'biology'
@@ -914,11 +914,11 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm_I
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm_II
-  REAL,DIMENSION(n_atm_all,2,n_data_max)::force_restore_atm_sig       !
-  REAL,DIMENSION(n_atm_all)::force_restore_atm_sig_x                  !
-  REAL,DIMENSION(n_atm_all)::force_restore_atm_tconst                 !
-  INTEGER,DIMENSION(n_atm_all,2)::force_restore_atm_sig_i             !
-  LOGICAL,DIMENSION(n_atm_all)::force_restore_atm_select              !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_restore_atm_sig
+  REAL, DIMENSION(:), ALLOCATABLE :: force_restore_atm_sig_x
+  REAL, DIMENSION(:), ALLOCATABLE :: force_restore_atm_tconst
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: force_restore_atm_sig_i
+  LOGICAL, DIMENSION(:), ALLOCATABLE :: force_restore_atm_select
   ! forcing - flux
   real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn          !
   real,DIMENSION(:,:,:,:),ALLOCATABLE::force_flux_locn_I        !
@@ -932,11 +932,11 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm_I
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm_II
-  REAL,DIMENSION(n_atm_all,2,n_data_max)::force_flux_atm_sig         !
-  REAL,DIMENSION(n_atm_all)::force_flux_atm_sig_x                    !
-  INTEGER,DIMENSION(n_atm_all,2)::force_flux_atm_sig_i               !
-  LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_select                !
-  LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_scale                 !
+  REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_atm_sig
+  REAL, DIMENSION(:), ALLOCATABLE :: force_flux_atm_sig_x
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: force_flux_atm_sig_i
+  LOGICAL, DIMENSION(:), ALLOCATABLE :: force_flux_atm_select
+  LOGICAL, DIMENSION(:), ALLOCATABLE :: force_flux_atm_scale
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_I
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: force_flux_sed_II
@@ -948,13 +948,13 @@ MODULE biogem_lib
   ! forcing - misc
   REAL,DIMENSION(2,n_data_max)::force_solconst_sig               !
   real,DIMENSION(n_ocn)::force_restore_docn_nuts                 !
-  integer,DIMENSION(n_atm_all)::force_atm_uniform                    !
+  INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_uniform
   integer,DIMENSION(n_ocn)::force_ocn_uniform                    !
   integer,DIMENSION(n_sed)::force_sed_uniform                    !
-  integer,DIMENSION(n_atm_all)::force_atm_point_i                    !
+  INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_point_i
   integer,DIMENSION(n_ocn)::force_ocn_point_i                    !
   integer,DIMENSION(n_sed)::force_sed_point_i                    !
-  integer,DIMENSION(n_atm_all)::force_atm_point_j                    !
+  INTEGER, DIMENSION(:), ALLOCATABLE :: force_atm_point_j
   integer,DIMENSION(n_ocn)::force_ocn_point_j                    !
   integer,DIMENSION(n_sed)::force_sed_point_j                    !
   integer,DIMENSION(n_ocn)::force_ocn_point_k                    !

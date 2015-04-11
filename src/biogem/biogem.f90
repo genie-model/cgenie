@@ -65,6 +65,8 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(ocnatm_airsea_pv(n_atm,n_i,n_j),STAT=alloc_error)          ; ocnatm_airsea_pv = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(ocnatm_airsea_eqm(n_atm),STAT=alloc_error)                 ; ocnatm_airsea_eqm = .FALSE.
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(ocnatm_airsea_solconst(n_atm,n_i,n_j),STAT=alloc_error)    ; ocnatm_airsea_solconst = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
@@ -151,22 +153,48 @@ CONTAINS
     ALLOCATE(int_diag_airsea_timeslice(n_atm,n_i,n_j),STAT=alloc_error)               ; int_diag_airsea_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
+    ALLOCATE(force_atm_uniform(n_atm),STAT=alloc_error) ; force_atm_uniform = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_atm_point_i(n_atm),STAT=alloc_error) ; force_atm_point_i = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_atm_point_j(n_atm),STAT=alloc_error) ; force_atm_point_j = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(force_restore_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_restore_ocn_k1 = 0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm(n_atm_all,n_i,n_j),STAT=alloc_error)    ; force_restore_atm = 0.0
+    ALLOCATE(force_restore_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_restore_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)  ; force_restore_atm_I = 0.0
+    ALLOCATE(force_restore_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_restore_atm_I = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_restore_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error) ; force_restore_atm_II = 0.0
+    ALLOCATE(force_restore_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_restore_atm_II = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_sig(n_atm,2,n_data_max),STAT=alloc_error) ; force_restore_atm_sig = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_sig_x(n_atm),STAT=alloc_error)            ; force_restore_atm_sig_x = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_tconst(n_atm),STAT=alloc_error)           ; force_restore_atm_tconst = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_sig_i(n_atm,2),STAT=alloc_error)          ; force_restore_atm_sig_i = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_restore_atm_select(n_atm),STAT=alloc_error)           ; force_restore_atm_select = .FALSE.
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_flux_ocn_k1(n_ocn,n_i,n_j),STAT=alloc_error) ; force_flux_ocn_k1 = 0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm(n_atm_all,n_i,n_j),STAT=alloc_error)    ; force_flux_atm = 0.0
+    ALLOCATE(force_flux_atm(n_atm,n_i,n_j),STAT=alloc_error)    ; force_flux_atm = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)  ; force_flux_atm_I = 0.0
+    ALLOCATE(force_flux_atm_I(n_atm,n_i,n_j),STAT=alloc_error)  ; force_flux_atm_I = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(force_flux_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error) ; force_flux_atm_II = 0.0
+    ALLOCATE(force_flux_atm_II(n_atm,n_i,n_j),STAT=alloc_error) ; force_flux_atm_II = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_sig(n_atm,2,n_data_max),STAT=alloc_error) ; force_flux_atm_sig = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_sig_x(n_atm),STAT=alloc_error)            ; force_flux_atm_sig_x = 0.0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_sig_i(n_atm,2),STAT=alloc_error)          ; force_flux_atm_sig_i = 0
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_select(n_atm),STAT=alloc_error)           ; force_flux_atm_select = .FALSE.
+    CALL check_iostat(alloc_error,__LINE__,__FILE__)
+    ALLOCATE(force_flux_atm_scale(n_atm),STAT=alloc_error)            ; force_flux_atm_scale = .FALSE.
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
 
     ALLOCATE(force_flux_sed(n_sed,n_i,n_j),STAT=alloc_error)    ; force_flux_sed = 0.0
@@ -665,9 +693,8 @@ CONTAINS
        ! NOTE: updating of restoring time-series position calculated seperately (sub: biogem_forcing)
        ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
        DO ia = 3, n_atm
-          ias = ia_ias(ia)
-          IF (force_restore_atm_select(ias)) THEN
-             loc_force_restore_atm_tmod(ia) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ias))
+          IF (force_restore_atm_select(ia)) THEN
+             loc_force_restore_atm_tmod(ia) = 1.0 - EXP(-loc_dtyr/force_restore_atm_tconst(ia))
           END IF
        END DO
        ! OCEAN TRACERS
@@ -747,7 +774,7 @@ CONTAINS
                          loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_ohm_arg,i,j,n_k)/loc_k_tot_icefree
                       end if
                    end if
-                elseif (force_flux_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2_13C)) THEN
+                elseif (force_flux_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
                    IF (force_restore_ocn_select(io_colr)) THEN
                       loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_H,i,j,n_k)/loc_k_tot_icefree
                    end if
@@ -756,7 +783,7 @@ CONTAINS
                 IF ( &
                      & (force_restore_ocn_select(io_DIC) .AND. force_restore_ocn_select(io_DIC_13C)) &
                      &  .AND. &
-                     & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ias_pCO2_13C)) &
+                     & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ia_pCO2_13C)) &
                      & ) THEN
                    loc_standard = const_standards(ocn_type(io_DIC_13C))
                    loc_force_actual_d13C = loc_force_actual_d13C + loc_k_icefree*&
@@ -1105,18 +1132,18 @@ CONTAINS
                 ! NOTE: do not calculate a restoring flux if there is also a flux forcing [special case]
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
-                   IF (force_restore_atm_select(ias) .AND. (.NOT. force_flux_atm_select(ias))) THEN
-                      IF (force_restore_atm_sig_i(ias,1) /= force_restore_atm_sig_i(ias,2)) THEN
+                   IF (force_restore_atm_select(ia) .AND. (.NOT. force_flux_atm_select(ia))) THEN
+                      IF (force_restore_atm_sig_i(ia,1) /= force_restore_atm_sig_i(ia,2)) THEN
                          ! catch missing restoring data (non-isotope tracer values < 0.0) => force restoring flux to zero
                          ! also catch 'null' isotopic values
                          SELECT CASE (atm_type(ia))
                          CASE (1)
-                            if (force_restore_atm(ias,i,j) < 0.0) force_restore_atm(ias,i,j) = dum_sfcatm1(ia,i,j)
+                            if (force_restore_atm(ia,i,j) < 0.0) force_restore_atm(ia,i,j) = dum_sfcatm1(ia,i,j)
                          case default
-                            if (force_restore_atm(ias,i,j) <= const_real_null) force_restore_atm(ias,i,j) = dum_sfcatm1(ia,i,j)
+                            if (force_restore_atm(ia,i,j) <= const_real_null) force_restore_atm(ia,i,j) = dum_sfcatm1(ia,i,j)
                          end select
                          ! set restoring flux
-                         loc_datm_restore(ia) = (force_restore_atm(ias,i,j) - dum_sfcatm1(ia,i,j))*loc_force_restore_atm_tmod(ia)
+                         loc_datm_restore(ia) = (force_restore_atm(ia,i,j) - dum_sfcatm1(ia,i,j))*loc_force_restore_atm_tmod(ia)
                          locij_fatm(ia,i,j) = (1.0/real(n_i*n_j))*conv_atm_mol*loc_datm_restore(ia)*loc_rdtyr
                          ! record (atmopsheric) flux (diagnosed from restoring) forcing
                          diag_forcing(ia,i,j) = locij_fatm(ia,i,j)
@@ -1134,7 +1161,7 @@ CONTAINS
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
                    IF (atm_type(ia) == 1) THEN
-                      if (ocnatm_airsea_eqm(ias)) then
+                      if (ocnatm_airsea_eqm(ia)) then
                          loc_tot_i = conv_atm_ocn_i(0,ias)
                          do loc_i=1,loc_tot_i
                             io = conv_atm_ocn_i(loc_i,ias)
@@ -1202,10 +1229,10 @@ CONTAINS
                 ! ATMOSPHERIC TRACERS (applied at the ocean-atmosphere interface)
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
-                   IF (force_flux_atm_select(ias)) THEN
-                      locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ias,i,j)
+                   IF (force_flux_atm_select(ia)) THEN
+                      locij_fatm(ia,i,j) = locij_fatm(ia,i,j) + force_flux_atm(ia,i,j)
                       ! record (atmopsheric) flux forcing
-                      diag_forcing(ia,i,j) = force_flux_atm(ias,i,j)
+                      diag_forcing(ia,i,j) = force_flux_atm(ia,i,j)
                    END IF
                 END DO
                 ! OCEAN TRACERS
@@ -1256,11 +1283,11 @@ CONTAINS
                      & '*** INVERSIONS ***'
                 IF (force_restore_ocn_select(io_ALK) .AND. force_flux_ocn_select(io_ALK)) THEN
                    ! (1) INVERSIONS: ocean ALK adjustment
-                   IF (force_restore_atm_select(ias_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
+                   IF (force_restore_atm_select(ia_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
                       ! (2a) ocean ALK [GEOENGINEEGING of pCO2]
                       ! NOTE: re-scale the 'target' in case the atm flux forcing has been scaled (same param applied to both)
                       loc_force_actual = dum_sfcatm1(ia_pCO2,i,j)
-                      loc_force_target = force_restore_atm(ias_pCO2,i,j)/par_atm_force_scale_val(ias_pCO2)
+                      loc_force_target = force_restore_atm(ia_pCO2,i,j)/par_atm_force_scale_val(ias_pCO2)
                       ! calculate the sign of the ALK input
                       if (loc_force_target < loc_force_actual) then
                          loc_force_sign = 1.0
@@ -1336,25 +1363,25 @@ CONTAINS
                    diag_misc_2D(idiag_misc_2D_FCa,i,j)      = sum(locijk_focn(io_Ca,i,j,:))
                 else
                    ! (2) INVERSIONS: ATMOSPHERIC pCO2
-                   IF (force_restore_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2)) THEN
+                   IF (force_restore_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2)) THEN
                       locij_fatm(ia_pCO2,i,j) = 0.0
-                      IF (force_restore_atm_select(ias_pCO2_13C) .AND. force_flux_atm_select(ias_pCO2_13C)) THEN
+                      IF (force_restore_atm_select(ia_pCO2_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
                          locij_fatm(ia_pCO2_13C,i,j) = 0.0
                          ! (2a) atmosphere pCO2-13C
                          ! NOTE: this code has a similar effect of restoring forcing, except that it allows
                          !       isotopic properties of a target signal to be followed via input/loss of carbon with a prescribed d13C
                          ! calculate local variables
-                         loc_frac = force_flux_atm(ias_pCO2_13C,i,j)/force_flux_atm(ias_pCO2,i,j)
+                         loc_frac = force_flux_atm(ia_pCO2_13C,i,j)/force_flux_atm(ia_pCO2,i,j)
                          loc_standard = const_standards(atm_type(ias_pCO2_13C))
                          loc_delta_actual = fun_calc_isotope_delta( &
                               & dum_sfcatm1(ia_pCO2,i,j),dum_sfcatm1(ia_pCO2_13C,i,j),loc_standard,.FALSE.,const_real_null &
                               & )
                          loc_delta_target = fun_calc_isotope_delta( &
-                              & force_restore_atm(ias_pCO2,i,j),force_restore_atm(ias_pCO2_13C,i,j), &
+                              & force_restore_atm(ia_pCO2,i,j),force_restore_atm(ia_pCO2_13C,i,j), &
                               & loc_standard,.FALSE.,const_real_null &
                               & )
                          loc_delta_source = fun_calc_isotope_delta( &
-                              & force_flux_atm(ias_pCO2,i,j),force_flux_atm(ias_pCO2_13C,i,j),loc_standard,.FALSE.,const_real_null &
+                              & force_flux_atm(ia_pCO2,i,j),force_flux_atm(ia_pCO2_13C,i,j),loc_standard,.FALSE.,const_real_null &
                               & )
                          ! calculate the sign of the CO2 input
                          If (loc_delta_target > loc_delta_actual) then
@@ -1374,7 +1401,7 @@ CONTAINS
                          end If
                          ! calculate flux of CO2 to atmosphere with specified d13C to approach atmospheric d13C target
                          ! NOTE: units of (mol yr-1)
-                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ia_pCO2,i,j)
                          locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
@@ -1383,18 +1410,18 @@ CONTAINS
                          ! NOTE: this code has a similar effect of restoring forcing, except that it allows
                          !       the isotopic properties of the flux to be prescribed rather than just the final isotopic state
                          ! NOTE: the threshold is set via a prescribed restoring signal
-                         If (dum_sfcatm1(ia_pCO2,i,j) > force_restore_atm(ias_pCO2,i,j)) then
+                         If (dum_sfcatm1(ia_pCO2,i,j) > force_restore_atm(ia_pCO2,i,j)) then
                             locij_fatm(ia_pCO2,i,j)     = 0.0
                             locij_fatm(ia_pCO2_13C,i,j) = 0.0
                          else
-                            locij_fatm(ia_pCO2,i,j)     = force_flux_atm(ias_pCO2,i,j)
-                            locij_fatm(ia_pCO2_13C,i,j) = force_flux_atm(ias_pCO2_13C,i,j)
+                            locij_fatm(ia_pCO2,i,j)     = force_flux_atm(ia_pCO2,i,j)
+                            locij_fatm(ia_pCO2_13C,i,j) = force_flux_atm(ia_pCO2_13C,i,j)
                          end If
                       end if
                    elseif ( &
                         & force_restore_ocn_select(io_DIC_13C) &
                         & .AND. &
-                        & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ias_pCO2_13C)) &
+                        & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ia_pCO2_13C)) &
                         & ) THEN
                       ! (3) INVERSIONS: ocean DIC d13C [SURFACE ONLY] -- DIC *OR* pCO2 fluxes ...
                       ! calculate local variables
@@ -1419,10 +1446,10 @@ CONTAINS
                               & force_flux_locn(io2l(io_DIC),i,j,n_k),force_flux_locn(io2l(io_DIC_13C),i,j,n_k), &
                               & loc_standard,.FALSE.,const_real_null &
                               & )
-                      elseIF (force_flux_atm_select(ias_pCO2_13C)) then
-                         loc_frac = force_flux_atm(ias_pCO2_13C,i,j)/force_flux_atm(ias_pCO2,i,j)
+                      elseIF (force_flux_atm_select(ia_pCO2_13C)) then
+                         loc_frac = force_flux_atm(ia_pCO2_13C,i,j)/force_flux_atm(ia_pCO2,i,j)
                          loc_delta_source = fun_calc_isotope_delta( &
-                              & force_flux_atm(ias_pCO2,i,j),force_flux_atm(ias_pCO2_13C,i,j), &
+                              & force_flux_atm(ia_pCO2,i,j),force_flux_atm(ia_pCO2_13C,i,j), &
                               & loc_standard,.FALSE.,const_real_null &
                               & )
                       else
@@ -1454,8 +1481,8 @@ CONTAINS
                          diag_misc_2D(idiag_misc_2D_FDIC_13C,i,j) = locijk_focn(io_DIC_13C,i,j,n_k)
                          locij_fatm(ia_pCO2,i,j) = 0.0
                          locij_fatm(ia_pCO2_13C,i,j) = 0.0
-                      elseIF (force_flux_atm_select(ias_pCO2_13C)) then
-                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                      elseIF (force_flux_atm_select(ia_pCO2_13C)) then
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ia_pCO2,i,j)
                          locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
@@ -1509,7 +1536,7 @@ CONTAINS
                       end DO
                    end If
                    IF (force_restore_ocn_select(io_colr)) THEN
-                      IF (force_flux_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2_13C)) THEN
+                      IF (force_flux_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
                          ! (5) INVERSIONS: ocean pH
                          loc_force_target = force_restore_locn(io2l(io_colr),i,j,n_k)
                          ! replace mean global pH by point value
@@ -1545,7 +1572,7 @@ CONTAINS
                                  & loc_standard,.FALSE.,const_real_null &
                                  & )
                             loc_delta_source = fun_calc_isotope_delta( &
-                                 & force_flux_atm(ias_pCO2,i,j),force_flux_atm(ias_pCO2_13C,i,j), &
+                                 & force_flux_atm(ia_pCO2,i,j),force_flux_atm(ia_pCO2_13C,i,j), &
                                  & loc_standard,.FALSE.,const_real_null &
                                  & )
                             ! calculate the sign of the input d13C (as a function of whether carbon is added or subtracted)
@@ -1563,11 +1590,11 @@ CONTAINS
                             loc_standard = const_standards(atm_type(ias_pCO2_13C))
                             loc_frac = fun_calc_isotope_fraction(loc_delta_source,loc_standard)
                          else
-                            loc_frac = force_flux_atm(ias_pCO2_13C,i,j)/force_flux_atm(ias_pCO2,i,j)
+                            loc_frac = force_flux_atm(ia_pCO2_13C,i,j)/force_flux_atm(ia_pCO2,i,j)
                          end IF
                          ! calculate flux of CO2 to atmosphere with specified d13C to approach atmospheric d13C target
                          ! NOTE: units of (mol yr-1)
-                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ias_pCO2,i,j)
+                         locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ia_pCO2,i,j)
                          locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2_13C,i,j) = locij_fatm(ia_pCO2_13C,i,j)
@@ -1763,10 +1790,10 @@ CONTAINS
                    END DO
                 end IF
 
-                IF (force_restore_atm_select(ias_pCO2) .AND. force_flux_atm_select(ias_pCO2)) THEN
+                IF (force_restore_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2)) THEN
                    locij_fatm(ia_pCO2,i,j) = 0.0
-                   if (force_restore_atm_select(ias_pCO2_13C)) locij_fatm(ia_pCO2_13C,i,j) = 0.0
-                   if (force_restore_atm_select(ias_pCO2_14C)) locij_fatm(ia_pCO2_14C,i,j) = 0.0
+                   if (force_restore_atm_select(ia_pCO2_13C)) locij_fatm(ia_pCO2_13C,i,j) = 0.0
+                   if (force_restore_atm_select(ia_pCO2_14C)) locij_fatm(ia_pCO2_14C,i,j) = 0.0
                 end if
              end if
 
@@ -2043,7 +2070,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock                 ! genie clock (ms since start) NOTE: 8-byte integer
 
-    INTEGER::l,io,ia,is,ias                                        ! counting indices
+    INTEGER::l,io,ia,is                                            ! counting indices
     real::loc_t                                                    ! local time
 
     ! *** CALCULATE GEM TIME ***
@@ -2056,13 +2083,8 @@ CONTAINS
     ! recalculate time-varying restoring and flux forcings of the system & fractional relaxation
     ! ATMOSPHERIC TRACERS (applied at the ocean-atmospere interface)
     DO ia = 3, n_atm
-       ias = ia_ias(ia)
-       IF (force_restore_atm_select(ias)) THEN
-          CALL sub_update_force_restore_atm(loc_t,ias)
-       END IF
-       IF (force_flux_atm_select(ias)) THEN
-          CALL sub_update_force_flux_atm(loc_t,ias)
-       END IF
+       IF (force_restore_atm_select(ia)) CALL sub_update_force_restore_atm(loc_t,ia)
+       IF (force_flux_atm_select(ia))    CALL sub_update_force_flux_atm(loc_t,ia)
     END DO
     ! OCEAN TRACERS
     DO l=1,n_l_ocn

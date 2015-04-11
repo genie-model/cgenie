@@ -158,7 +158,7 @@ CONTAINS
     ! *** calculate air-sea gas exchange fluxes ***
     DO ia = 3, n_atm
        ias = ia_ias(ia)
-       if (.NOT. ocnatm_airsea_eqm(ias)) then
+       if (.NOT. ocnatm_airsea_eqm(ia)) then
           ! set corresponding ocean tracer
           ! NOTE: assume that there is a one-to-one mapping from atm tracers to ocn tracers,
           !       with the corresponding ocean tracer index given in the i=1 index position of the conv_atm_ocn_i array
@@ -3352,7 +3352,7 @@ CONTAINS
           CASE (1)
              force_restore_atm(dum_ia,i,j) = loc_force_restore_atm
           case (n_itype_min:n_itype_max)
-             loc_tot  = force_restore_atm(atm_dep(dum_ia),i,j)
+             loc_tot  = force_restore_atm(ias_ia(atm_dep(dum_ia)),i,j)
              loc_standard = const_standards(atm_type(dum_ia))
              force_restore_atm(dum_ia,i,j) = fun_calc_isotope_fraction(loc_force_restore_atm,loc_standard)*loc_tot
           END SELECT
@@ -3393,7 +3393,7 @@ CONTAINS
              force_flux_atm(dum_ia,i,j) = loc_force_flux_atm
              loc_force_flux_atm_tot = loc_force_flux_atm_tot + loc_force_flux_atm
           case (n_itype_min:n_itype_max)
-             loc_tot  = force_flux_atm(atm_dep(dum_ia),i,j)
+             loc_tot  = force_flux_atm(ias_ia(atm_dep(dum_ia)),i,j)
              loc_standard = const_standards(atm_type(dum_ia))
              force_flux_atm(dum_ia,i,j) = fun_calc_isotope_fraction(loc_force_flux_atm,loc_standard)*loc_tot
           END SELECT

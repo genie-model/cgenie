@@ -548,7 +548,7 @@ CONTAINS
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
        DO ia = 3, n_atm
           ias = ia_ias(ia)
-          if (force_flux_atm_select(ias) .OR. force_restore_atm_select(ias)) then
+          if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
              loc_filename=fun_data_timeseries_filename( &
                   & loc_t,par_outdir_name, &
                   & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ias)),string_results_ext &
@@ -1566,7 +1566,7 @@ CONTAINS
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
        DO ia = 3, n_atm
           ias = ia_ias(ia)
-          if (force_flux_atm_select(ias) .OR. force_restore_atm_select(ias)) then
+          if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
              loc_filename=fun_data_timeseries_filename( &
                   & dum_t,par_outdir_name, &
                   & trim(par_outfile_name)//'_series_diag_misc','specified_forcing_'//TRIM(string_atm(ias)),string_results_ext &
