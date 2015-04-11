@@ -213,6 +213,7 @@ MODULE gem_cmn
 
   ! SEDIMENT TRACER INDEXES
 
+  ! Constant indexes into sed_select
   INTEGER,PARAMETER::iss_NULL1                             = 01    !
   INTEGER,PARAMETER::iss_NULL2                             = 02    !
   INTEGER,PARAMETER::iss_POC                               = 03    !
@@ -292,6 +293,87 @@ MODULE gem_cmn
   INTEGER,PARAMETER::iss_foram_b_13C                       = 40    !
   INTEGER,PARAMETER::iss_foram_b_14C                       = 41    !
   INTEGER,PARAMETER::iss_foram_b_18O                       = 42    !
+
+  ! Indexes into dynamic arrays (-1 for unused tracers)
+  INTEGER :: is_NULL1 = -1
+  INTEGER :: is_NULL2 = -1
+  INTEGER :: is_POC = -1
+  INTEGER :: is_POC_13C = -1
+  INTEGER :: is_POC_14C = -1
+  INTEGER :: is_PON = -1
+  INTEGER :: is_PON_15N = -1
+  INTEGER :: is_POP = -1
+  INTEGER :: is_POCd = -1
+  INTEGER :: is_POCd_114Cd = -1
+  INTEGER :: is_POFe = -1
+  INTEGER :: is_POI = -1
+  INTEGER :: is_POM_231Pa = -1
+  INTEGER :: is_POM_230Th = -1
+  INTEGER :: is_POM_Fe = -1
+  INTEGER :: is_POM_Fe_56Fe = -1
+  INTEGER :: is_POM_Nd = -1
+  INTEGER :: is_POM_Nd_144Nd = -1
+  INTEGER :: is_POM_MoS2 = -1
+  INTEGER :: is_POM_MoS2_98Mo = -1
+  INTEGER :: is_POM_MoS2_34S = -1
+  INTEGER :: is_POM_S = -1
+  INTEGER :: is_POM_S_34S = -1
+  INTEGER :: is_CaCO3 = -1
+  INTEGER :: is_CaCO3_13C = -1
+  INTEGER :: is_CaCO3_14C = -1
+  INTEGER :: is_CaCO3_18O = -1
+  INTEGER :: is_CaCO3_44Ca = -1
+  INTEGER :: is_CdCO3 = -1
+  INTEGER :: is_CdCO3_114Cd = -1
+  INTEGER :: is_LiCO3 = -1
+  INTEGER :: is_LiCO3_7Li = -1
+  INTEGER :: is_CaCO3_231Pa = -1
+  INTEGER :: is_CaCO3_230Th = -1
+  INTEGER :: is_CaCO3_Fe = -1
+  INTEGER :: is_CaCO3_Fe_56Fe = -1
+  INTEGER :: is_CaCO3_Nd = -1
+  INTEGER :: is_CaCO3_Nd_144Nd = -1
+  INTEGER :: is_CaCO3_MoS2 = -1
+  INTEGER :: is_CaCO3_MoS2_98Mo = -1
+  INTEGER :: is_CaCO3_MoS2_34S = -1
+  INTEGER :: is_det = -1
+  INTEGER :: is_detLi = -1
+  INTEGER :: is_detLi_7Li = -1
+  INTEGER :: is_det_231Pa = -1
+  INTEGER :: is_det_230Th = -1
+  INTEGER :: is_det_Fe = -1
+  INTEGER :: is_det_Fe_56Fe = -1
+  INTEGER :: is_det_Nd = -1
+  INTEGER :: is_det_Nd_144Nd = -1
+  INTEGER :: is_det_MoS2 = -1
+  INTEGER :: is_det_MoS2_98Mo = -1
+  INTEGER :: is_det_MoS2_34S = -1
+  INTEGER :: is_opal = -1
+  INTEGER :: is_opal_30Si = -1
+  INTEGER :: is_opalGe = -1
+  INTEGER :: is_opal_231Pa = -1
+  INTEGER :: is_opal_230Th = -1
+  INTEGER :: is_opal_Fe = -1
+  INTEGER :: is_opal_Fe_56Fe = -1
+  INTEGER :: is_opal_Nd = -1
+  INTEGER :: is_opal_Nd_144Nd = -1
+  INTEGER :: is_opal_MoS2 = -1
+  INTEGER :: is_opal_MoS2_98Mo = -1
+  INTEGER :: is_opal_MoS2_34S = -1
+  INTEGER :: is_ash = -1
+  INTEGER :: is_POC_frac2 = -1
+  INTEGER :: is_CaCO3_frac2 = -1
+  INTEGER :: is_opal_frac2 = -1
+  INTEGER :: is_CaCO3_age = -1
+  INTEGER :: is_det_age = -1
+  INTEGER :: is_CaCO3_red = -1
+  INTEGER :: is_CaCO3_blue = -1
+  INTEGER :: is_foram_p_13C = -1
+  INTEGER :: is_foram_p_14C = -1
+  INTEGER :: is_foram_p_18O = -1
+  INTEGER :: is_foram_b_13C = -1
+  INTEGER :: is_foram_b_14C = -1
+  INTEGER :: is_foram_b_18O = -1
 
   ! (carbonate) chemistry descriptors array indices
   INTEGER,PARAMETER::ic_H                                 = 01    ! H+ concentration
@@ -392,8 +474,12 @@ MODULE gem_cmn
   integer::nt_sed
 
   ! Conversions for atmospheric tracer indexes.
-  INTEGER, DIMENSION(nt_atm_all) :: ias_ia        ! "ALL" to "SELECTED"
+  INTEGER, DIMENSION(nt_atm_all) :: ias_ia       ! "ALL" to "SELECTED"
   INTEGER, DIMENSION(:), ALLOCATABLE :: ia_ias   ! "SELECTED" to "ALL"
+
+  ! Conversions for sediment tracer indexes.
+  INTEGER, DIMENSION(nt_sed_all) :: iss_is       ! "ALL" to "SELECTED"
+  INTEGER, DIMENSION(:), ALLOCATABLE :: is_iss   ! "SELECTED" to "ALL"
 
   ! conversion of selected tracer index -> absolute index
   INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_io

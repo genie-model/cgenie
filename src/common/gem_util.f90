@@ -1837,7 +1837,7 @@ CONTAINS
   ! DEFINE AND INITIALIZE SEDIMENT (sed) TRACERS
   SUBROUTINE sub_init_tracer_sed()
     ! local variables
-    INTEGER::n,is,l
+    INTEGER::n,is,l,iss
     INTEGER::loc_n_elements,loc_n_start
     INTEGER::loc_index,loc_type,loc_dep
     CHARACTER(len=16)::loc_string_name
@@ -1846,13 +1846,13 @@ CONTAINS
     CHARACTER(len=255)::loc_filename
     real::loc_min, loc_max
     ! initialize global variables
-    sed_dep(:)    = 0
-    sed_type(:)   = 0
-    string_sed_tname(:)  = ' '
-    string_sed_unit(:)   = ' '
-    string_sed_tlname(:) = ' '
-    sed_mima(:,:)        = 0.0
-    conv_is_lselected(:) = 0
+    sed_dep = 0
+    sed_type = 0
+      string_sed_tname(:)  = ' '
+      string_sed_unit(:)   = ' '
+      string_sed_tlname(:) = ' '
+    sed_mima = 0.0
+      conv_is_lselected(:) = 0
     ! check file format
     loc_filename = TRIM(par_gem_indir_name)//'tracer_define.sed'
     CALL sub_check_fileformat(loc_filename,loc_n_elements,loc_n_start)
@@ -1864,14 +1864,184 @@ CONTAINS
     END DO
     ! zero selected tracer counter
     l = 0
+    iss_is = -1
     ! count number of included ('active') tracers
-    DO n = 1,loc_n_elements
+    DO n = 1, loc_n_elements
        IF (sed_select(n)) THEN
           l = l + 1
-       end if
+          SELECT CASE (n)
+          CASE (iss_NULL1)
+             is_NULL1 = l
+          CASE (iss_NULL2)
+             is_NULL2 = l
+          CASE (iss_POC)
+             is_POC = l
+          CASE (iss_POC_13C)
+             is_POC_13C = l
+          CASE (iss_POC_14C)
+             is_POC_14C = l
+          CASE (iss_PON)
+             is_PON = l
+          CASE (iss_PON_15N)
+             is_PON_15N = l
+          CASE (iss_POP)
+             is_POP = l
+          CASE (iss_POCd)
+             is_POCd = l
+          CASE (iss_POCd_114Cd)
+             is_POCd_114Cd = l
+          CASE (iss_POFe)
+             is_POFe = l
+          CASE (iss_POI)
+             is_POI = l
+          CASE (iss_POM_231Pa)
+             is_POM_231Pa = l
+          CASE (iss_POM_230Th)
+             is_POM_230Th = l
+          CASE (iss_POM_Fe)
+             is_POM_Fe = l
+          CASE (iss_POM_Fe_56Fe)
+             is_POM_Fe_56Fe = l
+          CASE (iss_POM_Nd)
+             is_POM_Nd = l
+          CASE (iss_POM_Nd_144Nd)
+             is_POM_Nd_144Nd = l
+          CASE (iss_POM_MoS2)
+             is_POM_MoS2 = l
+          CASE (iss_POM_MoS2_98Mo)
+             is_POM_MoS2_98Mo = l
+          CASE (iss_POM_MoS2_34S)
+             is_POM_MoS2_34S = l
+          CASE (iss_POM_S)
+             is_POM_S = l
+          CASE (iss_POM_S_34S)
+             is_POM_S_34S = l
+          CASE (iss_CaCO3)
+             is_CaCO3 = l
+          CASE (iss_CaCO3_13C)
+             is_CaCO3_13C = l
+          CASE (iss_CaCO3_14C)
+             is_CaCO3_14C = l
+          CASE (iss_CaCO3_18O)
+             is_CaCO3_18O = l
+          CASE (iss_CaCO3_44Ca)
+             is_CaCO3_44Ca = l
+          CASE (iss_CdCO3)
+             is_CdCO3 = l
+          CASE (iss_CdCO3_114Cd)
+             is_CdCO3_114Cd = l
+          CASE (iss_LiCO3)
+             is_LiCO3 = l
+          CASE (iss_LiCO3_7Li)
+             is_LiCO3_7Li = l
+          CASE (iss_CaCO3_231Pa)
+             is_CaCO3_231Pa = l
+          CASE (iss_CaCO3_230Th)
+             is_CaCO3_230Th = l
+          CASE (iss_CaCO3_Fe)
+             is_CaCO3_Fe = l
+          CASE (iss_CaCO3_Fe_56Fe)
+             is_CaCO3_Fe_56Fe = l
+          CASE (iss_CaCO3_Nd)
+             is_CaCO3_Nd = l
+          CASE (iss_CaCO3_Nd_144Nd)
+             is_CaCO3_Nd_144Nd = l
+          CASE (iss_CaCO3_MoS2)
+             is_CaCO3_MoS2 = l
+          CASE (iss_CaCO3_MoS2_98Mo)
+             is_CaCO3_MoS2_98Mo = l
+          CASE (iss_CaCO3_MoS2_34S)
+             is_CaCO3_MoS2_34S = l
+          CASE (iss_det)
+             is_det = l
+          CASE (iss_detLi)
+             is_detLi = l
+          CASE (iss_detLi_7Li)
+             is_detLi_7Li = l
+          CASE (iss_det_231Pa)
+             is_det_231Pa = l
+          CASE (iss_det_230Th)
+             is_det_230Th = l
+          CASE (iss_det_Fe)
+             is_det_Fe = l
+          CASE (iss_det_Fe_56Fe)
+             is_det_Fe_56Fe = l
+          CASE (iss_det_Nd)
+             is_det_Nd = l
+          CASE (iss_det_Nd_144Nd)
+             is_det_Nd_144Nd = l
+          CASE (iss_det_MoS2)
+             is_det_MoS2 = l
+          CASE (iss_det_MoS2_98Mo)
+             is_det_MoS2_98Mo = l
+          CASE (iss_det_MoS2_34S)
+             is_det_MoS2_34S = l
+          CASE (iss_opal)
+             is_opal = l
+          CASE (iss_opal_30Si)
+             is_opal_30Si = l
+          CASE (iss_opalGe)
+             is_opalGe = l
+          CASE (iss_opal_231Pa)
+             is_opal_231Pa = l
+          CASE (iss_opal_230Th)
+             is_opal_230Th = l
+          CASE (iss_opal_Fe)
+             is_opal_Fe = l
+          CASE (iss_opal_Fe_56Fe)
+             is_opal_Fe_56Fe = l
+          CASE (iss_opal_Nd)
+             is_opal_Nd = l
+          CASE (iss_opal_Nd_144Nd)
+             is_opal_Nd_144Nd = l
+          CASE (iss_opal_MoS2)
+             is_opal_MoS2 = l
+          CASE (iss_opal_MoS2_98Mo)
+             is_opal_MoS2_98Mo = l
+          CASE (iss_opal_MoS2_34S)
+             is_opal_MoS2_34S = l
+          CASE (iss_ash)
+             is_ash = l
+          CASE (iss_POC_frac2)
+             is_POC_frac2 = l
+          CASE (iss_CaCO3_frac2)
+             is_CaCO3_frac2 = l
+          CASE (iss_opal_frac2)
+             is_opal_frac2 = l
+          CASE (iss_CaCO3_age)
+             is_CaCO3_age = l
+          CASE (iss_det_age)
+             is_det_age = l
+          CASE (iss_CaCO3_red)
+             is_CaCO3_red = l
+          CASE (iss_CaCO3_blue)
+             is_CaCO3_blue = l
+          CASE (iss_foram_p_13C)
+             is_foram_p_13C = l
+          CASE (iss_foram_p_14C)
+             is_foram_p_14C = l
+          CASE (iss_foram_p_18O)
+             is_foram_p_18O = l
+          CASE (iss_foram_b_13C)
+             is_foram_b_13C = l
+          CASE (iss_foram_b_14C)
+             is_foram_b_14C = l
+          CASE (iss_foram_b_18O)
+             is_foram_b_18O = l
+          END SELECT
+          iss_is(n) = l
+       END IF
     END DO
     ! set number of active tracers and allocate tracer index conversion array size
     nt_sed = l
+    ALLOCATE(is_iss(nt_sed))
+    l = 1
+    DO n = 1, loc_n_elements
+       IF (iss_is(n) > 0) THEN
+          is_iss(l) = n
+          l = l + 1
+       END IF
+    END DO
     ALLOCATE(conv_iselected_is(nt_sed),STAT=error)
     ALLOCATE(l2is(nt_sed),STAT=error)
     ! re-set filepipe
