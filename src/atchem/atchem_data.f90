@@ -95,7 +95,7 @@ CONTAINS
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
     INTEGER :: loc_n_atm                                       ! number of selected tracers in the re-start file
-    INTEGER, DIMENSION(n_atm_all) :: dummy_ias_ia              ! number of selected atmospheric tracers in restart
+    INTEGER, DIMENSION(nt_atm_all) :: dummy_ias_ia              ! number of selected atmospheric tracers in restart
     real,dimension(n_i,n_j)::loc_atm                           !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen

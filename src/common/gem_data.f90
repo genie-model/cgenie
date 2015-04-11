@@ -66,7 +66,7 @@ end if
   ! DEFINE SCHMIDT NUMBER COEFFICIENTS
   SUBROUTINE sub_def_schmidtnumber()
     ! Schmidt Number coefficients
-    ! NOTE: limits from 1:n_atm_all (not natm) and reversed ordering of tracer and 2nd dimension from 'normal'
+    ! NOTE: limits from 1:nt_atm_all (not natm) and reversed ordering of tracer and 2nd dimension from 'normal'
     !       because the data for this array reshaped
     ! NOTE: H2S Schmidt Number estimated from molecular weight [Lee Kump, pers com]
     par_Sc_coef(:,:) = reshape( &
@@ -92,7 +92,7 @@ end if
          &   3713.2, 243.40, 7.5879, 0.095215  & ! pCFC12
          & /), &
          & (/ &
-         &   4,n_atm_all &
+         &   4,nt_atm_all &
          & /) &
          & )
   END SUBROUTINE sub_def_schmidtnumber
@@ -103,7 +103,7 @@ end if
   ! DEFINE BUNSEN SOLUBILITY COEFFICIENT COEFFICIENTS
   SUBROUTINE sub_def_bunsencoefficient()
     !  Bunsen Solubility Coefficient coefficients
-    ! NOTE: limits from 1:n_atm_all (not natm) and reversed ordering of tracer and 2nd dimension from 'nromal'
+    ! NOTE: limits from 1:nt_atm_all (not natm) and reversed ordering of tracer and 2nd dimension from 'nromal'
     !       because the data for this array reshaped
     ! NOTE: H2S; Lee Kump [per com]
     par_bunsen_coef(:,:) = reshape( &
@@ -129,7 +129,7 @@ end if
          &   -124.4395, 185.4299, 51.6383, -0.149779,  0.094668, -0.0160043  & ! pCFC12
          & /), &
          & (/ &
-         &   6,n_atm_all &
+         &   6,nt_atm_all &
          & /) &
          & )
   END SUBROUTINE sub_def_bunsencoefficient

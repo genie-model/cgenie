@@ -17,7 +17,7 @@ MODULE atchem_lib
 
   ! ### EDIT ADD AND/OR EXTEND NAME-LIST PARAMETER AND CONTROL OPTIONS ########################################################### !
   ! ------------------- TRACER INITIALIZATION ------------------------------------------------------------------------------------ !
-  REAL,DIMENSION(n_atm_all)::atm_init                              ! atmosphere tracer array initial values
+  REAL,DIMENSION(nt_atm_all)::atm_init                              ! atmosphere tracer array initial values
   NAMELIST /ini_atchem_nml/atm_init
   ! ------------------- COSMOGENIC & RADIOGENIC PRODUCTION  ---------------------------------------------------------------------- !
   real::par_atm_F14C                                           ! Global cosmogenic production rate of 14C (mol yr-1)

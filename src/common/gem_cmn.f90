@@ -21,7 +21,7 @@ MODULE gem_cmn
   ! NOTE: these definitions must come FIRST, because the namelist arrays are dimensioned by these parameters ...
   ! WARNING: these values must be duplicated in genie_control.f90
   !          (far from an idea situation, but allows the gem carbchem code to be used independently of GENIE)
-  INTEGER,PARAMETER::n_atm_all = 19
+  INTEGER,PARAMETER::nt_atm_all = 19
   INTEGER,PARAMETER::n_ocn = 95
   INTEGER,PARAMETER::n_sed_all = 79
 
@@ -33,7 +33,7 @@ MODULE gem_cmn
 
   ! #### EDIT ADD AND/OR EXTEND NAME-LIST PARAMETER AND CONTROL OPTIONS ########################################################## !
   ! ------------------- TRACER SELECTION ----------------------------------------------------------------------------------------- !
-  LOGICAL,DIMENSION(n_atm_all)::atm_select                                  !
+  LOGICAL,DIMENSION(nt_atm_all)::atm_select                                  !
   LOGICAL,DIMENSION(n_ocn)::ocn_select                                  !
   LOGICAL,DIMENSION(n_sed_all)::sed_select                                  !
   NAMELIST /ini_gem_nml/atm_select,ocn_select,sed_select
@@ -360,24 +360,24 @@ MODULE gem_cmn
 
   ! *** tracer arrays ***
   ! tracer description - 'type'
-  INTEGER, DIMENSION(n_atm_all) :: atm_type
+  INTEGER, DIMENSION(nt_atm_all) :: atm_type
   integer,DIMENSION(n_ocn)::ocn_type
   integer,DIMENSION(n_sed_all)::sed_type
   ! tracer description - 'dependency'
-  INTEGER, DIMENSION(n_atm_all) :: atm_dep
+  INTEGER, DIMENSION(nt_atm_all) :: atm_dep
   integer,DIMENSION(n_ocn)::ocn_dep
   integer,DIMENSION(n_sed_all)::sed_dep
   ! tracer short names
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn
-  CHARACTER(len=16), DIMENSION(n_atm_all) :: string_atm
+  CHARACTER(len=16), DIMENSION(nt_atm_all) :: string_atm
   CHARACTER(len=16),DIMENSION(n_sed_all)::string_sed
   ! tracer long names (i.e., full description)
   CHARACTER(len=128),DIMENSION(n_ocn)::string_longname_ocn
-  CHARACTER(len=128), DIMENSION(n_atm_all) :: string_longname_atm
+  CHARACTER(len=128), DIMENSION(nt_atm_all) :: string_longname_atm
   CHARACTER(len=128),DIMENSION(n_sed_all)::string_longname_sed !
   ! tracer descriptions (for netCDF)
-  CHARACTER(len=12), DIMENSION(n_atm_all) :: string_atm_unit        ! main units of active atm tracers
-  REAL, DIMENSION(n_atm_all,2) :: atm_mima                          ! atm tracer min and max (for netcdf file)
+  CHARACTER(len=12), DIMENSION(nt_atm_all) :: string_atm_unit        ! main units of active atm tracers
+  REAL, DIMENSION(nt_atm_all,2) :: atm_mima                          ! atm tracer min and max (for netcdf file)
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn_tname       ! names of active ocn tracers
   CHARACTER(len=128),DIMENSION(n_ocn)::string_ocn_tlname     ! longnames of active ocn tracers
   CHARACTER(len=12),DIMENSION(n_ocn)::string_ocn_unit        ! main units of active ocn tracers
@@ -392,7 +392,7 @@ MODULE gem_cmn
   integer::n_l_sed
 
   ! Conversions for atmospheric tracer indexes.
-  INTEGER, DIMENSION(n_atm_all) :: ias_ia        ! "ALL" to "SELECTED"
+  INTEGER, DIMENSION(nt_atm_all) :: ias_ia        ! "ALL" to "SELECTED"
   INTEGER, DIMENSION(:), ALLOCATABLE :: ia_ias   ! "SELECTED" to "ALL"
 
   ! conversion of selected tracer index -> absolute index
@@ -409,8 +409,8 @@ MODULE gem_cmn
   ! tracer conversion - transformation ratios
   real,DIMENSION(n_sed_all,n_ocn)::conv_ocn_sed
   real,DIMENSION(n_ocn,n_sed_all)::conv_sed_ocn
-  real,DIMENSION(n_atm_all,n_ocn)::conv_ocn_atm
-  real,DIMENSION(n_ocn,n_atm_all)::conv_atm_ocn
+  real,DIMENSION(nt_atm_all,n_ocn)::conv_ocn_atm
+  real,DIMENSION(n_ocn,nt_atm_all)::conv_atm_ocn
   real,DIMENSION(n_sed_all,n_ocn)::conv_DOM_POM
   real,DIMENSION(n_ocn,n_sed_all)::conv_POM_DOM
   real,DIMENSION(n_sed_all,n_ocn)::conv_RDOM_POM
@@ -431,8 +431,8 @@ MODULE gem_cmn
   ! NOTE: the zero index place in the array is used in algorithms identifying null relationships (or something)
   integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_ocn_sed_i
   integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_sed_ocn_i                    ! tracer (remin) conversion array for oxygenic conditions
-  integer,DIMENSION(0:n_atm_all,0:n_ocn)::conv_ocn_atm_i
-  integer,DIMENSION(0:n_ocn,0:n_atm_all)::conv_atm_ocn_i
+  integer,DIMENSION(0:nt_atm_all,0:n_ocn)::conv_ocn_atm_i
+  integer,DIMENSION(0:n_ocn,0:nt_atm_all)::conv_atm_ocn_i
   integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_DOM_POM_i
   integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_POM_DOM_i
   integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_RDOM_POM_i
@@ -737,9 +737,9 @@ MODULE gem_cmn
   ! representative ice density (kg/m**3) [from: initialise_seaice.f]
   REAL,PARAMETER::const_rho_seaice                        = 913.0
   ! Schmidt Number coefficients
-  real,dimension(4,n_atm_all)::par_Sc_coef                                  !
+  real,dimension(4,nt_atm_all)::par_Sc_coef                                  !
   !  Bunsen Solubility Coefficient coefficients
-  real,dimension(6,n_atm_all)::par_bunsen_coef                              !
+  real,dimension(6,nt_atm_all)::par_bunsen_coef                              !
 
   ! *** miscellaneous - dummy values ***
   REAL,PARAMETER::const_real_null       = -0.999999E+19                 !

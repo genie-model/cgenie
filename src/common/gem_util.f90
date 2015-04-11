@@ -1287,7 +1287,7 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for ocn -> atm
     do io=1,n_ocn
        loc_tot_i = 0
-       DO ias = 1, n_atm_all
+       DO ias = 1, nt_atm_all
           IF (ABS(conv_ocn_atm(ias,io)) > const_real_nullsmall) THEN
              loc_tot_i = loc_tot_i + 1
              conv_ocn_atm_i(loc_tot_i,io) = ias
@@ -1296,7 +1296,7 @@ CONTAINS
        conv_ocn_atm_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for atm -> ocn
-    DO ias = 1, n_atm_all
+    DO ias = 1, nt_atm_all
        loc_tot_i = 0
        do io=1,n_ocn
           IF (ABS(conv_atm_ocn(io,ias)) > const_real_nullsmall) THEN
@@ -1716,7 +1716,7 @@ CONTAINS
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    DO ias = 1, n_atm_all
+    DO ias = 1, nt_atm_all
        IF (atm_select(ias) .AND. .NOT. atm_select(atm_dep(ias))) then
           CALL sub_report_error( &
                & 'atchem_data','sub_init_tracer_atm', &

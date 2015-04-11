@@ -1830,7 +1830,7 @@ CONTAINS
        end if
     end do
     ! ATMOSPHERE TRACERS
-    do ias=1,n_atm_all
+    do ias=1,nt_atm_all
        ia = ias_ia(ias)
        IF (atm_select(ias)) THEN
           if (.not. atm_select(atm_dep(ias))) then

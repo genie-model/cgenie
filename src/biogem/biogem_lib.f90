@@ -459,8 +459,8 @@ MODULE biogem_lib
   LOGICAL::ctrl_debug_lvl2                                       ! report 'level #2' debug?
   NAMELIST /ini_biogem_nml/ctrl_debug_lvl0,ctrl_debug_lvl1,ctrl_debug_lvl2
   ! ------------------- TRACER FORCING ------------------------------------------------------------------------------------------- !
-  REAL,DIMENSION(n_atm_all)::par_atm_force_scale_time                ! scale tracer forcing time points
-  REAL,DIMENSION(n_atm_all)::par_atm_force_scale_val                 ! scale tracer forcing value
+  REAL,DIMENSION(nt_atm_all)::par_atm_force_scale_time                ! scale tracer forcing time points
+  REAL,DIMENSION(nt_atm_all)::par_atm_force_scale_val                 ! scale tracer forcing value
   NAMELIST /ini_biogem_nml/par_atm_force_scale_time,par_atm_force_scale_val
   REAL,DIMENSION(n_ocn)::par_ocn_force_scale_time                ! scale tracer forcing time points
   REAL,DIMENSION(n_ocn)::par_ocn_force_scale_val                 ! scale tracer forcing value
