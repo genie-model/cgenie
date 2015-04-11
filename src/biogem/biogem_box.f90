@@ -30,7 +30,7 @@ CONTAINS
 
     INTEGER :: ia, ias
     ! calculate Solubility Coefficients (mol/(kg atm))
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        IF (atm_type(ias) == 1) then
           ocnatm_airsea_solconst(ia,i,j) = &
@@ -98,7 +98,7 @@ CONTAINS
     ! wind speed^2
     loc_u2 = phys_ocnatm(ipoa_wspeed,dum_i,dum_j)**2
     !  calculate piston velocity
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        IF (atm_type(ias) == 1) then
           ! calculate gas transfer Schmidt number
@@ -122,14 +122,14 @@ CONTAINS
   ! CALCULATE AIR-SEA GAS EXCHANGE
   FUNCTION fun_calc_ocnatm_flux(dum_i,dum_j,dum_atm,dum_dt)
     ! result variable
-    REAL,dimension(n_atm)::fun_calc_ocnatm_flux ! units of (mol yr-1)
+    REAL,dimension(nt_atm)::fun_calc_ocnatm_flux ! units of (mol yr-1)
     ! dummy arguments
     INTEGER,INTENT(in)::dum_i,dum_j
     REAL,dimension(:),INTENT(in)::dum_atm
     REAL,INTENT(in)::dum_dt
     ! local variables
     integer::ia,ias,io
-    REAL, DIMENSION(n_atm) :: loc_focnatm, loc_fatmocn
+    REAL, DIMENSION(nt_atm) :: loc_focnatm, loc_fatmocn
     real::loc_alpha_k,loc_alpha_alpha
     real::loc_alpha_sa,loc_alpha_as
     real::loc_rho
@@ -141,7 +141,7 @@ CONTAINS
     real::loc_A
     real::loc_r_dflux_deqm
     real::loc_buff
-    REAL, DIMENSION(n_atm) :: loc_dflux
+    REAL, DIMENSION(nt_atm) :: loc_dflux
     REAL,dimension(n_ocn)::loc_deqm
 
     ! *** INITIALIZE VARIABLES ***
@@ -156,7 +156,7 @@ CONTAINS
     loc_A = (1.0 - phys_ocnatm(ipoa_seaice,dum_i,dum_j))*phys_ocnatm(ipoa_A,dum_i,dum_j)
 
     ! *** calculate air-sea gas exchange fluxes ***
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        if (.NOT. ocnatm_airsea_eqm(ia)) then
           ! set corresponding ocean tracer

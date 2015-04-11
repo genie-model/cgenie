@@ -51,7 +51,7 @@ SUBROUTINE initialise_gem()
   if (ctrl_debug_init > 0) then
      print*,'--- TRACER SELECTION ---'
      print*,'Selected atmosphere tracers:                        : '
-     DO ia = 1, n_atm
+     DO ia = 1, nt_atm
         PRINT *, ia_ias(ia), ' = ', TRIM(string_longname_atm(ia_ias(ia)))
      END DO
      print*,'Selected ocean tracers:                             : '

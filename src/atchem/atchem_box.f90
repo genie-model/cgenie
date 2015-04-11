@@ -17,7 +17,7 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: i, j
     REAL, INTENT(IN) :: dtyr
-    REAL, DIMENSION(n_atm), INTENT(INOUT) :: fatm          ! net flux to atmosphere (mol)
+    REAL, DIMENSION(:), INTENT(INOUT) :: fatm          ! net flux to atmosphere (mol)
 
     REAL :: loc_Fatm, loc_Fterr                                ! flux to atm, flux to terrestrial biosphere
     REAL :: loc_Ratm, loc_Rterr                                ! local isotopic variables

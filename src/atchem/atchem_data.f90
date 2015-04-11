@@ -43,7 +43,7 @@ CONTAINS
     if (ctrl_debug_init > 0) then
        ! --- TRACER INITIALIZATION ----------------------------------------------------------------------------------------------- !
        print*,'--- TRACER INITIALIZATION --------------------------'
-       DO ia = 1, n_atm
+       DO ia = 1, nt_atm
           print*,'atm tracer initial value: ',trim(string_atm(ia_ias(ia))),' = ',atm_init(ia_ias(ia))
        end do
        ! --- COSMOGENIC & RADIOGENIC PRODUCTION ---------------------------------------------------------------------------------- !
@@ -94,7 +94,7 @@ CONTAINS
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
-    INTEGER :: loc_n_atm                                       ! number of selected tracers in the re-start file
+    INTEGER :: loc_nt_atm                                       ! number of selected tracers in the re-start file
     INTEGER, DIMENSION(nt_atm_all) :: dummy_ias_ia              ! number of selected atmospheric tracers in restart
     real,dimension(n_i,n_j)::loc_atm                           !
     integer::loc_ndims,loc_nvars
@@ -145,7 +145,7 @@ CONTAINS
           ! -------------------------------------------------------- ! load and apply only tracers that are selected
           IF (ctrl_debug_init == 1) print*,' * Loading restart tracers: '
           DO iv = 1, loc_nvars
-             DO ia = 1, n_atm
+             DO ia = 1, nt_atm
                 IF ('atm_' // TRIM(string_atm(ia_ias(ia))) == TRIM(loc_varname(iv))) THEN
                    IF (ctrl_debug_init == 1) PRINT *, '   ', TRIM(loc_varname(iv))
                    loc_atm = 0.0
@@ -167,7 +167,7 @@ CONTAINS
           call sub_closefile(loc_ncid)
        else
           OPEN(unit=in,status='old',file=loc_filename,form='unformatted',action='read',IOSTAT=ios)
-          read(unit=in) loc_n_atm, (dummy_ias_ia(l),l=1,loc_n_atm), (atm(l,:,:),l=1,loc_n_atm)
+          read(unit=in) loc_nt_atm, (dummy_ias_ia(l),l=1,loc_nt_atm), (atm(l,:,:),l=1,loc_nt_atm)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        endif
@@ -228,7 +228,7 @@ CONTAINS
     atm = 0.0
     ! set <atm> array
     ! NOTE: need to seed ias_T as temperature is required in order to convert between mole (total) and partial pressure
-    DO ia = 1, n_atm
+    DO ia = 1, nt_atm
        ias = ia_ias(ia)
        SELECT CASE (atm_type(ias))
        CASE (0)

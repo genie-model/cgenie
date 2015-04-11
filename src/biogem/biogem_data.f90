@@ -364,7 +364,7 @@ CONTAINS
        print*,'Report level #2 debug?                              : ',ctrl_debug_lvl2
        ! --- TRACER FORCING ------------------------------------------------------------------------------------------------------ !
        print*,'--- TRACER FORCING ---------------------------------'
-       DO ia = 1, n_atm
+       DO ia = 1, nt_atm
           ias = ia_ias(ia)
           print*,'atm tracer forcing time scale factor  : ',trim(string_atm(ias)),' = ',par_atm_force_scale_time(ias)
           print*,'atm tracer forcing value scale factor : ',trim(string_atm(ias)),' = ',par_atm_force_scale_val(ias)
@@ -2708,7 +2708,7 @@ CONTAINS
     real,DIMENSION(2)::loc_data_scale
     loc_ij = 0.0
     ! LOOP
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        IF (force_restore_atm_select(ia)) THEN
           force_restore_atm_sig_i(ia,:) = n_data_max
@@ -2927,7 +2927,7 @@ CONTAINS
     real,DIMENSION(2)::loc_data_scale
     loc_ij = 0.0
     ! LOOP
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        IF (force_flux_atm_select(ia)) THEN
           force_flux_atm_sig_i(ia,:) = n_data_max

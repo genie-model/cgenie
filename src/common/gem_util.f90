@@ -279,7 +279,7 @@ CONTAINS
   ! INITIALIZE DECAY CONSTANT ARRAYS
   SUBROUTINE sub_def_tracer_decay()
     ! set default array values
-    ALLOCATE(const_lambda_atm(n_atm)) ; const_lambda_atm = 0.0
+    ALLOCATE(const_lambda_atm(nt_atm)) ; const_lambda_atm = 0.0
     const_lambda_ocn(:) = 0.0
     const_lambda_sed(:) = 0.0
     ! atm tracers
@@ -1675,8 +1675,8 @@ CONTAINS
        end if
     END DO
     ! set number of active tracers and allocate tracer index conversion array size
-    n_atm = l
-    ALLOCATE(ia_ias(n_atm))
+    nt_atm = l
+    ALLOCATE(ia_ias(nt_atm))
     l = 1
     DO n = 1, loc_n_elements
        IF (ias_ia(n) > 0) THEN

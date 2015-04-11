@@ -78,7 +78,7 @@ CONTAINS
     END IF
     ! atmospheric tracer
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO ia = 1, n_atm
+       DO ia = 1, nt_atm
           ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ias)),string_results_ext &
@@ -139,7 +139,7 @@ CONTAINS
     END IF
     ! air-sea gas exchange
     IF (ctrl_data_save_sig_fairsea) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ias)),string_results_ext &
@@ -166,7 +166,7 @@ CONTAINS
     end IF
     ! ocean-atmosphere interface flux
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ias)),string_results_ext &
@@ -546,7 +546,7 @@ CONTAINS
     END IF
     ! forcing flux
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
              loc_filename=fun_data_timeseries_filename( &
@@ -903,7 +903,7 @@ CONTAINS
     ! NOTE: write data both as the total inventory, and as the equivalent mean partial pressure
     ! NOTE: simple conversion factor from atm to mol is used
     IF (ctrl_data_save_sig_ocnatm) THEN
-       DO ia = 1, n_atm
+       DO ia = 1, nt_atm
           ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','atm_'//TRIM(string_atm(ias)),string_results_ext &
@@ -1013,7 +1013,7 @@ CONTAINS
     ! NOTE: write data both as the total flux, and as the equivalent mean flux density
     ! NOTE: a positive value of the array represents net ocean to atmosphere transfer
     IF (ctrl_data_save_sig_fairsea) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           loc_filename = fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ias)),string_results_ext &
@@ -1054,7 +1054,7 @@ CONTAINS
     ! write ocean-atmopshere interface flux data
     ! NOTE: write data both as the total flux, and as the equivalent mean flux density
     IF (ctrl_data_save_sig_focnatm) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           loc_filename=fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','focnatm_'//TRIM(string_atm(ias)),string_results_ext &
@@ -1564,7 +1564,7 @@ CONTAINS
     !       loc_tot  = int_focnatm_sig(atm_dep(ias))/int_t_sig - int_diag_airsea_sig(ias_ia(atm_dep(ias)))/int_t_sig
     !       loc_frac = int_focnatm_sig(ia)/int_t_sig - int_diag_airsea_sig(ia)/int_t_sig
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
-       DO ia = 3, n_atm
+       DO ia = 3, nt_atm
           ias = ia_ias(ia)
           if (force_flux_atm_select(ia) .OR. force_restore_atm_select(ia)) then
              loc_filename=fun_data_timeseries_filename( &
@@ -1737,7 +1737,7 @@ CONTAINS
 
     ! *** save data - ALL ***
     ! write atmospheric data
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        SELECT CASE (atm_type(ias))
        CASE (1)
@@ -2002,7 +2002,7 @@ CONTAINS
     Write(unit=out,fmt=*) '--------------------------'
     Write(unit=out,fmt=*) 'ATMOSPHERIC PROPERTIES'
     Write(unit=out,fmt=*) ' '
-    DO ia = 3, n_atm
+    DO ia = 3, nt_atm
        ias = ia_ias(ia)
        SELECT CASE (atm_type(ias))
        CASE (1)

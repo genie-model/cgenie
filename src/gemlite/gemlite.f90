@@ -43,11 +43,11 @@ CONTAINS
     ! *** dimension tracer arrays ***
     ! NOTE: check for problems allocating array space
     ! tracer arrays
-    ALLOCATE(atm(n_atm,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(atm(nt_atm,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(datm(n_atm,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(datm(nt_atm,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(datm_sum(n_atm,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(datm_sum(nt_atm,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(ocn(n_l_ocn,n_i,n_j,n_k),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -159,7 +159,7 @@ CONTAINS
     real,DIMENSION(n_l_ocn)::loc_tot_fdis                                 ! total sediment dissolution flux
     real,DIMENSION(n_l_ocn)::loc_tot_fsed                                 ! total sedimentation flux
     real,DIMENSION(n_l_ocn)::loc_tot_fwea                                 ! total weathering flux
-    real,DIMENSION(n_atm)::loc_tot_fatm                                 !
+    real,DIMENSION(nt_atm)::loc_tot_fatm                                 !
     real::loc_datm_flux,loc_docn_flux                                     ! atmosphere & ocean tracer change from net external fluxes
     real::loc_tot_A                                                       !
     real::loc_tot_pCO2,loc_tot_fCO2                                       !
@@ -473,7 +473,7 @@ CONTAINS
        DO j=1,n_j
           ! (1) FULL GRID
           ! calculate atm exchange fluxes -- CO2 outgassing and weathering consumption (assuming no weathering short-circuiting)
-          loc_tot_fatm(3:n_atm) = loc_tot_fatm(3:n_atm) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(3:n_atm,i,j)
+          loc_tot_fatm(3:nt_atm) = loc_tot_fatm(3:nt_atm) + phys_atm_A(i,j)*dum_sfxsumatm1_gem(3:nt_atm,i,j)
           ! (2) OCEAN GRID
           loc_k1 = goldstein_k1(i,j)
           IF (n_k >= loc_k1) THEN
@@ -541,7 +541,7 @@ CONTAINS
           ! (1) atmosphere
           !     NOTE: /real(n_i*n_j) is used once in calculating a mean conversion between atm and mol,
           !           and a second time in dividing up the total flux between atm grid points
-          DO ia = 3, n_atm
+          DO ia = 3, nt_atm
              loc_datm_flux   = loc_tot_fatm(ia)/(sum(loc_conv_atm_mol(:,:))/real(n_i*n_j))/real(n_i*n_j)
              atm(ia,i,j)      = atm(ia,i,j)      + loc_datm_flux
              datm(ia,i,j)     = datm(ia,i,j)     + loc_datm_flux

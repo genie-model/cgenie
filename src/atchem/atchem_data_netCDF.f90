@@ -75,7 +75,7 @@ CONTAINS
     loc_it_2(1) = loc_id_lonm
     loc_it_2(2) = loc_id_latm
     ! -------------------------------------------------------- ! define (2D) tracer variables
-    DO ia = 1, n_atm
+    DO ia = 1, nt_atm
        ias = ia_ias(ia)
        CALL sub_defvar('atm_' // TRIM(string_atm(ias)), &
             & loc_iou, 2, loc_it_2, loc_c0, loc_c0, ' ', 'F', &
@@ -97,7 +97,7 @@ CONTAINS
     ! -------------------------------------------------------- ! write (2D) tracer variables
     loc_ij_mask(:,:) = 1.0
     loc_ij(:,:)= 0.0
-    DO ia = 1, n_atm
+    DO ia = 1, nt_atm
        loc_ij(:,:) = atm(ia,:,:)
        CALL sub_putvar2d('atm_' // TRIM(string_atm(ia_ias(ia))), loc_iou, n_i, n_j, &
             & loc_ntrec, loc_ij(:,:), loc_ij_mask(:,:))

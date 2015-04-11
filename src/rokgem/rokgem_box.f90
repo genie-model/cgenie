@@ -475,9 +475,9 @@ CONTAINS
     REAL    :: loc_weather_ratio_CaCO3
     REAL    :: n, m
 
-    REAL    :: loc_force_flux_weather_a(n_atm)                ! total fluxes (atmosphere variables)
+    REAL    :: loc_force_flux_weather_a(nt_atm)                ! total fluxes (atmosphere variables)
     REAL    :: loc_force_flux_weather_a_percell(n_ocn)        ! flux per grid cell for even distribution (atmosphere variables)
-    REAL    :: loc_force_flux_weather_a_land(n_atm,n_i,n_j)   ! fluxes out of atmosphere (atmosphere variables)
+    REAL    :: loc_force_flux_weather_a_land(nt_atm,n_i,n_j)   ! fluxes out of atmosphere (atmosphere variables)
 
     REAL    :: loc_force_flux_weather_o(n_ocn)                    ! total fluxes (ocean variables)
     REAL    :: loc_force_flux_weather_o_percell(n_ocn)                    ! flux per grid cell for even distribution (ocean variables)
@@ -918,7 +918,7 @@ CONTAINS
     ! ######################################################################################################################### !
 
     ! Spread out atmosphere variables' fluxes onto land
-    DO k = 1, n_atm
+    DO k = 1, nt_atm
        IF (k > 2) THEN
           loc_force_flux_weather_a_percell(k) = loc_force_flux_weather_a(k)/nlandcells
           loc_force_flux_weather_a_land(k,:,:) = landmask(:,:) * loc_force_flux_weather_a_percell(k)
@@ -1423,7 +1423,7 @@ CONTAINS
     REAL    :: n
     REAL    :: loc_standard
 
-    REAL    :: loc_force_flux_weather_a_land(n_atm,n_i,n_j) ! fluxes shared over land (atmosphere variables)
+    REAL    :: loc_force_flux_weather_a_land(nt_atm,n_i,n_j) ! fluxes shared over land (atmosphere variables)
     REAL    :: loc_force_flux_weather_o_land(n_ocn,n_i,n_j) ! fluxes shared over land (ocean variables)
     REAL    :: loc_force_flux_weather_o_ocean(n_ocn,n_i,n_j)              ! fluxes into coastal positions in ocean (ocean variables)
 

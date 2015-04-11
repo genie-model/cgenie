@@ -434,7 +434,7 @@ CONTAINS
   END SUBROUTINE alloc_die
 
   SUBROUTINE allocate_genie_global
-    USE gem_cmn, ONLY: n_atm
+    USE gem_cmn, ONLY: nt_atm
     IMPLICIT NONE
 
     INTEGER :: status
@@ -1019,17 +1019,17 @@ CONTAINS
     ALLOCATE(el_photo(ilon1_ocn,ilat1_ocn),STAT=status)    ; el_photo = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_sfcatm(n_atm,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
+    ALLOCATE(genie_sfcatm(nt_atm,ilon1_atm,ilat1_atm),STAT=status)     ; genie_sfcatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsumatm(n_atm,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
+    ALLOCATE(genie_sfxsumatm(nt_atm,ilon1_atm,ilat1_atm),STAT=status)  ; genie_sfxsumatm = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfcatm1(n_atm,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcatm1 = 0.0
+    ALLOCATE(genie_sfcatm1(nt_atm,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcatm1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxatm1(n_atm,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxatm1 = 0.0
+    ALLOCATE(genie_sfxatm1(nt_atm,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfxatm1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfcatm_lnd(n_atm,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfcatm_lnd = 0.0
+    ALLOCATE(genie_sfcatm_lnd(nt_atm,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfcatm_lnd = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxatm_lnd(n_atm,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfxatm_lnd = 0.0
+    ALLOCATE(genie_sfxatm_lnd(nt_atm,ilon1_lnd,ilat1_lnd),STAT=status) ; genie_sfxatm_lnd = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
     ALLOCATE(genie_sfxrok(intrac_ocn_max,ilon1_rok,ilat1_rok),STAT=status)         ; genie_sfxrok = 0.0
@@ -1038,7 +1038,7 @@ CONTAINS
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
     ALLOCATE(genie_sfxsumrok1_gem(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumrok1_gem = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
-    ALLOCATE(genie_sfxsumatm1_gem(n_atm,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumatm1_gem = 0.0
+    ALLOCATE(genie_sfxsumatm1_gem(nt_atm,ilon1_ocn,ilat1_ocn),STAT=status) ; genie_sfxsumatm1_gem = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
     ALLOCATE(genie_sfcsed(intrac_sed_max,ilon1_sed,ilat1_sed),STAT=status)     ; genie_sfcsed = 0.0
@@ -1060,7 +1060,7 @@ CONTAINS
     ALLOCATE(genie_sfcocn1(intrac_ocn_max,ilon1_ocn,ilat1_ocn),STAT=status)    ; genie_sfcocn1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
 
-    ALLOCATE(genie_atm1(n_atm,ilon1_atm,ilat1_atm),STAT=status)         ; genie_atm1 = 0.0
+    ALLOCATE(genie_atm1(nt_atm,ilon1_atm,ilat1_atm),STAT=status)         ; genie_atm1 = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)
     ALLOCATE(genie_ocn(intrac_ocn_max,ilon1_ocn,ilat1_ocn,inl1_ocn),STAT=status) ; genie_ocn = 0.0
     IF (status /= 0) CALL alloc_die(__LINE__, __FILE__)

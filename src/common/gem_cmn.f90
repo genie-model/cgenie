@@ -387,7 +387,7 @@ MODULE gem_cmn
   CHARACTER(len=12),DIMENSION(n_sed_all)::string_sed_unit        ! main units of active sed tracers
   REAL,DIMENSION(n_sed_all,2)::sed_mima                          ! sed tracer min and max (for netcdf file)
   ! number of included (selected) tracers
-  integer::n_atm
+  integer::nt_atm
   integer::n_l_ocn
   integer::n_l_sed
 
