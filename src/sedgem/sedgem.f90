@@ -214,7 +214,7 @@ CONTAINS
     ! ---------------------------------------------------------- ! INITIALIZE SEDCORES
     IF (ctrl_misc_debug2) print*, 'INITIALIZE SEDCORES'
     ! set number of sedcore array tracers
-    n_sedcore_tracer = n_l_sed
+    n_sedcore_tracer = nt_sed
     ! set number of sedcore array tracers
     ! NOTE: try and adapt the number of sedcore store layers allocated depending on runtime, e.g. 10 x kyr
     n_sedcore_tot = par_n_sedcore_tot_min + par_n_sedcore_tot_perky*int(par_misc_t_runtime/1000.0)
@@ -281,7 +281,7 @@ CONTAINS
     ! calculate fractional reduction factors for decaying isotopes
     loc_fracdecay_sed(:) = EXP(-loc_dtyr*const_lambda_sed(:))
     ! decay radioactive tracers
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        IF (abs(const_lambda_sed(is)).gt.const_real_nullsmall) THEN
           sed_top(is,:,:) = loc_fracdecay_sed(is)*sed_top(is,:,:)
@@ -514,7 +514,7 @@ CONTAINS
              ! set dissolution flux (as sediment solids)
              sed_fdis(:,i,j) = sed_fsed(:,i,j)
              ! calculate equivalent ocean tracer flux
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 loc_tot_i = conv_sed_ocn_i(0,is)
                 do loc_i=1,loc_tot_i
@@ -760,10 +760,10 @@ CONTAINS
        loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
        OPEN(unit=out,status='replace',file=loc_filename,form='unformatted',action='write')
        WRITE(unit=out)                                         &
-            & n_l_sed,                                         &
-            & (conv_iselected_is(l),l=1,n_l_sed),              &
-            & (sed(conv_iselected_is(l),:,:,:),l=1,n_l_sed),   &
-            & (sed_top(conv_iselected_is(l),:,:),l=1,n_l_sed), &
+            & nt_sed,                                         &
+            & (conv_iselected_is(l),l=1,nt_sed),              &
+            & (sed(conv_iselected_is(l),:,:,:),l=1,nt_sed),   &
+            & (sed_top(conv_iselected_is(l),:,:),l=1,nt_sed), &
             & sed_top_h(:,:)
        close(unit=out)
     end IF
@@ -970,7 +970,7 @@ CONTAINS
     ! NOTE: weight averaging by number of sub grid points(!) (whcih may not necessarily be e.g. 4!)
     DO i1=1,dum_n_i_ocn
        DO j1=1,dum_n_j_ocn
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              SELECT CASE (sed_type(is))
              case (par_sed_type_age,11:20)

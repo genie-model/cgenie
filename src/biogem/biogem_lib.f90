@@ -1093,7 +1093,7 @@ CONTAINS
     ! allocate result variable size
     ALLOCATE(fun_lib_init_vsed(1:n_vocn))
     do n=1,n_vocn
-       allocate(fun_lib_init_vsed(n)%mk(1:n_l_sed,1:n_k))
+       allocate(fun_lib_init_vsed(n)%mk(1:nt_sed,1:n_k))
     end do
     ! set result variable
     loc_n = 0
@@ -1201,7 +1201,7 @@ CONTAINS
     ! allocate result variable size
     ALLOCATE(fun_lib_conv_sedTOvsed(1:n_vocn))
     do n=1,n_vocn
-       allocate(fun_lib_conv_sedTOvsed(n)%mk(1:n_l_sed,1:n_k))
+       allocate(fun_lib_conv_sedTOvsed(n)%mk(1:nt_sed,1:n_k))
     end do
     !
     loc_n = 0
@@ -1216,7 +1216,7 @@ CONTAINS
              ! initialize, because not all 'k' depths are valid
              fun_lib_conv_sedTOvsed(loc_n)%mk(:,:) = 0.0
              DO k=n_k,loc_k1,-1
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    fun_lib_conv_sedTOvsed(loc_n)%mk(l,k) = dum_sed(is,i,j,k)
                 end DO
@@ -1276,7 +1276,7 @@ CONTAINS
        loc_j = dum_vsed(n)%j
        loc_k1 = dum_vsed(n)%k1
        DO k=n_k,loc_k1,-1
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              fun_lib_conv_vsedTOsed(is,loc_i,loc_j,k) = dum_vsed(n)%mk(l,k)
           end DO

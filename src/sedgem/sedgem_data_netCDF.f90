@@ -114,7 +114,7 @@ CONTAINS
             & string_longname_ocn(io),'Dissolution flux - '//trim(string_ocn(io)),' ')
     end DO
     ! -------------------------------------------------------- ! define (3D) tracer variables
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        call sub_defvar('sed_'//trim(string_sed(is)),loc_iou,3, &
             & loc_it_3,loc_c0,loc_c0,' ','F', &
@@ -172,7 +172,7 @@ CONTAINS
     do k = 1,n_sed_tot
        loc_ijk_mask(:,:,k) = phys_sed(ips_mask_sed,:,:)
     enddo
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ijk(:,:,:) = 0.0
        DO i = 1,n_i
@@ -414,7 +414,7 @@ CONTAINS
        !       BUT the selected sediment tracer dimension ([loc_vsedcore_rst]) is current
        ! NOTE: the k dimension is flipped in sub_getvarijk and sub_getvarijk (WHY, for the love of pony?)
        DO ll=1,loc_n_sedcore_tracer_rst
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              if (trim(loc_varname(ll)) == 'sed_'//trim(string_sed(is))) then
                 loc_mk_in(:,:) = 0.0
@@ -530,7 +530,7 @@ CONTAINS
        loc_i = loc_vsedcore(m)%i
        loc_j = loc_vsedcore(m)%j
        loc_o = loc_n_sed_stack_top(loc_i,loc_j)
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           DO o = 1,loc_o
              loc_vsedcore(m)%lay(l,loc_o - o + 2) = sed(is,loc_i,loc_j,o)
@@ -545,7 +545,7 @@ CONTAINS
           loc_i = loc_vsedcore(m)%i
           loc_j = loc_vsedcore(m)%j
           loc_o = loc_n_sed_stack_top(loc_i,loc_j)
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              DO o = 1,loc_n_sedcore_store_top(m)
                 loc_vsedcore(m)%lay(l,loc_n_sedcore_store_top(m) + loc_o - o + 2) = vsedcore_store(m)%lay(l,o)
@@ -598,7 +598,7 @@ CONTAINS
        ! NOTE: actual layer thickness is calculated as a reality check
        ! NOTE: currently assume mud porosity the same as pelagic sediments
        o = 1
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_sed(is) = loc_vsedcore(m)%lay(l,o)
        end do
@@ -617,7 +617,7 @@ CONTAINS
           loc_sedcore_th(m,o)    = 0.0
        end if
        DO o = 2,loc_n_sedcore_tot
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              loc_sed(is) = loc_vsedcore(m)%lay(l,o)
           end do
@@ -659,7 +659,7 @@ CONTAINS
        ! NOTE: un-do ash tracer conversion (leaving as cm3 per layer)
        DO o = 1,loc_n_sedcore_tot
           loc_sed(:) = 0.0
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              loc_sed(is) = loc_vsedcore(m)%lay(l,o)
           end do
@@ -676,7 +676,7 @@ CONTAINS
                 loc_sed(is_ash) = loc_sed_tot_vol*loc_sed(is_ash)
              end IF
           end if
-          DO l=1,n_l_sed
+          DO l=1,nt_sed
              is = conv_iselected_is(l)
              loc_vsedcore(m)%lay(l,o) = loc_sed(is)
           end do
@@ -721,7 +721,7 @@ CONTAINS
        ! ----------------------------------------------------- ! (f) calculate isotopic values in 'per mil' units
        ! NOTE: filter the result to remove the 'null' value when a delta cannot be calculated
        !       because this will screw up writing in the ASCII format later
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           case (n_itype_min:n_itype_max)
@@ -739,7 +739,7 @@ CONTAINS
           end SELECT
        end do
        ! ----------------------------------------------------- ! (g) normalize trace elements to bulk
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           case (par_sed_type_CaCO3)
@@ -753,7 +753,7 @@ CONTAINS
           end SELECT
        end do
        ! ----------------------------------------------------- ! (h) convert mass or volume fraction to % units
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           case (par_sed_type_bio,par_sed_type_abio)
@@ -913,7 +913,7 @@ CONTAINS
        call sub_defvar('age_14C',loc_iou,2,loc_it_2,loc_c0,loc_c0,' ','F', &
             & 'Radiocarbon age (yr)','Radioncarbon age (yr)',' ')
     end if
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        call sub_defvar('sed_'//trim(string_sed(is)),loc_iou,2, &
             & loc_it_2,loc_c0,loc_c0,' ','F', &
@@ -994,7 +994,7 @@ CONTAINS
        call sub_putvar2d('age_14C',loc_iou,nv_sedcore,loc_n_sedcore_tot,loc_ntrec,loc_mk(:,:),loc_mk_mask(:,:))
     end if
     ! -------------------------------------------------------- ! write (2D) tracer variables: sediment tracers
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_mk(:,:) = 0.0
        DO m = 1,nv_sedcore
@@ -1249,7 +1249,7 @@ CONTAINS
     ! calculate core-top sediment composition data
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! calculate local sediment preservation
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        DO i=1,n_i
           DO j=1,n_j
@@ -1309,7 +1309,7 @@ CONTAINS
 
     ! SAVE *ALL* SEDIMENT FLUXES
     ! interface flux data
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
@@ -1337,7 +1337,7 @@ CONTAINS
           call sub_putvar2d('fsed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
        END SELECT
     END DO
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
@@ -1365,7 +1365,7 @@ CONTAINS
           call sub_putvar2d('fdis_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
        END SELECT
     END DO
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i

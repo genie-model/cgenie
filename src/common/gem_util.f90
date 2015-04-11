@@ -1444,12 +1444,12 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    real,dimension(n_l_ocn,n_l_sed)::fun_conv_sedocn2lslo !
+    real,dimension(n_l_ocn,nt_sed)::fun_conv_sedocn2lslo !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    real,dimension(n_l_ocn,n_l_sed)::loc_lslo               !
+    real,dimension(n_l_ocn,nt_sed)::loc_lslo               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1484,12 +1484,12 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_l_ocn,0:n_l_sed)::fun_conv_sedocn2lslo_i !
+    integer,dimension(0:n_l_ocn,0:nt_sed)::fun_conv_sedocn2lslo_i !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    integer,dimension(0:n_l_ocn,0:n_l_sed)::loc_lslo_i               !
+    integer,dimension(0:n_l_ocn,0:nt_sed)::loc_lslo_i               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1529,12 +1529,12 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    real,dimension(n_l_sed,n_l_ocn)::fun_conv_ocnsed2lols !
+    real,dimension(nt_sed,n_l_ocn)::fun_conv_ocnsed2lols !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    real,dimension(n_l_sed,n_l_ocn)::loc_lols               !
+    real,dimension(nt_sed,n_l_ocn)::loc_lols               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1569,12 +1569,12 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! RESULT VARIABLE
     ! -------------------------------------------------------- !
-    integer,dimension(0:n_l_sed,0:n_l_ocn)::fun_conv_ocnsed2lols_i !
+    integer,dimension(0:nt_sed,0:n_l_ocn)::fun_conv_ocnsed2lols_i !
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
     INTEGER::io,is
-    integer,dimension(0:n_l_sed,0:n_l_ocn)::loc_lols_i               !
+    integer,dimension(0:nt_sed,0:n_l_ocn)::loc_lols_i               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
@@ -1871,9 +1871,9 @@ CONTAINS
        end if
     END DO
     ! set number of active tracers and allocate tracer index conversion array size
-    n_l_sed = l
-    ALLOCATE(conv_iselected_is(n_l_sed),STAT=error)
-    ALLOCATE(l2is(n_l_sed),STAT=error)
+    nt_sed = l
+    ALLOCATE(conv_iselected_is(nt_sed),STAT=error)
+    ALLOCATE(l2is(nt_sed),STAT=error)
     ! re-set filepipe
     REWIND(unit=in)
     ! goto start-of-file tag

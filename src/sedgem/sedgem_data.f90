@@ -209,7 +209,7 @@ CONTAINS
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
-    integer::loc_n_l_sed                                       ! number of selected tracers in the re-start file
+    integer::loc_nt_sed                                       ! number of selected tracers in the re-start file
     integer,DIMENSION(nt_sed_all)::loc_conv_iselected_is            ! number of selected sediment tracers in restart
     real,dimension(n_i,n_j)::loc_ij                            !
 !!!real,dimension(n_i,n_j,n_sed_tot)::loc_ijk
@@ -296,7 +296,7 @@ CONTAINS
           ! NOTE: the k dimension is flipped in sub_getvarijk
           IF (ctrl_debug_init == 1) print*,' * Loading sediment stack restart tracers: '
           DO iv=1,loc_nvars
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 if ('sed_'//trim(string_sed(is)) == trim(loc_varname(iv))) then
                    IF (ctrl_debug_init == 1) print*,'   ',trim(loc_varname(iv))
@@ -363,12 +363,12 @@ CONTAINS
        else
           OPEN(unit=in,status='old',file=loc_filename,form='unformatted',action='read',IOSTAT=ios)
           read(unit=in,iostat=ios)                                        &
-               & loc_n_l_sed,                                             &
-               & (loc_conv_iselected_is(l),l=1,loc_n_l_sed),              &
-               & (sed(loc_conv_iselected_is(l),:,:,:),l=1,loc_n_l_sed),   &
-               & (sed_top(loc_conv_iselected_is(l),:,:),l=1,loc_n_l_sed), &
+               & loc_nt_sed,                                             &
+               & (loc_conv_iselected_is(l),l=1,loc_nt_sed),              &
+               & (sed(loc_conv_iselected_is(l),:,:,:),l=1,loc_nt_sed),   &
+               & (sed_top(loc_conv_iselected_is(l),:,:),l=1,loc_nt_sed), &
                & sed_top_h(:,:),                                          &
-               & (dum_sfxsumsed(conv_iselected_is(l),:,:),l=1,loc_n_l_sed)
+               & (dum_sfxsumsed(conv_iselected_is(l),:,:),l=1,loc_nt_sed)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
        endif
@@ -629,7 +629,7 @@ CONTAINS
     sed_fsed(:,:,:) = 0.0                !
     sed_fdis(:,:,:) = 0.0                !
     ! set up conversion of mol -> cm3 and cm3 -> g (and reciprocals)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        ! criterion for particulate organic matter (POM), elemental components, and particle-reactive scavenged elements
        if ((sed_dep(is) == is_POC .AND. sed_type(is) < 10) .OR. (sed_type(is) == par_sed_type_POM)) then
@@ -1153,7 +1153,7 @@ CONTAINS
     loc_fsed(:,:,:) = (sed_fsed(:,:,:) + sed_fsed_OLD(:,:,:))/loc_dt
     loc_fdis(:,:,:) = (sed_fdis(:,:,:) + sed_fdis_OLD(:,:,:))/loc_dt
     ! calculate local sediment preservation (normalized fraction)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        DO i=1,n_i
           DO j=1,n_j
@@ -1698,7 +1698,7 @@ CONTAINS
     real::loc_ash_tot                                                  !
     INTEGER,DIMENSION(n_i,n_j)::loc_n_sed_stack_top    ! sediment stack top layer number
     REAL,DIMENSION(n_i,n_j)::loc_sed_stack_top_th      ! sediment stack top layer thickness
-    integer::loc_l,loc_n_l_sed                                         !
+    integer::loc_l,loc_nt_sed                                         !
     integer,DIMENSION(n_sed_tot)::loc_conv_iselected_is                !
 
     ! *** initialize variables ***
@@ -1896,7 +1896,7 @@ CONTAINS
              ! *** (i) calculate isotopic values in 'per mil' units
              !         NOTE: filter the result to remove the 'null' value when a delta cannot be calculated
              !               because this will screw up writing in the ASCII format later
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 SELECT CASE (sed_type(is))
                 case (n_itype_min:n_itype_max)
@@ -1915,7 +1915,7 @@ CONTAINS
              end do
 
              ! *** (h) convert mass or volume fraction to % units
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 SELECT CASE (sed_type(is))
                 case (par_sed_type_bio,par_sed_type_abio)
@@ -1955,7 +1955,7 @@ CONTAINS
     ! define sub-set of selected tracer to be saved
     loc_conv_iselected_is(:) = 0
     loc_l = 0
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        SELECT CASE (sed_type(is))
        CASE (par_sed_type_bio,par_sed_type_abio,n_itype_min:n_itype_max)
@@ -1963,7 +1963,7 @@ CONTAINS
           loc_conv_iselected_is(loc_l) = is
        END SELECT
     end DO
-    loc_n_l_sed = loc_l
+    loc_nt_sed = loc_l
     ! save data
     DO i = 1,n_i
        DO j = 1,n_j
@@ -1983,7 +1983,7 @@ CONTAINS
                   & '     14C age',                              &
                   & ' D14C (o/oo)',                              &
                   & ' Phi (cm3 cm-3)',                           &
-                  & (trim(string_sed(loc_conv_iselected_is(loc_l))),loc_l=1,loc_n_l_sed)
+                  & (trim(string_sed(loc_conv_iselected_is(loc_l))),loc_l=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              o = 0
              write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -1995,7 +1995,7 @@ CONTAINS
                   & loc_sed_save_age_14C(i,j,o),                           &
                   & loc_sed_save_CaCO3_D14C(i,j,o),                        &
                   & loc_sed_save_poros(i,j,o),                             &
-                  & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_n_l_sed)
+                  & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              o = 1
              write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -2007,7 +2007,7 @@ CONTAINS
                   & loc_sed_save_age_14C(i,j,o),                           &
                   & loc_sed_save_CaCO3_D14C(i,j,o),                        &
                   & loc_sed_save_poros(i,j,o),                             &
-                  & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_n_l_sed)
+                  & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              do o=2,n_sed_tot
                 write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -2019,7 +2019,7 @@ CONTAINS
                      & loc_sed_save_age_14C(i,j,o),                                      &
                      & loc_sed_save_CaCO3_D14C(i,j,o),                                   &
                      & loc_sed_save_poros(i,j,o),                                        &
-                     & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_n_l_sed)
+                     & (loc_sed_save(loc_conv_iselected_is(loc_l),i,j,o),loc_l=1,loc_nt_sed)
                 call check_iostat(ios,__LINE__,__FILE__)
              end do
              CLOSE(unit=out,iostat=ios)
@@ -2093,7 +2093,7 @@ CONTAINS
     ! calculate core-top sediment composition data
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! calculate local sediment preservation (%)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        DO i=1,n_i
           DO j=1,n_j
@@ -2122,7 +2122,7 @@ CONTAINS
     CALL sub_save_data_ij(loc_filename,n_i,n_j,phys_sed(ips_lone,:,:) - phys_sed(ips_dlon,:,:))
     ! save interface flux data
     ! NOTE: flux data must be converted from units of (mol cm-2) to (mol cm-2 yr-1)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
@@ -2147,7 +2147,7 @@ CONTAINS
           CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
        END SELECT
     END DO
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
@@ -2172,7 +2172,7 @@ CONTAINS
           CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
        END SELECT
     END DO
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
@@ -2252,7 +2252,7 @@ CONTAINS
     ! save core-top data
     ! NOTE: the call to fun_sed_coretop made in populating <loc_sed_coretop> has already made the necessary type conversions
     !       for solid tracers as wt%, isotopes in per mill, and recovery of the carbonate 'age' value
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        SELECT CASE (sed_type(is))
        CASE (par_sed_type_bio,par_sed_type_abio,par_sed_type_age,n_itype_min:n_itype_max)

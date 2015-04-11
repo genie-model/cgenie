@@ -444,7 +444,7 @@ CONTAINS
     integer::ios                                               !
     integer::loc_ncid                                          !
     CHARACTER(len=255)::loc_filename                           ! filename string
-    integer::loc_n_l_ocn,loc_n_l_sed                           ! number of selected tracers in the re-start file
+    integer::loc_n_l_ocn,loc_nt_sed                           ! number of selected tracers in the re-start file
     integer,DIMENSION(n_ocn)::loc_conv_iselected_io            ! number of selected ocean tracers in restart
     integer,DIMENSION(nt_sed_all)::loc_conv_iselected_is            !
     real,dimension(n_i,n_j,n_k)::loc_ocn,loc_part              !
@@ -509,7 +509,7 @@ CONTAINS
           end DO
           IF (ctrl_debug_init == 1) print*,' * Loading ocean restart fields (particulate tracers): '
           DO iv=1,loc_nvars
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 if ('bio_part_'//trim(string_sed(is)) == trim(loc_varname(iv))) then
                    IF (ctrl_debug_init == 1) print*,'   ',trim(loc_varname(iv))
@@ -536,9 +536,9 @@ CONTAINS
                & loc_n_l_ocn,                                               &
                & (loc_conv_iselected_io(l),l=1,loc_n_l_ocn),                &
                & (ocn(loc_conv_iselected_io(l),:,:,:),l=1,loc_n_l_ocn),     &
-               & loc_n_l_sed,                                               &
-               & (loc_conv_iselected_is(l),l=1,loc_n_l_sed),                &
-               & (bio_part(loc_conv_iselected_is(l),:,:,:),l=1,loc_n_l_sed)
+               & loc_nt_sed,                                               &
+               & (loc_conv_iselected_is(l),l=1,loc_nt_sed),                &
+               & (bio_part(loc_conv_iselected_is(l),:,:,:),l=1,loc_nt_sed)
           call check_iostat(ios,__LINE__,__FILE__)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
@@ -1720,7 +1720,7 @@ CONTAINS
     ! check that the necessary dissolved organic matter tracers have been selected for each particulate (sed) tracer selected and
     ! de-select all DOM tracers (including dependents) if no DOM production is specified
     if (par_bio_red_DOMfrac > const_real_nullsmall) then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_tot_i = conv_POM_DOM_i(0,is)
           do loc_i=1,loc_tot_i
@@ -2024,7 +2024,7 @@ CONTAINS
 
     ! *** parameter consistency check - selected sediment-ocean tracer option combinations ***
     if (par_bio_prodopt /= 'NONE') then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           select case (sed_type(is))
           case (par_sed_type_bio,par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_scavenged, &
@@ -3017,7 +3017,7 @@ CONTAINS
     real,DIMENSION(2)::loc_data_scale
     loc_ij = 0.0
     ! LOOP
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        IF (force_flux_sed_select(is)) THEN
           force_flux_sed_sig_i(is,:) = n_data_max

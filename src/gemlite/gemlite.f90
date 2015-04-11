@@ -488,7 +488,7 @@ CONTAINS
              !       (hence (mol m-2 yr-1))
              ! NOTE: negative sign (== loss from ocean)
              loc_fsed(:) = 0.0
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 loc_tot_i = conv_sed_ocn_i(0,is)
                 do loc_i=1,loc_tot_i

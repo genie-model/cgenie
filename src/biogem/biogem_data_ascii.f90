@@ -106,7 +106,7 @@ CONTAINS
     END IF
     ! export flux
     IF (ctrl_data_save_sig_fexport) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','fexport_'//TRIM(string_sed(is)),string_results_ext &
@@ -195,7 +195,7 @@ CONTAINS
     END IF
     ! ocean->sediment flux
     IF (ctrl_data_save_sig_focnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','focnsed_'//TRIM(string_sed(is)),string_results_ext &
@@ -288,7 +288,7 @@ CONTAINS
     end if
     ! core-top sediment composition
     IF (ctrl_data_save_sig_ocnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & loc_t,par_outdir_name,trim(par_outfile_name)//'_series','sed_'//TRIM(string_sed(is)),string_results_ext &
@@ -955,7 +955,7 @@ CONTAINS
     ! write export flux data
     ! NOTE: write data both as mole and mass flux
     IF (ctrl_data_save_sig_fexport) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','fexport_'//TRIM(string_sed(is)),string_results_ext &
@@ -1096,7 +1096,7 @@ CONTAINS
     ! NOTE: write data both as the total flux, and as the equivalent mean flux density
     ! NOTE: the surface ocean area is used as a proxy for the ocean bottom area
     IF (ctrl_data_save_sig_focnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','focnsed_'//TRIM(string_sed(is)),string_results_ext &
@@ -1196,7 +1196,7 @@ CONTAINS
     ! NOTE: the call to fun_sed_coretop made in populating <loc_sed_coretop> has already made the necessary type conversions
     !       for solid tracers as wt%, isotopes in per mill, and recovery of the carbonate 'age' value
     IF (ctrl_data_save_sig_ocnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_filename=fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','sed_'//TRIM(string_sed(is)),string_results_ext &
@@ -1810,7 +1810,7 @@ CONTAINS
        end SELECT
     END DO
     ! write export data
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        SELECT CASE (sed_type(is))
        CASE (1,2,4)
@@ -2106,7 +2106,7 @@ CONTAINS
     Write(unit=out,fmt=*) '------------------------------'
     Write(unit=out,fmt=*) 'SURFACE EXPORT PRODUCTION'
     Write(unit=out,fmt=*) ' '
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        SELECT CASE (sed_type(is))
        CASE (1,2,4)
@@ -2138,7 +2138,7 @@ CONTAINS
     Write(unit=out,fmt=*) '------------------------------'
     Write(unit=out,fmt=*) 'SEDIMENTATION'
     Write(unit=out,fmt=*) ' '
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        SELECT CASE (sed_type(is))
        CASE (1,2,4)

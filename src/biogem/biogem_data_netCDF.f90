@@ -95,7 +95,7 @@ CONTAINS
             & string_longname_ocn(io),'Ocean tracer - '//trim(string_ocn(io)),' ')
     end do
     ! -------------------------------------------------------- ! define (3D) tracer variables -- particulate
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        call sub_defvar('bio_part_'//trim(string_sed(is)),loc_iou,3,loc_it_3,loc_c0,loc_c0,' ','F', &
             & string_longname_sed(is),'Particulate tracer - '//trim(string_sed(is)),' ')
@@ -127,7 +127,7 @@ CONTAINS
     end do
     ! -------------------------------------------------------- ! write (3D) tracer variables -- particulate
     loc_ijk_mask(:,:,:) = phys_ocn(ipo_mask_ocn,:,:,:)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_ijk(:,:,:) = bio_part(is,:,:,:)
        call sub_putvar3d('bio_part_'//trim(string_sed(is)),loc_iou,n_i,n_j,n_k,loc_ntrec, &
@@ -1573,7 +1573,7 @@ CONTAINS
     !       save ocn->sed interface flux data
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_focnsed) then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
@@ -1648,7 +1648,7 @@ CONTAINS
     !       save core-top sediment composition data
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_ocnsed) then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio)
@@ -2177,7 +2177,7 @@ CONTAINS
     !----------------------------------------------------------------
     loc_sed_mask = loc_mask
     If (ctrl_data_save_slice_bio .AND. ctrl_data_save_derived) then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_ijk(:,:,:) = const_real_zero
           DO i=1,n_i
@@ -2214,7 +2214,7 @@ CONTAINS
     !       PARTICULATE FLUXES
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_bio) then
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_ijk(:,:,:) = const_real_zero
           !---------------------------------------------------------- flux density
@@ -2772,7 +2772,7 @@ CONTAINS
 
     ! NOTE: write data both as mole and mass flux
     IF (ctrl_data_save_sig_fexport) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio, &
@@ -2849,7 +2849,7 @@ CONTAINS
     !       flux density the surface ocean area is used as a proxy for the
     !       ocean bottom area
     IF (ctrl_data_save_sig_focnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio, &
@@ -2941,7 +2941,7 @@ CONTAINS
     !       has already had the necessary type conversions made
     !       (i.e., isotopes in per mill, solid tracers as mass (or volume) fraction, etc)
     IF (ctrl_data_save_sig_ocnsed) THEN
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           SELECT CASE (sed_type(is))
           CASE (par_sed_type_bio,par_sed_type_abio, &

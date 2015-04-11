@@ -389,7 +389,7 @@ MODULE gem_cmn
   ! number of included (selected) tracers
   integer::nt_atm
   integer::n_l_ocn
-  integer::n_l_sed
+  integer::nt_sed
 
   ! Conversions for atmospheric tracer indexes.
   INTEGER, DIMENSION(nt_atm_all) :: ias_ia        ! "ALL" to "SELECTED"

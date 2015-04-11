@@ -388,9 +388,9 @@ CONTAINS
        call check_iostat(alloc_error,__LINE__,__FILE__)
        allocate(vbio_remin(n)%mk(1:n_l_ocn,1:n_k),STAT=alloc_error)
        call check_iostat(alloc_error,__LINE__,__FILE__)
-       allocate(vbio_part(n)%mk(1:n_l_sed,1:n_k),STAT=alloc_error)
+       allocate(vbio_part(n)%mk(1:nt_sed,1:n_k),STAT=alloc_error)
        call check_iostat(alloc_error,__LINE__,__FILE__)
-       allocate(vdbio_part(n)%mk(1:n_l_sed,1:n_k),STAT=alloc_error)
+       allocate(vdbio_part(n)%mk(1:nt_sed,1:n_k),STAT=alloc_error)
        call check_iostat(alloc_error,__LINE__,__FILE__)
        allocate(vphys_ocn(n)%mk(1:n_phys_ocn,1:n_k),STAT=alloc_error)
        call check_iostat(alloc_error,__LINE__,__FILE__)
@@ -617,7 +617,7 @@ CONTAINS
     real::loc_force_actual_d13C
     real::loc_force_actual_d44Ca
     real,dimension(1:n_l_ocn)::loc_vocn                            !
-    real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                !
+    real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo                !
 
     loc_debug_ij = .FALSE.
 
@@ -753,7 +753,7 @@ CONTAINS
                    loc_fseddis_tot(io) = loc_fseddis_tot(io) + loc_dts*phys_ocn(ipo_A,i,j,loc_k1)*dum_sfxocn1(io,i,j)
                 end DO
                 ! settling flux (mol per time step)
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    loc_tot_i = conv_sed_ocn_i(0,is)
                    do loc_i=1,loc_tot_i
@@ -859,7 +859,7 @@ CONTAINS
                    end IF
                 end do
                 ! SEDIMENT TRACERS
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    IF (abs(const_lambda_sed(is)).gt.const_real_nullsmall) THEN
                       DO k=loc_k1,n_k
@@ -916,7 +916,7 @@ CONTAINS
                          loc_vocn(l) = ocn(l2io(l),i,j,loc_k1)
                       end DO
                       call sub_box_remin_redfield(loc_vocn,loc_conv_ls_lo(:,:))
-                      DO ls=1,n_l_sed
+                      DO ls=1,nt_sed
                          loc_tot_i = conv_ls_lo_i(0,ls)
                          do loc_i=1,loc_tot_i
                             lo = conv_ls_lo_i(loc_i,ls)
@@ -1247,7 +1247,7 @@ CONTAINS
                 ! SEDIMENT TRACERS #1
                 ! NOTE: currently, fluxes are valid at the ocean surface only
                 ! NOTE: addition is made directly to particulate sedimentary tracer array (scaled by time-step and cell mass)
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    IF (force_flux_sed_select(is)) THEN
                       locijk_fpart(is,i,j,n_k) = locijk_fpart(is,i,j,n_k) + force_flux_sed(is,i,j)
@@ -1748,7 +1748,7 @@ CONTAINS
                 !       the value of the particulate flux to sediments local array <locij_ocnsed> is zero
                 ! NOTE: for particulate fractions (type 9) -- scale by time such that the fraction is preserved
                 !       when passed through the ocean  -> sediment interface (the time scaling here is trial-and-error chosen!)
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    locij_focnsed(is,i,j) = bio_settle(is,i,j,loc_k1)
                    SELECT CASE (sed_type(is))
@@ -1773,7 +1773,7 @@ CONTAINS
                    ! update net integrated fluxes into the ocean for tracer inventory auditing (if selected)
                    ! NOTE: take into account any sediment tracer flux forcing
                    loc_ocnsed_audit(:) = -locij_fsedocn(:,i,j) - locij_frokocn(:,i,j)
-                   DO l=1,n_l_sed
+                   DO l=1,nt_sed
                       is = conv_iselected_is(l)
                       loc_tot_i = conv_sed_ocn_i(0,is)
                       do loc_i=1,loc_tot_i
@@ -1824,7 +1824,7 @@ CONTAINS
                 vdocn(n)%mk(l,k) = bio_remin(io,loc_i,loc_j,k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
                 vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
              end do
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 vdbio_part(n)%mk(l,k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,k)
                 vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
@@ -2023,8 +2023,8 @@ CONTAINS
                   & vdocn(n)%mk(3:n_l_ocn,k)
              vocn(n)%mk(3:n_l_ocn,k) = loc_Sratio*vocn(n)%mk(3:n_l_ocn,k)
              ! ---------------------------------------------- ! adjust particulate tracer concentrations
-             vbio_part(n)%mk(1:n_l_sed,k) = vbio_part(n)%mk(1:n_l_sed,k) + vdbio_part(n)%mk(1:n_l_sed,k)
-             vbio_part(n)%mk(1:n_l_sed,k) = loc_Sratio*vbio_part(n)%mk(1:n_l_sed,k)
+             vbio_part(n)%mk(1:nt_sed,k) = vbio_part(n)%mk(1:nt_sed,k) + vdbio_part(n)%mk(1:nt_sed,k)
+             vbio_part(n)%mk(1:nt_sed,k) = loc_Sratio*vbio_part(n)%mk(1:nt_sed,k)
              ! ---------------------------------------------- ! update GOLDSTEIn tracer arrays and salinity-normalize
              loc_vts(n)%mk(1:2,k)       = loc_vocn(n)%mk(1:2,k) - tstoocn_offset(1:2)
              loc_vts(n)%mk(3:n_l_ocn,k) = (loc_ocn_mean_S_NEW/vocn(n)%mk(2,k))*vocn(n)%mk(3:n_l_ocn,k)
@@ -2097,7 +2097,7 @@ CONTAINS
        END IF
     END DO
     ! SEDIMENT TRACERS (applied at the ocean surface)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        IF (force_flux_sed_select(is)) THEN
           CALL sub_update_force_flux_sed(loc_t,is)
@@ -2280,7 +2280,7 @@ CONTAINS
           DO j=1,n_j
              loc_k1 = goldstein_k1(i,j)
              IF (n_k >= loc_k1) THEN
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    loc_tot_i = conv_sed_ocn_i(0,is)
                    do loc_i=1,loc_tot_i
@@ -2324,9 +2324,9 @@ CONTAINS
             & n_l_ocn,                                           &
             & (conv_iselected_io(l),l=1,n_l_ocn),                &
             & (ocn(conv_iselected_io(l),:,:,:),l=1,n_l_ocn),     &
-            & n_l_sed,                                           &
-            & (conv_iselected_is(l),l=1,n_l_sed),                &
-            & (bio_part(conv_iselected_is(l),:,:,:),l=1,n_l_sed)
+            & nt_sed,                                           &
+            & (conv_iselected_is(l),l=1,nt_sed),                &
+            & (bio_part(conv_iselected_is(l),:,:,:),l=1,nt_sed)
        call check_iostat(ios,__LINE__,__FILE__)
        close(unit=out,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
@@ -2458,7 +2458,7 @@ CONTAINS
                          locij_focnatm(3:nt_atm,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(3:nt_atm,i,j)
                          ! ocn->sed
                          ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
-                         DO l=1,n_l_sed
+                         DO l=1,nt_sed
                             is = conv_iselected_is(l)
                             locij_focnsed(is,i,j) = loc_dts*phys_ocn(ipo_A,i,j,loc_k1)*dum_sfxsed1(is,i,j)
                          end DO
@@ -2780,7 +2780,7 @@ CONTAINS
                       locij_focnatm(3:nt_atm,i,j) = conv_yr_s*phys_ocnatm(ipoa_A,i,j)*dum_sfxatm1(3:nt_atm,i,j)
                       ! ocn->sed
                       ! NOTE: convert units from (mol m-2 s-1) to (mol per timestep)
-                      DO l=1,n_l_sed
+                      DO l=1,nt_sed
                          is = conv_iselected_is(l)
                          locij_focnsed(is,i,j) = loc_dts*phys_ocn(ipo_A,i,j,loc_k1)*dum_sfxsed1(is,i,j)
                       end DO
@@ -2835,7 +2835,7 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_fexport) THEN
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    int_fexport_sig(is) = int_fexport_sig(is) + &
                         & SUM(bio_settle(is,:,:,n_k))
@@ -2848,7 +2848,7 @@ CONTAINS
                 END DO
              end if
              IF (ctrl_data_save_sig_focnsed) THEN
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    int_focnsed_sig(is) = int_focnsed_sig(is) + &
                         & SUM(locij_focnsed(is,:,:))
@@ -2948,7 +2948,7 @@ CONTAINS
              !        1.0% for wt% opal
              !        0.1% for wt% det
              IF (ctrl_data_save_sig_ocnsed) THEN
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    SELECT CASE (sed_type(is))
                    CASE (par_sed_type_bio,par_sed_type_abio, &

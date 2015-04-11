@@ -1193,7 +1193,7 @@ CONTAINS
     ! NOTE: put everything into particulate form initially, but re-scale later to account for DOM export
     bio_part(is_POC,dum_i,dum_j,loc_k_mld:n_k) = bio_part_red(is_POP,is_POC,dum_i,dum_j)*loc_dPO4
     ! -------------------------------------------------------- ! set bulk export (CaCO3, opal)
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        select case (sed_type(is))
        case (par_sed_type_bio)
@@ -1205,7 +1205,7 @@ CONTAINS
     ! CALCULATE ASSOCIATED ELEMENTAL EXPORT
     ! -------------------------------------------------------- !
     ! NOTE: scavenging is handled elsewhere
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        select case (sed_type(is))
        case (par_sed_type_POM)
@@ -1244,7 +1244,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! CALCULATE ASSOCIATED ISOTOPIC EXPORT
     ! -------------------------------------------------------- !
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        select case (sed_type(is))
        case (n_itype_min:n_itype_max)
@@ -1256,7 +1256,7 @@ CONTAINS
     ! CALCULATE INORGANIC UPTAKE
     ! -------------------------------------------------------- !
     ! convert particulate sediment tracer indexed array concentrations to (dissolved) tracer indexed array
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        loc_tot_i = conv_sed_ocn_i(0,is)
        do loc_i=1,loc_tot_i
@@ -1313,7 +1313,7 @@ CONTAINS
     ! RE-SCALE FOR DISSOLVED ORGANIC MATTER PRODUCTION
     ! -------------------------------------------------------- !
     ! calculate DOM components and adjust POM accordingly
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        ! create DOM fraction
        loc_tot_i = conv_POM_DOM_i(0,is)
@@ -1539,7 +1539,7 @@ CONTAINS
        io = conv_iselected_io(l)
        loc_bio_uptake(io,:) = 0.0
     end do
-    DO l=3,n_l_sed
+    DO l=3,nt_sed
        is = conv_iselected_is(l)
        loc_bio_uptake(is,:) = 0.0
     end DO
@@ -1640,7 +1640,7 @@ CONTAINS
           end if
        end if
        ! convert particulate sediment tracer indexed array concentrations to (dissolved) tracer indexed array
-       DO l=1,n_l_sed
+       DO l=1,nt_sed
           is = conv_iselected_is(l)
           loc_tot_i = conv_sed_ocn_i(0,is)
           do loc_i=1,loc_tot_i
@@ -1657,7 +1657,7 @@ CONTAINS
     end do
 
     ! *** SET MODIFICATION OF PARTICULATE CONCENTRATIONS ***
-    DO l=3,n_l_sed
+    DO l=3,nt_sed
        is = conv_iselected_is(l)
        bio_part(is,dum_i,dum_j,:) = bio_part(is,dum_i,dum_j,:) + loc_bio_part(is,:)
     end DO
@@ -2298,7 +2298,7 @@ CONTAINS
     real,dimension(n_l_ocn,n_k)::loc_vbio_remin                         !
     real,dimension(nt_sed_all,n_k)::loc_bio_part                             !
     integer::loc_i,loc_j,loc_k1
-    real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                       !
+    real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo                       !
 
     ! *** INITIALIZE VARIABLES ***
     ! set local grid point (i,j) information
@@ -2387,7 +2387,7 @@ CONTAINS
        call sub_box_remin_redfield(dum_vocn%mk(:,k),loc_conv_ls_lo(:,:))
        ! (2) carry out actual remin
        !     NOTE: catch non-selected tracers (index 0 in the conversion io -> l)
-       DO ls=1,n_l_sed
+       DO ls=1,nt_sed
           loc_tot_m = conv_ls_lo_i(0,ls)
           do loc_m=1,loc_tot_m
              lo = conv_ls_lo_i(loc_m,ls)
@@ -2438,17 +2438,17 @@ CONTAINS
     real::loc_bio_remin_opal_frac1,loc_bio_remin_opal_frac2
     real::loc_bio_part_opal_ratio
     real::loc_part_tot
-    real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                       !
+    real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo                       !
 
     integer::dum_i,dum_j
     integer::loc_m
 
-    real,dimension(1:n_l_sed,1:n_k)::loc_bio_part_TMP
-    real,dimension(1:n_l_sed,1:n_k)::loc_bio_part_OLD
-    real,dimension(1:n_l_sed,1:n_k)::loc_bio_part
+    real,dimension(1:nt_sed,1:n_k)::loc_bio_part_TMP
+    real,dimension(1:nt_sed,1:n_k)::loc_bio_part_OLD
+    real,dimension(1:nt_sed,1:n_k)::loc_bio_part
     real,dimension(1:n_l_ocn,1:n_k)::loc_bio_remin
-    real,dimension(1:n_l_sed,1:n_k)::loc_bio_settle
-    real,dimension(1:n_l_sed)::loc_bio_part_remin
+    real,dimension(1:nt_sed,1:n_k)::loc_bio_settle
+    real,dimension(1:nt_sed)::loc_bio_part_remin
 
     ! ### USER-DEFINABLE OPTIONS ################################################################################################# !
     ! NOTE: settings not included in the run-time configuration files for clarity
@@ -2715,7 +2715,7 @@ CONTAINS
                 !       => e.g., par_scav_fremin = 1.0 will result in
                 !          scavanged material being returned in the same proportion as remineralization of the scavenger
                 ! NOTE: par_sed_type_misc => no remin (e.g. S bound refractory organic matter)
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    if ( &
                         & (sed_dep(is) == is_POC) .OR. &
@@ -2775,7 +2775,7 @@ CONTAINS
                 ! add 'missing' (remineralized) particulate sediment tracers to respective remineralization array components
                 ! NOTE: ensure the particulate concentration in the upper layer is scaled w.r.t.
                 !       the difference in relative layer thickness
-                DO l=1,n_l_sed
+                DO l=1,nt_sed
                    loc_bio_part_remin(l) = (loc_bio_remin_layerratio*loc_bio_part_TMP(l,kk+1) - loc_bio_part_TMP(l,kk))
                 end DO
                 ! carry out the remineralization (POM -> inorganic constitutents) itself
@@ -2783,7 +2783,7 @@ CONTAINS
                 call sub_box_remin_redfield(dum_vocn%mk(:,kk),loc_conv_ls_lo(:,:))
                 ! (2) carry out actual remin
                 !     NOTE: catch non-selected tracers (index 0 in the conversion io -> l)
-                DO ls=1,n_l_sed
+                DO ls=1,nt_sed
                    loc_tot_m = conv_ls_lo_i(0,ls)
                    do loc_m=1,loc_tot_m
                       lo = conv_ls_lo_i(loc_m,ls)
@@ -2840,7 +2840,7 @@ CONTAINS
           ! record particulate fluxes at base of each layer (units of; mol per time-step)
           ! NOTE: implicitly includes sedimentation flux (kk=dum_k1)
           do kk=k,loc_bio_remin_min_k+1,-1
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 SELECT CASE (sed_type(is))
                 case (par_sed_type_frac)
@@ -2867,7 +2867,7 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     dum_vbio_remin%mk(:,:) = dum_vbio_remin%mk(:,:) + loc_bio_remin(:,:)
 
-    DO l=1,n_l_sed
+    DO l=1,nt_sed
        is = conv_iselected_is(l)
        bio_settle(is,dum_i,dum_j,:) = loc_bio_settle(l,:)
     end do
@@ -3535,7 +3535,7 @@ CONTAINS
                    loc_ocn(io,i,j,k) = 0.0
                 end do
              end do
-             DO l=1,n_l_sed
+             DO l=1,nt_sed
                 is = conv_iselected_is(l)
                 loc_tot_i = conv_sed_ocn_i(0,is)
                 do loc_i=1,loc_tot_i
