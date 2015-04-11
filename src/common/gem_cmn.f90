@@ -444,19 +444,19 @@ MODULE gem_cmn
   ! tracer description - 'type'
   INTEGER, DIMENSION(nt_atm_all) :: atm_type
   integer,DIMENSION(n_ocn)::ocn_type
-  integer,DIMENSION(nt_sed_all)::sed_type
+  INTEGER, DIMENSION(nt_sed_all) :: sed_type
   ! tracer description - 'dependency'
   INTEGER, DIMENSION(nt_atm_all) :: atm_dep
   integer,DIMENSION(n_ocn)::ocn_dep
-  integer,DIMENSION(nt_sed_all)::sed_dep
+  INTEGER, DIMENSION(nt_sed_all) :: sed_dep
   ! tracer short names
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn
   CHARACTER(len=16), DIMENSION(nt_atm_all) :: string_atm
-  CHARACTER(len=16),DIMENSION(nt_sed_all)::string_sed
+  CHARACTER(len=16), DIMENSION(nt_sed_all) :: string_sed
   ! tracer long names (i.e., full description)
   CHARACTER(len=128),DIMENSION(n_ocn)::string_longname_ocn
   CHARACTER(len=128), DIMENSION(nt_atm_all) :: string_longname_atm
-  CHARACTER(len=128),DIMENSION(nt_sed_all)::string_longname_sed !
+  CHARACTER(len=128), DIMENSION(nt_sed_all) :: string_longname_sed
   ! tracer descriptions (for netCDF)
   CHARACTER(len=12), DIMENSION(nt_atm_all) :: string_atm_unit        ! main units of active atm tracers
   REAL, DIMENSION(nt_atm_all,2) :: atm_mima                          ! atm tracer min and max (for netcdf file)
@@ -464,10 +464,8 @@ MODULE gem_cmn
   CHARACTER(len=128),DIMENSION(n_ocn)::string_ocn_tlname     ! longnames of active ocn tracers
   CHARACTER(len=12),DIMENSION(n_ocn)::string_ocn_unit        ! main units of active ocn tracers
   REAL,DIMENSION(n_ocn,2)::ocn_mima                          ! tracer min and max (for netcdf file)
-  CHARACTER(len=16),DIMENSION(nt_sed_all)::string_sed_tname       ! names of active sed tracers
-  CHARACTER(len=128),DIMENSION(nt_sed_all)::string_sed_tlname     ! longnames of active sed tracers
-  CHARACTER(len=12),DIMENSION(nt_sed_all)::string_sed_unit        ! main units of active sed tracers
-  REAL,DIMENSION(nt_sed_all,2)::sed_mima                          ! sed tracer min and max (for netcdf file)
+  CHARACTER(len=12), DIMENSION(nt_sed_all) :: string_sed_unit        ! main units of active sed tracers
+  REAL, DIMENSION(nt_sed_all,2) :: sed_mima                          ! sed tracer min and max (for netcdf file)
   ! number of included (selected) tracers
   integer::nt_atm
   integer::n_l_ocn
@@ -483,15 +481,11 @@ MODULE gem_cmn
 
   ! conversion of selected tracer index -> absolute index
   INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_io
-  INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_is
   ! conversion of absolute index -> selected tracer index
   INTEGER,DIMENSION(n_ocn)::conv_io_lselected
-  INTEGER,DIMENSION(nt_sed_all)::conv_is_lselected
   ! tracer index conversion [short array name version]
   INTEGER,ALLOCATABLE,DIMENSION(:)::l2io
-  INTEGER,ALLOCATABLE,DIMENSION(:)::l2is
   INTEGER,DIMENSION(n_ocn)::io2l
-  INTEGER,DIMENSION(nt_sed_all)::is2l
   ! tracer conversion - transformation ratios
   real,DIMENSION(nt_sed_all,n_ocn)::conv_ocn_sed
   real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn

@@ -489,7 +489,7 @@ CONTAINS
              ! NOTE: negative sign (== loss from ocean)
              loc_fsed(:) = 0.0
              DO l=1,nt_sed
-                is = conv_iselected_is(l)
+                is = is_iss(l)
                 loc_tot_i = conv_sed_ocn_i(0,is)
                 do loc_i=1,loc_tot_i
                    io = conv_sed_ocn_i(loc_i,is)

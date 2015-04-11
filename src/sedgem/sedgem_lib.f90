@@ -516,7 +516,7 @@ CONTAINS
              loc_sed_tot_wt  = fun_calc_sed_mass(sed_top(:,i,j))
              loc_sed_tot_vol = fun_calc_sed_vol(sed_top(:,i,j))
              DO l=1,nt_sed
-                is = conv_iselected_is(l)
+                is = is_iss(l)
                 SELECT CASE (sed_type(is))
                 case (par_sed_type_bio,par_sed_type_abio)
                    ! solid components

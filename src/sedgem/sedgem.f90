@@ -282,7 +282,7 @@ CONTAINS
     loc_fracdecay_sed(:) = EXP(-loc_dtyr*const_lambda_sed(:))
     ! decay radioactive tracers
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        IF (abs(const_lambda_sed(is)).gt.const_real_nullsmall) THEN
           sed_top(is,:,:) = loc_fracdecay_sed(is)*sed_top(is,:,:)
           sed(is,:,:,:)   = loc_fracdecay_sed(is)*sed(is,:,:,:)
@@ -515,7 +515,7 @@ CONTAINS
              sed_fdis(:,i,j) = sed_fsed(:,i,j)
              ! calculate equivalent ocean tracer flux
              DO l=1,nt_sed
-                is = conv_iselected_is(l)
+                is = is_iss(l)
                 loc_tot_i = conv_sed_ocn_i(0,is)
                 do loc_i=1,loc_tot_i
                    io = conv_sed_ocn_i(loc_i,is)
@@ -761,9 +761,9 @@ CONTAINS
        OPEN(unit=out,status='replace',file=loc_filename,form='unformatted',action='write')
        WRITE(unit=out)                                         &
             & nt_sed,                                         &
-            & (conv_iselected_is(l),l=1,nt_sed),              &
-            & (sed(conv_iselected_is(l),:,:,:),l=1,nt_sed),   &
-            & (sed_top(conv_iselected_is(l),:,:),l=1,nt_sed), &
+            & (is_iss(l),l=1,nt_sed),              &
+            & (sed(is_iss(l),:,:,:),l=1,nt_sed),   &
+            & (sed_top(is_iss(l),:,:),l=1,nt_sed), &
             & sed_top_h(:,:)
        close(unit=out)
     end IF
@@ -971,7 +971,7 @@ CONTAINS
     DO i1=1,dum_n_i_ocn
        DO j1=1,dum_n_j_ocn
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              SELECT CASE (sed_type(is))
              case (par_sed_type_age,11:20)
                 loc_rscale = 0.0

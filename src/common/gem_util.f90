@@ -1461,7 +1461,7 @@ CONTAINS
     do is=1,nt_sed_all
        do io=1,n_ocn
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_sed_ocn(io,is)) > const_real_nullsmall)) then
-             loc_lslo(io2l(io),is2l(is)) = dum_sed_ocn(io,is)
+             loc_lslo(io2l(io),iss_is(is)) = dum_sed_ocn(io,is)
           end if
        end do
     end do
@@ -1503,10 +1503,10 @@ CONTAINS
     !       hence, it is dum_sed_ocn_i(io,is) that is converted to the compact tracer numbering format for ocean tracers
     !       ('is' is converted to the compact tracer numbering format for solid tracers as normal)
     do is=1,nt_sed_all
-       loc_lslo_i(0,is2l(is)) = dum_sed_ocn_i(0,is)
+       loc_lslo_i(0,iss_is(is)) = dum_sed_ocn_i(0,is)
        do io=1,n_ocn
           if (abs(dum_sed_ocn_i(io,is)) > 0) then
-             loc_lslo_i(io,is2l(is)) = io2l(dum_sed_ocn_i(io,is))
+             loc_lslo_i(io,iss_is(is)) = io2l(dum_sed_ocn_i(io,is))
           end if
        end do
     end do
@@ -1546,7 +1546,7 @@ CONTAINS
     do io=1,n_ocn
        do is=1,nt_sed_all
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_ocn_sed(is,io)) > const_real_nullsmall)) then
-             loc_lols(is2l(is),io2l(io)) = dum_ocn_sed(is,io)
+             loc_lols(iss_is(is),io2l(io)) = dum_ocn_sed(is,io)
           end if
        end do
     end do
@@ -1587,7 +1587,7 @@ CONTAINS
        do is=1,nt_sed_all
           loc_lols_i(0,io2l(io)) = dum_ocn_sed_i(0,io)
           if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_ocn_sed_i(is,io)) > 0)) then
-             loc_lols_i(is2l(is),io2l(io)) = is2l(dum_ocn_sed_i(is,io))
+             loc_lols_i(iss_is(is),io2l(io)) = iss_is(dum_ocn_sed_i(is,io))
           end if
        end do
     end do
@@ -1837,7 +1837,7 @@ CONTAINS
   ! DEFINE AND INITIALIZE SEDIMENT (sed) TRACERS
   SUBROUTINE sub_init_tracer_sed()
     ! local variables
-    INTEGER::n,is,l,iss
+    INTEGER::n,iss,l
     INTEGER::loc_n_elements,loc_n_start
     INTEGER::loc_index,loc_type,loc_dep
     CHARACTER(len=16)::loc_string_name
@@ -1848,11 +1848,8 @@ CONTAINS
     ! initialize global variables
     sed_dep = 0
     sed_type = 0
-      string_sed_tname(:)  = ' '
-      string_sed_unit(:)   = ' '
-      string_sed_tlname(:) = ' '
+    string_sed_unit = ' '
     sed_mima = 0.0
-      conv_is_lselected(:) = 0
     ! check file format
     loc_filename = TRIM(par_gem_indir_name)//'tracer_define.sed'
     CALL sub_check_fileformat(loc_filename,loc_n_elements,loc_n_start)
@@ -2042,8 +2039,6 @@ CONTAINS
           l = l + 1
        END IF
     END DO
-    ALLOCATE(conv_iselected_is(nt_sed),STAT=error)
-    ALLOCATE(l2is(nt_sed),STAT=error)
     ! re-set filepipe
     REWIND(unit=in)
     ! goto start-of-file tag
@@ -2064,39 +2059,30 @@ CONTAINS
             & loc_string_unit,     & ! COLUMN #06: tracer units
             & loc_min,             & ! COLUMN #07: tracer min
             & loc_max                ! COLUMN #08: tracer max
-       is = loc_index
-       string_sed(is) = loc_string_name
-       string_longname_sed(is) = loc_string_longname
-       sed_dep(is) = loc_dep
-       sed_type(is) = loc_type
-       IF (sed_select(is)) then
-          l = l + 1
-          conv_iselected_is(l) = is
-          l2is(l) = is
-          conv_is_lselected(is) = l
-          is2l(is) = l
-          string_sed_tname(l) = loc_string_name
-          string_sed_unit(l) = loc_string_unit
-          string_sed_tlname(l) = loc_string_longname
-          sed_mima(l,1) = loc_min
-          sed_mima(l,2) = loc_max
-       end if
+       iss = loc_index
+       string_sed(iss) = loc_string_name
+       string_longname_sed(iss) = loc_string_longname
+       sed_dep(iss) = loc_dep
+       sed_type(iss) = loc_type
+       string_sed_unit(iss) = loc_string_unit
+       sed_mima(iss,1) = loc_min
+       sed_mima(iss,2) = loc_max
     END DO
     ! close file pipe
     CLOSE(unit=in)
     ! isotope parameter selection consistency check
-    do is=1,nt_sed_all
-       IF (sed_select(is)) THEN
-          if (.not. sed_select(sed_dep(is))) then
+    do iss = 1, nt_sed_all
+       IF (sed_select(iss)) THEN
+          if (.not. sed_select(sed_dep(iss))) then
              CALL sub_report_error( &
                   & 'sedgem_data','sub_init_tracer_sed', &
                   & 'If an isotopic tracer is selected, the associated bulk sediment tracer ' &
-                  & //TRIM(string_sed(sed_dep(is)))//' '// &
+                  & //TRIM(string_sed(sed_dep(iss)))//' '// &
                   & 'must be selected (FILE: gem_config_sed.par)', &
                   & 'OFFENDING TRACER HAS BEEN DE-SELECTED', &
                   & (/const_real_null/),.false. &
                   & )
-             sed_select(is) = .FALSE.
+             sed_select(iss) = .FALSE.
           end if
        end IF
     end do

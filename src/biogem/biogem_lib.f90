@@ -1217,7 +1217,7 @@ CONTAINS
              fun_lib_conv_sedTOvsed(loc_n)%mk(:,:) = 0.0
              DO k=n_k,loc_k1,-1
                 DO l=1,nt_sed
-                   is = conv_iselected_is(l)
+                   is = is_iss(l)
                    fun_lib_conv_sedTOvsed(loc_n)%mk(l,k) = dum_sed(is,i,j,k)
                 end DO
              end DO
@@ -1277,7 +1277,7 @@ CONTAINS
        loc_k1 = dum_vsed(n)%k1
        DO k=n_k,loc_k1,-1
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              fun_lib_conv_vsedTOsed(is,loc_i,loc_j,k) = dum_vsed(n)%mk(l,k)
           end DO
        end DO

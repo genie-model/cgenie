@@ -115,7 +115,7 @@ CONTAINS
     !         NOTE: for particulate fractions, undo units conversion (cm2 -> m2) carried out in sedgem
     ! calculate rain input of new solid material
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        SELECT CASE (sed_type(is))
        CASE (9)
           loc_new_sed(is) = sed_fsed(is,dum_i,dum_j)/conv_cm2_m2
@@ -187,7 +187,7 @@ CONTAINS
        ! NOTE: apply estimated fractional preservation
        ! NOTE: particle-reactive elements (e.g., 231Pa) remain in the sediments
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -214,7 +214,7 @@ CONTAINS
        ! NOTE: apply estimated fractional preservation
        ! NOTE: particle-reactive elements (e.g., 231Pa) remain in the sediments
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -231,7 +231,7 @@ CONTAINS
     case default
        loc_sed_diagen_fracC = 1.0
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -258,7 +258,7 @@ CONTAINS
             & /),.FALSE. &
             & )
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -302,7 +302,7 @@ CONTAINS
        error_Archer = .FALSE.
     case default
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
@@ -323,7 +323,7 @@ CONTAINS
     ! error-catching of negative dissolution: return rain flux back to ocean
     If (loc_dis_sed(iss_CaCO3) < -const_real_nullsmall) then
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
@@ -357,7 +357,7 @@ CONTAINS
             & )
     case default
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
@@ -382,7 +382,7 @@ CONTAINS
     ! default and error-catching of negative dissoluiton: return rain flux back to ocean
     If (loc_dis_sed(iss_opal) < -const_real_nullsmall) then
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
@@ -571,7 +571,7 @@ CONTAINS
              if ((vsedcore_store(n)%i == dum_i) .AND. (vsedcore_store(n)%j == dum_j)) then
                 loc_n_sedcore_stack_top = INT(vsedcore_store(n)%ht + const_real_nullsmall) + 1
                 DO l=1,nt_sed
-                   is = conv_iselected_is(l)
+                   is = is_iss(l)
                    vsedcore_store(n)%lay(l,loc_n_sedcore_stack_top:(loc_n_sedcore_stack_top + n_sed_tot_drop - 1)) = &
                         &  sed(is,dum_i,dum_j,1:n_sed_tot_drop)
                 end DO
@@ -610,7 +610,7 @@ CONTAINS
     !         NOTE: first, convert flux units from cm3 cm-2 to mol cm-2
     sed_fdis(:,dum_i,dum_j) = conv_sed_cm3_mol(:)*loc_dis_sed(:)
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_tot_i = conv_sed_ocn_i(0,is)
        do loc_i=1,loc_tot_i
           io = conv_sed_ocn_i(loc_i,is)
@@ -756,7 +756,7 @@ CONTAINS
     !     NOTE: do not set the <loc_dis_sed> array for returning all particulate rain -- set <sedocn_fnet> directly ???
     !     NOTE: make exception for detrital (and ash)
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        if ((is /= iss_det) .AND. (is /= iss_ash)) then
           loc_tot_i = conv_sed_ocn_i(0,is)
           do loc_i=1,loc_tot_i
@@ -874,14 +874,14 @@ CONTAINS
     !
     ! calculate volume of produced material
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_new_sed(is) = conv_sed_mol_cm3(is)*sed_fsed(is,dum_i,dum_j)
     end do
     ! calculate volume of added material (as SOILD matter. i.e., assuming zero porosity), in units of cm3 (cm-2)
     loc_new_sed_vol = fun_calc_sed_vol(loc_new_sed(:))
     ! set exchange with ocean to account for removed of solutes via production
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_tot_i = conv_sed_ocn_i(0,is)
        do loc_i=1,loc_tot_i
           io = conv_sed_ocn_i(loc_i,is)
@@ -1040,7 +1040,7 @@ CONTAINS
              if ((vsedcore_store(n)%i == dum_i) .AND. (vsedcore_store(n)%j == dum_j)) then
                 loc_n_sedcore_stack_top = INT(vsedcore_store(n)%ht + const_real_nullsmall) + 1
                 DO l=1,nt_sed
-                   is = conv_iselected_is(l)
+                   is = is_iss(l)
                    vsedcore_store(n)%lay(l,loc_n_sedcore_stack_top:(loc_n_sedcore_stack_top + n_sed_tot_drop - 1)) = &
                         &  sed(is,dum_i,dum_j,1:n_sed_tot_drop)
                 end DO
@@ -1168,7 +1168,7 @@ CONTAINS
     ! *** CALCULATE SEDIMENT RAIN FLUX ********************************************************************************************
     !     calculate new sedimenting material to be added to the sediment top layer
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        SELECT CASE (sed_type(is))
        CASE (9)
           loc_new_sed(is) = sed_fsed(is,dum_i,dum_j)/conv_cm2_m2
@@ -1236,7 +1236,7 @@ CONTAINS
        ! NOTE: apply estimated fractional preservation
        ! NOTE: particle-reactive elements (e.g., 231Pa) remain in the sediments
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -1263,7 +1263,7 @@ CONTAINS
        ! NOTE: apply estimated fractional preservation
        ! NOTE: particle-reactive elements (e.g., 231Pa) remain in the sediments
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -1288,7 +1288,7 @@ CONTAINS
 
     case default
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
@@ -1308,7 +1308,7 @@ CONTAINS
     end select
     ! *** diagenesis - CaCO3 dissolution ***
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
@@ -1327,7 +1327,7 @@ CONTAINS
     end DO
     ! *** diagenesis - opal dissolution ***
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
@@ -1487,7 +1487,7 @@ CONTAINS
              if ((vsedcore_store(n)%i == dum_i) .AND. (vsedcore_store(n)%j == dum_j)) then
                 loc_n_sedcore_stack_top = INT(vsedcore_store(n)%ht + const_real_nullsmall) + 1
                 DO l=1,nt_sed
-                   is = conv_iselected_is(l)
+                   is = is_iss(l)
                    vsedcore_store(n)%lay(l,loc_n_sedcore_stack_top:(loc_n_sedcore_stack_top + n_sed_tot_drop - 1)) = &
                         &  sed(is,dum_i,dum_j,1:n_sed_tot_drop)
                 end DO
@@ -1526,7 +1526,7 @@ CONTAINS
     !     NOTE: first, convert flux units from cm3 cm-2 to mol cm-2
     sed_fdis(:,dum_i,dum_j) = conv_sed_cm3_mol(:)*loc_dis_sed(:)
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_tot_i = conv_sed_ocn_i(0,is)
        do loc_i=1,loc_tot_i
           io = conv_sed_ocn_i(loc_i,is)
@@ -1687,7 +1687,7 @@ CONTAINS
        ! NOTE: assume that particle-reactive elements remain in sediments
        ! NOTE: add to <dum_sed_dis> so that both 'new' and 'top' CaCO3 dissolution are summed ... (array init in parent sub)
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
@@ -1705,7 +1705,7 @@ CONTAINS
        end do
     else
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
@@ -1828,7 +1828,7 @@ CONTAINS
     !       ELSE, dissolution flux is unchanged
     IF (loc_dis < const_real_nullsmall) THEN
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
@@ -1856,7 +1856,7 @@ CONTAINS
        ! NOTE: ensure that bulk opal is not re-processed (it has itself as its dependency)
        ! NOTE: assume that particle-reactive elements remain in sediments
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           if ( &
                & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
@@ -2010,7 +2010,7 @@ CONTAINS
     ! (0) copy sediment composition to local variables
     !     -> transform total tracer array to enabled tracer array indices
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_sed(l,:)   = dum_sed(is,:)
        loc_sed_top(l) = dum_sed_top(is)
     END DO
@@ -2055,7 +2055,7 @@ CONTAINS
     loc_sed_top(:) = loc_sed_top(:) + loc_dsed_top(:)
     ! (8) convert tracer array back
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        dum_sed(is,:)   = loc_sed(l,:)
        dum_sed_top(is) = loc_sed_top(l)
     END DO

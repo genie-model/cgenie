@@ -446,7 +446,7 @@ CONTAINS
     CHARACTER(len=255)::loc_filename                           ! filename string
     integer::loc_n_l_ocn,loc_nt_sed                           ! number of selected tracers in the re-start file
     integer,DIMENSION(n_ocn)::loc_conv_iselected_io            ! number of selected ocean tracers in restart
-    integer,DIMENSION(nt_sed_all)::loc_conv_iselected_is            !
+    integer,DIMENSION(nt_sed_all)::loc_is_iss            !
     real,dimension(n_i,n_j,n_k)::loc_ocn,loc_part              !
     integer::loc_ndims,loc_nvars
     integer,ALLOCATABLE,dimension(:)::loc_dimlen
@@ -456,7 +456,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! INITIALIZE
     ! -------------------------------------------------------- !
-    loc_conv_iselected_io = 0 ; loc_conv_iselected_is = 0
+    loc_conv_iselected_io = 0 ; loc_is_iss = 0
     loc_ocn = 0.0 ; loc_part = 0.0
     ! -------------------------------------------------------- ! set filename
     IF (ctrl_ncrst) THEN
@@ -510,7 +510,7 @@ CONTAINS
           IF (ctrl_debug_init == 1) print*,' * Loading ocean restart fields (particulate tracers): '
           DO iv=1,loc_nvars
              DO l=1,nt_sed
-                is = conv_iselected_is(l)
+                is = is_iss(l)
                 if ('bio_part_'//trim(string_sed(is)) == trim(loc_varname(iv))) then
                    IF (ctrl_debug_init == 1) print*,'   ',trim(loc_varname(iv))
                    loc_part = 0.0
@@ -537,8 +537,8 @@ CONTAINS
                & (loc_conv_iselected_io(l),l=1,loc_n_l_ocn),                &
                & (ocn(loc_conv_iselected_io(l),:,:,:),l=1,loc_n_l_ocn),     &
                & loc_nt_sed,                                               &
-               & (loc_conv_iselected_is(l),l=1,loc_nt_sed),                &
-               & (bio_part(loc_conv_iselected_is(l),:,:,:),l=1,loc_nt_sed)
+               & (loc_is_iss(l),l=1,loc_nt_sed),                &
+               & (bio_part(loc_is_iss(l),:,:,:),l=1,loc_nt_sed)
           call check_iostat(ios,__LINE__,__FILE__)
           close(unit=in,iostat=ios)
           call check_iostat(ios,__LINE__,__FILE__)
@@ -1721,7 +1721,7 @@ CONTAINS
     ! de-select all DOM tracers (including dependents) if no DOM production is specified
     if (par_bio_red_DOMfrac > const_real_nullsmall) then
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           loc_tot_i = conv_POM_DOM_i(0,is)
           do loc_i=1,loc_tot_i
              io = conv_POM_DOM_i(loc_i,is)
@@ -2025,7 +2025,7 @@ CONTAINS
     ! *** parameter consistency check - selected sediment-ocean tracer option combinations ***
     if (par_bio_prodopt /= 'NONE') then
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           select case (sed_type(is))
           case (par_sed_type_bio,par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_scavenged, &
                & n_itype_min:n_itype_max)
@@ -3018,7 +3018,7 @@ CONTAINS
     loc_ij = 0.0
     ! LOOP
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        IF (force_flux_sed_select(is)) THEN
           force_flux_sed_sig_i(is,:) = n_data_max
           force_flux_sed_sig(is,:,:) = 0.0

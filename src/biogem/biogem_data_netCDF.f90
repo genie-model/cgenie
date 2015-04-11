@@ -31,7 +31,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    integer::io,is,l
+    integer::io,is,iss,l
     integer::loc_ntrec,loc_iou
     integer::loc_id_lonm,loc_id_latm,loc_id_lon_e,loc_id_lat_e
     integer::loc_id_zt,loc_id_zt_e
@@ -95,10 +95,10 @@ CONTAINS
             & string_longname_ocn(io),'Ocean tracer - '//trim(string_ocn(io)),' ')
     end do
     ! -------------------------------------------------------- ! define (3D) tracer variables -- particulate
-    DO l=1,nt_sed
-       is = conv_iselected_is(l)
-       call sub_defvar('bio_part_'//trim(string_sed(is)),loc_iou,3,loc_it_3,loc_c0,loc_c0,' ','F', &
-            & string_longname_sed(is),'Particulate tracer - '//trim(string_sed(is)),' ')
+    DO is = 1, nt_sed
+       iss = is_iss(is)
+       call sub_defvar('bio_part_'//trim(string_sed(iss)),loc_iou,3,loc_it_3,loc_c0,loc_c0,' ','F', &
+            & string_longname_sed(iss),'Particulate tracer - '//trim(string_sed(iss)),' ')
     end do
     ! -------------------------------------------------------- ! end definitions
     call sub_enddef (loc_iou)
@@ -127,10 +127,10 @@ CONTAINS
     end do
     ! -------------------------------------------------------- ! write (3D) tracer variables -- particulate
     loc_ijk_mask(:,:,:) = phys_ocn(ipo_mask_ocn,:,:,:)
-    DO l=1,nt_sed
-       is = conv_iselected_is(l)
-       loc_ijk(:,:,:) = bio_part(is,:,:,:)
-       call sub_putvar3d('bio_part_'//trim(string_sed(is)),loc_iou,n_i,n_j,n_k,loc_ntrec, &
+    DO is = 1, nt_sed
+       iss = is_iss(is)
+       loc_ijk(:,:,:) = bio_part(iss,:,:,:)
+       call sub_putvar3d('bio_part_'//trim(string_sed(iss)),loc_iou,n_i,n_j,n_k,loc_ntrec, &
             & loc_ijk(:,:,n_k:1:-1),loc_ijk_mask(:,:,n_k:1:-1))
     end do
     ! -------------------------------------------------------- ! close file and return IOU
@@ -1556,7 +1556,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     !       local variables
     !-----------------------------------------------------------------------
-    INTEGER::l,i,j,io,is,ic
+    INTEGER::l,i,j,io,is,iss,ic
     integer::loc_k1
     integer::loc_iou,loc_ntrec
     CHARACTER(len=255)::loc_unitsname
@@ -1573,38 +1573,38 @@ CONTAINS
     !       save ocn->sed interface flux data
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_focnsed) then
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
+       DO is = 1, nt_sed
+          iss = is_iss(l)
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
              DO j=1,n_j
-                SELECT CASE (sed_type(is))
+                SELECT CASE (sed_type(iss))
                 CASE (par_sed_type_bio,par_sed_type_abio, &
                      & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                      & par_sed_type_scavenged)
-                   loc_ij(i,j) = int_focnsed_timeslice(is,i,j)
+                   loc_ij(i,j) = int_focnsed_timeslice(iss,i,j)
                    loc_unitsname = 'mol yr-1'
                 CASE (par_sed_type_age)
-                   if (int_focnsed_timeslice(sed_dep(is),i,j) > 0.0) then
-                      loc_ij(i,j) = int_focnsed_timeslice(is,i,j)/int_focnsed_timeslice(sed_dep(is),i,j)
+                   if (int_focnsed_timeslice(sed_dep(iss),i,j) > 0.0) then
+                      loc_ij(i,j) = int_focnsed_timeslice(iss,i,j)/int_focnsed_timeslice(sed_dep(iss),i,j)
                       loc_unitsname = 'years'
                    end if
                 case (n_itype_min:n_itype_max)
-                   loc_tot  = int_focnsed_timeslice(sed_dep(is),i,j)
-                   loc_frac = int_focnsed_timeslice(is,i,j)
-                   loc_standard = const_standards(sed_type(is))
+                   loc_tot  = int_focnsed_timeslice(sed_dep(iss),i,j)
+                   loc_frac = int_focnsed_timeslice(iss,i,j)
+                   loc_standard = const_standards(sed_type(iss))
                    loc_ij(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_real_null)
                    loc_unitsname = 'o/oo'
                 end SELECT
              end DO
           end DO
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged,par_sed_type_age,n_itype_min:n_itype_max)
-             call sub_adddef_netcdf(loc_iou,3,'focnsed_'//trim(string_sed(is)), &
-                  & trim(string_sed(is))//' ocean->sediment flux',trim(loc_unitsname),const_real_zero,const_real_zero)
-             call sub_putvar2d('focnsed_'//trim(string_sed(is)),loc_iou,n_i,n_j, &
+             call sub_adddef_netcdf(loc_iou,3,'focnsed_'//trim(string_sed(iss)), &
+                  & trim(string_sed(iss))//' ocean->sediment flux',trim(loc_unitsname),const_real_zero,const_real_zero)
+             call sub_putvar2d('focnsed_'//trim(string_sed(iss)),loc_iou,n_i,n_j, &
                   & loc_ntrec, loc_ij, loc_sed_mask)
           end SELECT
        END DO
@@ -1648,9 +1648,9 @@ CONTAINS
     !       save core-top sediment composition data
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_ocnsed) then
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
-          SELECT CASE (sed_type(is))
+       DO is = 1, nt_sed
+          iss = is_iss(is)
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio)
              loc_unitsname = 'wt%'
           CASE (par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det,par_sed_type_scavenged)
@@ -1660,14 +1660,14 @@ CONTAINS
           CASE (par_sed_type_age)
              loc_unitsname = 'years'
           end SELECT
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged,par_sed_type_age,n_itype_min:n_itype_max)
-             call sub_adddef_netcdf(loc_iou,3,'sed_'//trim(string_sed(is)), &
-                  & 'sediment core-top '//trim(string_sed(is)),trim(loc_unitsname),const_real_zero,const_real_zero)
-             call sub_putvar2d('sed_'//trim(string_sed(is)),loc_iou,n_i,n_j, &
-                  & loc_ntrec,int_sfcsed1_timeslice(is,:,:)/int_t_timeslice,loc_sed_mask)
+             call sub_adddef_netcdf(loc_iou,3,'sed_'//trim(string_sed(iss)), &
+                  & 'sediment core-top '//trim(string_sed(iss)),trim(loc_unitsname),const_real_zero,const_real_zero)
+             call sub_putvar2d('sed_'//trim(string_sed(iss)),loc_iou,n_i,n_j, &
+                  & loc_ntrec,int_sfcsed1_timeslice(iss,:,:)/int_t_timeslice,loc_sed_mask)
           end SELECT
        END DO
     end if
@@ -1960,7 +1960,7 @@ CONTAINS
     !-----------------------------------------------------------------------
     !       DEFINE LOCAL VARIABLES
     !-----------------------------------------------------------------------
-    INTEGER::l,i,j,k,io,is,ip,ic,icc,loc_iou,loc_ntrec
+    INTEGER::l,i,j,k,io,is,iss,ip,ic,icc,loc_iou,loc_ntrec
     integer::id
     CHARACTER(len=255)::loc_unitsname
     real,DIMENSION(n_i,n_j,n_k)::loc_ijk,loc_mask,loc_sed_mask
@@ -2177,35 +2177,35 @@ CONTAINS
     !----------------------------------------------------------------
     loc_sed_mask = loc_mask
     If (ctrl_data_save_slice_bio .AND. ctrl_data_save_derived) then
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
+       DO is = 1, nt_sed
+          iss = is_iss(is)
           loc_ijk(:,:,:) = const_real_zero
           DO i=1,n_i
              DO j=1,n_j
                 DO k=goldstein_k1(i,j),n_k
-                   SELECT CASE (sed_type(is))
+                   SELECT CASE (sed_type(iss))
                    CASE (par_sed_type_bio,par_sed_type_abio, &
                         & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                         & par_sed_type_scavenged)
-                      loc_ijk(i,j,k) = int_bio_part_timeslice(is,i,j,k)/int_t_timeslice
+                      loc_ijk(i,j,k) = int_bio_part_timeslice(iss,i,j,k)/int_t_timeslice
                       loc_unitsname = 'mol kg-1'
                    case (n_itype_min:n_itype_max)
-                      loc_tot  = int_bio_part_timeslice(sed_dep(is),i,j,k)/int_t_timeslice
-                      loc_frac = int_bio_part_timeslice(is,i,j,k)/int_t_timeslice
-                      loc_standard = const_standards(sed_type(is))
+                      loc_tot  = int_bio_part_timeslice(sed_dep(iss),i,j,k)/int_t_timeslice
+                      loc_frac = int_bio_part_timeslice(iss,i,j,k)/int_t_timeslice
+                      loc_standard = const_standards(sed_type(iss))
                       loc_ijk(i,j,k) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                       loc_unitsname = 'o/oo'
                    END SELECT
                 end do
              end do
           end do
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged,n_itype_min:n_itype_max)
-             call sub_adddef_netcdf(loc_iou,4,'bio_part_'//trim(string_sed(is)), &
-                  & 'particulate density - '//trim(string_sed(is)),loc_unitsname,const_real_zero,const_real_zero)
-             call sub_putvar3d_g('bio_part_'//trim(string_sed(is)),loc_iou, &
+             call sub_adddef_netcdf(loc_iou,4,'bio_part_'//trim(string_sed(iss)), &
+                  & 'particulate density - '//trim(string_sed(iss)),loc_unitsname,const_real_zero,const_real_zero)
+             call sub_putvar3d_g('bio_part_'//trim(string_sed(iss)),loc_iou, &
                   & n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_sed_mask)
           end SELECT
        END DO
@@ -2214,77 +2214,77 @@ CONTAINS
     !       PARTICULATE FLUXES
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_bio) then
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
+       DO is = 1, nt_sed
+          iss = is_iss(is)
           loc_ijk(:,:,:) = const_real_zero
           !---------------------------------------------------------- flux density
           DO i=1,n_i
              DO j=1,n_j
                 DO k=goldstein_k1(i,j),n_k
-                   SELECT CASE (sed_type(is))
+                   SELECT CASE (sed_type(iss))
                    CASE (par_sed_type_bio,par_sed_type_abio, &
                         & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                         & par_sed_type_scavenged)
-                      loc_ijk(i,j,k) = int_bio_settle_timeslice(is,i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
+                      loc_ijk(i,j,k) = int_bio_settle_timeslice(iss,i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
                       loc_unitsname = 'mol m-2 yr-1'
                    case (n_itype_min:n_itype_max)
-                      loc_tot  = int_bio_settle_timeslice(sed_dep(is),i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
-                      loc_frac = int_bio_settle_timeslice(is,i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
-                      loc_standard = const_standards(sed_type(is))
+                      loc_tot  = int_bio_settle_timeslice(sed_dep(iss),i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
+                      loc_frac = int_bio_settle_timeslice(iss,i,j,k)*phys_ocn(ipo_rA,i,j,k)/int_t_timeslice
+                      loc_standard = const_standards(sed_type(iss))
                       loc_ijk(i,j,k) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                       loc_unitsname = 'o/oo'
                    end SELECT
                 end do
              end do
           end do
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged,n_itype_min:n_itype_max)
-             call sub_adddef_netcdf(loc_iou,4,'bio_fpart_'//trim(string_sed(is)), &
-                  & 'particulate flux (density) - '//trim(string_sed(is)),loc_unitsname,const_real_zero,const_real_zero)
-             call sub_putvar3d_g('bio_fpart_'//trim(string_sed(is)), loc_iou, &
+             call sub_adddef_netcdf(loc_iou,4,'bio_fpart_'//trim(string_sed(iss)), &
+                  & 'particulate flux (density) - '//trim(string_sed(iss)),loc_unitsname,const_real_zero,const_real_zero)
+             call sub_putvar3d_g('bio_fpart_'//trim(string_sed(iss)), loc_iou, &
                   & n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_sed_mask)
           end SELECT
           !---------------------------------------------------------- total flux (per grid cell)
           DO i=1,n_i
              DO j=1,n_j
                 DO k=goldstein_k1(i,j),n_k
-                   SELECT CASE (sed_type(is))
+                   SELECT CASE (sed_type(iss))
                    CASE (par_sed_type_bio,par_sed_type_abio, &
                         & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                         & par_sed_type_scavenged)
-                      loc_ijk(i,j,k) = int_bio_settle_timeslice(is,i,j,k)/int_t_timeslice
+                      loc_ijk(i,j,k) = int_bio_settle_timeslice(iss,i,j,k)/int_t_timeslice
                       loc_unitsname = 'mol yr-1'
                    end SELECT
                 end do
              end do
           end do
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged)
-             call sub_adddef_netcdf(loc_iou,4,'bio_fparttot_'//trim(string_sed(is)), &
-                  & 'particulate flux (total) - '//trim(string_sed(is)),loc_unitsname,const_real_zero,const_real_zero)
-             call sub_putvar3d_g('bio_fparttot_'//trim(string_sed(is)), loc_iou, &
+             call sub_adddef_netcdf(loc_iou,4,'bio_fparttot_'//trim(string_sed(iss)), &
+                  & 'particulate flux (total) - '//trim(string_sed(iss)),loc_unitsname,const_real_zero,const_real_zero)
+             call sub_putvar3d_g('bio_fparttot_'//trim(string_sed(iss)), loc_iou, &
                   & n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_sed_mask)
           end SELECT
           !---------------------------------------------------------- normalized flux
           DO i=1,n_i
              DO j=1,n_j
-                if (int_bio_settle_timeslice(is,i,j,n_k) > 0.0) then
-                   loc_ijk(i,j,1:n_k-1) = int_bio_settle_timeslice(is,i,j,1:n_k-1)/int_bio_settle_timeslice(is,i,j,n_k)
+                if (int_bio_settle_timeslice(iss,i,j,n_k) > 0.0) then
+                   loc_ijk(i,j,1:n_k-1) = int_bio_settle_timeslice(iss,i,j,1:n_k-1)/int_bio_settle_timeslice(iss,i,j,n_k)
                    loc_ijk(i,j,n_k)     = 1.0
                 else
                    loc_ijk(i,j,:)       = 0.0
                 end if
              end do
           end do
-          SELECT CASE (sed_type(is))
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_det)
-             call sub_adddef_netcdf(loc_iou,4,'bio_fpartnorm_'//trim(string_sed(is)), &
-                  & 'export-normalized particulate flux - '//trim(string_sed(is)),'n/a',const_real_zero,const_real_zero)
-             call sub_putvar3d_g('bio_fpartnorm_'//trim(string_sed(is)),loc_iou, &
+             call sub_adddef_netcdf(loc_iou,4,'bio_fpartnorm_'//trim(string_sed(iss)), &
+                  & 'export-normalized particulate flux - '//trim(string_sed(iss)),'n/a',const_real_zero,const_real_zero)
+             call sub_putvar3d_g('bio_fpartnorm_'//trim(string_sed(iss)),loc_iou, &
                   & n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_sed_mask)
           end SELECT
        END DO
@@ -2541,7 +2541,7 @@ CONTAINS
     ! dummy arguments
     REAL,INTENT(in)::dum_t
     ! local variables
-    INTEGER :: l,io,ia,is,ic,ias
+    INTEGER :: l,io,ia,is,ic,ias,iss
     REAL :: loc_t
     real :: loc_opsi_scale
     real :: loc_ocn_tot_M, loc_ocn_tot_A
@@ -2706,21 +2706,22 @@ CONTAINS
     IF (ctrl_data_save_sig_carb_sur) THEN
        DO ic=1,n_carb
           loc_sig = int_carb_sur_sig(ic)/int_t_sig
+          iss = is_iss(ic)
           SELECT CASE (ic)
           CASE (ic_H)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(ic))//'_carb_sur_tot', &
-                  & trim(string_sed_tlname(ic))//'_carb_sur_tot', string_sed_unit(ic), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(ic))//'_carb_sur_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_carb_sur_tot', &
+                  & trim(string_longname_sed(iss))//'_carb_sur_tot', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_carb_sur_tot', loc_iou, loc_ntrec, &
                   & -log10(loc_sig)*loc_cr1e15, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(ic))//'_carb_sur_conc', &
-                  & trim(string_sed_tlname(ic))//'_carb_sur_conc', string_sed_unit(ic), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(ic))//'_carb_sur_conc', loc_iou,loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_carb_sur_conc', &
+                  & trim(string_longname_sed(ic))//'_carb_sur_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_carb_sur_conc', loc_iou,loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
 
           case default
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(ic))//'_carb_sur_conc', &
-                  & trim(string_sed_tlname(ic))//'_carb_sur_conc', string_sed_unit(ic), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(ic))//'_carb_sur_conc', loc_iou,loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_carb_sur_conc', &
+                  & trim(string_longname_sed(iss))//'_carb_sur_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_carb_sur_conc', loc_iou,loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           end SELECT
        END DO
@@ -2772,43 +2773,43 @@ CONTAINS
 
     ! NOTE: write data both as mole and mass flux
     IF (ctrl_data_save_sig_fexport) THEN
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
-          SELECT CASE (sed_type(is))
+       DO is = 1, nt_sed
+          iss = is_iss(is)
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged)
-             loc_sig = int_fexport_sig(is)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fexport_tot', &
-                  & trim(string_sed_tlname(l))//'_fexport_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fexport_tot', loc_iou, loc_ntrec, &
+             loc_sig = int_fexport_sig(iss)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_fexport_tot', &
+                  & trim(string_longname_sed(iss))//'_fexport_tot', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_fexport_tot', loc_iou, loc_ntrec, &
                   & loc_sig/loc_ocn_tot_A, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fexport_conc', &
-                  & trim(string_sed_tlname(l))//'_fexport_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fexport_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_fexport_conc', &
+                  & trim(string_longname_sed(iss))//'_fexport_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_fexport_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           CASE (par_sed_type_age)
-             if (int_fexport_sig(sed_dep(is)) > const_real_nullsmall) then
-                loc_sig = int_fexport_sig(is)/int_t_sig
+             if (int_fexport_sig(sed_dep(iss)) > const_real_nullsmall) then
+                loc_sig = int_fexport_sig(iss)/int_t_sig
              else
                 loc_sig = 0.0
              endif
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fexport_conc', &
-                  & trim(string_sed_tlname(l))//'_fexport_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fexport_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_fexport_conc', &
+                  & trim(string_longname_sed(iss))//'_fexport_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_fexport_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_fexport_sig(sed_dep(is))/int_t_sig
-             loc_frac = int_fexport_sig(is)/int_t_sig
-             loc_standard = const_standards(sed_type(is))
+             loc_tot  = int_fexport_sig(sed_dep(iss))/int_t_sig
+             loc_frac = int_fexport_sig(iss)/int_t_sig
+             loc_standard = const_standards(sed_type(iss))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fexport_tot', &
-                  & trim(string_sed_tlname(l))//'_fexport_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fexport_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_fexport_tot', &
+                  & trim(string_longname_sed(iss))//'_fexport_tot', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_fexport_tot', loc_iou, loc_ntrec, &
                   & loc_frac, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fexport_conc', &
-                  & trim(string_sed_tlname(l))//'_fexport_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fexport_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_fexport_conc', &
+                  & trim(string_longname_sed(iss))//'_fexport_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_fexport_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
 
           end SELECT
@@ -2849,43 +2850,43 @@ CONTAINS
     !       flux density the surface ocean area is used as a proxy for the
     !       ocean bottom area
     IF (ctrl_data_save_sig_focnsed) THEN
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
-          SELECT CASE (sed_type(is))
+       DO is = 1, nt_sed
+          iss = is_iss(is)
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged)
-             loc_sig = int_focnsed_sig(is)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_focnsed_tot', &
-                  & trim(string_sed_tlname(l))//'_focnsed_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_focnsed_tot', loc_iou, loc_ntrec, &
+             loc_sig = int_focnsed_sig(iss)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_focnsed_tot', &
+                  & trim(string_longname_sed(iss))//'_focnsed_tot', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_focnsed_tot', loc_iou, loc_ntrec, &
                   & loc_sig/loc_ocn_tot_A, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_focnsed_conc', &
-                  & trim(string_sed_tlname(l))//'_focnsed_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_focnsed_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_focnsed_conc', &
+                  & trim(string_longname_sed(iss))//'_focnsed_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_focnsed_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           CASE (par_sed_type_age)
-             if (int_focnsed_sig(sed_dep(is)) > const_real_nullsmall) then
-                loc_sig = int_focnsed_sig(is)/int_t_sig
+             if (int_focnsed_sig(sed_dep(iss)) > const_real_nullsmall) then
+                loc_sig = int_focnsed_sig(iss)/int_t_sig
              else
                 loc_sig = 0.0
              end if
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_focnsed_conc', &
-                  & trim(string_sed_tlname(l))//'_focnsed_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_focnsed_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_focnsed_conc', &
+                  & trim(string_longname_sed(iss))//'_focnsed_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_focnsed_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           case (n_itype_min:n_itype_max)
-             loc_tot  = int_focnsed_sig(sed_dep(is))/int_t_sig
-             loc_frac = int_focnsed_sig(is)/int_t_sig
-             loc_standard = const_standards(sed_type(is))
+             loc_tot  = int_focnsed_sig(sed_dep(iss))/int_t_sig
+             loc_frac = int_focnsed_sig(iss)/int_t_sig
+             loc_standard = const_standards(sed_type(iss))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_focnsed_tot', &
-                  & trim(string_sed_tlname(l))//'_focnsed_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_focnsed_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_focnsed_tot', &
+                  & trim(string_longname_sed(iss))//'_focnsed_tot', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_focnsed_tot', loc_iou, loc_ntrec, &
                   & loc_frac, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_focnsed_conc', &
-                  & trim(string_sed_tlname(l))//'_focnsed_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_focnsed_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_focnsed_conc', &
+                  & trim(string_longname_sed(iss))//'_focnsed_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_focnsed_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
 
           end SELECT
@@ -2906,26 +2907,26 @@ CONTAINS
           SELECT CASE (ocn_type(io))
           CASE (1)
              loc_sig = int_fsedocn_sig(io)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fsedocn_tot', &
-                  & trim(string_sed_tlname(l))//'_fsedocn_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fsedocn_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_ocn(l))//'_fsedocn_tot', &
+                  & trim(string_longname_ocn(l))//'_fsedocn_tot', string_ocn_unit(l), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_ocn(l))//'_fsedocn_tot', loc_iou, loc_ntrec, &
                   & loc_sig/loc_ocn_tot_A, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fsedocn_conc', &
-                  & trim(string_sed_tlname(l))//'_fsedocn_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fsedocn_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_ocn(l))//'_fsedocn_conc', &
+                  & trim(string_longname_ocn(l))//'_fsedocn_conc', string_ocn_unit(l), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_ocn(l))//'_fsedocn_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           case (n_itype_min:n_itype_max)
              loc_tot  = int_fsedocn_sig(ocn_dep(io))/int_t_sig
              loc_frac = int_fsedocn_sig(io)/int_t_sig
              loc_standard = const_standards(ocn_type(io))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fsedocn_tot', &
-                  & trim(string_sed_tlname(l))//'_fsedocn_tot', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fsedocn_tot', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_ocn(l))//'_fsedocn_tot', &
+                  & trim(string_longname_ocn(l))//'_fsedocn_tot', string_ocn_unit(l), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_ocn(l))//'_fsedocn_tot', loc_iou, loc_ntrec, &
                   & loc_frac, loc_c1, loc_c0)
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_fsedocn_conc', &
-                  & trim(string_sed_tlname(l))//'_fsedocn_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_fsedocn_conc', loc_iou, loc_ntrec, &
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_ocn(l))//'_fsedocn_conc', &
+                  & trim(string_longname_ocn(l))//'_fsedocn_conc', string_ocn_unit(l), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_ocn(l))//'_fsedocn_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
 
           end SELECT
@@ -2941,22 +2942,22 @@ CONTAINS
     !       has already had the necessary type conversions made
     !       (i.e., isotopes in per mill, solid tracers as mass (or volume) fraction, etc)
     IF (ctrl_data_save_sig_ocnsed) THEN
-       DO l=1,nt_sed
-          is = conv_iselected_is(l)
-          SELECT CASE (sed_type(is))
+       DO is = 1, nt_sed
+          iss = is_iss(is)
+          SELECT CASE (sed_type(iss))
           CASE (par_sed_type_bio,par_sed_type_abio, &
                & par_sed_type_POM,par_sed_type_CaCO3,par_sed_type_opal,par_sed_type_det, &
                & par_sed_type_scavenged)
-             loc_sig = int_ocnsed_sig(is)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_ocnsed_conc', &
-                  & trim(string_sed_tlname(l))//'_ocnsed_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_ocnsed_conc', loc_iou, loc_ntrec, &
+             loc_sig = int_ocnsed_sig(iss)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_ocnsed_conc', &
+                  & trim(string_longname_sed(iss))//'_ocnsed_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_ocnsed_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           CASE (par_sed_type_age,n_itype_min:n_itype_max)
-             loc_sig = int_ocnsed_sig(is)/int_t_sig
-             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed_tname(l))//'_ocnsed_conc', &
-                  & trim(string_sed_tlname(l))//'_ocnsed_conc', string_sed_unit(l), loc_c1, loc_c0)
-             call sub_putvars ( trim(string_sed_tname(l))//'_ocnsed_conc', loc_iou, loc_ntrec, &
+             loc_sig = int_ocnsed_sig(iss)/int_t_sig
+             call sub_adddef_netcdf (loc_iou, 1, trim(string_sed(iss))//'_ocnsed_conc', &
+                  & trim(string_longname_sed(iss))//'_ocnsed_conc', string_sed_unit(iss), loc_c1, loc_c0)
+             call sub_putvars ( trim(string_sed(iss))//'_ocnsed_conc', loc_iou, loc_ntrec, &
                   & loc_sig, loc_c1, loc_c0)
           end SELECT
        END DO

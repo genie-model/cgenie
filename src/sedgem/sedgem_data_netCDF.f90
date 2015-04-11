@@ -115,7 +115,7 @@ CONTAINS
     end DO
     ! -------------------------------------------------------- ! define (3D) tracer variables
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        call sub_defvar('sed_'//trim(string_sed(is)),loc_iou,3, &
             & loc_it_3,loc_c0,loc_c0,' ','F', &
             & string_longname_sed(is),'Sediment tracer - '//trim(string_sed(is)),' ')
@@ -173,7 +173,7 @@ CONTAINS
        loc_ijk_mask(:,:,k) = phys_sed(ips_mask_sed,:,:)
     enddo
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_ijk(:,:,:) = 0.0
        DO i = 1,n_i
           DO j = 1,n_j
@@ -415,7 +415,7 @@ CONTAINS
        ! NOTE: the k dimension is flipped in sub_getvarijk and sub_getvarijk (WHY, for the love of pony?)
        DO ll=1,loc_n_sedcore_tracer_rst
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              if (trim(loc_varname(ll)) == 'sed_'//trim(string_sed(is))) then
                 loc_mk_in(:,:) = 0.0
                 call sub_getvarjk(loc_ncid,'sed_'//trim(string_sed(is)),loc_nv_sedcore_rst,loc_n_sedcore_tot_rst,loc_mk_in(:,:))
@@ -467,11 +467,11 @@ CONTAINS
        do mm=1,loc_nv_sedcore_rst
           do oo=1,loc_n_sedcore_tot_rst
              loc_sedcore_age_ash_rst(mm,oo) = loc_sedcore_age_ash_rst(mm,oo) + par_misc_t_runtime
-             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(iss_CaCO3),oo) > const_real_nullsmall) then
+             if (loc_vsedcore_rst(mm)%lay(iss_is(iss_CaCO3),oo) > const_real_nullsmall) then
                 loc_sedcore_age_cal_rst(mm,oo) = loc_sedcore_age_cal_rst(mm,oo) + par_misc_t_runtime
                 loc_sedcore_age_14C_rst(mm,oo) = loc_sedcore_age_14C_rst(mm,oo) + par_misc_t_runtime
              end if
-             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(iss_det),oo) > const_real_nullsmall) then
+             if (loc_vsedcore_rst(mm)%lay(iss_is(iss_det),oo) > const_real_nullsmall) then
                 loc_sedcore_age_det_rst(mm,oo) = loc_sedcore_age_det_rst(mm,oo) + par_misc_t_runtime
              end if
           end do
@@ -531,7 +531,7 @@ CONTAINS
        loc_j = loc_vsedcore(m)%j
        loc_o = loc_n_sed_stack_top(loc_i,loc_j)
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           DO o = 1,loc_o
              loc_vsedcore(m)%lay(l,loc_o - o + 2) = sed(is,loc_i,loc_j,o)
           end do
@@ -546,7 +546,7 @@ CONTAINS
           loc_j = loc_vsedcore(m)%j
           loc_o = loc_n_sed_stack_top(loc_i,loc_j)
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              DO o = 1,loc_n_sedcore_store_top(m)
                 loc_vsedcore(m)%lay(l,loc_n_sedcore_store_top(m) + loc_o - o + 2) = vsedcore_store(m)%lay(l,o)
              end do
@@ -599,7 +599,7 @@ CONTAINS
        ! NOTE: currently assume mud porosity the same as pelagic sediments
        o = 1
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           loc_sed(is) = loc_vsedcore(m)%lay(l,o)
        end do
        loc_sed_tot_vol = fun_calc_sed_vol(loc_sed(:))
@@ -607,9 +607,9 @@ CONTAINS
           if (sed_mask_reef(loc_i,loc_j)) then
              loc_sedcore_poros(m,o) = par_sed_poros_CaCO3_reef
           elseif (sed_mask_muds(loc_i,loc_j)) then
-             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
+             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
           else
-             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
+             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
           end if
           loc_sedcore_th(m,o) = loc_sed_tot_vol/(1.0 - loc_sedcore_poros(m,o))
        else
@@ -618,7 +618,7 @@ CONTAINS
        end if
        DO o = 2,loc_n_sedcore_tot
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              loc_sed(is) = loc_vsedcore(m)%lay(l,o)
           end do
           loc_sed_tot_vol = fun_calc_sed_vol(loc_sed(:))
@@ -626,9 +626,9 @@ CONTAINS
              if (sed_mask_reef(loc_i,loc_j)) then
                 loc_sedcore_poros(m,o) = par_sed_poros_CaCO3_reef
              elseif (sed_mask_muds(loc_i,loc_j)) then
-                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol)
+                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o)/loc_sed_tot_vol)
              else
-                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol)
+                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o)/loc_sed_tot_vol)
              end if
              loc_sedcore_th(m,o) = loc_sed_tot_vol/(1.0 - loc_sedcore_poros(m,o))
           else
@@ -639,15 +639,15 @@ CONTAINS
        ! ----------------------------------------------------- ! (c) calculate numerical internal ages
        DO o = 1,loc_n_sedcore_tot
           if (sed_select(iss_CaCO3_age)) then
-             IF (loc_vsedcore(m)%lay(is2l(iss_CaCO3),o) > const_real_nullsmall) THEN
-                loc_sedcore_age_cal(m,o) = loc_vsedcore(m)%lay(is2l(iss_CaCO3_age),o)/loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)
+             IF (loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o) > const_real_nullsmall) THEN
+                loc_sedcore_age_cal(m,o) = loc_vsedcore(m)%lay(iss_is(iss_CaCO3_age),o)/loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o)
              ELSE
                 loc_sedcore_age_cal(m,o) = 0.0
              ENDIF
           end if
           if (sed_select(iss_det_age)) then
-             IF (loc_vsedcore(m)%lay(is2l(iss_det),o) > const_real_nullsmall) THEN
-                loc_sedcore_age_det(m,o) = loc_vsedcore(m)%lay(is2l(iss_det_age),o)/loc_vsedcore(m)%lay(is2l(iss_det),o)
+             IF (loc_vsedcore(m)%lay(iss_is(iss_det),o) > const_real_nullsmall) THEN
+                loc_sedcore_age_det(m,o) = loc_vsedcore(m)%lay(iss_is(iss_det_age),o)/loc_vsedcore(m)%lay(iss_is(iss_det),o)
              ELSE
                 loc_sedcore_age_det(m,o) = 0.0
              ENDIF
@@ -660,7 +660,7 @@ CONTAINS
        DO o = 1,loc_n_sedcore_tot
           loc_sed(:) = 0.0
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              loc_sed(is) = loc_vsedcore(m)%lay(l,o)
           end do
           IF (ctrl_data_save_wtfrac) THEN
@@ -677,7 +677,7 @@ CONTAINS
              end IF
           end if
           DO l=1,nt_sed
-             is = conv_iselected_is(l)
+             is = is_iss(l)
              loc_vsedcore(m)%lay(l,o) = loc_sed(is)
           end do
        END DO
@@ -692,11 +692,11 @@ CONTAINS
        loc_ash_max = 0.0
        loc_ash_max_o = 0
        DO o = 3,loc_n_sedcore_tot
-          IF (loc_vsedcore(m)%lay(is2l(iss_ash),o) > (loc_ash_max + const_real_nullsmall)) THEN
-             loc_ash_max   = loc_vsedcore(m)%lay(is2l(iss_ash),o)
+          IF (loc_vsedcore(m)%lay(iss_is(iss_ash),o) > (loc_ash_max + const_real_nullsmall)) THEN
+             loc_ash_max   = loc_vsedcore(m)%lay(iss_is(iss_ash),o)
              loc_ash_max_o = o
           ENDIF
-          IF (loc_vsedcore(m)%lay(is2l(iss_ash),o) < (loc_ash_max - const_real_nullsmall)) exit
+          IF (loc_vsedcore(m)%lay(iss_is(iss_ash),o) < (loc_ash_max - const_real_nullsmall)) exit
        END DO
        ! calculate ash maximum depth
        SELECT CASE (loc_ash_max_o)
@@ -722,11 +722,11 @@ CONTAINS
        ! NOTE: filter the result to remove the 'null' value when a delta cannot be calculated
        !       because this will screw up writing in the ASCII format later
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           SELECT CASE (sed_type(is))
           case (n_itype_min:n_itype_max)
              DO o = 1,loc_n_sedcore_tot
-                loc_tot  = loc_vsedcore(m)%lay(is2l(sed_dep(is)),o)
+                loc_tot  = loc_vsedcore(m)%lay(iss_is(sed_dep(is)),o)
                 loc_frac = loc_vsedcore(m)%lay(l,o)
                 loc_standard = const_standards(sed_type(is))
                 loc_delta = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
@@ -740,12 +740,12 @@ CONTAINS
        end do
        ! ----------------------------------------------------- ! (g) normalize trace elements to bulk
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           SELECT CASE (sed_type(is))
           case (par_sed_type_CaCO3)
              DO o = 1,loc_n_sedcore_tot
-                IF (loc_vsedcore(m)%lay(is2l(sed_dep(is)),o) > const_real_nullsmall) THEN
-                   loc_vsedcore(m)%lay(l,o) = loc_vsedcore(m)%lay(l,o)/loc_vsedcore(m)%lay(is2l(sed_dep(is)),o)
+                IF (loc_vsedcore(m)%lay(iss_is(sed_dep(is)),o) > const_real_nullsmall) THEN
+                   loc_vsedcore(m)%lay(l,o) = loc_vsedcore(m)%lay(l,o)/loc_vsedcore(m)%lay(iss_is(sed_dep(is)),o)
                 else
                    loc_vsedcore(m)%lay(l,o) = 0.0
                 end IF
@@ -754,11 +754,11 @@ CONTAINS
        end do
        ! ----------------------------------------------------- ! (h) convert mass or volume fraction to % units
        DO l=1,nt_sed
-          is = conv_iselected_is(l)
+          is = is_iss(l)
           SELECT CASE (sed_type(is))
           case (par_sed_type_bio,par_sed_type_abio)
              DO o = 1,loc_n_sedcore_tot
-                if (l /= is2l(iss_ash)) then
+                if (l /= iss_is(iss_ash)) then
                    loc_vsedcore(m)%lay(l,o) = 100.0*loc_vsedcore(m)%lay(l,o)
                 end if
              end DO
@@ -769,10 +769,10 @@ CONTAINS
        loc_sedcore_age_14C(m,:) = const_real_zero
        if (sed_select(iss_CaCO3_14C)) then
           DO o = 1,loc_n_sedcore_tot
-             IF (loc_vsedcore(m)%lay(is2l(iss_CaCO3),o) > const_real_nullsmall) THEN
+             IF (loc_vsedcore(m)%lay(iss_is(iss_CaCO3),o) > const_real_nullsmall) THEN
                 loc_CaCO3_D14C = fun_convert_delta14CtoD14C( &
-                     &   loc_vsedcore(m)%lay(is2l(iss_CaCO3_13C),o), &
-                     &   loc_vsedcore(m)%lay(is2l(iss_CaCO3_14C),o) &
+                     &   loc_vsedcore(m)%lay(iss_is(iss_CaCO3_13C),o), &
+                     &   loc_vsedcore(m)%lay(iss_is(iss_CaCO3_14C),o) &
                      & )
                 loc_sedcore_age_14C(m,o) = &
                      & fun_convert_D14Ctoage(loc_CaCO3_D14C)
@@ -914,7 +914,7 @@ CONTAINS
             & 'Radiocarbon age (yr)','Radioncarbon age (yr)',' ')
     end if
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        call sub_defvar('sed_'//trim(string_sed(is)),loc_iou,2, &
             & loc_it_2,loc_c0,loc_c0,' ','F', &
             & string_longname_sed(is),'Sediment tracer - '//trim(string_sed(is)),' ')
@@ -995,7 +995,7 @@ CONTAINS
     end if
     ! -------------------------------------------------------- ! write (2D) tracer variables: sediment tracers
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_mk(:,:) = 0.0
        DO m = 1,nv_sedcore
           DO o = 1,loc_n_sedcore_tot
@@ -1250,7 +1250,7 @@ CONTAINS
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! calculate local sediment preservation
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        DO i=1,n_i
           DO j=1,n_j
              IF (sed_fsed(is,i,j) > 0.0) THEN
@@ -1310,7 +1310,7 @@ CONTAINS
     ! SAVE *ALL* SEDIMENT FLUXES
     ! interface flux data
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
@@ -1338,7 +1338,7 @@ CONTAINS
        END SELECT
     END DO
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
@@ -1366,7 +1366,7 @@ CONTAINS
        END SELECT
     END DO
     DO l=1,nt_sed
-       is = conv_iselected_is(l)
+       is = is_iss(l)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
