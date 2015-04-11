@@ -1364,11 +1364,11 @@ CONTAINS
 
   ! ****************************************************************************************************************************** !
   ! CALCULATE SOLUBILITY COEFFICIENT
-  function fun_calc_solconst(dum_ia,dum_T,dum_S,dum_rho)
+  function fun_calc_solconst(ias,dum_T,dum_S,dum_rho)
     ! result variable
     REAL::fun_calc_solconst
     ! dummy arguments
-    integer,INTENT(in)::dum_ia
+    integer,INTENT(in)::ias
     real,INTENT(in)::dum_T,dum_S,dum_rho
     ! local variables
     REAL::loc_T,loc_rT,loc_Tr100,loc_S
@@ -1402,24 +1402,24 @@ CONTAINS
     ! NOTE: for CFC-11 and CFC-12, the soluability coefficient is in units of mol/(kg atm)
     !       rather than as a Bunsen Solubility Coefficient (see Wanninkohf [1992])
     !       (actaully, it is not really this simple and K should be corrected for water vapour pressure and lame things like that)
-    SELECT CASE (dum_ia)
+    SELECT CASE (ias)
     CASE (ias_pCO2,ias_pN2O)
        fun_calc_solconst = EXP( &
-            & par_bunsen_coef(1,dum_ia) + par_bunsen_coef(2,dum_ia)*(100*loc_rT) + par_bunsen_coef(3,dum_ia)*LOG(loc_Tr100) + &
+            & par_bunsen_coef(1,ias) + par_bunsen_coef(2,ias)*(100*loc_rT) + par_bunsen_coef(3,ias)*LOG(loc_Tr100) + &
             & loc_S* &
-            & (par_bunsen_coef(4,dum_ia) + par_bunsen_coef(5,dum_ia)*(loc_Tr100) + par_bunsen_coef(6,dum_ia)*(loc_Tr100)**2) &
+            & (par_bunsen_coef(4,ias) + par_bunsen_coef(5,ias)*(loc_Tr100) + par_bunsen_coef(6,ias)*(loc_Tr100)**2) &
             &  )
     CASE (ias_pCFC11,ias_pCFC12)
        fun_calc_solconst = EXP( &
-            & par_bunsen_coef(1,dum_ia) + par_bunsen_coef(2,dum_ia)*(100*loc_rT) + par_bunsen_coef(3,dum_ia)*LOG(loc_Tr100) + &
+            & par_bunsen_coef(1,ias) + par_bunsen_coef(2,ias)*(100*loc_rT) + par_bunsen_coef(3,ias)*LOG(loc_Tr100) + &
             & loc_S* &
-            & (par_bunsen_coef(4,dum_ia) + par_bunsen_coef(5,dum_ia)*(loc_Tr100) + par_bunsen_coef(6,dum_ia)*(loc_Tr100)**2) &
+            & (par_bunsen_coef(4,ias) + par_bunsen_coef(5,ias)*(loc_Tr100) + par_bunsen_coef(6,ias)*(loc_Tr100)**2) &
             &  )
     CASE default
        fun_calc_solconst = EXP( &
-            & par_bunsen_coef(1,dum_ia) + par_bunsen_coef(2,dum_ia)*(100*loc_rT) + par_bunsen_coef(3,dum_ia)*LOG(loc_Tr100) + &
+            & par_bunsen_coef(1,ias) + par_bunsen_coef(2,ias)*(100*loc_rT) + par_bunsen_coef(3,ias)*LOG(loc_Tr100) + &
             & loc_S* &
-            & (par_bunsen_coef(4,dum_ia) + par_bunsen_coef(5,dum_ia)*(loc_Tr100) + par_bunsen_coef(6,dum_ia)*(loc_Tr100)**2) &
+            & (par_bunsen_coef(4,ias) + par_bunsen_coef(5,ias)*(loc_Tr100) + par_bunsen_coef(6,ias)*(loc_Tr100)**2) &
             &  )/ &
             & (dum_rho*const_V)
     END SELECT

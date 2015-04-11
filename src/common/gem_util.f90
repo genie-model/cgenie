@@ -1250,7 +1250,7 @@ CONTAINS
   ! CALCULATE THE INDICES OF ALL (NON-ZERO) TRACER RELATIONSHIPS
   SUBROUTINE sub_calc_tracerrelationships_i()
     ! local variables
-    INTEGER::ia,io,is
+    INTEGER::ias,io,is
     integer::loc_tot_i
     ! zero arrays
     conv_ocn_sed_i(:,:) = 0
@@ -1287,25 +1287,25 @@ CONTAINS
     ! identify the indices of all non-zero transformation values in the conversion array for ocn -> atm
     do io=1,n_ocn
        loc_tot_i = 0
-       do ia=1,n_atm_all
-          if (abs(conv_ocn_atm(ia,io)) > const_real_nullsmall) then
+       DO ias = 1, n_atm_all
+          IF (ABS(conv_ocn_atm(ias,io)) > const_real_nullsmall) THEN
              loc_tot_i = loc_tot_i + 1
-             conv_ocn_atm_i(loc_tot_i,io) = ia
-          end if
-       end do
+             conv_ocn_atm_i(loc_tot_i,io) = ias
+          END IF
+       END DO
        conv_ocn_atm_i(0,io) = loc_tot_i
     end do
     ! identify the indices of all non-zero transformation values in the conversion array for atm -> ocn
-    do ia=1,n_atm_all
+    DO ias = 1, n_atm_all
        loc_tot_i = 0
        do io=1,n_ocn
-          if (abs(conv_atm_ocn(io,ia)) > const_real_nullsmall) then
+          IF (ABS(conv_atm_ocn(io,ias)) > const_real_nullsmall) THEN
              loc_tot_i = loc_tot_i + 1
-             conv_atm_ocn_i(loc_tot_i,ia) = io
-          end if
+             conv_atm_ocn_i(loc_tot_i,ias) = io
+          END IF
        end do
-       conv_atm_ocn_i(0,ia) = loc_tot_i
-    end do
+       conv_atm_ocn_i(0,ias) = loc_tot_i
+    END DO
     ! identify the indices of all non-zero transformation values in the conversion array for DOM -> POM
     do io=1,n_ocn
        loc_tot_i = 0

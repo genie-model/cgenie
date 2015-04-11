@@ -1015,38 +1015,38 @@ CONTAINS
     IF (ctrl_data_save_sig_fairsea) THEN
        DO ia = 3, n_atm
           ias = ia_ias(ia)
-          loc_filename=fun_data_timeseries_filename( &
+          loc_filename = fun_data_timeseries_filename( &
                & dum_t,par_outdir_name,trim(par_outfile_name)//'_series','fseaair_'//TRIM(string_atm(ias)),string_results_ext &
                & )
           SELECT CASE (atm_type(ias))
           CASE (1)
              loc_sig = int_diag_airsea_sig(ia)/int_t_sig
-             call check_unit(out,__LINE__,__FILE__)
+             CALL check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
-             call check_iostat(ios,__LINE__,__FILE__)
+             CALL check_iostat(ios,__LINE__,__FILE__)
              WRITE(unit=out,fmt='(f12.3,e15.7,f12.3)',iostat=ios) &
                   & loc_t, &
                   & loc_sig, &
                   & loc_sig/loc_ocn_tot_A
-             call check_iostat(ios,__LINE__,__FILE__)
+             CALL check_iostat(ios,__LINE__,__FILE__)
              CLOSE(unit=out,iostat=ios)
-             call check_iostat(ios,__LINE__,__FILE__)
-          case (n_itype_min:n_itype_max)
+             CALL check_iostat(ios,__LINE__,__FILE__)
+          CASE (n_itype_min:n_itype_max)
              loc_tot  = int_diag_airsea_sig(ias_ia(atm_dep(ias)))/int_t_sig
              loc_frac = int_diag_airsea_sig(ia)/int_t_sig
              loc_standard = const_standards(atm_type(ias))
              loc_sig = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.TRUE.,const_nulliso)
-             call check_unit(out,__LINE__,__FILE__)
+             CALL check_unit(out,__LINE__,__FILE__)
              OPEN(unit=out,file=loc_filename,action='write',status='old',position='append',iostat=ios)
-             call check_iostat(ios,__LINE__,__FILE__)
+             CALL check_iostat(ios,__LINE__,__FILE__)
              WRITE(unit=out,fmt='(f12.3,e15.7,f14.3)',iostat=ios) &
                   & loc_t, &
                   & loc_frac, &
                   & loc_sig
-             call check_iostat(ios,__LINE__,__FILE__)
+             CALL check_iostat(ios,__LINE__,__FILE__)
              CLOSE(unit=out,iostat=ios)
-             call check_iostat(ios,__LINE__,__FILE__)
-          end SELECT
+             CALL check_iostat(ios,__LINE__,__FILE__)
+          END SELECT
        END DO
     END IF
 
