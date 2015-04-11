@@ -319,11 +319,11 @@ MODULE sedgem_lib
   ! allocatable sedcoe arrays
   REAL,ALLOCATABLE,DIMENSION(:,:,:)::sedcore                   ! sedcore sediment layer stack (num sedcores x layers x variables)
   ! sediments - conversion
-  real,DIMENSION(n_sed_all)::conv_sed_cm3_mol                      ! convert solids volume to number of moles
-  real,DIMENSION(n_sed_all)::conv_sed_mol_cm3                      ! convert number of moles to solids volume
-  real,DIMENSION(n_sed_all)::conv_sed_cm3_g                        ! convert solids volume to mass
-  real,DIMENSION(n_sed_all)::conv_sed_g_cm3                        ! convert mass to solids volume
-  real,DIMENSION(n_sed_all)::conv_sed_mask                         ! mask for which sediment tracers contribute to total solids volume
+  real,DIMENSION(nt_sed_all)::conv_sed_cm3_mol                      ! convert solids volume to number of moles
+  real,DIMENSION(nt_sed_all)::conv_sed_mol_cm3                      ! convert number of moles to solids volume
+  real,DIMENSION(nt_sed_all)::conv_sed_cm3_g                        ! convert solids volume to mass
+  real,DIMENSION(nt_sed_all)::conv_sed_g_cm3                        ! convert mass to solids volume
+  real,DIMENSION(nt_sed_all)::conv_sed_mask                         ! mask for which sediment tracers contribute to total solids volume
   ! misc
   LOGICAL,ALLOCATABLE,DIMENSION(:) :: opt_sed                  ! options arrays
 
@@ -394,7 +394,7 @@ CONTAINS
     ! result variable
     REAL::fun_calc_sed_vol
     ! dummy arguments
-    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed
+    REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
     ! return value
     fun_calc_sed_vol = sum(conv_sed_mask(:)*dum_sed(:))
   END FUNCTION fun_calc_sed_vol
@@ -409,7 +409,7 @@ CONTAINS
     ! result variable
     REAL::fun_calc_sed_mass
     ! dummy arguments
-    REAL,INTENT(in),DIMENSION(n_sed_all)::dum_sed
+    REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
     ! return value
     fun_calc_sed_mass = sum(conv_sed_mask(:)*conv_sed_cm3_g(:)*dum_sed(:))
   END FUNCTION fun_calc_sed_mass
@@ -493,12 +493,12 @@ CONTAINS
   function fun_sed_coretop()
     IMPLICIT NONE
     ! result variable
-    REAL,DIMENSION(n_sed_all,n_i,n_j)::fun_sed_coretop
+    REAL,DIMENSION(nt_sed_all,n_i,n_j)::fun_sed_coretop
     ! local variables
     INTEGER::i,j,l,is
     REAL::loc_sed_tot_wt
     REAL::loc_sed_tot_vol
-    REAL,DIMENSION(n_sed_all,n_i,n_j)::loc_sed
+    REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed
     real::loc_tot,loc_frac,loc_standard
 
     ! *** calculate core-top composition ***

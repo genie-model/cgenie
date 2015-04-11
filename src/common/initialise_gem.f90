@@ -59,7 +59,7 @@ SUBROUTINE initialise_gem()
         if (ocn_select(io)) print*,io,' = ',trim(string_longname_ocn(io))
      end do
      print*,'Selected sediment tracers:                          : '
-     do is=1,n_sed_all
+     do is=1,nt_sed_all
         if (sed_select(is)) print*,is,' = ',trim(string_longname_sed(is))
      end do
   end if

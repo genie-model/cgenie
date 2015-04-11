@@ -66,17 +66,17 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sed_mask_muds(n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed(n_sed_all,n_i,n_j,n_sed_tot),STAT=alloc_error)
+    ALLOCATE(sed(nt_sed_all,n_i,n_j,n_sed_tot),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed_top(n_sed_all,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(sed_top(nt_sed_all,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sed_top_h(n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sed_top_INTdth(n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed_fsed(n_sed_all,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(sed_fsed(nt_sed_all,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed_fdis(n_sed_all,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(sed_fdis(nt_sed_all,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sedocn_fnet(n_ocn,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -90,9 +90,9 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(sed_save_mask(n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed_fsed_OLD(n_sed_all,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(sed_fsed_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(sed_fdis_OLD(n_sed_all,n_i,n_j),STAT=alloc_error)
+    ALLOCATE(sed_fdis_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(opt_sed(n_opt_sed),STAT=alloc_error) ; opt_sed = .FALSE.
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -244,7 +244,7 @@ CONTAINS
     real::loc_dts                                                ! local time step (in seconds)
     real::loc_tot_A                                              ! local total area
     logical::loc_flag_save                        ! local flag
-    REAL,DIMENSION(n_sed_all)::loc_fracdecay_sed                     ! local reduction factor for decaying sediment tracers
+    REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed                     ! local reduction factor for decaying sediment tracers
     real,DIMENSION(n_ocn)::loc_fhydrothermal                     ! local dissolved tracer array for hydrothermal input
     real,DIMENSION(n_ocn)::loc_flowTalteration                   ! local dissolved tracer array for low T alteration sink
     real,DIMENSION(n_i,n_j)::loc_phys_sed_mask_deepsea           !
@@ -252,7 +252,7 @@ CONTAINS
     real::loc_r7Li,loc_r44Ca                                     !
     real::loc_alpha,loc_R,loc_delta                              !
     real::loc_fsed                                               !
-    real,DIMENSION(n_sed_all,n_i,n_j)::loc_sfxsumsed_OLD                      ! sediment rain flux interface array (COPY)
+    real,DIMENSION(nt_sed_all,n_i,n_j)::loc_sfxsumsed_OLD                      ! sediment rain flux interface array (COPY)
 
     ! *** STORE PREVIOUS ITERATION DATA ***
     sed_fsed_OLD(:,:,:) = sed_fsed(:,:,:)

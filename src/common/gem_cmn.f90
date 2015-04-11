@@ -23,7 +23,7 @@ MODULE gem_cmn
   !          (far from an idea situation, but allows the gem carbchem code to be used independently of GENIE)
   INTEGER,PARAMETER::nt_atm_all = 19
   INTEGER,PARAMETER::n_ocn = 95
-  INTEGER,PARAMETER::n_sed_all = 79
+  INTEGER,PARAMETER::nt_sed_all = 79
 
 
   ! ****************************************************************************************************************************** !
@@ -35,7 +35,7 @@ MODULE gem_cmn
   ! ------------------- TRACER SELECTION ----------------------------------------------------------------------------------------- !
   LOGICAL,DIMENSION(nt_atm_all)::atm_select                                  !
   LOGICAL,DIMENSION(n_ocn)::ocn_select                                  !
-  LOGICAL,DIMENSION(n_sed_all)::sed_select                                  !
+  LOGICAL,DIMENSION(nt_sed_all)::sed_select                                  !
   NAMELIST /ini_gem_nml/atm_select,ocn_select,sed_select
   ! ------------------- MISC CONTROLS -------------------------------------------------------------------------------------------- !
   real::par_grid_lon_offset                                             ! assumed lon grid offset (w.r.t. Prime Meridian)
@@ -362,19 +362,19 @@ MODULE gem_cmn
   ! tracer description - 'type'
   INTEGER, DIMENSION(nt_atm_all) :: atm_type
   integer,DIMENSION(n_ocn)::ocn_type
-  integer,DIMENSION(n_sed_all)::sed_type
+  integer,DIMENSION(nt_sed_all)::sed_type
   ! tracer description - 'dependency'
   INTEGER, DIMENSION(nt_atm_all) :: atm_dep
   integer,DIMENSION(n_ocn)::ocn_dep
-  integer,DIMENSION(n_sed_all)::sed_dep
+  integer,DIMENSION(nt_sed_all)::sed_dep
   ! tracer short names
   CHARACTER(len=16),DIMENSION(n_ocn)::string_ocn
   CHARACTER(len=16), DIMENSION(nt_atm_all) :: string_atm
-  CHARACTER(len=16),DIMENSION(n_sed_all)::string_sed
+  CHARACTER(len=16),DIMENSION(nt_sed_all)::string_sed
   ! tracer long names (i.e., full description)
   CHARACTER(len=128),DIMENSION(n_ocn)::string_longname_ocn
   CHARACTER(len=128), DIMENSION(nt_atm_all) :: string_longname_atm
-  CHARACTER(len=128),DIMENSION(n_sed_all)::string_longname_sed !
+  CHARACTER(len=128),DIMENSION(nt_sed_all)::string_longname_sed !
   ! tracer descriptions (for netCDF)
   CHARACTER(len=12), DIMENSION(nt_atm_all) :: string_atm_unit        ! main units of active atm tracers
   REAL, DIMENSION(nt_atm_all,2) :: atm_mima                          ! atm tracer min and max (for netcdf file)
@@ -382,10 +382,10 @@ MODULE gem_cmn
   CHARACTER(len=128),DIMENSION(n_ocn)::string_ocn_tlname     ! longnames of active ocn tracers
   CHARACTER(len=12),DIMENSION(n_ocn)::string_ocn_unit        ! main units of active ocn tracers
   REAL,DIMENSION(n_ocn,2)::ocn_mima                          ! tracer min and max (for netcdf file)
-  CHARACTER(len=16),DIMENSION(n_sed_all)::string_sed_tname       ! names of active sed tracers
-  CHARACTER(len=128),DIMENSION(n_sed_all)::string_sed_tlname     ! longnames of active sed tracers
-  CHARACTER(len=12),DIMENSION(n_sed_all)::string_sed_unit        ! main units of active sed tracers
-  REAL,DIMENSION(n_sed_all,2)::sed_mima                          ! sed tracer min and max (for netcdf file)
+  CHARACTER(len=16),DIMENSION(nt_sed_all)::string_sed_tname       ! names of active sed tracers
+  CHARACTER(len=128),DIMENSION(nt_sed_all)::string_sed_tlname     ! longnames of active sed tracers
+  CHARACTER(len=12),DIMENSION(nt_sed_all)::string_sed_unit        ! main units of active sed tracers
+  REAL,DIMENSION(nt_sed_all,2)::sed_mima                          ! sed tracer min and max (for netcdf file)
   ! number of included (selected) tracers
   integer::nt_atm
   integer::n_l_ocn
@@ -400,24 +400,24 @@ MODULE gem_cmn
   INTEGER,ALLOCATABLE,DIMENSION(:)::conv_iselected_is
   ! conversion of absolute index -> selected tracer index
   INTEGER,DIMENSION(n_ocn)::conv_io_lselected
-  INTEGER,DIMENSION(n_sed_all)::conv_is_lselected
+  INTEGER,DIMENSION(nt_sed_all)::conv_is_lselected
   ! tracer index conversion [short array name version]
   INTEGER,ALLOCATABLE,DIMENSION(:)::l2io
   INTEGER,ALLOCATABLE,DIMENSION(:)::l2is
   INTEGER,DIMENSION(n_ocn)::io2l
-  INTEGER,DIMENSION(n_sed_all)::is2l
+  INTEGER,DIMENSION(nt_sed_all)::is2l
   ! tracer conversion - transformation ratios
-  real,DIMENSION(n_sed_all,n_ocn)::conv_ocn_sed
-  real,DIMENSION(n_ocn,n_sed_all)::conv_sed_ocn
+  real,DIMENSION(nt_sed_all,n_ocn)::conv_ocn_sed
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn
   real,DIMENSION(nt_atm_all,n_ocn)::conv_ocn_atm
   real,DIMENSION(n_ocn,nt_atm_all)::conv_atm_ocn
-  real,DIMENSION(n_sed_all,n_ocn)::conv_DOM_POM
-  real,DIMENSION(n_ocn,n_sed_all)::conv_POM_DOM
-  real,DIMENSION(n_sed_all,n_ocn)::conv_RDOM_POM
-  real,DIMENSION(n_ocn,n_sed_all)::conv_POM_RDOM
-  real,DIMENSION(n_ocn,n_sed_all)::conv_sed_ocn_N                           ! tracer conversion array for N-reduction redox conditions
-  real,DIMENSION(n_ocn,n_sed_all)::conv_sed_ocn_S                           ! tracer conversion array for S-reduction redox conditions
-  real,DIMENSION(n_ocn,n_sed_all)::conv_sed_ocn_meth                        ! tracer conversion array for methanogenesis
+  real,DIMENSION(nt_sed_all,n_ocn)::conv_DOM_POM
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_DOM
+  real,DIMENSION(nt_sed_all,n_ocn)::conv_RDOM_POM
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_RDOM
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_N                           ! tracer conversion array for N-reduction redox conditions
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_S                           ! tracer conversion array for S-reduction redox conditions
+  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_meth                        ! tracer conversion array for methanogenesis
   ! tracer conversion -- transformation ratios -- compaxt index format
   real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo
   real,DIMENSION(:,:),ALLOCATABLE::conv_lD_lP
@@ -429,17 +429,17 @@ MODULE gem_cmn
   real,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_meth                        !
   ! tracer conversion - indices for non-zero transformation ratio values
   ! NOTE: the zero index place in the array is used in algorithms identifying null relationships (or something)
-  integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_ocn_sed_i
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_sed_ocn_i                    ! tracer (remin) conversion array for oxygenic conditions
+  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_ocn_sed_i
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i                    ! tracer (remin) conversion array for oxygenic conditions
   integer,DIMENSION(0:nt_atm_all,0:n_ocn)::conv_ocn_atm_i
   integer,DIMENSION(0:n_ocn,0:nt_atm_all)::conv_atm_ocn_i
-  integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_DOM_POM_i
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_POM_DOM_i
-  integer,DIMENSION(0:n_sed_all,0:n_ocn)::conv_RDOM_POM_i
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_POM_RDOM_i
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_sed_ocn_i_N                  ! tracer conversion array for N-reduction redox conditions
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_sed_ocn_i_S                  ! tracer conversion array for S-reduction redox conditions
-  integer,DIMENSION(0:n_ocn,0:n_sed_all)::conv_sed_ocn_i_meth               ! tracer conversion array for methanogenesis
+  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_DOM_POM_i
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_DOM_i
+  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_RDOM_POM_i
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_RDOM_i
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_N                  ! tracer conversion array for N-reduction redox conditions
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_S                  ! tracer conversion array for S-reduction redox conditions
+  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_meth               ! tracer conversion array for methanogenesis
   ! tracer conversion -- transformation ratios -- compaxt index format
   integer,DIMENSION(:,:),ALLOCATABLE::conv_ls_lo_i                !
   integer,DIMENSION(:,:),ALLOCATABLE::conv_lD_lP_i                !
@@ -701,7 +701,7 @@ MODULE gem_cmn
   ! radioactive decay tracer arrays
   REAL, DIMENSION(:), ALLOCATABLE :: const_lambda_atm
   REAL,DIMENSION(n_ocn)::const_lambda_ocn
-  REAL,DIMENSION(n_sed_all)::const_lambda_sed
+  REAL,DIMENSION(nt_sed_all)::const_lambda_sed
 
   ! *** atmospheric chemistry ***
   ! CH4 oxidation [Osborn and Wigley, 1994]

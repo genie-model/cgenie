@@ -358,8 +358,8 @@ CONTAINS
     real::loc_frac_N2fix
     real::loc_ficefree,loc_intI,loc_kI,loc_kT
     real,dimension(n_ocn,n_k)::loc_bio_uptake                           !
-    real,dimension(n_sed_all,n_k)::loc_bio_part_DOM                         !
-    real,dimension(n_sed_all,n_k)::loc_bio_part_RDOM                        !
+    real,dimension(nt_sed_all,n_k)::loc_bio_part_DOM                         !
+    real,dimension(nt_sed_all,n_k)::loc_bio_part_RDOM                        !
     real::loc_Kq
     real::loc_delta_Corg,loc_delta_CaCO3
     real::loc_alpha
@@ -1525,7 +1525,7 @@ CONTAINS
     INTEGER::k,l,io,is
     integer::loc_i,loc_tot_i
     real,dimension(n_ocn,n_k)::loc_bio_uptake
-    real,dimension(n_sed_all,n_k)::loc_bio_part
+    real,dimension(nt_sed_all,n_k)::loc_bio_part
     real::loc_ohm
     real::loc_delta_CaCO3
     real::loc_alpha
@@ -2296,7 +2296,7 @@ CONTAINS
     real::loc_bio_remin_DOMratio,loc_bio_remin_RDOMratio                !
     real::loc_intI                                                      ! local integrated insolation
     real,dimension(n_l_ocn,n_k)::loc_vbio_remin                         !
-    real,dimension(n_sed_all,n_k)::loc_bio_part                             !
+    real,dimension(nt_sed_all,n_k)::loc_bio_part                             !
     integer::loc_i,loc_j,loc_k1
     real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                       !
 
@@ -3500,7 +3500,7 @@ CONTAINS
     ! local variables
     INTEGER::l,i,j,k,io,is
     integer::loc_i,loc_tot_i
-    real,dimension(n_sed_all,n_i,n_j,n_k)::loc_bio_part
+    real,dimension(nt_sed_all,n_i,n_j,n_k)::loc_bio_part
     real,dimension(n_ocn,n_i,n_j,n_k)::loc_bio_part_ocn
     real,dimension(n_ocn,n_i,n_j,n_k)::loc_ocn
     real,dimension(n_ocn,n_i,n_j,n_k)::loc_ocn_tot
