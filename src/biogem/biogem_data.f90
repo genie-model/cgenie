@@ -582,39 +582,39 @@ CONTAINS
 
     ! *** set default 'Redfield' ratios ***
     ! trivial self-relationships(!)
-    bio_part_red(is_POP,is_POP,:,:)     = 1.0
-    bio_part_red(is_POC,is_POC,:,:)     = 1.0
-    bio_part_red(is_PON,is_PON,:,:)     = 1.0
-    bio_part_red(is_CaCO3,is_CaCO3,:,:) = 1.0
-    bio_part_red(is_opal,is_opal,:,:)   = 1.0
-    bio_part_red(is_POCd,is_POCd,:,:)   = 1.0
-    bio_part_red(is_POFe,is_POFe,:,:)   = 1.0
+    bio_part_red(iss_POP,iss_POP,:,:)     = 1.0
+    bio_part_red(iss_POC,iss_POC,:,:)     = 1.0
+    bio_part_red(iss_PON,iss_PON,:,:)     = 1.0
+    bio_part_red(iss_CaCO3,iss_CaCO3,:,:) = 1.0
+    bio_part_red(iss_opal,iss_opal,:,:)   = 1.0
+    bio_part_red(iss_POCd,iss_POCd,:,:)   = 1.0
+    bio_part_red(iss_POFe,iss_POFe,:,:)   = 1.0
     ! set values and derived values
     ! NOTE: relate everything to carbon units where it is not already
     IF (abs(par_bio_red_POP_POC) > const_real_nullsmall) then
-       bio_part_red(is_POP,is_POC,:,:) = par_bio_red_POP_POC
-       bio_part_red(is_POC,is_POP,:,:) = 1.0/bio_part_red(is_POP,is_POC,:,:)
+       bio_part_red(iss_POP,iss_POC,:,:) = par_bio_red_POP_POC
+       bio_part_red(iss_POC,iss_POP,:,:) = 1.0/bio_part_red(iss_POP,iss_POC,:,:)
     end if
     IF (abs(par_bio_red_POP_PON) > const_real_nullsmall) then
-       bio_part_red(is_POP,is_PON,:,:) = par_bio_red_POP_PON
-       bio_part_red(is_POC,is_PON,:,:) = bio_part_red(is_POC,is_POP,:,:)*bio_part_red(is_POP,is_PON,:,:)
-       bio_part_red(is_PON,is_POC,:,:) = 1.0/bio_part_red(is_POC,is_PON,:,:)
+       bio_part_red(iss_POP,iss_PON,:,:) = par_bio_red_POP_PON
+       bio_part_red(iss_POC,iss_PON,:,:) = bio_part_red(iss_POC,iss_POP,:,:)*bio_part_red(iss_POP,iss_PON,:,:)
+       bio_part_red(iss_PON,iss_POC,:,:) = 1.0/bio_part_red(iss_POC,iss_PON,:,:)
     end if
     if (abs(par_bio_red_POC_CaCO3) > const_real_nullsmall) then
-       bio_part_red(is_POC,is_CaCO3,:,:) = par_bio_red_POC_CaCO3
-       bio_part_red(is_CaCO3,is_POC,:,:) = 1.0/bio_part_red(is_POC,is_CaCO3,:,:)
+       bio_part_red(iss_POC,iss_CaCO3,:,:) = par_bio_red_POC_CaCO3
+       bio_part_red(iss_CaCO3,iss_POC,:,:) = 1.0/bio_part_red(iss_POC,iss_CaCO3,:,:)
     end if
     if (abs(par_bio_red_POC_opal) > const_real_nullsmall) then
-       bio_part_red(is_POC,is_opal,:,:) = par_bio_red_POC_opal
-       bio_part_red(is_opal,is_POC,:,:) = 1.0/bio_part_red(is_POC,is_opal,:,:)
+       bio_part_red(iss_POC,iss_opal,:,:) = par_bio_red_POC_opal
+       bio_part_red(iss_opal,iss_POC,:,:) = 1.0/bio_part_red(iss_POC,iss_opal,:,:)
     end if
     IF (abs(par_bio_red_POC_POCd) > const_real_nullsmall) then
-       bio_part_red(is_POC,is_POCd,:,:) = par_bio_red_POC_POCd
-       bio_part_red(is_POCd,is_POC,:,:) = 1.0/bio_part_red(is_POC,is_POCd,:,:)
+       bio_part_red(iss_POC,iss_POCd,:,:) = par_bio_red_POC_POCd
+       bio_part_red(iss_POCd,iss_POC,:,:) = 1.0/bio_part_red(iss_POC,iss_POCd,:,:)
     end if
     IF (abs(par_bio_red_POFe_POC) > const_real_nullsmall) then
-       bio_part_red(is_POFe,is_POC,:,:) = par_bio_red_POFe_POC
-       bio_part_red(is_POC,is_POFe,:,:) = 1.0/bio_part_red(is_POFe,is_POC,:,:)
+       bio_part_red(iss_POFe,iss_POC,:,:) = par_bio_red_POFe_POC
+       bio_part_red(iss_POC,iss_POFe,:,:) = 1.0/bio_part_red(iss_POFe,iss_POC,:,:)
     end if
     ! denifrification and sulphate reduction
     if (par_bio_red_POP_PO2 == -138.0 ) then
@@ -743,53 +743,53 @@ CONTAINS
     ! NOTE: catch incidence of par_bio_red_PON_ALK set to 0.0
     if (abs(par_bio_red_PON_ALK) > const_real_nullsmall) then
        if (ocn_select(io_NO3)) then
-          conv_sed_ocn(io_ALK,is_PON) = par_bio_red_PON_ALK
-          conv_ocn_sed(is_PON,io_ALK) = 1.0/conv_sed_ocn(io_ALK,is_PON)
-          conv_sed_ocn(io_ALK,is_POP) = 0.0
-          conv_ocn_sed(is_POP,io_ALK) = 0.0
+          conv_sed_ocn(io_ALK,iss_PON) = par_bio_red_PON_ALK
+          conv_ocn_sed(iss_PON,io_ALK) = 1.0/conv_sed_ocn(io_ALK,iss_PON)
+          conv_sed_ocn(io_ALK,iss_POP) = 0.0
+          conv_ocn_sed(iss_POP,io_ALK) = 0.0
        else
-          conv_sed_ocn(io_ALK,is_PON) = 0.0
-          conv_ocn_sed(is_PON,io_ALK) = 0.0
-          conv_sed_ocn(io_ALK,is_POP) = par_bio_red_PON_ALK*par_bio_red_POP_PON
-          conv_ocn_sed(is_POP,io_ALK) = 1.0/conv_sed_ocn(io_ALK,is_POP)
+          conv_sed_ocn(io_ALK,iss_PON) = 0.0
+          conv_ocn_sed(iss_PON,io_ALK) = 0.0
+          conv_sed_ocn(io_ALK,iss_POP) = par_bio_red_PON_ALK*par_bio_red_POP_PON
+          conv_ocn_sed(iss_POP,io_ALK) = 1.0/conv_sed_ocn(io_ALK,iss_POP)
        end if
     else
-       conv_sed_ocn(io_ALK,is_PON) = 0.0
-       conv_ocn_sed(is_PON,io_ALK) = 0.0
-       conv_sed_ocn(io_ALK,is_POP) = 0.0
-       conv_ocn_sed(is_POP,io_ALK) = 0.0
+       conv_sed_ocn(io_ALK,iss_PON) = 0.0
+       conv_ocn_sed(iss_PON,io_ALK) = 0.0
+       conv_sed_ocn(io_ALK,iss_POP) = 0.0
+       conv_ocn_sed(iss_POP,io_ALK) = 0.0
     end if
     ! update O2 demand assicated with organic matter (taken as the carbon component)
     ! reduce O2 demand associated with C (and H) oxidation => treat N and P explicitly
     ! NOTE: set no PON O2 demand if NO3 tracer not selected (and increase POC O2 demand)
     ! NOTE: NO3 updake assumed as: 2H+ + 2NO3- -> 2PON + (5/2)O2 + H2O
     if (abs(par_bio_red_POP_POC*par_bio_red_POP_PO2) > const_real_nullsmall) then
-       conv_sed_ocn(io_O2,is_POP) = -4.0/2.0
-       conv_ocn_sed(is_POP,io_O2) = 1.0/conv_sed_ocn(io_O2,is_POP)
+       conv_sed_ocn(io_O2,iss_POP) = -4.0/2.0
+       conv_ocn_sed(iss_POP,io_O2) = 1.0/conv_sed_ocn(io_O2,iss_POP)
        if (ocn_select(io_NO3)) then
-          conv_sed_ocn(io_O2,is_PON) = -5.0/4.0
-          conv_ocn_sed(is_PON,io_O2) = 1.0/conv_sed_ocn(io_O2,is_PON)
+          conv_sed_ocn(io_O2,iss_PON) = -5.0/4.0
+          conv_ocn_sed(iss_PON,io_O2) = 1.0/conv_sed_ocn(io_O2,iss_PON)
        else
-          conv_sed_ocn(io_O2,is_PON) = 0.0
-          conv_ocn_sed(is_PON,io_O2) = 0.0
+          conv_sed_ocn(io_O2,iss_PON) = 0.0
+          conv_ocn_sed(iss_PON,io_O2) = 0.0
        endif
-       conv_sed_ocn(io_O2,is_POC) = par_bio_red_POP_PO2/par_bio_red_POP_POC - &
-            & conv_sed_ocn(io_O2,is_POP)/par_bio_red_POP_POC - &
-            & conv_sed_ocn(io_O2,is_PON)*par_bio_red_POP_PON/par_bio_red_POP_POC
-       conv_ocn_sed(is_POC,io_O2) = 1.0/conv_sed_ocn(io_O2,is_POC)
+       conv_sed_ocn(io_O2,iss_POC) = par_bio_red_POP_PO2/par_bio_red_POP_POC - &
+            & conv_sed_ocn(io_O2,iss_POP)/par_bio_red_POP_POC - &
+            & conv_sed_ocn(io_O2,iss_PON)*par_bio_red_POP_PON/par_bio_red_POP_POC
+       conv_ocn_sed(iss_POC,io_O2) = 1.0/conv_sed_ocn(io_O2,iss_POC)
     else
-       conv_sed_ocn(io_O2,is_POP) = 0.0
-       conv_sed_ocn(io_O2,is_PON) = 0.0
-       conv_sed_ocn(io_O2,is_POC) = 0.0
-       conv_ocn_sed(is_POP,io_O2) = 0.0
-       conv_ocn_sed(is_PON,io_O2) = 0.0
-       conv_ocn_sed(is_POC,io_O2) = 0.0
+       conv_sed_ocn(io_O2,iss_POP) = 0.0
+       conv_sed_ocn(io_O2,iss_PON) = 0.0
+       conv_sed_ocn(io_O2,iss_POC) = 0.0
+       conv_ocn_sed(iss_POP,io_O2) = 0.0
+       conv_ocn_sed(iss_PON,io_O2) = 0.0
+       conv_ocn_sed(iss_POC,io_O2) = 0.0
     end if
     ! -------------------------------------------------------- !
     ! UPDATE ALT REDOX SED->OCN RELATIONSHIPS
     ! -------------------------------------------------------- !
     ! NOTE: arrays are only one-way (i.e. there is no equivalent ocn --> sed transformation
-    ! NOTE: remember that conv_sed_ocn(io_O2,is_POC) is *negative*
+    ! NOTE: remember that conv_sed_ocn(io_O2,iss_POC) is *negative*
     ! -------------------------------------------------------- ! Modify for N-reducing conditions
     ! NOTE: oxidation equivalence assumption (NH4): NO3- + H2O + 2H+ <-> 2O2 + NH4+
     !                                           or: O2 == (1/2)NO3- + (1/2)H2O + H+ - (1/2)NH4+
@@ -803,35 +803,35 @@ CONTAINS
        conv_sed_ocn_N(:,:)  = conv_sed_ocn(:,:)
        ! N
        if (ocn_select(io_NH4)) then
-          conv_sed_ocn_N(io_NO3,is_PON) = 0.0
-          conv_sed_ocn_N(io_NH4,is_PON) = 1.0
-          conv_sed_ocn_N(io_ALK,is_PON) = conv_sed_ocn_N(io_NH4,is_PON) - conv_sed_ocn_N(io_NO3,is_PON)
-          conv_sed_ocn_N(io_O2,is_PON)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_PON) = 0.0
+          conv_sed_ocn_N(io_NH4,iss_PON) = 1.0
+          conv_sed_ocn_N(io_ALK,iss_PON) = conv_sed_ocn_N(io_NH4,iss_PON) - conv_sed_ocn_N(io_NO3,iss_PON)
+          conv_sed_ocn_N(io_O2,iss_PON)  = 0.0
        else
-          conv_sed_ocn_N(io_NO3,is_PON) = 0.0
-          conv_sed_ocn_N(io_N2,is_PON)  = 0.5
-          conv_sed_ocn_N(io_ALK,is_PON) = 0.0
-          conv_sed_ocn_N(io_O2,is_PON)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_PON) = 0.0
+          conv_sed_ocn_N(io_N2,iss_PON)  = 0.5
+          conv_sed_ocn_N(io_ALK,iss_PON) = 0.0
+          conv_sed_ocn_N(io_O2,iss_PON)  = 0.0
        endif
        ! P,C
        if (ocn_select(io_NO2)) then
-          conv_sed_ocn_N(io_NO3,is_POP) = -4.0
-          conv_sed_ocn_N(io_NO2,is_POP) = 4.0
-          conv_sed_ocn_N(io_ALK,is_POP) = 0.0
-          conv_sed_ocn_N(io_O2,is_POP)  = 0.0
-          conv_sed_ocn_N(io_NO3,is_POC) = 2.0*conv_sed_ocn(io_O2,is_POC)
-          conv_sed_ocn_N(io_NO2,is_POC) = -2.0*conv_sed_ocn(io_O2,is_POC)
-          conv_sed_ocn_N(io_ALK,is_POC) = 0.0
-          conv_sed_ocn_N(io_O2,is_POC)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_POP) = -4.0
+          conv_sed_ocn_N(io_NO2,iss_POP) = 4.0
+          conv_sed_ocn_N(io_ALK,iss_POP) = 0.0
+          conv_sed_ocn_N(io_O2,iss_POP)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_POC) = 2.0*conv_sed_ocn(io_O2,iss_POC)
+          conv_sed_ocn_N(io_NO2,iss_POC) = -2.0*conv_sed_ocn(io_O2,iss_POC)
+          conv_sed_ocn_N(io_ALK,iss_POC) = 0.0
+          conv_sed_ocn_N(io_O2,iss_POC)  = 0.0
        else
-          conv_sed_ocn_N(io_NO3,is_POP) = -(8.0/5.0)
-          conv_sed_ocn_N(io_N2,is_POP)  = -0.5*conv_sed_ocn_N(io_NO3,is_POP)
-          conv_sed_ocn_N(io_ALK,is_POP) = -conv_sed_ocn_N(io_NO3,is_POP)
-          conv_sed_ocn_N(io_O2,is_POP)  = 0.0
-          conv_sed_ocn_N(io_NO3,is_POC) = (4.0/5.0)*conv_sed_ocn(io_O2,is_POC)
-          conv_sed_ocn_N(io_N2,is_POC)  = -0.5*conv_sed_ocn_N(io_NO3,is_POC)
-          conv_sed_ocn_N(io_ALK,is_POC) = -conv_sed_ocn_N(io_NO3,is_POC)
-          conv_sed_ocn_N(io_O2,is_POC)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_POP) = -(8.0/5.0)
+          conv_sed_ocn_N(io_N2,iss_POP)  = -0.5*conv_sed_ocn_N(io_NO3,iss_POP)
+          conv_sed_ocn_N(io_ALK,iss_POP) = -conv_sed_ocn_N(io_NO3,iss_POP)
+          conv_sed_ocn_N(io_O2,iss_POP)  = 0.0
+          conv_sed_ocn_N(io_NO3,iss_POC) = (4.0/5.0)*conv_sed_ocn(io_O2,iss_POC)
+          conv_sed_ocn_N(io_N2,iss_POC)  = -0.5*conv_sed_ocn_N(io_NO3,iss_POC)
+          conv_sed_ocn_N(io_ALK,iss_POC) = -conv_sed_ocn_N(io_NO3,iss_POC)
+          conv_sed_ocn_N(io_O2,iss_POC)  = 0.0
        endif
     else
        conv_sed_ocn_N(:,:) = 0.0
@@ -841,25 +841,25 @@ CONTAINS
        conv_sed_ocn_S(:,:) = conv_sed_ocn(:,:)
        ! N
        if (ocn_select(io_NH4)) then
-          conv_sed_ocn_S(io_NO3,is_PON) = 0.0
-          conv_sed_ocn_S(io_NH4,is_PON) = 1.0
-          conv_sed_ocn_S(io_ALK,is_PON) = conv_sed_ocn_N(io_NH4,is_PON) - conv_sed_ocn_N(io_NO3,is_PON)
-          conv_sed_ocn_S(io_O2,is_PON)  = 0.0
+          conv_sed_ocn_S(io_NO3,iss_PON) = 0.0
+          conv_sed_ocn_S(io_NH4,iss_PON) = 1.0
+          conv_sed_ocn_S(io_ALK,iss_PON) = conv_sed_ocn_N(io_NH4,iss_PON) - conv_sed_ocn_N(io_NO3,iss_PON)
+          conv_sed_ocn_S(io_O2,iss_PON)  = 0.0
        else
-          conv_sed_ocn_S(io_NO3,is_PON) = 0.0
-          conv_sed_ocn_S(io_N2,is_PON)  = 0.5
-          conv_sed_ocn_S(io_ALK,is_PON) = 0.0
-          conv_sed_ocn_S(io_O2,is_PON)  = 0.0
+          conv_sed_ocn_S(io_NO3,iss_PON) = 0.0
+          conv_sed_ocn_S(io_N2,iss_PON)  = 0.5
+          conv_sed_ocn_S(io_ALK,iss_PON) = 0.0
+          conv_sed_ocn_S(io_O2,iss_PON)  = 0.0
        endif
        ! P,C
-       conv_sed_ocn_S(io_SO4,is_POP) = 0.5*conv_sed_ocn_S(io_O2,is_POP)
-       conv_sed_ocn_S(io_H2S,is_POP) = -0.5*conv_sed_ocn_S(io_O2,is_POP)
-       conv_sed_ocn_S(io_ALK,is_POP) = -2.0*conv_sed_ocn_S(io_SO4,is_POP) + conv_sed_ocn_S(io_ALK,is_POP)
-       conv_sed_ocn_S(io_O2,is_POP)  = 0.0
-       conv_sed_ocn_S(io_SO4,is_POC) = 0.5*conv_sed_ocn(io_O2,is_POC)
-       conv_sed_ocn_S(io_H2S,is_POC) = -0.5*conv_sed_ocn(io_O2,is_POC)
-       conv_sed_ocn_S(io_ALK,is_POC) = -2.0*conv_sed_ocn_S(io_SO4,is_POC)
-       conv_sed_ocn_S(io_O2,is_POC)  = 0.0
+       conv_sed_ocn_S(io_SO4,iss_POP) = 0.5*conv_sed_ocn_S(io_O2,iss_POP)
+       conv_sed_ocn_S(io_H2S,iss_POP) = -0.5*conv_sed_ocn_S(io_O2,iss_POP)
+       conv_sed_ocn_S(io_ALK,iss_POP) = -2.0*conv_sed_ocn_S(io_SO4,iss_POP) + conv_sed_ocn_S(io_ALK,iss_POP)
+       conv_sed_ocn_S(io_O2,iss_POP)  = 0.0
+       conv_sed_ocn_S(io_SO4,iss_POC) = 0.5*conv_sed_ocn(io_O2,iss_POC)
+       conv_sed_ocn_S(io_H2S,iss_POC) = -0.5*conv_sed_ocn(io_O2,iss_POC)
+       conv_sed_ocn_S(io_ALK,iss_POC) = -2.0*conv_sed_ocn_S(io_SO4,iss_POC)
+       conv_sed_ocn_S(io_O2,iss_POC)  = 0.0
     else
        conv_sed_ocn_S(:,:) = 0.0
     end if
@@ -1619,7 +1619,7 @@ CONTAINS
          & 'bio_PFeSi_Ridgwell02' &
          & )
        IF (.NOT. ocn_select(io_PO4)) loc_flag = .TRUE.
-       IF (.NOT. sed_select(is_POP)) loc_flag = .TRUE.
+       IF (.NOT. sed_select(iss_POP)) loc_flag = .TRUE.
     end select
     SELECT CASE (par_bio_prodopt)
     CASE (                        &
@@ -1628,7 +1628,7 @@ CONTAINS
          & 'bio_PFeSi_Ridgwell02' &
          & )
        IF (.NOT. ocn_select(io_SiO2)) loc_flag = .TRUE.
-       IF (.NOT. sed_select(is_opal)) loc_flag = .TRUE.
+       IF (.NOT. sed_select(iss_opal)) loc_flag = .TRUE.
     end select
     SELECT CASE (par_bio_prodopt)
     case (                    &
@@ -1639,7 +1639,7 @@ CONTAINS
        IF (.NOT. ocn_select(io_NO3)) loc_flag = .TRUE.
        IF (.NOT. ocn_select(io_N2)) loc_flag = .TRUE.
        IF (.NOT. ocn_select(io_NH4)) loc_flag = .TRUE.
-       IF (.NOT. sed_select(is_PON)) loc_flag = .TRUE.
+       IF (.NOT. sed_select(iss_PON)) loc_flag = .TRUE.
     end select
     SELECT CASE (par_bio_prodopt)
     case (                    &
@@ -1648,8 +1648,8 @@ CONTAINS
        IF (.NOT. ocn_select(io_Fe)) loc_flag = .TRUE.
        IF (.NOT. ocn_select(io_FeL)) loc_flag = .TRUE.
        IF (.NOT. ocn_select(io_L)) loc_flag = .TRUE.
-       IF (.NOT. sed_select(is_POFe)) loc_flag = .TRUE.
-       IF (.NOT. sed_select(is_POM_Fe)) loc_flag = .TRUE.
+       IF (.NOT. sed_select(iss_POFe)) loc_flag = .TRUE.
+       IF (.NOT. sed_select(iss_POM_Fe)) loc_flag = .TRUE.
     end select
     if (loc_flag) then
        CALL sub_report_error( &
@@ -1707,7 +1707,7 @@ CONTAINS
     CASE (               &
          & 'bio_POCflux' &
          & )
-       IF (.NOT. force_flux_sed_select(is_POC)) THEN
+       IF (.NOT. force_flux_sed_select(iss_POC)) THEN
           CALL sub_report_error( &
                & 'biogem_data','sub_check_par', &
                & 'POC flux forcing MUST be enabled (FILE: configure_forcings_sed.dat) in conjunction with the '//&
@@ -1981,14 +1981,14 @@ CONTAINS
           end if
        end if
     end do
-    IF (sed_select(is_CaCO3) .AND. (.NOT. sed_select(is_POC))) THEN
+    IF (sed_select(iss_CaCO3) .AND. (.NOT. sed_select(iss_POC))) THEN
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par','The POC tracer must be selected with CaCO3 in biogem_config_sed.par ', &
             & 'STOPPING', &
             & (/const_real_null/),.true. &
             & )
     ENDIF
-    If (sed_select(is_CaCO3_age) .AND. (.NOT. sed_select(is_CaCO3))) then
+    If (sed_select(iss_CaCO3_age) .AND. (.NOT. sed_select(iss_CaCO3))) then
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par', &
             & 'If the sediment CaCO3 age tracer is requested, then the solid CaCO3 tracer must be selected ', &
@@ -1997,26 +1997,26 @@ CONTAINS
             & )
     ENDIF
     !
-    If (sed_select(is_POC) .AND. (.NOT. sed_select(is_POC_frac2))) then
+    If (sed_select(iss_POC) .AND. (.NOT. sed_select(iss_POC_frac2))) then
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par', &
-            & 'If the organic matter tracer is requested, then the 2nd fraction (is_POC_frac2) tracer must be selected ', &
+            & 'If the organic matter tracer is requested, then the 2nd fraction (iss_POC_frac2) tracer must be selected ', &
             & 'STOPPING', &
             & (/const_real_null/),.true. &
             & )
     ENDIF
-    If (sed_select(is_CaCO3) .AND. (.NOT. sed_select(is_CaCO3_frac2))) then
+    If (sed_select(iss_CaCO3) .AND. (.NOT. sed_select(iss_CaCO3_frac2))) then
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par', &
-            & 'If the CaCO3 tracer is requested, then the 2nd fraction (is_CaCO3_frac2) tracer must be selected ', &
+            & 'If the CaCO3 tracer is requested, then the 2nd fraction (iss_CaCO3_frac2) tracer must be selected ', &
             & 'STOPPING', &
             & (/const_real_null/),.true. &
             & )
     ENDIF
-    If (sed_select(is_opal) .AND. (.NOT. sed_select(is_opal_frac2))) then
+    If (sed_select(iss_opal) .AND. (.NOT. sed_select(iss_opal_frac2))) then
        CALL sub_report_error( &
             & 'biogem_data','sub_check_par', &
-            & 'If the opal tracer is requested, then the 2nd fraction (is_opal_frac2) tracer must be selected ', &
+            & 'If the opal tracer is requested, then the 2nd fraction (iss_opal_frac2) tracer must be selected ', &
             & 'STOPPING', &
             & (/const_real_null/),.true. &
             & )

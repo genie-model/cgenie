@@ -511,13 +511,13 @@ CONTAINS
     !       CaCO3:POC 'rain ratio'
     !-----------------------------------------------------------------------
     loc_unitsname = 'n/a'
-    IF (sed_select(is_CaCO3) .AND. sed_select(is_POC)) THEN
+    IF (sed_select(iss_CaCO3) .AND. sed_select(iss_POC)) THEN
        loc_ijk(:,:,:) = const_real_null
        DO i=1,n_i
           DO j=1,n_j
              DO k=goldstein_k1(i,j),n_k
-                if (int_bio_settle_timeslice(is_POC,i,j,k) > const_real_nullsmall) then
-                   loc_ijk(i,j,k) = int_bio_settle_timeslice(is_CaCO3,i,j,k)/int_bio_settle_timeslice(is_POC,i,j,k)
+                if (int_bio_settle_timeslice(iss_POC,i,j,k) > const_real_nullsmall) then
+                   loc_ijk(i,j,k) = int_bio_settle_timeslice(iss_CaCO3,i,j,k)/int_bio_settle_timeslice(iss_POC,i,j,k)
                 end if
              END DO
           END DO
@@ -531,12 +531,12 @@ CONTAINS
     !-----------------------------------------------------------------------
     ! NOTE: divied by real(int_t_timeslice_count) because the flux arrays has been integrated (rather than averaged)
     loc_unitsname = 'n/a'
-    IF (sed_select(is_POC_frac2)) THEN
+    IF (sed_select(iss_POC_frac2)) THEN
        loc_ijk(:,:,:) = const_real_null
        DO i=1,n_i
           DO j=1,n_j
              DO k=goldstein_k1(i,j),n_k
-                loc_ijk(i,j,k) = int_bio_settle_timeslice(is_POC_frac2,i,j,k)/real(int_t_timeslice_count)
+                loc_ijk(i,j,k) = int_bio_settle_timeslice(iss_POC_frac2,i,j,k)/real(int_t_timeslice_count)
              END DO
           END DO
        END DO
@@ -544,12 +544,12 @@ CONTAINS
             & trim(loc_unitsname),const_real_zero,const_real_zero)
        call sub_putvar3d_g('misc_frac2_POC',loc_iou,n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_mask)
     end IF
-    IF (sed_select(is_CaCO3_frac2)) THEN
+    IF (sed_select(iss_CaCO3_frac2)) THEN
        loc_ijk(:,:,:) = const_real_null
        DO i=1,n_i
           DO j=1,n_j
              DO k=goldstein_k1(i,j),n_k
-                loc_ijk(i,j,k) = int_bio_settle_timeslice(is_CaCO3_frac2,i,j,k)/real(int_t_timeslice_count)
+                loc_ijk(i,j,k) = int_bio_settle_timeslice(iss_CaCO3_frac2,i,j,k)/real(int_t_timeslice_count)
              END DO
           END DO
        END DO
@@ -557,12 +557,12 @@ CONTAINS
             & trim(loc_unitsname),const_real_zero,const_real_zero)
        call sub_putvar3d_g('misc_frac2_CaCO3',loc_iou,n_i,n_j,n_k,loc_ntrec,loc_ijk(:,:,:),loc_mask)
     end IF
-    IF (sed_select(is_opal_frac2)) THEN
+    IF (sed_select(iss_opal_frac2)) THEN
        loc_ijk(:,:,:) = const_real_null
        DO i=1,n_i
           DO j=1,n_j
              DO k=goldstein_k1(i,j),n_k
-                loc_ijk(i,j,k) = int_bio_settle_timeslice(is_opal_frac2,i,j,k)/real(int_t_timeslice_count)
+                loc_ijk(i,j,k) = int_bio_settle_timeslice(iss_opal_frac2,i,j,k)/real(int_t_timeslice_count)
              END DO
           END DO
        END DO
@@ -720,7 +720,7 @@ CONTAINS
                         & 1.0E6*                                                              &
                         & (                                                                   &
                         &   int_ocn_timeslice(io_NO3,i,j,k) -                                 &
-                        &   bio_part_red(is_POP,is_PON,i,j)*int_ocn_timeslice(io_PO4,i,j,k) + &
+                        &   bio_part_red(iss_POP,iss_PON,i,j)*int_ocn_timeslice(io_PO4,i,j,k) + &
                         &   par_bio_Nstar_offset                                              &
                         & )                                                                   &
                         & /int_t_timeslice
@@ -740,12 +740,12 @@ CONTAINS
           DO i=1,n_i
              DO j=1,n_j
                 DO k=goldstein_k1(i,j),n_k
-                   if (bio_part_red(is_POP,is_PON,i,j) > const_real_nullsmall) then
+                   if (bio_part_red(iss_POP,iss_PON,i,j) > const_real_nullsmall) then
                       loc_ijk(i,j,k) =                                                           &
                            & 1.0E6*                                                              &
                            & (                                                                   &
                            &   int_ocn_timeslice(io_PO4,i,j,k) -                                 &
-                           &   int_ocn_timeslice(io_NO3,i,j,k)/bio_part_red(is_POP,is_PON,i,j)   &
+                           &   int_ocn_timeslice(io_NO3,i,j,k)/bio_part_red(iss_POP,iss_PON,i,j)   &
                            & )                                                                   &
                            & /int_t_timeslice
                    end if
@@ -908,13 +908,13 @@ CONTAINS
     !       CaCO3:POC surface ocean export 'rain ratio'
     !-----------------------------------------------------------------------
     loc_unitsname = 'n/a'
-    IF (sed_select(is_CaCO3) .AND. sed_select(is_POC)) THEN
+    IF (sed_select(iss_CaCO3) .AND. sed_select(iss_POC)) THEN
        loc_ij(:,:) = const_real_null
        DO i=1,n_i
           DO j=1,n_j
              IF (n_k >= goldstein_k1(i,j)) THEN
-                if (int_bio_settle_timeslice(is_POC,i,j,n_k) > const_real_nullsmall) then
-                   loc_ij(i,j) = int_bio_settle_timeslice(is_CaCO3,i,j,n_k)/int_bio_settle_timeslice(is_POC,i,j,n_k)
+                if (int_bio_settle_timeslice(iss_POC,i,j,n_k) > const_real_nullsmall) then
+                   loc_ij(i,j) = int_bio_settle_timeslice(iss_CaCO3,i,j,n_k)/int_bio_settle_timeslice(iss_POC,i,j,n_k)
                 end if
              end IF
           END DO
@@ -932,8 +932,8 @@ CONTAINS
        DO i=1,n_i
           DO j=1,n_j
              IF (n_k >= goldstein_k1(i,j)) THEN
-                if (int_bio_settle_timeslice(is_POC,i,j,n_k) > const_real_nullsmall) then
-                   loc_ij(i,j) = int_bio_part_timeslice(is_POC_frac2,i,j,n_k)/int_t_timeslice
+                if (int_bio_settle_timeslice(iss_POC,i,j,n_k) > const_real_nullsmall) then
+                   loc_ij(i,j) = int_bio_part_timeslice(iss_POC_frac2,i,j,n_k)/int_t_timeslice
                 end if
              end IF
           END DO
@@ -948,13 +948,13 @@ CONTAINS
     If (ctrl_data_save_slice_bio .AND. ctrl_data_save_slice_diag_proxy) then
        IF (ocn_select(io_Cd)) THEN
           loc_unitsname = 'nmol kg-1 (umol kg-1)-1'
-          IF (sed_select(is_POCd) .AND. sed_select(is_POC)) THEN
+          IF (sed_select(iss_POCd) .AND. sed_select(iss_POC)) THEN
              loc_ij(:,:) = const_real_null
              DO i=1,n_i
                 DO j=1,n_j
                    IF (n_k >= goldstein_k1(i,j)) THEN
-                      if (int_bio_settle_timeslice(is_POC,i,j,n_k) > const_real_nullsmall) then
-                         loc_ij(i,j) = 1.0E3*int_bio_settle_timeslice(is_POCd,i,j,n_k)/int_bio_settle_timeslice(is_POC,i,j,n_k)
+                      if (int_bio_settle_timeslice(iss_POC,i,j,n_k) > const_real_nullsmall) then
+                         loc_ij(i,j) = 1.0E3*int_bio_settle_timeslice(iss_POCd,i,j,n_k)/int_bio_settle_timeslice(iss_POC,i,j,n_k)
                       end if
                    end IF
                 END DO
@@ -963,14 +963,14 @@ CONTAINS
                   & trim(loc_unitsname),const_real_zero,const_real_zero)
              call sub_putvar2d('misc_sur_rCdtoC_POM',loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_mask_surf)
           end IF
-          IF (sed_select(is_POCd) .AND. sed_select(is_POP)) THEN
+          IF (sed_select(iss_POCd) .AND. sed_select(iss_POP)) THEN
              loc_unitsname = 'nmol kg-1 (umol kg-1)-1'
              loc_ij(:,:) = const_real_null
              DO i=1,n_i
                 DO j=1,n_j
                    IF (n_k >= goldstein_k1(i,j)) THEN
-                      if (int_bio_settle_timeslice(is_POP,i,j,n_k) > const_real_nullsmall) then
-                         loc_ij(i,j) = 1.0E3*int_bio_settle_timeslice(is_POCd,i,j,n_k)/int_bio_settle_timeslice(is_POP,i,j,n_k)
+                      if (int_bio_settle_timeslice(iss_POP,i,j,n_k) > const_real_nullsmall) then
+                         loc_ij(i,j) = 1.0E3*int_bio_settle_timeslice(iss_POCd,i,j,n_k)/int_bio_settle_timeslice(iss_POP,i,j,n_k)
                       end if
                    end IF
                 END DO
@@ -979,14 +979,14 @@ CONTAINS
                   & trim(loc_unitsname),const_real_zero,const_real_zero)
              call sub_putvar2d('misc_sur_rCdtoP_POM',loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_mask_surf)
           end IF
-          IF (sed_select(is_CdCO3) .AND. sed_select(is_CaCO3)) THEN
+          IF (sed_select(iss_CdCO3) .AND. sed_select(iss_CaCO3)) THEN
              loc_unitsname = 'nmol kg-1 (mmol kg-1)-1'
              loc_ij(:,:) = const_real_null
              DO i=1,n_i
                 DO j=1,n_j
                    IF (n_k >= goldstein_k1(i,j)) THEN
-                      if (int_bio_settle_timeslice(is_CaCO3,i,j,n_k) > const_real_nullsmall) then
-                         loc_ij(i,j) = 1.0E6*int_bio_settle_timeslice(is_CdCO3,i,j,n_k)/int_bio_settle_timeslice(is_CaCO3,i,j,n_k)
+                      if (int_bio_settle_timeslice(iss_CaCO3,i,j,n_k) > const_real_nullsmall) then
+                         loc_ij(i,j) = 1.0E6*int_bio_settle_timeslice(iss_CdCO3,i,j,n_k)/int_bio_settle_timeslice(iss_CaCO3,i,j,n_k)
                       end if
                    end IF
                 END DO
@@ -1005,7 +1005,7 @@ CONTAINS
           ! total aeolian Fe flux (mass)
           loc_unitsname = 'mg Fe m-2 yr-1'
           loc_ij(:,:) = conv_mol_mmol*par_det_Fe_frac*conv_det_mol_g* &
-               & int_phys_ocn_timeslice(ipo_rA,:,:,n_k)*int_bio_settle_timeslice(is_det,:,:,n_k)/(int_t_timeslice**2)
+               & int_phys_ocn_timeslice(ipo_rA,:,:,n_k)*int_bio_settle_timeslice(iss_det,:,:,n_k)/(int_t_timeslice**2)
           call sub_adddef_netcdf(loc_iou,3,'misc_sur_fFetot_g','Total aeolian iron flux to surface', &
                & trim(loc_unitsname),const_real_zero,const_real_zero)
           call sub_putvar2d('misc_sur_fFetot_g',loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_mask_surf)
@@ -1024,7 +1024,7 @@ CONTAINS
           ! particulate Fe loss
           loc_unitsname = 'umol Fe m-2 yr-1'
           loc_ij(:,:) = conv_mol_umol* &
-               & int_phys_ocn_timeslice(ipo_rA,:,:,n_k)*int_bio_settle_timeslice(is_POFe,:,:,n_k)/(int_t_timeslice**2)
+               & int_phys_ocn_timeslice(ipo_rA,:,:,n_k)*int_bio_settle_timeslice(iss_POFe,:,:,n_k)/(int_t_timeslice**2)
           call sub_adddef_netcdf(loc_iou,3,'misc_sur_fpartFe','Particulate organic matter iron loss from surface', &
                & trim(loc_unitsname),const_real_zero,const_real_zero)
           call sub_putvar2d('misc_sur_fpartFe',loc_iou,n_i,n_j,loc_ntrec,loc_ij(:,:),loc_mask_surf)
@@ -1032,10 +1032,10 @@ CONTAINS
           loc_unitsname = 'umol Fe m-2 yr-1'
           loc_ij(:,:) = (conv_mol_umol*int_phys_ocn_timeslice(ipo_rA,:,:,n_k)/(int_t_timeslice**2))* &
                & ( &
-               &   int_bio_settle_timeslice(is_POM_Fe,:,:,n_k)   + &
-               &   int_bio_settle_timeslice(is_CaCO3_Fe,:,:,n_k) + &
-               &   int_bio_settle_timeslice(is_opal_Fe,:,:,n_k) + &
-               &   int_bio_settle_timeslice(is_det_Fe,:,:,n_k) &
+               &   int_bio_settle_timeslice(iss_POM_Fe,:,:,n_k)   + &
+               &   int_bio_settle_timeslice(iss_CaCO3_Fe,:,:,n_k) + &
+               &   int_bio_settle_timeslice(iss_opal_Fe,:,:,n_k) + &
+               &   int_bio_settle_timeslice(iss_det_Fe,:,:,n_k) &
                & )
           call sub_adddef_netcdf(loc_iou,3,'misc_sur_fscavFetot','Total scavenged iron loss from surface', &
                & trim(loc_unitsname),const_real_zero,const_real_zero)
@@ -1074,14 +1074,14 @@ CONTAINS
     !-----------------------------------------------------------------------
     If (ctrl_data_save_slice_bio .AND. ctrl_data_save_slice_diag_geochem) then
        IF (ocn_select(io_Fe)) THEN
-          IF (sed_select(is_POFe) .AND. sed_select(is_POC)) THEN
+          IF (sed_select(iss_POFe) .AND. sed_select(iss_POC)) THEN
              loc_unitsname = 'n/a'
              loc_ij(:,:) = const_real_null
              DO i=1,n_i
                 DO j=1,n_j
                    IF (n_k >= goldstein_k1(i,j)) THEN
-                      if (int_bio_settle_timeslice(is_POFe,i,j,n_k) > const_real_nullsmall) then
-                         loc_ij(i,j) = int_bio_settle_timeslice(is_POC,i,j,n_k)/int_bio_settle_timeslice(is_POFe,i,j,n_k)
+                      if (int_bio_settle_timeslice(iss_POFe,i,j,n_k) > const_real_nullsmall) then
+                         loc_ij(i,j) = int_bio_settle_timeslice(iss_POC,i,j,n_k)/int_bio_settle_timeslice(iss_POFe,i,j,n_k)
                       end if
                    end IF
                 END DO
@@ -1838,13 +1838,13 @@ CONTAINS
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_focnsed) then
        loc_unitsname = 'n/a'
-       IF (sed_select(is_POC_frac2)) THEN
+       IF (sed_select(iss_POC_frac2)) THEN
           loc_ij(:,:) = const_real_null
           DO i=1,n_i
              DO j=1,n_j
                 loc_k1 = goldstein_k1(i,j)
                 IF (n_k >= loc_k1) THEN
-                   loc_ij(i,j) = int_bio_settle_timeslice(is_POC_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
+                   loc_ij(i,j) = int_bio_settle_timeslice(iss_POC_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
                 END if
              END DO
           END DO
@@ -1852,13 +1852,13 @@ CONTAINS
                & 'POC fraction #2',trim(loc_unitsname),const_real_zero,const_real_zero)
              call sub_putvar2d('misc_focnsed_frac2_POC',loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_sed_mask)
        end IF
-       IF (sed_select(is_CaCO3_frac2)) THEN
+       IF (sed_select(iss_CaCO3_frac2)) THEN
           loc_ij(:,:) = const_real_null
           DO i=1,n_i
              DO j=1,n_j
                 loc_k1 = goldstein_k1(i,j)
                 IF (n_k >= loc_k1) THEN
-                   loc_ij(i,j) = int_bio_settle_timeslice(is_CaCO3_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
+                   loc_ij(i,j) = int_bio_settle_timeslice(iss_CaCO3_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
                 END if
              END DO
           END DO
@@ -1866,13 +1866,13 @@ CONTAINS
                & 'CaCO3 fraction #2',trim(loc_unitsname),const_real_zero,const_real_zero)
              call sub_putvar2d('misc_focnsed_frac2_CaCO3',loc_iou,n_i,n_j,loc_ntrec,loc_ij,loc_sed_mask)
        end IF
-       IF (sed_select(is_opal_frac2)) THEN
+       IF (sed_select(iss_opal_frac2)) THEN
           loc_ij(:,:) = const_real_null
           DO i=1,n_i
              DO j=1,n_j
                 loc_k1 = goldstein_k1(i,j)
                 IF (n_k >= loc_k1) THEN
-                   loc_ij(i,j) = int_bio_settle_timeslice(is_opal_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
+                   loc_ij(i,j) = int_bio_settle_timeslice(iss_opal_frac2,i,j,loc_k1)/real(int_t_timeslice_count)
                 END if
              END DO
           END DO

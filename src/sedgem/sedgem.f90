@@ -168,16 +168,16 @@ CONTAINS
     IF (ctrl_continuing) then
        CALL sub_data_load_rst(dum_sfxsumsed,dum_sfxocn)
        ! modify sediment ages
-       if (sed_select(is_CaCO3_age)) then
-          sed(is_CaCO3_age,:,:,:)    = sed(is_CaCO3_age,:,:,:)    + par_misc_t_runtime*sed(is_CaCO3,:,:,:)
-          sed_top(is_CaCO3_age,:,:)  = sed_top(is_CaCO3_age,:,:)  + par_misc_t_runtime*sed_top(is_CaCO3,:,:)
+       if (sed_select(iss_CaCO3_age)) then
+          sed(iss_CaCO3_age,:,:,:)    = sed(iss_CaCO3_age,:,:,:)    + par_misc_t_runtime*sed(iss_CaCO3,:,:,:)
+          sed_top(iss_CaCO3_age,:,:)  = sed_top(iss_CaCO3_age,:,:)  + par_misc_t_runtime*sed_top(iss_CaCO3,:,:)
        end if
-       if (sed_select(is_det_age)) then
-          sed(is_det_age,:,:,:)    = sed(is_det_age,:,:,:)    + par_misc_t_runtime*sed(is_det,:,:,:)
-          sed_top(is_det_age,:,:)  = sed_top(is_det_age,:,:)  + par_misc_t_runtime*sed_top(is_det,:,:)
+       if (sed_select(iss_det_age)) then
+          sed(iss_det_age,:,:,:)    = sed(iss_det_age,:,:,:)    + par_misc_t_runtime*sed(iss_det,:,:,:)
+          sed_top(iss_det_age,:,:)  = sed_top(iss_det_age,:,:)  + par_misc_t_runtime*sed_top(iss_det,:,:)
        end if
        ! ------------------------------------------------------- ! modify numerical CaCO3 tracers
-       if (ctrl_sed_dyerestart .AND. sed_select(is_CaCO3_red)) then
+       if (ctrl_sed_dyerestart .AND. sed_select(iss_CaCO3_red)) then
           DO i=1,n_i
              DO j=1,n_j
                 IF (sed_mask(i,j)) THEN
@@ -185,25 +185,25 @@ CONTAINS
                    loc_n_sed_stack_top  = INT(sed_top_h(i,j)) + 1
                    loc_sed_stack_top_th = sed_top_h(i,j) - REAL(loc_n_sed_stack_top - 1)
                    loc_vol_top = fun_calc_sed_vol(sed_top(:,i,j))
-                   loc_poros_top = fun_calc_sed_poros_nsur(sed_top(is_CaCO3,i,j)/loc_vol_top,par_sed_top_th)
+                   loc_poros_top = fun_calc_sed_poros_nsur(sed_top(iss_CaCO3,i,j)/loc_vol_top,par_sed_top_th)
                    loc_vol = fun_calc_sed_vol(sed(:,i,j,loc_n_sed_stack_top))
-                   loc_poros = fun_calc_sed_poros(sed(is_CaCO3,i,j,loc_n_sed_stack_top)/loc_vol)
+                   loc_poros = fun_calc_sed_poros(sed(iss_CaCO3,i,j,loc_n_sed_stack_top)/loc_vol)
                    ! tag core-top (normalize for porosity difference)
-                   sed_top(is_CaCO3_red,i,j) = 1.0*sed_top(is_CaCO3,i,j)*(1.0 - loc_poros)/(1.0 - loc_poros_top)
-                   sed_top(is_CaCO3_blue,i,j) = 0.0
+                   sed_top(iss_CaCO3_red,i,j) = 1.0*sed_top(iss_CaCO3,i,j)*(1.0 - loc_poros)/(1.0 - loc_poros_top)
+                   sed_top(iss_CaCO3_blue,i,j) = 0.0
                    ! tag red core segment
-                   sed(is_CaCO3_red,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top) = &
-                        & 1.0*sed(is_CaCO3,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top)
-                   sed(is_CaCO3_blue,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top) = 0.0
+                   sed(iss_CaCO3_red,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top) = &
+                        & 1.0*sed(iss_CaCO3,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top)
+                   sed(iss_CaCO3_blue,i,j,(loc_n_sed_stack_top - par_sed_dyerestart_n + 2):loc_n_sed_stack_top) = 0.0
                    ! tag base of red core sedgment (adjust to take into account incomplete core stack layer)
-                   sed(is_CaCO3_red,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1) = &
-                        & (1.0 - loc_sed_stack_top_th)*sed(is_CaCO3,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1)
-                   sed(is_CaCO3_blue,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1) = &
-                        & loc_sed_stack_top_th*sed(is_CaCO3,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1)
+                   sed(iss_CaCO3_red,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1) = &
+                        & (1.0 - loc_sed_stack_top_th)*sed(iss_CaCO3,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1)
+                   sed(iss_CaCO3_blue,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1) = &
+                        & loc_sed_stack_top_th*sed(iss_CaCO3,i,j,loc_n_sed_stack_top - par_sed_dyerestart_n + 1)
                    ! tag blue core segment
-                   sed(is_CaCO3_red,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n)) = 0.0
-                   sed(is_CaCO3_blue,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n)) = &
-                        & 1.0*sed(is_CaCO3,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n))
+                   sed(iss_CaCO3_red,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n)) = 0.0
+                   sed(iss_CaCO3_blue,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n)) = &
+                        & 1.0*sed(iss_CaCO3,i,j,1:(loc_n_sed_stack_top - par_sed_dyerestart_n))
                 end if
              end DO
           end do
@@ -389,28 +389,28 @@ CONTAINS
              ! NOTE: add age tracer if selected
              ! NOTE: assuming that not both surface-derived flux and prescribed benthic addition of detrital will be done
              !       (otherwise a flux-weighting of age will be required)
-             if (sed_select(is_det)) then
-                dum_sfxsumsed(is_det,i,j) = dum_sfxsumsed(is_det,i,j) + &
+             if (sed_select(iss_det)) then
+                dum_sfxsumsed(iss_det,i,j) = dum_sfxsumsed(iss_det,i,j) + &
                      & conv_m2_cm2*conv_det_g_mol*(conv_yr_kyr*loc_dtyr)*par_sed_fdet
              endif
-             if (sed_select(is_det_age)) then
-                dum_sfxsumsed(is_det_age,i,j) = dum_sfxsumsed(is_det_age,i,j) + &
+             if (sed_select(iss_det_age)) then
+                dum_sfxsumsed(iss_det_age,i,j) = dum_sfxsumsed(iss_det_age,i,j) + &
                      & sed_age*conv_m2_cm2*conv_det_g_mol*(conv_yr_kyr*loc_dtyr)*par_sed_fdet
              endif
              ! add ash layer (if selected)
-             if (sed_select(is_ash)) then
+             if (sed_select(iss_ash)) then
                 if (par_sed_ashevent) then
-                   dum_sfxsumsed(is_ash,i,j) = dum_sfxsumsed(is_ash,i,j) + &
+                   dum_sfxsumsed(iss_ash,i,j) = dum_sfxsumsed(iss_ash,i,j) + &
                         & conv_m2_cm2*conv_det_g_mol*(conv_yr_kyr*loc_dtyr)*par_sed_ashevent_fash
                 end if
              endif
              ! tag CaCO3 'color'
-             if (sed_select(is_CaCO3_red)) dum_sfxsumsed(is_CaCO3_red,i,j) = par_sed_CaCO3_fred*dum_sfxsumsed(is_CaCO3,i,j)
-             if (sed_select(is_CaCO3_blue)) dum_sfxsumsed(is_CaCO3_blue,i,j) = par_sed_CaCO3_fblue*dum_sfxsumsed(is_CaCO3,i,j)
+             if (sed_select(iss_CaCO3_red)) dum_sfxsumsed(iss_CaCO3_red,i,j) = par_sed_CaCO3_fred*dum_sfxsumsed(iss_CaCO3,i,j)
+             if (sed_select(iss_CaCO3_blue)) dum_sfxsumsed(iss_CaCO3_blue,i,j) = par_sed_CaCO3_fblue*dum_sfxsumsed(iss_CaCO3,i,j)
              ! account for clay formation
              If (ocn_select(io_Li)) then
-                loc_fsed = par_sed_clay_fLi_alpha*dum_sfxsumsed(is_det,i,j)*dum_sfcsumocn(io_Li,i,j)
-                dum_sfxsumsed(is_detLi,i,j) = dum_sfxsumsed(is_detLi,i,j) + loc_fsed
+                loc_fsed = par_sed_clay_fLi_alpha*dum_sfxsumsed(iss_det,i,j)*dum_sfcsumocn(io_Li,i,j)
+                dum_sfxsumsed(iss_detLi,i,j) = dum_sfxsumsed(iss_detLi,i,j) + loc_fsed
                 dum_sfxocn(io_Li,i,j) = dum_sfxocn(io_Li,i,j) - loc_fsed/dum_dts
                 if (ocn_select(io_Li_7Li)) then
                    loc_standard = const_standards(ocn_type(io_Li_7Li))
@@ -422,7 +422,7 @@ CONTAINS
                    loc_alpha = 1.0 + par_sed_clay_7Li_epsilon/1000.0
                    loc_R = loc_r7Li/(1.0 - loc_r7Li)
                    loc_fsed = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*loc_fsed
-                   dum_sfxsumsed(is_detLi_7Li,i,j) = dum_sfxsumsed(is_detLi_7Li,i,j) + loc_fsed
+                   dum_sfxsumsed(iss_detLi_7Li,i,j) = dum_sfxsumsed(iss_detLi_7Li,i,j) + loc_fsed
                    dum_sfxocn(io_Li_7Li,i,j) = dum_sfxocn(io_Li_7Li,i,j) - loc_fsed/dum_dts
                 end if
              end if
@@ -430,7 +430,7 @@ CONTAINS
        end DO
     end DO
     ! deselect ash fall
-    if (sed_select(is_ash)) then
+    if (sed_select(iss_ash)) then
        if (par_sed_ashevent) par_sed_ashevent = .false.
     endif
 
@@ -440,7 +440,7 @@ CONTAINS
        DO j=1,n_j
           IF (sed_mask(i,j)) THEN
              ! add foram tracers
-             if (sed_select(is_CaCO3) .AND. sed_select(is_foram_b_13C)) then
+             if (sed_select(iss_CaCO3) .AND. sed_select(iss_foram_b_13C)) then
                 ! calculate 13C/12C fractionation between DIC and CaCO3
                 SELECT CASE (opt_sed_foram_b_13C_delta)
                 CASE ('NONE')
@@ -452,8 +452,8 @@ CONTAINS
                 end SELECT
                 loc_alpha = 1.0 + loc_delta/1000.0
                 loc_R = sed_carbisor(ici_HCO3_r13C,i,j)/(1.0 - sed_carbisor(ici_HCO3_r13C,i,j))
-                loc_fsed = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*dum_sfxsumsed(is_CaCO3,i,j)
-                dum_sfxsumsed(is_foram_b_13C,i,j) = loc_fsed
+                loc_fsed = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*dum_sfxsumsed(iss_CaCO3,i,j)
+                dum_sfxsumsed(iss_foram_b_13C,i,j) = loc_fsed
              end if
           end IF
        end DO
@@ -650,18 +650,18 @@ CONTAINS
             & dum_sfcsumocn(io_ALK,i,j),         &
             & 1.0E+06*sed_carb(ic_dCO3_cal,i,j)
        print*, &
-            & 100.0*sed_top(is_CaCO3,i,j),       &
-            & 100.0*sed_top(is_opal,i,j)
+            & 100.0*sed_top(iss_CaCO3,i,j),       &
+            & 100.0*sed_top(iss_opal,i,j)
        print*, &
-            & 1.0E+06*sed_fsed(is_CaCO3,i,j)/loc_dtyr, &
-            & 1.0E+06*sed_fsed(is_POC,i,j)/loc_dtyr,   &
-            & 1.0E+06*sed_fdis(is_CaCO3,i,j)/loc_dtyr, &
-            & 1.0E+06*sed_fdis(is_POC,i,j)/loc_dtyr
+            & 1.0E+06*sed_fsed(iss_CaCO3,i,j)/loc_dtyr, &
+            & 1.0E+06*sed_fsed(iss_POC,i,j)/loc_dtyr,   &
+            & 1.0E+06*sed_fdis(iss_CaCO3,i,j)/loc_dtyr, &
+            & 1.0E+06*sed_fdis(iss_POC,i,j)/loc_dtyr
        print*, &
-            & sum(sed_fsed(is_CaCO3,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr, &
-            & sum(sed_fsed(is_POC,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr,   &
-            & sum(sed_fdis(is_CaCO3,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr, &
-            & sum(sed_fdis(is_POC,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr
+            & sum(sed_fsed(iss_CaCO3,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr, &
+            & sum(sed_fsed(iss_POC,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr,   &
+            & sum(sed_fdis(iss_CaCO3,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr, &
+            & sum(sed_fdis(iss_POC,:,:)*conv_m2_cm2*phys_sed(ips_A,:,:))/loc_dtyr
        print*,'---'
        print*,''
     end if
@@ -715,11 +715,11 @@ CONTAINS
     DO i = 1, n_i
        DO j = 1, n_j
           IF (sed_mask(i,j)) THEN
-             IF (sed_select(is_CaCO3_age)) THEN
-                dum_sfxsumsed(is_CaCO3_age,i,j) = dum_sfxsumsed(is_CaCO3_age,i,j) - loc_dtyr*dum_sfxsumsed(is_CaCO3,i,j)
+             IF (sed_select(iss_CaCO3_age)) THEN
+                dum_sfxsumsed(iss_CaCO3_age,i,j) = dum_sfxsumsed(iss_CaCO3_age,i,j) - loc_dtyr*dum_sfxsumsed(iss_CaCO3,i,j)
              END IF
-             IF (sed_select(is_det_age)) THEN
-                dum_sfxsumsed(is_det_age,i,j) = dum_sfxsumsed(is_det_age,i,j) - loc_dtyr*dum_sfxsumsed(is_det,i,j)
+             IF (sed_select(iss_det_age)) THEN
+                dum_sfxsumsed(iss_det_age,i,j) = dum_sfxsumsed(iss_det_age,i,j) - loc_dtyr*dum_sfxsumsed(iss_det,i,j)
              END IF
           END IF
        END DO

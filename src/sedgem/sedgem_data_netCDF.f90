@@ -467,11 +467,11 @@ CONTAINS
        do mm=1,loc_nv_sedcore_rst
           do oo=1,loc_n_sedcore_tot_rst
              loc_sedcore_age_ash_rst(mm,oo) = loc_sedcore_age_ash_rst(mm,oo) + par_misc_t_runtime
-             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(is_CaCO3),oo) > const_real_nullsmall) then
+             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(iss_CaCO3),oo) > const_real_nullsmall) then
                 loc_sedcore_age_cal_rst(mm,oo) = loc_sedcore_age_cal_rst(mm,oo) + par_misc_t_runtime
                 loc_sedcore_age_14C_rst(mm,oo) = loc_sedcore_age_14C_rst(mm,oo) + par_misc_t_runtime
              end if
-             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(is_det),oo) > const_real_nullsmall) then
+             if (loc_vsedcore_rst(mm)%lay(conv_is_lselected(iss_det),oo) > const_real_nullsmall) then
                 loc_sedcore_age_det_rst(mm,oo) = loc_sedcore_age_det_rst(mm,oo) + par_misc_t_runtime
              end if
           end do
@@ -607,9 +607,9 @@ CONTAINS
           if (sed_mask_reef(loc_i,loc_j)) then
              loc_sedcore_poros(m,o) = par_sed_poros_CaCO3_reef
           elseif (sed_mask_muds(loc_i,loc_j)) then
-             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(is_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
+             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
           else
-             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(is_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
+             loc_sedcore_poros(m,o) = fun_calc_sed_poros_nsur(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol,par_sed_top_th)
           end if
           loc_sedcore_th(m,o) = loc_sed_tot_vol/(1.0 - loc_sedcore_poros(m,o))
        else
@@ -626,9 +626,9 @@ CONTAINS
              if (sed_mask_reef(loc_i,loc_j)) then
                 loc_sedcore_poros(m,o) = par_sed_poros_CaCO3_reef
              elseif (sed_mask_muds(loc_i,loc_j)) then
-                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(is_CaCO3),o)/loc_sed_tot_vol)
+                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol)
              else
-                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(is_CaCO3),o)/loc_sed_tot_vol)
+                loc_sedcore_poros(m,o) = fun_calc_sed_poros(loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)/loc_sed_tot_vol)
              end if
              loc_sedcore_th(m,o) = loc_sed_tot_vol/(1.0 - loc_sedcore_poros(m,o))
           else
@@ -638,16 +638,16 @@ CONTAINS
        end DO
        ! ----------------------------------------------------- ! (c) calculate numerical internal ages
        DO o = 1,loc_n_sedcore_tot
-          if (sed_select(is_CaCO3_age)) then
-             IF (loc_vsedcore(m)%lay(is2l(is_CaCO3),o) > const_real_nullsmall) THEN
-                loc_sedcore_age_cal(m,o) = loc_vsedcore(m)%lay(is2l(is_CaCO3_age),o)/loc_vsedcore(m)%lay(is2l(is_CaCO3),o)
+          if (sed_select(iss_CaCO3_age)) then
+             IF (loc_vsedcore(m)%lay(is2l(iss_CaCO3),o) > const_real_nullsmall) THEN
+                loc_sedcore_age_cal(m,o) = loc_vsedcore(m)%lay(is2l(iss_CaCO3_age),o)/loc_vsedcore(m)%lay(is2l(iss_CaCO3),o)
              ELSE
                 loc_sedcore_age_cal(m,o) = 0.0
              ENDIF
           end if
-          if (sed_select(is_det_age)) then
-             IF (loc_vsedcore(m)%lay(is2l(is_det),o) > const_real_nullsmall) THEN
-                loc_sedcore_age_det(m,o) = loc_vsedcore(m)%lay(is2l(is_det_age),o)/loc_vsedcore(m)%lay(is2l(is_det),o)
+          if (sed_select(iss_det_age)) then
+             IF (loc_vsedcore(m)%lay(is2l(iss_det),o) > const_real_nullsmall) THEN
+                loc_sedcore_age_det(m,o) = loc_vsedcore(m)%lay(is2l(iss_det_age),o)/loc_vsedcore(m)%lay(is2l(iss_det),o)
              ELSE
                 loc_sedcore_age_det(m,o) = 0.0
              ENDIF
@@ -667,13 +667,13 @@ CONTAINS
              loc_sed_tot_wt = fun_calc_sed_mass(loc_sed(:))
              IF (loc_sed_tot_wt > const_real_nullsmall) THEN
                 loc_sed(:) = conv_sed_cm3_g(:)*loc_sed(:)/loc_sed_tot_wt
-                loc_sed(is_ash) = loc_sed_tot_wt*loc_sed(is_ash)/conv_sed_cm3_g(is_ash)
+                loc_sed(iss_ash) = loc_sed_tot_wt*loc_sed(iss_ash)/conv_sed_cm3_g(iss_ash)
              end IF
           else
              loc_sed_tot_vol = fun_calc_sed_vol(loc_sed(:))
              IF (loc_sed_tot_vol > const_real_nullsmall) THEN
                 loc_sed(:) = loc_sed(:)/loc_sed_tot_vol
-                loc_sed(is_ash) = loc_sed_tot_vol*loc_sed(is_ash)
+                loc_sed(iss_ash) = loc_sed_tot_vol*loc_sed(iss_ash)
              end IF
           end if
           DO l=1,nt_sed
@@ -692,11 +692,11 @@ CONTAINS
        loc_ash_max = 0.0
        loc_ash_max_o = 0
        DO o = 3,loc_n_sedcore_tot
-          IF (loc_vsedcore(m)%lay(is2l(is_ash),o) > (loc_ash_max + const_real_nullsmall)) THEN
-             loc_ash_max   = loc_vsedcore(m)%lay(is2l(is_ash),o)
+          IF (loc_vsedcore(m)%lay(is2l(iss_ash),o) > (loc_ash_max + const_real_nullsmall)) THEN
+             loc_ash_max   = loc_vsedcore(m)%lay(is2l(iss_ash),o)
              loc_ash_max_o = o
           ENDIF
-          IF (loc_vsedcore(m)%lay(is2l(is_ash),o) < (loc_ash_max - const_real_nullsmall)) exit
+          IF (loc_vsedcore(m)%lay(is2l(iss_ash),o) < (loc_ash_max - const_real_nullsmall)) exit
        END DO
        ! calculate ash maximum depth
        SELECT CASE (loc_ash_max_o)
@@ -758,7 +758,7 @@ CONTAINS
           SELECT CASE (sed_type(is))
           case (par_sed_type_bio,par_sed_type_abio)
              DO o = 1,loc_n_sedcore_tot
-                if (l /= is2l(is_ash)) then
+                if (l /= is2l(iss_ash)) then
                    loc_vsedcore(m)%lay(l,o) = 100.0*loc_vsedcore(m)%lay(l,o)
                 end if
              end DO
@@ -767,12 +767,12 @@ CONTAINS
        ! ----------------------------------------------------- ! (i) calculate D14C and radiocarbon age
        ! NOTE: this will be saved regardless of whether 14C is a included tracer in the model or not ...
        loc_sedcore_age_14C(m,:) = const_real_zero
-       if (sed_select(is_CaCO3_14C)) then
+       if (sed_select(iss_CaCO3_14C)) then
           DO o = 1,loc_n_sedcore_tot
-             IF (loc_vsedcore(m)%lay(is2l(is_CaCO3),o) > const_real_nullsmall) THEN
+             IF (loc_vsedcore(m)%lay(is2l(iss_CaCO3),o) > const_real_nullsmall) THEN
                 loc_CaCO3_D14C = fun_convert_delta14CtoD14C( &
-                     &   loc_vsedcore(m)%lay(is2l(is_CaCO3_13C),o), &
-                     &   loc_vsedcore(m)%lay(is2l(is_CaCO3_14C),o) &
+                     &   loc_vsedcore(m)%lay(is2l(iss_CaCO3_13C),o), &
+                     &   loc_vsedcore(m)%lay(is2l(iss_CaCO3_14C),o) &
                      & )
                 loc_sedcore_age_14C(m,o) = &
                      & fun_convert_D14Ctoage(loc_CaCO3_D14C)
@@ -909,7 +909,7 @@ CONTAINS
          & 'Age from sediment detrital (yr)','Age from sediment detrital (yr)',' ')
     call sub_defvar('age_ash',loc_iou,2,loc_it_2,loc_c0,loc_c0,' ','F', &
          & 'Age by linear sedimentation rate (yr)','Age by linear sedimentation rate (yr)',' ')
-    if (sed_select(is_CaCO3_14C)) then
+    if (sed_select(iss_CaCO3_14C)) then
        call sub_defvar('age_14C',loc_iou,2,loc_it_2,loc_c0,loc_c0,' ','F', &
             & 'Radiocarbon age (yr)','Radioncarbon age (yr)',' ')
     end if
@@ -989,7 +989,7 @@ CONTAINS
     call sub_putvar2d('age_det',loc_iou,nv_sedcore,loc_n_sedcore_tot,loc_ntrec,loc_mk(:,:),loc_mk_mask(:,:))
     loc_mk(:,:) = loc_sedcore_age_ash(:,:)
     call sub_putvar2d('age_ash',loc_iou,nv_sedcore,loc_n_sedcore_tot,loc_ntrec,loc_mk(:,:),loc_mk_mask(:,:))
-    if (sed_select(is_CaCO3_14C)) then
+    if (sed_select(iss_CaCO3_14C)) then
        loc_mk(:,:) = loc_sedcore_age_14C(:,:)
        call sub_putvar2d('age_14C',loc_iou,nv_sedcore,loc_n_sedcore_tot,loc_ntrec,loc_mk(:,:),loc_mk_mask(:,:))
     end if
@@ -1387,31 +1387,31 @@ CONTAINS
        end SELECT
     END DO
     ! save interface flux data - dust (log10)
-    IF (sed_select(is_det)) THEN
+    IF (sed_select(iss_det)) THEN
        loc_ij(:,:) = const_real_zero
        loc_unitsname = 'mol cm-2 yr-1'
        ! log10 data
        DO i=1,n_i
           DO j=1,n_j
-             IF (sed_fsed(is_det,i,j) > 0.0) THEN
-                loc_ij(i,j) = log10(sed_fsed(is_det,i,j)/dum_dtyr)
+             IF (sed_fsed(iss_det,i,j) > 0.0) THEN
+                loc_ij(i,j) = log10(sed_fsed(iss_det,i,j)/dum_dtyr)
              else
                 loc_ij(i,j) = const_real_null
              end if
           end do
        end do
-       call sub_adddef_netcdf(ntrec_siou,3,'fsed_'//trim(string_sed(is_det))//'_log10', &
+       call sub_adddef_netcdf(ntrec_siou,3,'fsed_'//trim(string_sed(iss_det))//'_log10', &
             & 'sediment rain flux - detrital material (log10)',trim(loc_unitsname),loc_c0,loc_c0)
-       call sub_putvar2d('fsed_'//trim(string_sed(is_det))//'_log10',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
+       call sub_putvar2d('fsed_'//trim(string_sed(iss_det))//'_log10',ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask)
     END IF
     ! CaCO3:POC 'rain ratio'
-    IF (sed_select(is_CaCO3) .AND. sed_select(is_POC)) THEN
+    IF (sed_select(iss_CaCO3) .AND. sed_select(iss_POC)) THEN
        loc_unitsname = 'n/a'
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
-             if (sed_fsed(is_POC,i,j) > const_real_nullsmall) then
-                loc_ij(i,j) = sed_fsed(is_CaCO3,i,j)/sed_fsed(is_POC,i,j)
+             if (sed_fsed(iss_POC,i,j) > const_real_nullsmall) then
+                loc_ij(i,j) = sed_fsed(iss_CaCO3,i,j)/sed_fsed(iss_POC,i,j)
              end if
           END DO
        END DO
@@ -1446,26 +1446,26 @@ CONTAINS
 
     ! SAVE REEF SEDIMENTS
     ! bulk composition
-    is = is_CaCO3
+    is = iss_CaCO3
     loc_unitsname = 'wt%'
     loc_ij(:,:) = loc_sed_coretop(is,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'reef_sed_'//trim(string_sed(is)), &
          & 'reef composition - '//trim(string_sed(is)),trim(loc_unitsname),sed_mima(is,1),sed_mima(is,2))
     call sub_putvar2d('reef_sed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask_reef)
-    is = is_CaCO3_13C
+    is = iss_CaCO3_13C
     loc_unitsname = 'o/oo'
     loc_ij(:,:) = loc_sed_coretop(is,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'reef_sed_'//trim(string_sed(is)), &
          & 'reef composition - '//trim(string_sed(is)),trim(loc_unitsname),sed_mima(is,1),sed_mima(is,2))
     call sub_putvar2d('reef_sed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask_reef)
     ! precipitation
-    is = is_CaCO3
+    is = iss_CaCO3
     loc_unitsname = 'mol cm-2 yr-1'
     loc_ij(:,:) = sed_fsed(is,:,:)/dum_dtyr
     call sub_adddef_netcdf(ntrec_siou,3,'reef_fsed_'//trim(string_sed(is)), &
          & 'reef precipitation rate - '//trim(string_sed(is)),trim(loc_unitsname),loc_c0,loc_c0)
     call sub_putvar2d('reef_fsed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_ij(:,:),loc_mask_reef)
-    is = is_CaCO3_13C
+    is = iss_CaCO3_13C
     loc_unitsname = 'o/oo'
     DO i=1,n_i
        DO j=1,n_j
@@ -1481,13 +1481,13 @@ CONTAINS
 
     ! SAVE SHALLOW WATER SEDIMENTS
     ! bulk composition
-    is = is_POC
+    is = iss_POC
     loc_unitsname = 'wt%'
     loc_ij(:,:) = loc_sed_coretop(is,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'muds_sed_'//trim(string_sed(is)), &
          & 'shallow water sediment composition - '//trim(string_sed(is)),trim(loc_unitsname),sed_mima(is,1),sed_mima(is,2))
     call sub_putvar2d('muds_sed_'//trim(string_sed(is)),ntrec_siou,n_i,n_j,ntrec_sout,loc_sed_coretop(is,:,:),loc_mask_muds)
-    is = is_POC_13C
+    is = iss_POC_13C
     loc_unitsname = 'o/oo'
     loc_ij(:,:) = loc_sed_coretop(is,:,:)
     call sub_adddef_netcdf(ntrec_siou,3,'muds_sed_'//trim(string_sed(is)), &

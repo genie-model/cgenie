@@ -2169,31 +2169,31 @@ CONTAINS
     Write(unit=out,fmt=*) ' '
     write(unit=out,fmt='(A22,e15.7,A12,f7.3,A9)',iostat=ios) &
          & ' Total POC export   : ', &
-         & SUM(int_bio_settle_timeslice(is_POC,:,:,n_k))/int_t_timeslice, &
+         & SUM(int_bio_settle_timeslice(iss_POC,:,:,n_k))/int_t_timeslice, &
          & ' mol yr-1 = ', &
-         & 1.0E-12*conv_C_mol_kg*SUM(int_bio_settle_timeslice(is_POC,:,:,n_k))/int_t_timeslice, &
+         & 1.0E-12*conv_C_mol_kg*SUM(int_bio_settle_timeslice(iss_POC,:,:,n_k))/int_t_timeslice, &
          & ' GtC yr-1'
     call check_iostat(ios,__LINE__,__FILE__)
     write(unit=out,fmt='(A22,e15.7,A12,f7.3,A9)',iostat=ios) &
          & ' Total CaCO3 export : ', &
-         & SUM(int_bio_settle_timeslice(is_CaCO3,:,:,n_k))/int_t_timeslice, &
+         & SUM(int_bio_settle_timeslice(iss_CaCO3,:,:,n_k))/int_t_timeslice, &
          & ' mol yr-1 = ', &
-         & 1.0E-12*conv_CaCO3_mol_kgC*SUM(int_bio_settle_timeslice(is_CaCO3,:,:,n_k))/int_t_timeslice, &
+         & 1.0E-12*conv_CaCO3_mol_kgC*SUM(int_bio_settle_timeslice(iss_CaCO3,:,:,n_k))/int_t_timeslice, &
          & ' GtC yr-1'
     call check_iostat(ios,__LINE__,__FILE__)
     Write(unit=out,fmt=*) ' '
     write(unit=out,fmt='(A22,e15.7,A12,f7.3,A9)',iostat=ios) &
          & ' Total POC rain     : ', &
-         & SUM(int_focnsed_timeslice(is_POC,:,:))/int_t_timeslice, &
+         & SUM(int_focnsed_timeslice(iss_POC,:,:))/int_t_timeslice, &
          & ' mol yr-1 = ', &
-         & 1.0E-12*conv_C_mol_kg*SUM(int_focnsed_timeslice(is_POC,:,:))/int_t_timeslice, &
+         & 1.0E-12*conv_C_mol_kg*SUM(int_focnsed_timeslice(iss_POC,:,:))/int_t_timeslice, &
          & ' GtC yr-1'
     call check_iostat(ios,__LINE__,__FILE__)
     write(unit=out,fmt='(A22,e15.7,A12,f7.3,A9)',iostat=ios) &
          & ' Total CaCO3 rain   : ', &
-         & SUM(int_focnsed_timeslice(is_CaCO3,:,:))/int_t_timeslice, &
+         & SUM(int_focnsed_timeslice(iss_CaCO3,:,:))/int_t_timeslice, &
          & ' mol yr-1 = ', &
-         & 1.0E-12*conv_CaCO3_mol_kgC*SUM(int_focnsed_timeslice(is_CaCO3,:,:))/int_t_timeslice, &
+         & 1.0E-12*conv_CaCO3_mol_kgC*SUM(int_focnsed_timeslice(iss_CaCO3,:,:))/int_t_timeslice, &
          & ' GtC yr-1'
 
     ! *** save data - CLOSE FILE ***

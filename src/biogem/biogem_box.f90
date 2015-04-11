@@ -416,7 +416,7 @@ CONTAINS
     loc_ocn = 0.0
 
     !
-    loc_bio_NP = bio_part_red(is_POC,is_PON,dum_i,dum_j)*bio_part_red(is_POP,is_POC,dum_i,dum_j)
+    loc_bio_NP = bio_part_red(iss_POC,iss_PON,dum_i,dum_j)*bio_part_red(iss_POP,iss_POC,dum_i,dum_j)
 
 
     ! *** CALCULATE MIXED LAYER PROPERTIES ***
@@ -658,7 +658,7 @@ CONTAINS
                & loc_kT*                                                                                                &
                & min(loc_kPO4,loc_kFe)*                                                                                 &
                & loc_kI*                                                                                                &
-               & min(loc_PO4,bio_part_red(is_POC,is_POP,dum_i,dum_j)*loc_FeT/bio_part_red(is_POC,is_POFe,dum_i,dum_j))/ &
+               & min(loc_PO4,bio_part_red(iss_POC,iss_POP,dum_i,dum_j)*loc_FeT/bio_part_red(iss_POC,iss_POFe,dum_i,dum_j))/ &
                & par_bio_tau
        else
           loc_dPO4 = 0.0
@@ -673,7 +673,7 @@ CONTAINS
                & loc_kT*                                                                                                &
                & min(loc_kPO4_sp,loc_kFe_sp,loc_kSiO2_sp)*                                                              &
                & loc_kI*                                                                                                &
-               & min(loc_PO4,bio_part_red(is_POC,is_POP,dum_i,dum_j)*loc_FeT/bio_part_red(is_POC,is_POFe,dum_i,dum_j))/ &
+               & min(loc_PO4,bio_part_red(iss_POC,iss_POP,dum_i,dum_j)*loc_FeT/bio_part_red(iss_POC,iss_POFe,dum_i,dum_j))/ &
                & par_bio_tau_sp
           loc_dPO4_nsp =                                                                                                &
                & dum_dt*                                                                                                &
@@ -681,7 +681,7 @@ CONTAINS
                & loc_kT*                                                                                                &
                & min(loc_kPO4_nsp,loc_kFe_nsp)*                                                                         &
                & loc_kI*                                                                                                &
-               & min(loc_PO4,bio_part_red(is_POC,is_POP,dum_i,dum_j)*loc_FeT/bio_part_red(is_POC,is_POFe,dum_i,dum_j))/ &
+               & min(loc_PO4,bio_part_red(iss_POC,iss_POP,dum_i,dum_j)*loc_FeT/bio_part_red(iss_POC,iss_POFe,dum_i,dum_j))/ &
                & par_bio_tau_nsp
           loc_dPO4 = loc_dPO4_sp + loc_dPO4_nsp
        else
@@ -793,11 +793,11 @@ CONTAINS
                & par_bio_mu1*                     &
                & min( &
                &    loc_PO4,loc_N/par_bio_red_POP_PON, &
-               &    loc_FeT*bio_part_red(is_POC,is_POP,dum_i,dum_j)*bio_part_red(is_POFe,is_POC,dum_i,dum_j) &
+               &    loc_FeT*bio_part_red(iss_POC,iss_POP,dum_i,dum_j)*bio_part_red(iss_POFe,iss_POC,dum_i,dum_j) &
                & )
           ! Need to add productivity from nitrogen fixation if conditions are right
           if (loc_N < par_bio_N2fixthresh .and. loc_N/loc_PO4 <  par_bio_red_POP_PON    &
-               & .and. loc_N/loc_FeT < bio_part_red(is_POC,is_POP,dum_i,dum_j)*bio_part_red(is_POFe,is_POC,dum_i,dum_j)) then
+               & .and. loc_N/loc_FeT < bio_part_red(iss_POC,iss_POP,dum_i,dum_j)*bio_part_red(iss_POFe,iss_POC,dum_i,dum_j)) then
              loc_dPO4_2 =                   &
                   & dum_dt*                 &
                   & loc_ficefree*           &
@@ -863,41 +863,41 @@ CONTAINS
     ! NOTE: a correction is made for the fact that a proportion of the POM is transformed into DOM,
     !      whereas the initially calculated CaCO3 and opal fluxes do not change
     !      => re-scale CaCO3 and opal ratios so that the prescribed export ratio value better reflects final export composition
-    if (sed_select(is_CaCO3)) then
+    if (sed_select(iss_CaCO3)) then
        loc_ohm = carb(ic_ohm_cal,dum_i,dum_j,n_k)
        select case (opt_bio_CaCO3toPOCrainratio)
        case ('prescribed')
           ! fixed, spatially explicit
-          bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_CaCO3toPOCrainratio(dum_i,dum_j)
+          bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_CaCO3toPOCrainratio(dum_i,dum_j)
        case ('Heinze2004')
           ! Heinze [2004] saturation dependent parameterization
           ! NOTE: par_bio_red_POC_CaCO3_CO2aqREF in (umol kg-1)
-          bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
+          bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
                & par_bio_red_POC_CaCO3*(1.0 - 0.012*(1.0E6*carb(ic_conc_CO2,dum_i,dum_j,n_k) - par_bio_red_POC_CaCO3_CO2aqREF))
-          if (bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) < const_real_nullsmall) bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = 0.0
+          if (bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) < const_real_nullsmall) bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = 0.0
        case ('Gehlenetal2007')
           ! Gehlen et al. [2007] saturation dependent parameterization
           if (loc_ohm > 1.0) then
-             bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
+             bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
                   & par_bio_red_POC_CaCO3*(loc_ohm - 1.0)/(par_bio_red_POC_CaCO3_Kmax + (loc_ohm - 1.0))
           else
-             bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = 0.0
+             bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = 0.0
           end if
        case ('Ridgwelletal2007ab')
           ! Ridgwell et al. [2007a,b] saturation dependent parameterization
           if (loc_ohm > 1.0) then
-             bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
+             bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
                   & par_bio_red_POC_CaCO3*(loc_ohm - 1.0)**par_bio_red_POC_CaCO3_pP
           else
-             bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = 0.0
+             bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = 0.0
           end if
        case ('HofmannandSchellnhuber2009')
           ! Hofmann and Schellnhuber [2009] (Barker et al. [2003]) [CO32-] dependent parameterization
-          bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
+          bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)* &
                & par_bio_red_POC_CaCO3*exp(0.0083*(1.0E6*carb(ic_conc_CO3,dum_i,dum_j,n_k) - par_bio_red_POC_CaCO3_CO3REF))
        case default
           ! fixed, uniform
-          bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_CaCO3
+          bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_CaCO3
        end select
        ! adjust for ecosystem composition in proportion of PO4 update by NSP to total PO4 uptake (SP + NSP)
        ! NOTE: the CaCO3:POC ratio is implemented in such a way that the prescribed parameter value is in respect
@@ -907,7 +907,7 @@ CONTAINS
             & 'bio_PFeSi'            &
             & )
           if (loc_dPO4 > const_real_nullsmall) then
-             bio_part_red(is_POC,is_CaCO3,dum_i,dum_j) = (loc_dPO4_nsp/loc_dPO4)*bio_part_red(is_POC,is_CaCO3,dum_i,dum_j)
+             bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j) = (loc_dPO4_nsp/loc_dPO4)*bio_part_red(iss_POC,iss_CaCO3,dum_i,dum_j)
           end if
        end SELECT
     end if
@@ -916,26 +916,26 @@ CONTAINS
     ! If no H4SiO3 limitation is considered in the biological production, modify Si:C uptake according to H4SiO4 depletion
     ! (NOTE: this is just to ensure that SiO2 does not drop below zero - it does not consistute true nutrient limitation)
     ! For H4SiO4-limited biological production, adjust Si:C uptake for Fe replete conditions (Ridgwell et al. [2002], GBC)
-    if (sed_select(is_opal)) then
+    if (sed_select(iss_opal)) then
        SELECT CASE (par_bio_prodopt)
        case (                        &
             & 'bio_PFeSi'            &
             & )
           if (ocn(io_SiO2,dum_i,dum_j,n_k) > const_real_nullsmall) then
-             bio_part_red(is_POC,is_opal,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_opal* &
+             bio_part_red(iss_POC,iss_opal,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_opal* &
                   & ((par_bio_c0_Fe_sp/(loc_FeT+par_part_red_FeTmin))+1.0)
           else
-             bio_part_red(is_POC,is_opal,dum_i,dum_j) = 0.0
+             bio_part_red(iss_POC,iss_opal,dum_i,dum_j) = 0.0
           end if
           ! adjust for ecosystem composition in proportion to PO4 uptake by SP to total PO4 uptake (SP + NSP)
           if (loc_dPO4 > const_real_nullsmall) then
-             bio_part_red(is_POC,is_opal,dum_i,dum_j) = (loc_dPO4_sp/loc_dPO4)*bio_part_red(is_POC,is_opal,dum_i,dum_j)
+             bio_part_red(iss_POC,iss_opal,dum_i,dum_j) = (loc_dPO4_sp/loc_dPO4)*bio_part_red(iss_POC,iss_opal,dum_i,dum_j)
           end if
        case default
           if (ocn(io_SiO2,dum_i,dum_j,n_k) > const_real_nullsmall) then
-             bio_part_red(is_POC,is_opal,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_opal*loc_kSiO2
+             bio_part_red(iss_POC,iss_opal,dum_i,dum_j) = (1.0 - loc_bio_red_DOMtotal)*par_bio_red_POC_opal*loc_kSiO2
           else
-             bio_part_red(is_POC,is_opal,dum_i,dum_j) = 0.0
+             bio_part_red(iss_POC,iss_opal,dum_i,dum_j) = 0.0
           end if
        end SELECT
     end if
@@ -950,7 +950,7 @@ CONTAINS
     ! KEY: par_bio_FetoC_pP == power in [FeT] dependent Fe:C ratio equation [Ridgwell, 2001] (-0.4225)
     !      par_bio_FetoC_K  == scaling in [FeT] dependent Fe:C ratio equation [Ridgwell, 2001] (103684.0)
     !      par_bio_FetoC_C  == constant in [FeT] dependent Fe:C ratio equation [Ridgwell, 2001] (0.0)
-    if (sed_select(is_POFe)) then
+    if (sed_select(iss_POFe)) then
        SELECT CASE (par_bio_prodopt)
        case (                        &
             & 'bio_PFeSi'            &
@@ -970,11 +970,11 @@ CONTAINS
                 loc_bio_red_POC_POFe_nsp = 1.0/333000.0
              end if
           else
-             loc_bio_red_POC_POFe_sp = bio_part_red(is_POC,is_POFe,dum_i,dum_j)
-             loc_bio_red_POC_POFe_nsp = bio_part_red(is_POC,is_POFe,dum_i,dum_j)
+             loc_bio_red_POC_POFe_sp = bio_part_red(iss_POC,iss_POFe,dum_i,dum_j)
+             loc_bio_red_POC_POFe_nsp = bio_part_red(iss_POC,iss_POFe,dum_i,dum_j)
           end if
           if (loc_dPO4 > const_real_nullsmall) then
-             bio_part_red(is_POC,is_POFe,dum_i,dum_j) = &
+             bio_part_red(iss_POC,iss_POFe,dum_i,dum_j) = &
                   & (loc_dPO4_sp*loc_bio_red_POC_POFe_sp + loc_dPO4_nsp*loc_bio_red_POC_POFe_nsp)/loc_dPO4
           else
              ![default (fixed) Redfield ratio already set]
@@ -983,10 +983,10 @@ CONTAINS
           ! default case: single homogeneous plankton mass -- no complications! :)
           if (.NOT. ctrl_bio_red_fixedFetoC) then
              if (loc_FeT > par_part_red_FeTmin) then
-                bio_part_red(is_POC,is_POFe,dum_i,dum_j) = 1.0/ &
+                bio_part_red(iss_POC,iss_POFe,dum_i,dum_j) = 1.0/ &
                      & MIN(par_part_red_FetoCmax,(par_bio_FetoC_C + par_bio_FetoC_K*(1.0E9*loc_FeT)**(par_bio_FetoC_pP)))
              else
-                bio_part_red(is_POC,is_POFe,dum_i,dum_j) = 1.0/par_part_red_FetoCmax
+                bio_part_red(iss_POC,iss_POFe,dum_i,dum_j) = 1.0/par_part_red_FetoCmax
              end if
           else
              ![default (fixed) Redfield ratio already set]
@@ -1000,13 +1000,13 @@ CONTAINS
        if (loc_Cd > const_real_nullsmall) then
           if (ctrl_force_POCdtoPOCrainratio) then
              ! (1) take POCd:POC ratio from prescribed 2-D field
-             bio_part_red(is_POC,is_POCd,dum_i,dum_j) = par_bio_POCdtoPOCrainratio(dum_i,dum_j)
+             bio_part_red(iss_POC,iss_POCd,dum_i,dum_j) = par_bio_POCdtoPOCrainratio(dum_i,dum_j)
           elseif (ctrl_bio_red_CdtoC_Felim) then
              ! (2) calculate POCd:POC ratio according to nutrient limitation
              !     assume enhanced Cd uptake when Fe nutrient limitation dominates other nutrient limitations
              !     .AND. there is Fe limitation in the first place
              !     NOTE: simply take nutrient 'limitation' as being defined by an ambient conc. less than the half-sat conc.
-             bio_part_red(is_POC,is_POCd,dum_i,dum_j) = &
+             bio_part_red(iss_POC,iss_POCd,dum_i,dum_j) = &
                   & par_bio_red_CdtoC_Felim_min + (1.0 - loc_kFe)*(par_bio_red_CdtoC_Felim_max - par_bio_red_CdtoC_Felim_min)
           else
              ! (3) default scheme
@@ -1015,33 +1015,33 @@ CONTAINS
              !           the remainder of the parameterization is the Elderfield and Rickaby [2000] partition coefficient model
              if (ctrl_force_Cd_alpha) par_bio_red_POC_POCd_alpha = par_bio_Cd_alpha(dum_i,dum_j)
              if (loc_PO4 > const_real_nullsmall) then
-                bio_part_red(is_POC,is_POCd,dum_i,dum_j) = par_bio_red_POC_POCd + par_bio_red_POC_POCd_alpha* &
-                     & loc_Cd/(bio_part_red(is_POP,is_POC,dum_i,dum_j)*loc_PO4)
+                bio_part_red(iss_POC,iss_POCd,dum_i,dum_j) = par_bio_red_POC_POCd + par_bio_red_POC_POCd_alpha* &
+                     & loc_Cd/(bio_part_red(iss_POP,iss_POC,dum_i,dum_j)*loc_PO4)
              else
-                bio_part_red(is_POC,is_POCd,dum_i,dum_j) = 0.0
+                bio_part_red(iss_POC,iss_POCd,dum_i,dum_j) = 0.0
              end if
           end if
        else
-          bio_part_red(is_POC,is_POCd,dum_i,dum_j) = 0.0
+          bio_part_red(iss_POC,iss_POCd,dum_i,dum_j) = 0.0
        end if
     end if
     !
     ! TRACE ELEMENTS: I (:POC)
     ! NOTE: I:C scales with ambient [IO3-]
     if (ocn_select(io_IO3)) then
-       bio_part_red(is_POC,is_POI,dum_i,dum_j) = &
+       bio_part_red(iss_POC,iss_POI,dum_i,dum_j) = &
             & par_bio_red_POC_POI*loc_IO3/par_bio_red_POC_POI_C0
     end if
     !
     ! TRACE METALS: Cd (:CaCO3)
     if (ocn_select(io_Cd) .AND. ocn_select(io_Ca)) then
-       bio_part_red(is_CaCO3,is_CdCO3,dum_i,dum_j) = par_bio_red_CaCO3_CdCO3 + par_bio_red_CaCO3_CdCO3_alpha* &
+       bio_part_red(iss_CaCO3,iss_CdCO3,dum_i,dum_j) = par_bio_red_CaCO3_CdCO3 + par_bio_red_CaCO3_CdCO3_alpha* &
             & ocn(io_Cd,dum_i,dum_j,n_k)/ocn(io_Ca,dum_i,dum_j,n_k)
     end if
     !
     ! TRACE METALS: Li
     if (ocn_select(io_Li) .AND. ocn_select(io_Ca)) then
-       bio_part_red(is_CaCO3,is_LiCO3,dum_i,dum_j) = par_bio_red_CaCO3_LiCO3 + par_bio_red_CaCO3_LiCO3_alpha* &
+       bio_part_red(iss_CaCO3,iss_LiCO3,dum_i,dum_j) = par_bio_red_CaCO3_LiCO3 + par_bio_red_CaCO3_LiCO3_alpha* &
             & ocn(io_Li,dum_i,dum_j,n_k)/ocn(io_Ca,dum_i,dum_j,n_k)
     end if
 
@@ -1056,7 +1056,7 @@ CONTAINS
     ! NOTE: CaCO3 fractionation w.r.t. HCO3-
     !
     ! d13C [POC]
-    if (sed_select(is_POC_13C)) then
+    if (sed_select(iss_POC_13C)) then
        ! calculate productivity-weighted loc_d13C_DIC_Corg_ef in the case of multiple plankton 'groups'
        SELECT CASE (par_bio_prodopt)
        CASE (             &
@@ -1077,42 +1077,42 @@ CONTAINS
             & (loc_d13C_DIC_Corg_ef - const_d13C_DIC_Corg_ed)*loc_Kq/carb(ic_conc_CO2,dum_i,dum_j,n_k)
        loc_alpha = 1.0 + loc_delta_Corg/1000.0
        loc_R = carbisor(ici_CO2_r13C,dum_i,dum_j,n_k)/(1.0 - carbisor(ici_CO2_r13C,dum_i,dum_j,n_k))
-       bio_part_red(is_POC,is_POC_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_POC,iss_POC_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     ! d14C [POC]
-    if (sed_select(is_POC_14C)) then
+    if (sed_select(iss_POC_14C)) then
        ! calculate the 14C/C fractionation between DIC and POC
        loc_alpha = 1.0 + 2.0*loc_delta_Corg/1000.0
        loc_R = carbisor(ici_CO2_r14C,dum_i,dum_j,n_k)/(1.0 - carbisor(ici_CO2_r14C,dum_i,dum_j,n_k))
-       bio_part_red(is_POC,is_POC_14C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_POC,iss_POC_14C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     !
     ! d13C [CaCO3]
-    if (sed_select(is_CaCO3_13C)) then
+    if (sed_select(iss_CaCO3_13C)) then
        ! calculate 13C/12C fractionation between DIC and CaCO3
        loc_delta_CaCO3 = 15.10 - 4232.0/ocn(io_T,dum_i,dum_j,n_k)
        loc_alpha = 1.0 + loc_delta_CaCO3/1000.0
        loc_R = carbisor(ici_HCO3_r13C,dum_i,dum_j,n_k)/(1.0 - carbisor(ici_HCO3_r13C,dum_i,dum_j,n_k))
-       bio_part_red(is_CaCO3,is_CaCO3_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_CaCO3,iss_CaCO3_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     ! d14C [CaCO3]
-    if (sed_select(is_CaCO3_14C)) then
+    if (sed_select(iss_CaCO3_14C)) then
        ! calculate 14C/C fractionation between DIC and CaCO3
        loc_alpha = 1.0 + 2.0*loc_delta_CaCO3/1000.0
        loc_R = carbisor(ici_HCO3_r14C,dum_i,dum_j,n_k)/(1.0 - carbisor(ici_HCO3_r14C,dum_i,dum_j,n_k))
-       bio_part_red(is_CaCO3,is_CaCO3_14C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_CaCO3,iss_CaCO3_14C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     ! d44Ca [CaCO3]
-    if (sed_select(is_CaCO3_44Ca)) then
+    if (sed_select(iss_CaCO3_44Ca)) then
        ! calculate 44Ca/40Ca fractionation between Ca and CaCO3
        loc_r44Ca = ocn(io_Ca_44Ca,dum_i,dum_j,n_k)/ocn(io_Ca,dum_i,dum_j,n_k)
        loc_R = loc_r44Ca/(1.0 - loc_r44Ca)
        loc_alpha = 1.0 + par_d44Ca_CaCO3_epsilon/1000.0
-       bio_part_red(is_CaCO3,is_CaCO3_44Ca,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_CaCO3,iss_CaCO3_44Ca,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     !
     ! d15N [PON]
-    if (sed_select(is_PON_15N)) then
+    if (sed_select(iss_PON_15N)) then
        ! calculate the 15N/14N fractionation between NO3 and PON
        ! NOTE: ASSUME NO FRACTIONATION
        ! NOTE; check first for non-zero nitrate concentration to prevent potential unpleasantness ...
@@ -1124,11 +1124,11 @@ CONTAINS
        ! ****************************
        loc_alpha = 0.0
        ! ****************************
-       bio_part_red(is_PON,is_PON_15N,dum_i,dum_j) = loc_alpha*loc_r15N
+       bio_part_red(iss_PON,iss_PON_15N,dum_i,dum_j) = loc_alpha*loc_r15N
     end if
     !
     ! d30Si [opal]
-    if (sed_select(is_opal_30Si)) then
+    if (sed_select(iss_opal_30Si)) then
        if (ocn(io_SiO2,dum_i,dum_j,n_k) > const_real_nullsmall) then
           loc_r30Si = ocn(io_SiO2_30Si,dum_i,dum_j,n_k)/ocn(io_SiO2,dum_i,dum_j,n_k)
        else
@@ -1137,11 +1137,11 @@ CONTAINS
        ! Fractionation of 30Si during opal formation by diatoms
        loc_alpha = 1.0 + par_d30Si_opal_epsilon/1000.0
        loc_R = loc_r30Si/(1.0 - loc_r30Si)
-       bio_part_red(is_opal,is_opal_30Si,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_opal,iss_opal_30Si,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     !
     ! d114Cd [POCd]
-    if (sed_select(is_POCd_114Cd)) then
+    if (sed_select(iss_POCd_114Cd)) then
        ! calculate 114/???Cd fractionation between Cd and POCd
        ! NOTE: d114Cd = 1.0002 (w.r.t. 110/112?) == -0.2 o/oo
        !       mean ocean d114Cd = 0.04 o/oo
@@ -1152,11 +1152,11 @@ CONTAINS
        end if
        loc_alpha = 1.0 + par_d114Cd_POCd_epsilon/1000.0
        loc_R = loc_r114Cd/(1.0 - loc_r114Cd)
-       bio_part_red(is_POCd,is_POCd_114Cd,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_POCd,iss_POCd_114Cd,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     !
     ! d114Cd [CaCO3]
-    if (sed_select(is_CdCO3_114Cd)) then
+    if (sed_select(iss_CdCO3_114Cd)) then
        ! calculate 114/???Cd fractionation between Cd and CdCO3
        if (ocn(io_Cd,dum_i,dum_j,n_k) > const_real_nullsmall) then
           loc_r114Cd = ocn(io_Cd_114Cd,dum_i,dum_j,n_k)/ocn(io_Cd,dum_i,dum_j,n_k)
@@ -1165,11 +1165,11 @@ CONTAINS
        end if
        loc_alpha = 1.0 + par_d114Cd_CdCO3_epsilon/1000.0
        loc_R = loc_r114Cd/(1.0 - loc_r114Cd)
-       bio_part_red(is_CdCO3,is_CdCO3_114Cd,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_CdCO3,iss_CdCO3_114Cd,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
     !
     ! d7Li [CaCO3]
-    if (sed_select(is_LiCO3_7Li)) then
+    if (sed_select(iss_LiCO3_7Li)) then
        ! calculate 7/6Li fractionation between Li and LiCO3
        if (ocn(io_Li,dum_i,dum_j,n_k) > const_real_nullsmall) then
           loc_r7Li = ocn(io_Li_7Li,dum_i,dum_j,n_k)/ocn(io_Li,dum_i,dum_j,n_k)
@@ -1178,7 +1178,7 @@ CONTAINS
        end if
        loc_alpha = 1.0 + par_d7Li_LiCO3_epsilon/1000.0
        loc_R = loc_r7Li/(1.0 - loc_r7Li)
-       bio_part_red(is_LiCO3,is_LiCO3_7Li,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part_red(iss_LiCO3,iss_LiCO3_7Li,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
     end if
 
     ! ### INSERT CODE TO DEAL WITH ADDITIONAL ISOTOPES ########################################################################### !
@@ -1191,14 +1191,14 @@ CONTAINS
     ! -------------------------------------------------------- ! establish POC currency
     ! NOTE: calculate export in currency of particulate carbon (rather than PO4)
     ! NOTE: put everything into particulate form initially, but re-scale later to account for DOM export
-    bio_part(is_POC,dum_i,dum_j,loc_k_mld:n_k) = bio_part_red(is_POP,is_POC,dum_i,dum_j)*loc_dPO4
+    bio_part(iss_POC,dum_i,dum_j,loc_k_mld:n_k) = bio_part_red(iss_POP,iss_POC,dum_i,dum_j)*loc_dPO4
     ! -------------------------------------------------------- ! set bulk export (CaCO3, opal)
     DO l=1,nt_sed
        is = conv_iselected_is(l)
        select case (sed_type(is))
        case (par_sed_type_bio)
           bio_part(is,dum_i,dum_j,loc_k_mld:n_k) = &
-               & bio_part_red(is_POC,is,dum_i,dum_j)*bio_part(is_POC,dum_i,dum_j,loc_k_mld:n_k)
+               & bio_part_red(iss_POC,is,dum_i,dum_j)*bio_part(iss_POC,dum_i,dum_j,loc_k_mld:n_k)
        end select
     end DO
     ! -------------------------------------------------------- !
@@ -1210,17 +1210,17 @@ CONTAINS
        select case (sed_type(is))
        case (par_sed_type_POM)
           bio_part(is,dum_i,dum_j,loc_k_mld:n_k) = &
-               & bio_part_red(is_POC,is,dum_i,dum_j)*bio_part(is_POC,dum_i,dum_j,loc_k_mld:n_k)
+               & bio_part_red(iss_POC,is,dum_i,dum_j)*bio_part(iss_POC,dum_i,dum_j,loc_k_mld:n_k)
        case (par_sed_type_CaCO3)
           bio_part(is,dum_i,dum_j,loc_k_mld:n_k) = &
-               & bio_part_red(is_CaCO3,is,dum_i,dum_j)*bio_part(is_CaCO3,dum_i,dum_j,loc_k_mld:n_k)
+               & bio_part_red(iss_CaCO3,is,dum_i,dum_j)*bio_part(iss_CaCO3,dum_i,dum_j,loc_k_mld:n_k)
        case (par_sed_type_opal)
           bio_part(is,dum_i,dum_j,loc_k_mld:n_k) = &
-               & bio_part_red(is_opal,is,dum_i,dum_j)*bio_part(is_opal,dum_i,dum_j,loc_k_mld:n_k)
+               & bio_part_red(iss_opal,is,dum_i,dum_j)*bio_part(iss_opal,dum_i,dum_j,loc_k_mld:n_k)
        end select
        ! ----------------------------------------------------- ! Correction for higher N:P ratio of N2 fixers
        ! NOTE: Fanny (June 2010)
-       if (sed_dep(is) == is_PON) then
+       if (sed_dep(is) == iss_PON) then
           SELECT CASE (par_bio_prodopt)
           CASE ( &
                & '2N2T_PN_Tdep',  &
@@ -1232,11 +1232,11 @@ CONTAINS
        ! ----------------------------------------------------- ! Correction for higher Fe:P ratio for N2 fixers
        ! NOTE: Calculation from Kfe/Kp of diazo
        ! NOTE: Fanny (July 2010)
-       if (sed_dep(is) == is_POFe) then
+       if (sed_dep(is) == iss_POFe) then
           SELECT CASE (par_bio_prodopt)
           CASE ('3N2T_PNFe_Tdep')
              bio_part(is,dum_i,dum_j,loc_k_mld:n_k) = &
-                  & bio_part_red(is_POC,is_POFe,dum_i,dum_j)*bio_part_red(is_POP,is_POC,dum_i,dum_j)*loc_dPO4_1 &
+                  & bio_part_red(iss_POC,iss_POFe,dum_i,dum_j)*bio_part_red(iss_POP,iss_POC,dum_i,dum_j)*loc_dPO4_1 &
                   & + par_bio_c0_Fe_Diaz/par_bio_c0_PO4*loc_dPO4_2
           END select
        end if
@@ -1362,25 +1362,25 @@ CONTAINS
     ! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if (ctrl_bio_remin_POC_ballast) then
        DO k=n_k,loc_k_mld,-1
-          if (bio_part(is_POC,dum_i,dum_j,k) > const_real_nullsmall) then
-             bio_part(is_POC_frac2,dum_i,dum_j,k) =                                    &
+          if (bio_part(iss_POC,dum_i,dum_j,k) > const_real_nullsmall) then
+             bio_part(iss_POC_frac2,dum_i,dum_j,k) =                                    &
                   & (                                                                  &
-                  &   par_bio_remin_kc(dum_i,dum_j)*bio_part(is_CaCO3,dum_i,dum_j,k) + &
-                  &   par_bio_remin_ko(dum_i,dum_j)*bio_part(is_opal,dum_i,dum_j,k) +  &
-                  &   par_bio_remin_kl(dum_i,dum_j)*bio_part(is_det,dum_i,dum_j,k)     &
+                  &   par_bio_remin_kc(dum_i,dum_j)*bio_part(iss_CaCO3,dum_i,dum_j,k) + &
+                  &   par_bio_remin_ko(dum_i,dum_j)*bio_part(iss_opal,dum_i,dum_j,k) +  &
+                  &   par_bio_remin_kl(dum_i,dum_j)*bio_part(iss_det,dum_i,dum_j,k)     &
                   & )                                                                  &
-                  & /bio_part(is_POC,dum_i,dum_j,k)
+                  & /bio_part(iss_POC,dum_i,dum_j,k)
           else
-             bio_part(is_POC_frac2,dum_i,dum_j,k) = 0.0
+             bio_part(iss_POC_frac2,dum_i,dum_j,k) = 0.0
           end if
-          if (bio_part(is_POC_frac2,dum_i,dum_j,k) > 1.0) bio_part(is_POC_frac2,dum_i,dum_j,k) = 1.0
+          if (bio_part(iss_POC_frac2,dum_i,dum_j,k) > 1.0) bio_part(iss_POC_frac2,dum_i,dum_j,k) = 1.0
        end DO
     else
        loc_kPO4 = loc_PO4/(loc_PO4 + par_bio_remin_POC_c0frac2)
-       bio_part(is_POC_frac2,dum_i,dum_j,loc_k_mld:n_k) = (1.0-loc_kPO4)*par_bio_remin_POC_dfrac2 + par_bio_remin_POC_frac2
+       bio_part(iss_POC_frac2,dum_i,dum_j,loc_k_mld:n_k) = (1.0-loc_kPO4)*par_bio_remin_POC_dfrac2 + par_bio_remin_POC_frac2
     end if
-    bio_part(is_CaCO3_frac2,dum_i,dum_j,loc_k_mld:n_k) = par_bio_remin_CaCO3_frac2
-    bio_part(is_opal_frac2,dum_i,dum_j,loc_k_mld:n_k)  = par_bio_remin_opal_frac2
+    bio_part(iss_CaCO3_frac2,dum_i,dum_j,loc_k_mld:n_k) = par_bio_remin_CaCO3_frac2
+    bio_part(iss_opal_frac2,dum_i,dum_j,loc_k_mld:n_k)  = par_bio_remin_opal_frac2
     ! set 'b' exponent in the Martin curve (if selected)
     if (par_bio_remin_fun == 'Henson2012') then
        par_bio_remin_b(dum_i,dum_j) = (0.024 * loc_TC) - 1.06
@@ -1392,7 +1392,7 @@ CONTAINS
     ! *** DIRECTLY CREATE PLANKTON TRACERS ***
     !
     ! NOTE: benthic foram tracer values are set in SEDGEM
-    if (sed_select(is_CaCO3) .AND. sed_select(is_foram_p_13C)) then
+    if (sed_select(iss_CaCO3) .AND. sed_select(iss_foram_p_13C)) then
        ! calculate 13C/12C fractionation between DIC and CaCO3
        SELECT CASE (opt_bio_foram_p_13C_delta)
        CASE ('NONE')
@@ -1406,9 +1406,9 @@ CONTAINS
        end SELECT
        loc_alpha = 1.0 + loc_delta_CaCO3/1000.0
        loc_R = carbisor(ici_HCO3_r13C,dum_i,dum_j,n_k)/(1.0 - carbisor(ici_HCO3_r13C,dum_i,dum_j,n_k))
-       bio_part_red(is_CaCO3,is_foram_p_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
-       bio_part(is_foram_p_13C,dum_i,dum_j,loc_k_mld:n_k) = &
-            & bio_part_red(is_CaCO3,is_foram_p_13C,dum_i,dum_j)*bio_part(is_CaCO3,dum_i,dum_j,loc_k_mld:n_k)
+       bio_part_red(iss_CaCO3,iss_foram_p_13C,dum_i,dum_j) = loc_alpha*loc_R/(1.0 + loc_alpha*loc_R)
+       bio_part(iss_foram_p_13C,dum_i,dum_j,loc_k_mld:n_k) = &
+            & bio_part_red(iss_CaCO3,iss_foram_p_13C,dum_i,dum_j)*bio_part(iss_CaCO3,dum_i,dum_j,loc_k_mld:n_k)
     end if
 
     ! *** Fe SCAVENGING ***
@@ -1595,12 +1595,12 @@ CONTAINS
           loc_ohm = carb(ic_ohm_arg,dum_i,dum_j,k)
        end if
        if (loc_ohm > par_bio_CaCO3precip_abioticohm_min) then
-          loc_bio_part(is_CaCO3,k) = &
+          loc_bio_part(iss_CaCO3,k) = &
                & dum_dt*par_bio_CaCO3precip_sf*(par_bio_CaCO3precip_abioticohm_min - 1.0)**par_bio_CaCO3precip_exp
        else
-          loc_bio_part(is_CaCO3,k) = 0.0
+          loc_bio_part(iss_CaCO3,k) = 0.0
        end if
-       if (sed_select(is_CaCO3_13C)) then
+       if (sed_select(iss_CaCO3_13C)) then
           ! re-calculate carbonate system isotopic properties
           if (ocn_select(io_DIC_13C)) then
              call sub_calc_carb_r13C(           &
@@ -1617,17 +1617,17 @@ CONTAINS
           loc_delta_CaCO3 = 15.10 - 4232.0/ocn(io_T,dum_i,dum_j,k)
           loc_alpha = 1.0 + loc_delta_CaCO3/1000.0
           loc_R = carbisor(ici_HCO3_r13C,dum_i,dum_j,k)/(1.0 - carbisor(ici_HCO3_r13C,dum_i,dum_j,k))
-          loc_bio_part(is_CaCO3_13C,k) = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*loc_bio_part(is_CaCO3,k)
+          loc_bio_part(iss_CaCO3_13C,k) = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*loc_bio_part(iss_CaCO3,k)
        end if
        ! Li
        if (ocn_select(io_Li) .AND. ocn_select(io_Ca)) then
-          loc_bio_part(is_LiCO3,k) = &
+          loc_bio_part(iss_LiCO3,k) = &
                & ( &
                & par_bio_red_CaCO3_LiCO3 + par_bio_red_CaCO3_LiCO3_alpha* &
                & ocn(io_Li,dum_i,dum_j,k)/ocn(io_Ca,dum_i,dum_j,k)    &
                & ) * &
-               & loc_bio_part(is_CaCO3,k)
-          if (sed_select(is_LiCO3_7Li)) then
+               & loc_bio_part(iss_CaCO3,k)
+          if (sed_select(iss_LiCO3_7Li)) then
              ! calculate 7/6Li fractionation between Li and LiCO3
              if (ocn(io_Li,dum_i,dum_j,n_k) > const_real_nullsmall) then
                 loc_r7Li = ocn(io_Li_7Li,dum_i,dum_j,n_k)/ocn(io_Li,dum_i,dum_j,n_k)
@@ -1636,7 +1636,7 @@ CONTAINS
              end if
              loc_alpha = 1.0 + par_d7Li_LiCO3_epsilon/1000.0
              loc_R = loc_r7Li/(1.0 - loc_r7Li)
-             loc_bio_part(is_LiCO3_7Li,k) = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*loc_bio_part(is_LiCO3,k)
+             loc_bio_part(iss_LiCO3_7Li,k) = (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))*loc_bio_part(iss_LiCO3,k)
           end if
        end if
        ! convert particulate sediment tracer indexed array concentrations to (dissolved) tracer indexed array
@@ -2505,10 +2505,10 @@ CONTAINS
     DO k=n_k,loc_klim,-1
        ! find some particulates (POC) in the water column
        loc_part_tot = 0.0
-       if (sed_select(is_POC)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(is_POC),k)
-       if (sed_select(is_CaCO3)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(is_CaCO3),k)
-       if (sed_select(is_opal)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(is_opal),k)
-       if (sed_select(is_det)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(is_det),k)
+       if (sed_select(iss_POC)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(iss_POC),k)
+       if (sed_select(iss_CaCO3)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(iss_CaCO3),k)
+       if (sed_select(iss_opal)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(iss_opal),k)
+       if (sed_select(iss_det)) loc_part_tot = loc_part_tot + loc_bio_part_OLD(is2l(iss_det),k)
        If (loc_part_tot  > const_real_nullsmall) then
           ! if the identified particulate material is already residing in the bottom-most ocean layer, flag as sediment flux
           If (k == loc_k1) then
@@ -2562,7 +2562,7 @@ CONTAINS
 
                 ! *** Calculate fractional change in particulate fluxes ***
                 ! carbonate
-                if (sed_select(is_CaCO3)) then
+                if (sed_select(iss_CaCO3)) then
                    If (.NOT. ctrl_bio_remin_CaCO3_fixed) then
                       ! ### INSERT CODE ########################################################################################## !
                       !
@@ -2587,11 +2587,11 @@ CONTAINS
                    ! calculate the ratio of particulate tracer between layers
                    loc_bio_part_CaCO3_ratio = 1.0 - &
                         & ( &
-                        &   (1.0 - loc_bio_part_TMP(is2l(is_CaCO3_frac2),kk+1))*loc_bio_remin_CaCO3_frac1 + &
-                        &   loc_bio_part_TMP(is2l(is_CaCO3_frac2),kk+1)*loc_bio_remin_CaCO3_frac2 &
+                        &   (1.0 - loc_bio_part_TMP(is2l(iss_CaCO3_frac2),kk+1))*loc_bio_remin_CaCO3_frac1 + &
+                        &   loc_bio_part_TMP(is2l(iss_CaCO3_frac2),kk+1)*loc_bio_remin_CaCO3_frac2 &
                         & )
                    ! calculate change in partitioning between different fractions
-                   l = conv_is_lselected(is_CaCO3_frac2)
+                   l = conv_is_lselected(iss_CaCO3_frac2)
                    if (loc_bio_part_TMP(l,kk+1) > const_real_nullsmall) then
                       loc_bio_part_TMP(l,kk) = &
                            & (1.0 - loc_bio_remin_CaCO3_frac2)*loc_bio_part_TMP(l,kk+1)/loc_bio_part_CaCO3_ratio
@@ -2600,7 +2600,7 @@ CONTAINS
                    end if
                 end if
                 ! opal
-                if (sed_select(is_opal)) then
+                if (sed_select(iss_opal)) then
                    If (.NOT. ctrl_bio_remin_opal_fixed) then
                       ! set local variables - temperature (K) and silicic acid concentration (mol kg-1)
                       loc_T     = dum_vocn%mk(conv_io_lselected(io_T),kk)
@@ -2629,11 +2629,11 @@ CONTAINS
                    ! calculate the ratio of particulate tracer between layers
                    loc_bio_part_opal_ratio = 1.0 - &
                         & ( &
-                        &   (1.0 - loc_bio_part_TMP(is2l(is_opal_frac2),kk+1))*loc_bio_remin_opal_frac1 + &
-                        &   loc_bio_part_TMP(is2l(is_opal_frac2),kk+1)*loc_bio_remin_opal_frac2 &
+                        &   (1.0 - loc_bio_part_TMP(is2l(iss_opal_frac2),kk+1))*loc_bio_remin_opal_frac1 + &
+                        &   loc_bio_part_TMP(is2l(iss_opal_frac2),kk+1)*loc_bio_remin_opal_frac2 &
                         & )
                    ! calculate change in partitioning between different fractions
-                   l = is2l(is_opal_frac2)
+                   l = is2l(iss_opal_frac2)
                    if (loc_bio_part_TMP(l,kk+1) > const_real_nullsmall) then
                       loc_bio_part_TMP(l,kk) = &
                            & (1.0 - loc_bio_remin_opal_frac2)*loc_bio_part_TMP(l,kk+1)/loc_bio_part_opal_ratio
@@ -2642,7 +2642,7 @@ CONTAINS
                    end if
                 end if
                 ! particulate organic matter
-                if (sed_select(is_POC)) then
+                if (sed_select(iss_POC)) then
                    If (.NOT. ctrl_bio_remin_POC_fixed) then
                       ! set local variables - temperature (K)
                       loc_T = dum_vocn%mk(conv_io_lselected(io_T),kk)
@@ -2666,20 +2666,20 @@ CONTAINS
                       end select
                       ! FRACTION #2
                       if (ctrl_bio_remin_POC_ballast) then
-                         if (loc_bio_part_TMP(is2l(is_POC_frac2),kk+1)*loc_bio_part_TMP(is2l(is_POC),kk+1) &
+                         if (loc_bio_part_TMP(is2l(iss_POC_frac2),kk+1)*loc_bio_part_TMP(is2l(iss_POC),kk+1) &
                               & > &
                               & const_real_nullsmall) then
                             loc_bio_remin_POC_frac2 = 1.0 -                                                              &
                                  & (                                                                                     &
-                                 &   loc_bio_part_CaCO3_ratio*par_bio_remin_kc(dum_i,dum_j)*loc_bio_part_TMP(is_CaCO3,kk+1) + &
-                                 &   loc_bio_part_opal_ratio*par_bio_remin_ko(dum_i,dum_j)*loc_bio_part_TMP(is_opal,kk+1) +   &
-                                 &   1.0*par_bio_remin_kl(dum_i,dum_j)*loc_bio_part_TMP(is_det,kk+1)                          &
+                                 &   loc_bio_part_CaCO3_ratio*par_bio_remin_kc(dum_i,dum_j)*loc_bio_part_TMP(iss_CaCO3,kk+1) + &
+                                 &   loc_bio_part_opal_ratio*par_bio_remin_ko(dum_i,dum_j)*loc_bio_part_TMP(iss_opal,kk+1) +   &
+                                 &   1.0*par_bio_remin_kl(dum_i,dum_j)*loc_bio_part_TMP(iss_det,kk+1)                          &
                                  & ) &
                                  & / &
                                  & ( &
-                                 &   par_bio_remin_kc(dum_i,dum_j)*loc_bio_part_TMP(is_CaCO3,kk+1) + &
-                                 &   par_bio_remin_ko(dum_i,dum_j)*loc_bio_part_TMP(is_opal,kk+1) +   &
-                                 &   par_bio_remin_kl(dum_i,dum_j)*loc_bio_part_TMP(is_det,kk+1)  &
+                                 &   par_bio_remin_kc(dum_i,dum_j)*loc_bio_part_TMP(iss_CaCO3,kk+1) + &
+                                 &   par_bio_remin_ko(dum_i,dum_j)*loc_bio_part_TMP(iss_opal,kk+1) +   &
+                                 &   par_bio_remin_kl(dum_i,dum_j)*loc_bio_part_TMP(iss_det,kk+1)  &
                                  & )
                          else
                             loc_bio_remin_POC_frac2 = 0.0
@@ -2691,11 +2691,11 @@ CONTAINS
                    ! calculate the ratio of particulate tracer between layers
                    loc_bio_part_POC_ratio = 1.0 - &
                         & ( &
-                        &   (1.0 - loc_bio_part_TMP(is2l(is_POC_frac2),kk+1))*loc_bio_remin_POC_frac1 + &
-                        &   loc_bio_part_TMP(is2l(is_POC_frac2),kk+1)*loc_bio_remin_POC_frac2 &
+                        &   (1.0 - loc_bio_part_TMP(is2l(iss_POC_frac2),kk+1))*loc_bio_remin_POC_frac1 + &
+                        &   loc_bio_part_TMP(is2l(iss_POC_frac2),kk+1)*loc_bio_remin_POC_frac2 &
                         & )
                    ! calculate change in partitioning between different fractions
-                   l = is2l(is_POC_frac2)
+                   l = is2l(iss_POC_frac2)
                    if (loc_bio_part_TMP(l,kk+1) > const_real_nullsmall) then
                       loc_bio_part_TMP(l,kk) =  &
                            & (1.0 - loc_bio_remin_POC_frac2)*loc_bio_part_TMP(l,kk+1)/loc_bio_part_POC_ratio
@@ -2718,9 +2718,9 @@ CONTAINS
                 DO l=1,nt_sed
                    is = conv_iselected_is(l)
                    if ( &
-                        & (sed_dep(is) == is_POC) .OR. &
+                        & (sed_dep(is) == iss_POC) .OR. &
                         & (sed_type(is) == par_sed_type_POM) .OR. &
-                        & (sed_type(sed_dep(is)) == is_POC) &
+                        & (sed_type(sed_dep(is)) == iss_POC) &
                         & ) then
                       ! particulate organic matter (plus elemental components, and particle-reactive scavenged elements)
                       if (sed_type(is) == par_sed_type_scavenged) then
@@ -2731,7 +2731,7 @@ CONTAINS
                               & loc_bio_remin_layerratio*loc_bio_part_POC_ratio
                       end if
                    else if ( &
-                        & (sed_dep(is) == is_CaCO3) .OR. &
+                        & (sed_dep(is) == iss_CaCO3) .OR. &
                         & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                         & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                         & ) then
@@ -2744,7 +2744,7 @@ CONTAINS
                               & loc_bio_remin_layerratio*loc_bio_part_CaCO3_ratio
                       end if
                    else if ( &
-                        & (sed_dep(is) == is_opal) .OR. &
+                        & (sed_dep(is) == iss_opal) .OR. &
                         & (sed_type(is) == par_sed_type_opal) .OR. &
                         & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                         & ) then
@@ -2757,7 +2757,7 @@ CONTAINS
                               & loc_bio_remin_layerratio*loc_bio_part_opal_ratio
                       endif
                    else if ( &
-                        & (sed_dep(is) == is_det) .OR. &
+                        & (sed_dep(is) == iss_det) .OR. &
                         & (sed_type(is) == par_sed_type_det) .OR. &
                         & (sed_type(sed_dep(is)) == par_sed_type_det) &
                         & ) then
@@ -2767,7 +2767,7 @@ CONTAINS
                    end if
                    ! exceptions:
                    ! (1) do not remineralize S in S-linked POM (assumed a refractory fraction)
-                   if (is == is_POM_S) loc_bio_part_TMP(l,kk) = loc_bio_part_TMP(l,kk+1)*loc_bio_remin_layerratio
+                   if (is == iss_POM_S) loc_bio_part_TMP(l,kk) = loc_bio_part_TMP(l,kk+1)*loc_bio_remin_layerratio
 
                 end do
 
@@ -2810,7 +2810,7 @@ CONTAINS
                 end if
 
                 ! *** Scavenge H2S from water column ***
-                if (ocn_select(io_H2S) .AND. sed_select(is_POM_S)) then
+                if (ocn_select(io_H2S) .AND. sed_select(iss_POM_S)) then
                    if (dum_vocn%mk(io2l(io_H2S),kk) > const_real_nullsmall) then
                       call sub_box_scav_H2S(               &
                            & dum_dtyr,                     &
@@ -2901,23 +2901,23 @@ CONTAINS
     !          = residence time / time-step
     !            (could also be: cell thickness / (time-step x local velocity))
     ! NOTE: Dutkiewicz et al. [2005] scavenging rate par_scav_Fe_Ks has been converted to units of (yr-1)
-    if (sed_select(is_POM_Fe)) then
-       loc_part_den_POC = (conv_g_mg*conv_POC_mol_g*dum_bio_part(is2l(is_POC))/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_POM_Fe)) then
+       loc_part_den_POC = (conv_g_mg*conv_POC_mol_g*dum_bio_part(is2l(iss_POC))/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_POC = 0.0
     end if
-    if (sed_select(is_CaCO3_Fe)) then
-       loc_part_den_CaCO3 = (conv_g_mg*conv_cal_mol_g*dum_bio_part(is2l(is_CaCO3))/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_CaCO3_Fe)) then
+       loc_part_den_CaCO3 = (conv_g_mg*conv_cal_mol_g*dum_bio_part(is2l(iss_CaCO3))/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_CaCO3 = 0.0
     end if
-    if (sed_select(is_opal_Fe)) then
-       loc_part_den_opal  = (conv_g_mg*conv_opal_mol_g*dum_bio_part(is2l(is_opal))/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_opal_Fe)) then
+       loc_part_den_opal  = (conv_g_mg*conv_opal_mol_g*dum_bio_part(is2l(iss_opal))/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_opal  = 0.0
     end if
-    if (sed_select(is_det_Fe)) then
-       loc_part_den_det   = (conv_g_mg*conv_det_mol_g*dum_bio_part(is2l(is_det))/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_det_Fe)) then
+       loc_part_den_det   = (conv_g_mg*conv_det_mol_g*dum_bio_part(is2l(iss_det))/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_det   = 0.0
     end if
@@ -2950,21 +2950,21 @@ CONTAINS
        ! calculate Fe scavenged by particulates
        ! and update local remineralization array to take into account the removal of Fe from solution
        if (loc_scav_Fe_k_tot > const_real_nullsmall) then
-          if (sed_select(is_POM_Fe)) then
-             dum_bio_part(is2l(is_POM_Fe))   = &
-                  & dum_bio_part(is2l(is_POM_Fe)) + (loc_scav_Fe_k_POC/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          if (sed_select(iss_POM_Fe)) then
+             dum_bio_part(is2l(iss_POM_Fe))   = &
+                  & dum_bio_part(is2l(iss_POM_Fe)) + (loc_scav_Fe_k_POC/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
           end if
-          if (sed_select(is_CaCO3_Fe)) then
-             dum_bio_part(is2l(is_CaCO3_Fe)) = &
-                  & dum_bio_part(is2l(is_CaCO3_Fe)) + (loc_scav_Fe_k_CaCO3/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          if (sed_select(iss_CaCO3_Fe)) then
+             dum_bio_part(is2l(iss_CaCO3_Fe)) = &
+                  & dum_bio_part(is2l(iss_CaCO3_Fe)) + (loc_scav_Fe_k_CaCO3/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
           end if
-          if (sed_select(is_opal_Fe)) then
-             dum_bio_part(is2l(is_opal_Fe))  = &
-                  & dum_bio_part(is2l(is_opal_Fe)) + (loc_scav_Fe_k_opal/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          if (sed_select(iss_opal_Fe)) then
+             dum_bio_part(is2l(iss_opal_Fe))  = &
+                  & dum_bio_part(is2l(iss_opal_Fe)) + (loc_scav_Fe_k_opal/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
           end if
-          if (sed_select(is_det_Fe)) then
-             dum_bio_part(is2l(is_det_Fe))   = &
-                  & dum_bio_part(is2l(is_det_Fe)) + (loc_scav_Fe_k_det/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          if (sed_select(iss_det_Fe)) then
+             dum_bio_part(is2l(iss_det_Fe))   = &
+                  & dum_bio_part(is2l(iss_det_Fe)) + (loc_scav_Fe_k_det/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
           end if
           dum_bio_remin(io2l(io_Fe)) = dum_bio_remin(io2l(io_Fe)) - loc_scav_dFe_tot
        end if
@@ -3001,23 +3001,23 @@ CONTAINS
     !          = residence time / time-step
     !            (could also be: cell thickness / (time-step x local velocity))
     ! NOTE: Dutkiewicz et al. [2005] scavenging rate par_scav_Fe_Ks has been converted to units of (yr-1)
-    if (sed_select(is_POM_Fe)) then
-       loc_part_den_POC = (conv_g_mg*conv_POC_mol_g*dum_bio_part(is_POC)/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_POM_Fe)) then
+       loc_part_den_POC = (conv_g_mg*conv_POC_mol_g*dum_bio_part(iss_POC)/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_POC = 0.0
     end if
-    if (sed_select(is_CaCO3_Fe)) then
-       loc_part_den_CaCO3 = (conv_g_mg*conv_cal_mol_g*dum_bio_part(is_CaCO3)/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_CaCO3_Fe)) then
+       loc_part_den_CaCO3 = (conv_g_mg*conv_cal_mol_g*dum_bio_part(iss_CaCO3)/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_CaCO3 = 0.0
     end if
-    if (sed_select(is_opal_Fe)) then
-       loc_part_den_opal  = (conv_g_mg*conv_opal_mol_g*dum_bio_part(is_opal)/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_opal_Fe)) then
+       loc_part_den_opal  = (conv_g_mg*conv_opal_mol_g*dum_bio_part(iss_opal)/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_opal  = 0.0
     end if
-    if (sed_select(is_det_Fe)) then
-       loc_part_den_det   = (conv_g_mg*conv_det_mol_g*dum_bio_part(is_det)/conv_kg_l) * dum_dt_scav/dum_dtyr
+    if (sed_select(iss_det_Fe)) then
+       loc_part_den_det   = (conv_g_mg*conv_det_mol_g*dum_bio_part(iss_det)/conv_kg_l) * dum_dt_scav/dum_dtyr
     else
        loc_part_den_det   = 0.0
     end if
@@ -3049,10 +3049,10 @@ CONTAINS
        ! calculate Fe scavenged by particulates
        ! and update local remineralization array to take into account the removal of Fe from solution
        if (loc_scav_Fe_k_tot > const_real_nullsmall) then
-          dum_bio_part(is_POM_Fe)   = dum_bio_part(is_POM_Fe) + (loc_scav_Fe_k_POC/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
-          dum_bio_part(is_CaCO3_Fe) = dum_bio_part(is_CaCO3_Fe) + (loc_scav_Fe_k_CaCO3/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
-          dum_bio_part(is_opal_Fe)  = dum_bio_part(is_opal_Fe) + (loc_scav_Fe_k_opal/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
-          dum_bio_part(is_det_Fe)   = dum_bio_part(is_det_Fe) + (loc_scav_Fe_k_det/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          dum_bio_part(iss_POM_Fe)   = dum_bio_part(iss_POM_Fe) + (loc_scav_Fe_k_POC/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          dum_bio_part(iss_CaCO3_Fe) = dum_bio_part(iss_CaCO3_Fe) + (loc_scav_Fe_k_CaCO3/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          dum_bio_part(iss_opal_Fe)  = dum_bio_part(iss_opal_Fe) + (loc_scav_Fe_k_opal/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
+          dum_bio_part(iss_det_Fe)   = dum_bio_part(iss_det_Fe) + (loc_scav_Fe_k_det/loc_scav_Fe_k_tot)*loc_scav_dFe_tot
           dum_bio_remin(io_Fe) = dum_bio_remin(io_Fe) - loc_scav_dFe_tot
        end if
     end if
@@ -3078,7 +3078,7 @@ CONTAINS
     ! set local variables
     loc_H2S = dum_ocn_H2S
     ! density of labile POC
-    loc_part_den_POCl = (1.0 - dum_bio_part(is2l(is_POC_frac2)))*dum_bio_part(is2l(is_POC))
+    loc_part_den_POCl = (1.0 - dum_bio_part(is2l(iss_POC_frac2)))*dum_bio_part(is2l(iss_POC))
     ! estimate H2S scavenging
     ! NOTE: cap H2S removal at the minimum of ([H2S], [labile POC])
     SELECT CASE (opt_bio_remin_scavenge_H2StoPOMS)
@@ -3097,13 +3097,13 @@ CONTAINS
        loc_H2S_scavenging = 0.0
     end select
     ! implement scavenging
-    ! NOTE: is_POC_frac2 should not end up with a value exceeding 1.0
+    ! NOTE: iss_POC_frac2 should not end up with a value exceeding 1.0
     if (loc_H2S_scavenging < const_real_nullsmall) loc_H2S_scavenging = 0.0
     dum_bio_remin(io2l(io_H2S))      = dum_bio_remin(io2l(io_H2S)) - loc_H2S_scavenging
-    dum_bio_part(is2l(is_POM_S))     = dum_bio_part(is2l(is_POM_S)) + loc_H2S_scavenging
-    dum_bio_part(is2l(is_POC_frac2)) = dum_bio_part(is2l(is_POC_frac2)) + loc_H2S_scavenging/dum_bio_part(is2l(is_POC))
-    if (dum_bio_part(is2l(is_POC_frac2)) > 1.1) stop
-    if (dum_bio_part(is2l(is_POC_frac2)) > 1.0) dum_bio_part(is2l(is_POC_frac2)) = 1.0
+    dum_bio_part(is2l(iss_POM_S))     = dum_bio_part(is2l(iss_POM_S)) + loc_H2S_scavenging
+    dum_bio_part(is2l(iss_POC_frac2)) = dum_bio_part(is2l(iss_POC_frac2)) + loc_H2S_scavenging/dum_bio_part(is2l(iss_POC))
+    if (dum_bio_part(is2l(iss_POC_frac2)) > 1.1) stop
+    if (dum_bio_part(is2l(iss_POC_frac2)) > 1.0) dum_bio_part(is2l(iss_POC_frac2)) = 1.0
 
   end SUBROUTINE sub_box_scav_H2S
   ! ****************************************************************************************************************************** !

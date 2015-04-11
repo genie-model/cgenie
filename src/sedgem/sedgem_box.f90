@@ -98,7 +98,7 @@ CONTAINS
        if (ctrl_sed_bioturb_Archer) then
           call sub_calc_sed_mix(               &
                & dum_dtyr,                     &
-               & sed_fsed(is_POC,dum_i,dum_j), &
+               & sed_fsed(iss_POC,dum_i,dum_j), &
                & dum_sfcsumocn(io_O2),         &
                & par_sed_mix_k(:)              &
                & )
@@ -133,10 +133,10 @@ CONTAINS
             & 'sedgem_box','sub_update_sed','sediment input < 0.0 cm3', &
             & 'STOPPING', &
             & (/real(dum_i), real(dum_j), loc_new_sed_vol, &
-            & loc_new_sed(is_POC),   &
-            & loc_new_sed(is_CaCO3), &
-            & loc_new_sed(is_opal),  &
-            & loc_new_sed(is_det)    &
+            & loc_new_sed(iss_POC),   &
+            & loc_new_sed(iss_CaCO3), &
+            & loc_new_sed(iss_opal),  &
+            & loc_new_sed(iss_det)    &
             & /),.TRUE. &
             & )
     END IF
@@ -158,7 +158,7 @@ CONTAINS
        ! a VERY crude way of estimating preservation of organic matter depending on the occurrence of anoxic/euxinic conditions
        ! first determine whether all POM frac2 should be preserved (and if so -- just adjust preservation of remaining fraction)
        if (ctrl_sed_diagen_preserve_frac2) then
-          loc_sed_dis_frac_max = 1.0 - loc_new_sed(is_POC_frac2)
+          loc_sed_dis_frac_max = 1.0 - loc_new_sed(iss_POC_frac2)
        else
           loc_sed_dis_frac_max = 1.0
        end if
@@ -189,7 +189,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -197,7 +197,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
              else
                 select case (is)
-                case (is_POP)
+                case (iss_POP)
                    loc_dis_sed(is) = loc_sed_dis_frac_P*loc_new_sed(is)
                 case default
                    loc_dis_sed(is) = loc_sed_dis_frac*loc_new_sed(is)
@@ -208,7 +208,7 @@ CONTAINS
     case ('dunne2007')
        ! Following Dunne et al. [2007]
        ! NOTE: the units of the Corg flux must be changed from (cm3 cm-2) to (mol cm-2 yr-1) and then to (mmol m-2 d-1)
-       loc_fPOC = (1000.0*conv_POC_cm3_mol)*(10000.0*loc_new_sed(is_POC))/(conv_yr_d*dum_dtyr)
+       loc_fPOC = (1000.0*conv_POC_cm3_mol)*(10000.0*loc_new_sed(iss_POC))/(conv_yr_d*dum_dtyr)
        loc_sed_pres_fracC = (0.013 + 0.53*loc_fPOC**2/(7.0 + loc_fPOC)**2)
        ! calculate the return rain flux back to ocean
        ! NOTE: apply estimated fractional preservation
@@ -216,7 +216,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -233,7 +233,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -250,17 +250,17 @@ CONTAINS
        end DO
     end select
     ! error-catching of negative dissoluiton: return rain flux back to ocean
-    If (loc_dis_sed(is_POC) < -const_real_nullsmall) then
+    If (loc_dis_sed(iss_POC) < -const_real_nullsmall) then
        CALL sub_report_error( &
-            & 'sedgem_box','sub_update_sed','loc_dis_sed(is_POC) < 0.0 cm3', &
+            & 'sedgem_box','sub_update_sed','loc_dis_sed(iss_POC) < 0.0 cm3', &
             & 'CONTINUING: set loc_dis_sed = loc_new_sed', &
-            & (/real(dum_i), real(dum_j), loc_dis_sed(is_POC), loc_new_sed(is_POC) &
+            & (/real(dum_i), real(dum_j), loc_dis_sed(iss_POC), loc_new_sed(iss_POC) &
             & /),.FALSE. &
             & )
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -293,9 +293,9 @@ CONTAINS
                & (/real(dum_i),real(dum_j),dum_D,                                                                          &
                & dum_sfcsumocn(io_T),dum_sfcsumocn(io_S),dum_sfcsumocn(io_DIC),dum_sfcsumocn(io_ALK),dum_sfcsumocn(io_O2), &
                & sed_carb(ic_dCO3_cal,dum_i,dum_j),                                                                        &
-               & sed_top(is_CaCO3,dum_i,dum_j),sed_top(is_opal,dum_i,dum_j),sed_top(is_det,dum_i,dum_j),                   &
-               & loc_new_sed(is_CaCO3),loc_new_sed(is_POC),loc_new_sed(is_opal),loc_new_sed(is_det),                       &
-               & loc_dis_sed(is_CaCO3)                                                                                     &
+               & sed_top(iss_CaCO3,dum_i,dum_j),sed_top(iss_opal,dum_i,dum_j),sed_top(iss_det,dum_i,dum_j),                   &
+               & loc_new_sed(iss_CaCO3),loc_new_sed(iss_POC),loc_new_sed(iss_opal),loc_new_sed(iss_det),                       &
+               & loc_dis_sed(iss_CaCO3)                                                                                     &
                & /),.false.                                                                                                &
                & )
        end if
@@ -304,7 +304,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_CaCO3) .OR. &
+               & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                & ) then
@@ -321,11 +321,11 @@ CONTAINS
        end DO
     end select
     ! error-catching of negative dissolution: return rain flux back to ocean
-    If (loc_dis_sed(is_CaCO3) < -const_real_nullsmall) then
+    If (loc_dis_sed(iss_CaCO3) < -const_real_nullsmall) then
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_CaCO3) .OR. &
+               & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                & ) then
@@ -333,9 +333,9 @@ CONTAINS
           end if
        end DO
        CALL sub_report_error( &
-            & 'sedgem_box','sub_update_sed','loc_dis_sed(is_CaCO3) < 0.0 cm3', &
+            & 'sedgem_box','sub_update_sed','loc_dis_sed(iss_CaCO3) < 0.0 cm3', &
             & 'CONTINUING', &
-            & (/real(dum_i), real(dum_j), loc_dis_sed(is_CaCO3) &
+            & (/real(dum_i), real(dum_j), loc_dis_sed(iss_CaCO3) &
             & /),.FALSE. &
             & )
     end if
@@ -359,7 +359,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_opal) .OR. &
+               & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                & ) then
@@ -380,11 +380,11 @@ CONTAINS
        end DO
     end select
     ! default and error-catching of negative dissoluiton: return rain flux back to ocean
-    If (loc_dis_sed(is_opal) < -const_real_nullsmall) then
+    If (loc_dis_sed(iss_opal) < -const_real_nullsmall) then
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_opal) .OR. &
+               & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                & ) then
@@ -392,9 +392,9 @@ CONTAINS
           end if
        end DO
        CALL sub_report_error( &
-            & 'sedgem_box','sub_update_sed','loc_dis_sed(is_opal) < 0.0 cm3', &
+            & 'sedgem_box','sub_update_sed','loc_dis_sed(iss_opal) < 0.0 cm3', &
             & 'CONTINUING', &
-            & (/real(dum_i), real(dum_j), loc_dis_sed(is_opal) &
+            & (/real(dum_i), real(dum_j), loc_dis_sed(iss_opal) &
             & /),.FALSE. &
             & )
     end if
@@ -409,10 +409,10 @@ CONTAINS
             & 'sedgem_box','sub_update_sed','sediment dissolution < 0.0 cm3', &
             & 'STOPPING', &
             & (/real(dum_i), real(dum_j), loc_dis_sed_vol, &
-            & loc_dis_sed(is_POC),   &
-            & loc_dis_sed(is_CaCO3), &
-            & loc_dis_sed(is_opal),  &
-            & loc_dis_sed(is_det)    &
+            & loc_dis_sed(iss_POC),   &
+            & loc_dis_sed(iss_CaCO3), &
+            & loc_dis_sed(iss_opal),  &
+            & loc_dis_sed(iss_det)    &
             & /),.TRUE. &
             & )
     END IF
@@ -439,7 +439,7 @@ CONTAINS
     sed_top(:,dum_i,dum_j) = sed_top(:,dum_i,dum_j) + loc_new_sed(:) - loc_dis_sed(:)
     ! calculate surface layer porosity
     ! NOTE: calculate porosity as a function of the VOLUME (not weight) fraction of CaCO3
-    loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+    loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
     loc_sed_poros_top = fun_calc_sed_poros_nsur(loc_frac_CaCO3_top,par_sed_top_th)
     ! calculate thickness of material to be exchanged
     loc_sed_top_dth = fun_calc_sed_vol(sed_top(:,dum_i,dum_j))/(1.0 - loc_sed_poros_top) - par_sed_top_th
@@ -463,7 +463,7 @@ CONTAINS
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
-       loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+       loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
        loc_r_sed_por = fun_calc_r_sed_por(loc_frac_CaCO3_top,par_sed_top_th)
        IF (loc_exe_sed_th < (loc_r_sed_por*(1.0 - loc_sed_stack_top_th))) THEN
           ! calculate material to be exchanged
@@ -502,11 +502,11 @@ CONTAINS
        !       which has been seen in just one experiment ever, to date ...
        if (loc_sed_stack_top_th < const_real_nullsmall) then
           loc_frac_CaCO3 = &
-               & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
+               & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
        else
           if (fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top)) > const_real_nullsmall) then
              loc_frac_CaCO3 = &
-                  & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
+                  & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
           else
              loc_frac_CaCO3 = 0.0
           end if
@@ -643,14 +643,14 @@ CONTAINS
           do is=1,nt_sed_all
              if (sed_select(is)) print*,is,string_sed(is),sed_top(is,par_misc_debug_i,par_misc_debug_j)
           end do
-          PRINT*,'new sed age = ',loc_new_sed(is_CaCO3_age) / (loc_new_sed(is_CaCO3) + 1.0E-14)
+          PRINT*,'new sed age = ',loc_new_sed(iss_CaCO3_age) / (loc_new_sed(iss_CaCO3) + 1.0E-14)
           PRINT*,'new sed thickness = ',loc_new_sed_vol / (1.0 - loc_sed_poros_top)
           PRINT*,'actual sedtop thickness = ',                           &
                & (                                                       &
-               &   sed_top(is_CaCO3,par_misc_debug_i,par_misc_debug_j) + &
-               &   sed_top(is_opal,par_misc_debug_i,par_misc_debug_j)  + &
-               &   sed_top(is_det,par_misc_debug_i,par_misc_debug_j)   + &
-               &   sed_top(is_POC,par_misc_debug_i,par_misc_debug_j)     &
+               &   sed_top(iss_CaCO3,par_misc_debug_i,par_misc_debug_j) + &
+               &   sed_top(iss_opal,par_misc_debug_i,par_misc_debug_j)  + &
+               &   sed_top(iss_det,par_misc_debug_i,par_misc_debug_j)   + &
+               &   sed_top(iss_POC,par_misc_debug_i,par_misc_debug_j)     &
                & ) / (1.0 - loc_sed_poros_top)
           PRINT*,'n_sed_stack_top  = ',INT(sed_top_h(par_misc_debug_i,par_misc_debug_j)) + 1
           PRINT*,'sed_stack_top_th = ',sed_top_h(par_misc_debug_i,par_misc_debug_j) - &
@@ -669,16 +669,16 @@ CONTAINS
     ! Ooo - alright then, more debug it is ...
     IF (ctrl_misc_debug1) then
        IF (loc_sed_top_dth > 1.0) THEN
-          loc_frac_CaCO3 = (loc_new_sed(is_CaCO3) - loc_dis_sed(is_CaCO3))/fun_calc_sed_vol(loc_new_sed(:) - loc_dis_sed(:))
+          loc_frac_CaCO3 = (loc_new_sed(iss_CaCO3) - loc_dis_sed(iss_CaCO3))/fun_calc_sed_vol(loc_new_sed(:) - loc_dis_sed(:))
           loc_sed_poros = fun_calc_sed_poros_nsur(loc_frac_CaCO3,par_sed_top_th)
           CALL sub_report_error(                                                                 &
                & 'sedgem_box','sub_update_sed','magnitude of net sediment vol change > 1.0 cm3', &
                & 'CONTINUING',                                                                   &
                & (/real(dum_i),real(dum_j),loc_sed_top_dth,                                      &
-               & (loc_new_sed(is_POC)-loc_dis_sed(is_POC))     / (1.0 - loc_sed_poros),          &
-               & (loc_new_sed(is_CaCO3)-loc_dis_sed(is_CaCO3)) / (1.0 - loc_sed_poros),          &
-               & (loc_new_sed(is_opal)-loc_dis_sed(is_opal))   / (1.0 - loc_sed_poros),          &
-               & (loc_new_sed(is_det)-loc_dis_sed(is_det))     / (1.0 - loc_sed_poros)           &
+               & (loc_new_sed(iss_POC)-loc_dis_sed(iss_POC))     / (1.0 - loc_sed_poros),          &
+               & (loc_new_sed(iss_CaCO3)-loc_dis_sed(iss_CaCO3)) / (1.0 - loc_sed_poros),          &
+               & (loc_new_sed(iss_opal)-loc_dis_sed(iss_opal))   / (1.0 - loc_sed_poros),          &
+               & (loc_new_sed(iss_det)-loc_dis_sed(iss_det))     / (1.0 - loc_sed_poros)           &
                & /),.false.                                                                      &
                & )
        END IF
@@ -688,10 +688,10 @@ CONTAINS
                & 'sedgem_box','sub_update_sed','magnitude of net sediment vol change < -1.0 cm3', &
                & 'CONTINUING',                                                                    &
                & (/real(dum_i),real(dum_j),loc_sed_top_dth,                                       &
-               & (loc_new_sed(is_POC)-loc_dis_sed(is_POC))     / (1.0 - loc_sed_poros),           &
-               & (loc_new_sed(is_CaCO3)-loc_dis_sed(is_CaCO3)) / (1.0 - loc_sed_poros),           &
-               & (loc_new_sed(is_opal)-loc_dis_sed(is_opal))   / (1.0 - loc_sed_poros),           &
-               & (loc_new_sed(is_det)-loc_dis_sed(is_det))     / (1.0 - loc_sed_poros)            &
+               & (loc_new_sed(iss_POC)-loc_dis_sed(iss_POC))     / (1.0 - loc_sed_poros),           &
+               & (loc_new_sed(iss_CaCO3)-loc_dis_sed(iss_CaCO3)) / (1.0 - loc_sed_poros),           &
+               & (loc_new_sed(iss_opal)-loc_dis_sed(iss_opal))   / (1.0 - loc_sed_poros),           &
+               & (loc_new_sed(iss_det)-loc_dis_sed(iss_det))     / (1.0 - loc_sed_poros)            &
                & /),.false.                                                                       &
                & )
        end IF
@@ -757,7 +757,7 @@ CONTAINS
     !     NOTE: make exception for detrital (and ash)
     DO l=1,nt_sed
        is = conv_iselected_is(l)
-       if ((is /= is_det) .AND. (is /= is_ash)) then
+       if ((is /= iss_det) .AND. (is /= iss_ash)) then
           loc_tot_i = conv_sed_ocn_i(0,is)
           do loc_i=1,loc_tot_i
              io = conv_sed_ocn_i(loc_i,is)
@@ -786,21 +786,21 @@ CONTAINS
     !       (precipitation rate scaling constants are mol cm-2 yr-1)
     if (par_sed_CaCO3burial > const_real_nullsmall) then
        ! (1) imposed production
-       sed_fsed(is_CaCO3,dum_i,dum_j) = par_sed_CaCO3burial
+       sed_fsed(iss_CaCO3,dum_i,dum_j) = par_sed_CaCO3burial
     elseif (loc_ohm > par_sed_CaCO3_abioticohm_min) then
        ! (2) abiotic + reef production
-       sed_fsed(is_CaCO3,dum_i,dum_j) = &
+       sed_fsed(iss_CaCO3,dum_i,dum_j) = &
 	   & dum_dtyr*par_sed_CaCO3precip_sf*(loc_ohm - 1.0)**par_sed_CaCO3precip_exp + &
 	   & dum_dtyr*par_sed_reef_CaCO3precip_sf*(loc_ohm - 1.0)**par_sed_reef_CaCO3precip_exp
     elseif (loc_ohm > 1.0) then
        ! (2) reef production only
-       sed_fsed(is_CaCO3,dum_i,dum_j) = &
+       sed_fsed(iss_CaCO3,dum_i,dum_j) = &
 	   & dum_dtyr*par_sed_reef_CaCO3precip_sf*(loc_ohm - 1.0)**par_sed_reef_CaCO3precip_exp
     else
        ! (4) none!
-       sed_fsed(is_CaCO3,dum_i,dum_j) = 0.0
+       sed_fsed(iss_CaCO3,dum_i,dum_j) = 0.0
     end if
-    if (sed_select(is_CaCO3_13C)) then
+    if (sed_select(iss_CaCO3_13C)) then
        ! re-calculate carbonate system isotopic properties
        if (ocn_select(io_DIC_13C)) then
           call sub_calc_carb_r13C(           &
@@ -817,11 +817,11 @@ CONTAINS
        loc_delta_CaCO3 = 15.10 - 4232.0/dum_sfcsumocn(io_T)
        loc_alpha = 1.0 + loc_delta_CaCO3/1000.0
        loc_R = sed_carbisor(ici_HCO3_r13C,dum_i,dum_j)/(1.0 - sed_carbisor(ici_HCO3_r13C,dum_i,dum_j))
-       sed_fsed(is_CaCO3_13C,dum_i,dum_j) = sed_fsed(is_CaCO3,dum_i,dum_j)* &
+       sed_fsed(iss_CaCO3_13C,dum_i,dum_j) = sed_fsed(iss_CaCO3,dum_i,dum_j)* &
             & (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))
     end if
     ! calculate d44Ca (if selected)
-    if (sed_select(is_CaCO3_44Ca)) then
+    if (sed_select(iss_CaCO3_44Ca)) then
        if (dum_sfcsumocn(io_Ca) > const_real_nullsmall) then
           loc_r44Ca = dum_sfcsumocn(io_Ca_44Ca)/dum_sfcsumocn(io_Ca)
        else
@@ -834,18 +834,18 @@ CONTAINS
        end if
        !!!loc_alpha = 1.0 + par_d44Ca_CaCO3_epsilon/1000.0
        loc_R = loc_r44Ca/(1.0 - loc_r44Ca)
-       sed_fsed(is_CaCO3_44Ca,dum_i,dum_j) = sed_fsed(is_CaCO3,dum_i,dum_j)* &
+       sed_fsed(iss_CaCO3_44Ca,dum_i,dum_j) = sed_fsed(iss_CaCO3,dum_i,dum_j)* &
             & (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))
     else
        loc_r44Ca = 0.0
     end if
     ! calculate Li incorporation and isotopes (if selected)
-    if (ocn_select(io_Li) .AND. ocn_select(io_Ca) .AND. sed_select(is_LiCO3)) then
-       sed_fsed(is_LiCO3,dum_i,dum_j) = sed_fsed(is_CaCO3_13C,dum_i,dum_j)* &
+    if (ocn_select(io_Li) .AND. ocn_select(io_Ca) .AND. sed_select(iss_LiCO3)) then
+       sed_fsed(iss_LiCO3,dum_i,dum_j) = sed_fsed(iss_CaCO3_13C,dum_i,dum_j)* &
             & (par_bio_red_CaCO3_LiCO3 + par_bio_red_CaCO3_LiCO3_alpha*dum_sfcsumocn(io_Li)/dum_sfcsumocn(io_Ca))
     end if
     ! calculate 7/6Li fractionation between Li and LiCO3
-    if (sed_select(is_LiCO3_7Li)) then
+    if (sed_select(iss_LiCO3_7Li)) then
        if (dum_sfcsumocn(io_Li) > const_real_nullsmall) then
           loc_r7Li = dum_sfcsumocn(io_Li_7Li)/dum_sfcsumocn(io_Li)
        else
@@ -853,20 +853,20 @@ CONTAINS
        end if
        loc_alpha = 1.0 + par_d7Li_LiCO3_epsilon/1000.0
        loc_R = loc_r7Li/(1.0 - loc_r7Li)
-       sed_fsed(is_LiCO3_7Li,dum_i,dum_j) = sed_fsed(is_LiCO3,dum_i,dum_j)* &
+       sed_fsed(iss_LiCO3_7Li,dum_i,dum_j) = sed_fsed(iss_LiCO3,dum_i,dum_j)* &
             & (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))
     end if
     ! add age tracer
-    sed_fsed(is_CaCO3_age,dum_i,dum_j) = sed_age*sed_fsed(is_CaCO3,dum_i,dum_j)
+    sed_fsed(iss_CaCO3_age,dum_i,dum_j) = sed_age*sed_fsed(iss_CaCO3,dum_i,dum_j)
     ! create Corg component
     ! NOTE: no account is taken of associated nutrient nor oxygen changes
     ! NOTE: treat POC d13C as a fixed offset compared to the d13C of CaCO3
     if (par_sed_Corgburial > const_real_nullsmall) then
-       sed_fsed(is_POC,dum_i,dum_j) = par_sed_Corgburial
+       sed_fsed(iss_POC,dum_i,dum_j) = par_sed_Corgburial
        loc_delta_Corg = par_sed_Corgburial_Dd13C + 15.10 - 4232.0/dum_sfcsumocn(io_T)
        loc_alpha = 1.0 + loc_delta_Corg/1000.0
        loc_R = sed_carbisor(ici_HCO3_r13C,dum_i,dum_j)/(1.0 - sed_carbisor(ici_HCO3_r13C,dum_i,dum_j))
-       sed_fsed(is_POC_13C,dum_i,dum_j) = sed_fsed(is_POC,dum_i,dum_j)* &
+       sed_fsed(iss_POC_13C,dum_i,dum_j) = sed_fsed(iss_POC,dum_i,dum_j)* &
             & (loc_alpha*loc_R/(1.0 + loc_alpha*loc_R))
     end if
 
@@ -896,16 +896,16 @@ CONTAINS
     if (par_sed_ohmegamin > const_real_nullsmall) then
        if (sed_carb(ic_ohm_cal,dum_i,dum_j) < par_sed_ohmegamin) then
           sedocn_fnet(io_Ca,dum_i,dum_j)  = sedocn_fnet(io_Ca,dum_i,dum_j) + par_sed_ohmegamin_flux
-          if (sed_select(is_CaCO3_44Ca)) then
+          if (sed_select(iss_CaCO3_44Ca)) then
              sedocn_fnet(io_Ca_44Ca,dum_i,dum_j)  = sedocn_fnet(io_Ca_44Ca,dum_i,dum_j) + loc_r44Ca*par_sed_ohmegamin_flux
           end if
           sedocn_fnet(io_ALK,dum_i,dum_j) = sedocn_fnet(io_ALK,dum_i,dum_j) + 2.0*sedocn_fnet(io_Ca,dum_i,dum_j)
           IF (.NOT. ctrl_sed_forcedohmega_ca) then
              ! adjust chemistry by carbonate-only rather than silicate-only weathering
              sedocn_fnet(io_DIC,dum_i,dum_j) = sedocn_fnet(io_DIC,dum_i,dum_j) + sedocn_fnet(io_Ca,dum_i,dum_j)
-             if (sed_select(is_CaCO3_13C)) then
+             if (sed_select(iss_CaCO3_13C)) then
                 sedocn_fnet(io_DIC_13C,dum_i,dum_j) = sedocn_fnet(io_DIC_13C,dum_i,dum_j) + &
-                     & fun_calc_isotope_fraction(0.0,const_standards(sed_type(is_CaCO3_13C)))*sedocn_fnet(io_DIC,dum_i,dum_j)
+                     & fun_calc_isotope_fraction(0.0,const_standards(sed_type(iss_CaCO3_13C)))*sedocn_fnet(io_DIC,dum_i,dum_j)
              end if
           end IF
        end if
@@ -938,7 +938,7 @@ CONTAINS
     sed_top(:,dum_i,dum_j) = sed_top(:,dum_i,dum_j) + loc_new_sed(:) - loc_dis_sed(:)
     ! calculate surface layer porosity
     ! NOTE: calculate porosity as a function of the VOLUME (not weight) fraction of CaCO3
-    loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+    loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
     loc_sed_poros_top = par_sed_poros_CaCO3_reef
     ! calculate thickness of material to be exchanged
     loc_sed_top_dth = fun_calc_sed_vol(sed_top(:,dum_i,dum_j))/(1.0 - loc_sed_poros_top) - par_sed_top_th
@@ -962,7 +962,7 @@ CONTAINS
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
-       loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+       loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
        loc_r_sed_por = 1.0
        IF (loc_exe_sed_th < (loc_r_sed_por*(1.0 - loc_sed_stack_top_th))) THEN
           ! calculate material to be exchanged
@@ -997,10 +997,10 @@ CONTAINS
        ! check whether there is any material in the uppermost (incomplete) stack layer BEFORE trying to calculate porosity ...
        if (loc_sed_stack_top_th < const_real_nullsmall) then
           loc_frac_CaCO3 = &
-               & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
+               & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
        else
           loc_frac_CaCO3 = &
-               & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
+               & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
        end if
        loc_r_sed_por = 1.0
        IF (loc_exe_sed_th <= (loc_r_sed_por*loc_sed_stack_top_th)) THEN
@@ -1099,14 +1099,14 @@ CONTAINS
           do is=1,nt_sed_all
              if (sed_select(is)) print*,is,string_sed(is),sed_top(is,par_misc_debug_i,par_misc_debug_j)
           end do
-          PRINT*,'new sed age = ',loc_new_sed(is_CaCO3_age) / (loc_new_sed(is_CaCO3) + 1.0E-14)
+          PRINT*,'new sed age = ',loc_new_sed(iss_CaCO3_age) / (loc_new_sed(iss_CaCO3) + 1.0E-14)
           PRINT*,'new sed thickness = ',loc_new_sed_vol / (1.0 - loc_sed_poros_top)
           PRINT*,'actual sedtop thickness = ',                           &
                & (                                                       &
-               &   sed_top(is_CaCO3,par_misc_debug_i,par_misc_debug_j) + &
-               &   sed_top(is_opal,par_misc_debug_i,par_misc_debug_j)  + &
-               &   sed_top(is_det,par_misc_debug_i,par_misc_debug_j)   + &
-               &   sed_top(is_POC,par_misc_debug_i,par_misc_debug_j)     &
+               &   sed_top(iss_CaCO3,par_misc_debug_i,par_misc_debug_j) + &
+               &   sed_top(iss_opal,par_misc_debug_i,par_misc_debug_j)  + &
+               &   sed_top(iss_det,par_misc_debug_i,par_misc_debug_j)   + &
+               &   sed_top(iss_POC,par_misc_debug_i,par_misc_debug_j)     &
                & ) / (1.0 - loc_sed_poros_top)
           PRINT*,'n_sed_stack_top  = ',INT(sed_top_h(par_misc_debug_i,par_misc_debug_j)) + 1
           PRINT*,'sed_stack_top_th = ',sed_top_h(par_misc_debug_i,par_misc_debug_j) - &
@@ -1186,10 +1186,10 @@ CONTAINS
             & 'sedgem_box','sub_update_sed_mud','sediment input < 0.0 cm3', &
             & 'STOPPING', &
             & (/real(dum_i), real(dum_j), loc_new_sed_vol, &
-            & loc_new_sed(is_POC),   &
-            & loc_new_sed(is_CaCO3), &
-            & loc_new_sed(is_opal),  &
-            & loc_new_sed(is_det)    &
+            & loc_new_sed(iss_POC),   &
+            & loc_new_sed(iss_CaCO3), &
+            & loc_new_sed(iss_opal),  &
+            & loc_new_sed(iss_det)    &
             & /),.TRUE. &
             & )
     END IF
@@ -1207,7 +1207,7 @@ CONTAINS
        ! a VERY crude way of estimating preservation of organic matter depending on the occurrence of anoxic/euxinic conditions
        ! first determine whether all POM frac2 should be preserved (and if so -- just adjust preservation of remaining fraction)
        if (ctrl_sed_diagen_preserve_frac2) then
-          loc_sed_dis_frac_max = 1.0 - loc_new_sed(is_POC_frac2)
+          loc_sed_dis_frac_max = 1.0 - loc_new_sed(iss_POC_frac2)
        else
           loc_sed_dis_frac_max = 1.0
        end if
@@ -1238,7 +1238,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -1246,7 +1246,7 @@ CONTAINS
                 loc_dis_sed(is) = 0.0
              else
                 select case (is)
-                case (is_POP)
+                case (iss_POP)
                    loc_dis_sed(is) = loc_sed_dis_frac_P*loc_new_sed(is)
                 case default
                    loc_dis_sed(is) = loc_sed_dis_frac*loc_new_sed(is)
@@ -1257,7 +1257,7 @@ CONTAINS
     case ('dunne2007')
        ! Following Dunne et al. [2007]
        ! NOTE: the units of the Corg flux must be changed from (cm3 cm-2) to (mol cm-2 yr-1) and then to (mmol m-2 d-1)
-       loc_fPOC = (1000.0*conv_POC_cm3_mol)*(10000.0*loc_new_sed(is_POC))/(conv_yr_d*dum_dtyr)
+       loc_fPOC = (1000.0*conv_POC_cm3_mol)*(10000.0*loc_new_sed(iss_POC))/(conv_yr_d*dum_dtyr)
        loc_sed_pres_fracC = (0.013 + 0.53*loc_fPOC**2/(7.0 + loc_fPOC)**2)
        ! calculate the return rain flux back to ocean
        ! NOTE: apply estimated fractional preservation
@@ -1265,7 +1265,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -1290,7 +1290,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_POC) .OR. &
+               & (sed_dep(is) == iss_POC) .OR. &
                & (sed_type(is) == par_sed_type_POM) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_POM) &
                & ) then
@@ -1310,7 +1310,7 @@ CONTAINS
     DO l=1,nt_sed
        is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_CaCO3) .OR. &
+               & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                & ) then
@@ -1329,7 +1329,7 @@ CONTAINS
     DO l=1,nt_sed
        is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_opal) .OR. &
+               & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                & ) then
@@ -1352,10 +1352,10 @@ CONTAINS
             & 'sedgem_box','sub_update_sed','sediment dissolution < 0.0 cm3', &
             & 'STOPPING', &
             & (/real(dum_i), real(dum_j), loc_dis_sed_vol, &
-            & loc_dis_sed(is_POC),   &
-            & loc_dis_sed(is_CaCO3), &
-            & loc_dis_sed(is_opal),  &
-            & loc_dis_sed(is_det)    &
+            & loc_dis_sed(iss_POC),   &
+            & loc_dis_sed(iss_CaCO3), &
+            & loc_dis_sed(iss_opal),  &
+            & loc_dis_sed(iss_det)    &
             & /),.TRUE. &
             & )
     END IF
@@ -1387,7 +1387,7 @@ CONTAINS
     sed_top(:,dum_i,dum_j) = sed_top(:,dum_i,dum_j) + loc_new_sed(:) - loc_dis_sed(:)
     ! calculate surface layer porosity
     ! NOTE: calculate porosity as a function of the VOLUME (not weight) fraction of CaCO3
-    loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+    loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
     loc_sed_poros_top = par_sed_poros_CaCO3_reef
     ! calculate thickness of material to be exchanged
     loc_sed_top_dth = fun_calc_sed_vol(sed_top(:,dum_i,dum_j))/(1.0 - loc_sed_poros_top) - par_sed_top_th
@@ -1411,7 +1411,7 @@ CONTAINS
        !   => if exchange th >= remaining (unfilled) thickness of top sub-layer of sediment stack, then
        !      add sufficient material to top sub-layer to fill it plus additional material to next layer up
        ! update sediment surface layer
-       loc_frac_CaCO3_top = sed_top(is_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
+       loc_frac_CaCO3_top = sed_top(iss_CaCO3,dum_i,dum_j)/fun_calc_sed_vol(sed_top(:,dum_i,dum_j))
        loc_r_sed_por = 1.0
        IF (loc_exe_sed_th < (loc_r_sed_por*(1.0 - loc_sed_stack_top_th))) THEN
           ! calculate material to be exchanged
@@ -1446,10 +1446,10 @@ CONTAINS
        ! check whether there is any material in the uppermost (incomplete) stack layer BEFORE trying to calculate porosity ...
        if (loc_sed_stack_top_th < const_real_nullsmall) then
           loc_frac_CaCO3 = &
-               & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
+               & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top - 1)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top - 1))
        else
           loc_frac_CaCO3 = &
-               & sed(is_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
+               & sed(iss_CaCO3,dum_i,dum_j,loc_n_sed_stack_top)/fun_calc_sed_vol(sed(:,dum_i,dum_j,loc_n_sed_stack_top))
        end if
        loc_r_sed_por = 1.0
        IF (loc_exe_sed_th <= (loc_r_sed_por*loc_sed_stack_top_th)) THEN
@@ -1596,9 +1596,9 @@ CONTAINS
     !       and enough [O2] may not in actual fact be available to oxidize such a flux in the sediments fully
     ! mass fraction (dry) of calcite in sediments
     loc_sed_wt_top = fun_calc_sed_mass(dum_sed_top(:))
-    loc_frac_CaCO3_top = conv_cal_cm3_g*dum_sed_top(is_CaCO3)/loc_sed_wt_top
+    loc_frac_CaCO3_top = conv_cal_cm3_g*dum_sed_top(iss_CaCO3)/loc_sed_wt_top
     ! Corg rain rate
-    loc_fPOC = dum_sed_diagen_fPOCfrac*conv_POC_cm3_mol*dum_sed_new(is_POC)/dum_dtyr
+    loc_fPOC = dum_sed_diagen_fPOCfrac*conv_POC_cm3_mol*dum_sed_new(iss_POC)/dum_dtyr
     IF (loc_fPOC > par_sed_diagen_fPOCmax) loc_fPOC = par_sed_diagen_fPOCmax
     ! prevent negative oxygen concentrations being passed
     loc_O2 = dum_ocn(io_O2)
@@ -1620,7 +1620,7 @@ CONTAINS
             & dum_sed_mix_k                                                                       &
             & )
        loc_dis = conv_cal_mol_cm3*loc_dis*dum_dtyr
-       if (error_Archer) loc_dis = dum_sed_new(is_CaCO3)
+       if (error_Archer) loc_dis = dum_sed_new(iss_CaCO3)
     case ('ridgwell2001lookup')
        ! CALCULATE SEDIMENT CACO3 DIAGENESIS VIA A LOOK-UP TABLE [Ridgwell, 2001]
        loc_dis = fun_interp_4D(                                                  &
@@ -1645,14 +1645,14 @@ CONTAINS
     ! *** calculate actual dissolution flux ***
     IF (loc_dis > const_real_nullsmall) THEN
        ! cap maximum dissolution
-       IF (loc_dis > (dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3))) THEN
-          dum_sed_dis(is_CaCO3) = dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3)
+       IF (loc_dis > (dum_sed_new(iss_CaCO3) + dum_sed_top(iss_CaCO3))) THEN
+          dum_sed_dis(iss_CaCO3) = dum_sed_new(iss_CaCO3) + dum_sed_top(iss_CaCO3)
        ELSE
-          dum_sed_dis(is_CaCO3) = loc_dis
+          dum_sed_dis(iss_CaCO3) = loc_dis
        ENDIF
        ! prevent CaCO3 erosion (Fdis > Fsed) if requested
        if (ctrl_sed_noerosion) then
-          if (dum_sed_dis(is_CaCO3) > dum_sed_new(is_CaCO3)) dum_sed_dis(is_CaCO3) = dum_sed_new(is_CaCO3)
+          if (dum_sed_dis(iss_CaCO3) > dum_sed_new(iss_CaCO3)) dum_sed_dis(iss_CaCO3) = dum_sed_new(iss_CaCO3)
        end if
        ! calculate dissolution components from new (rain) and old (core-top) sediments
        ! NOTE: there are TWO possible end-member models for where the carbonate dissolution takes place
@@ -1660,25 +1660,25 @@ CONTAINS
        !       the code for both is provided - simply comment out the one that is not wanted (and re-compile) to change over
        ! loc_sed_dis_new       - is the amount of newly arrived carbonate that is dissolved
        ! loc_sed_dis_top       - is the amount of pre-existing carbonate dissolved from the surface ('top') layer
-       ! dum_sed_dis(is_CaCO3) - is the total amount of carbonate that needs to be dissolved
+       ! dum_sed_dis(iss_CaCO3) - is the total amount of carbonate that needs to be dissolved
        if (ctrl_sed_interface) then
           !!!print*,'interface'
-          IF (dum_sed_dis(is_CaCO3) > dum_sed_new(is_CaCO3)) THEN
-             loc_sed_dis_new = dum_sed_new(is_CaCO3)
-             loc_sed_dis_top = dum_sed_dis(is_CaCO3) - dum_sed_new(is_CaCO3)
+          IF (dum_sed_dis(iss_CaCO3) > dum_sed_new(iss_CaCO3)) THEN
+             loc_sed_dis_new = dum_sed_new(iss_CaCO3)
+             loc_sed_dis_top = dum_sed_dis(iss_CaCO3) - dum_sed_new(iss_CaCO3)
           else
-             loc_sed_dis_new = dum_sed_dis(is_CaCO3)
+             loc_sed_dis_new = dum_sed_dis(iss_CaCO3)
              loc_sed_dis_top = 0.0
           end IF
        else
           !!!print*,'homogenous'
-          ! What it is saying is determine proportion of carbonate that has newly arrived at the sediments (dum_sed_new(is_CaCO3))
-          ! compared to the total amount of carbonate available for dissolution (dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3)).
+          ! What it is saying is determine proportion of carbonate that has newly arrived at the sediments (dum_sed_new(iss_CaCO3))
+          ! compared to the total amount of carbonate available for dissolution (dum_sed_new(iss_CaCO3) + dum_sed_top(iss_CaCO3)).
           ! Dissolve carbonate in this proportion - this should have the same effect as if the 'new' carbonate had been
           ! mixed into the surface layer and then dissolution calculated.
-          loc_sed_new_frac = dum_sed_new(is_CaCO3)/(dum_sed_new(is_CaCO3) + dum_sed_top(is_CaCO3))
-          loc_sed_dis_new = loc_sed_new_frac*dum_sed_dis(is_CaCO3)
-          loc_sed_dis_top = (1.0 - loc_sed_new_frac)*dum_sed_dis(is_CaCO3)
+          loc_sed_new_frac = dum_sed_new(iss_CaCO3)/(dum_sed_new(iss_CaCO3) + dum_sed_top(iss_CaCO3))
+          loc_sed_dis_new = loc_sed_new_frac*dum_sed_dis(iss_CaCO3)
+          loc_sed_dis_top = (1.0 - loc_sed_new_frac)*dum_sed_dis(iss_CaCO3)
        end if
        ! calculate isotope and 'age' dissolution fluxes
        ! NOTE: assume no fractionation associated with dissolution
@@ -1689,16 +1689,16 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_CaCO3) .OR. &
+               & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                & ) then
-             if ((is /= is_CaCO3) .AND. (sed_type(is) /= par_sed_type_scavenged)) then
-                if (dum_sed_new(is_CaCO3) > const_real_nullsmall) then
-                   dum_sed_dis(is) = dum_sed_dis(is) + loc_sed_dis_new*(dum_sed_new(is)/dum_sed_new(is_CaCO3))
+             if ((is /= iss_CaCO3) .AND. (sed_type(is) /= par_sed_type_scavenged)) then
+                if (dum_sed_new(iss_CaCO3) > const_real_nullsmall) then
+                   dum_sed_dis(is) = dum_sed_dis(is) + loc_sed_dis_new*(dum_sed_new(is)/dum_sed_new(iss_CaCO3))
                 end if
-                if (dum_sed_top(is_CaCO3) > const_real_nullsmall) then
-                   dum_sed_dis(is) = dum_sed_dis(is) + loc_sed_dis_top*(dum_sed_top(is)/dum_sed_top(is_CaCO3))
+                if (dum_sed_top(iss_CaCO3) > const_real_nullsmall) then
+                   dum_sed_dis(is) = dum_sed_dis(is) + loc_sed_dis_top*(dum_sed_top(is)/dum_sed_top(iss_CaCO3))
                 end if
              end if
           end if
@@ -1707,7 +1707,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_CaCO3) .OR. &
+               & (sed_dep(is) == iss_CaCO3) .OR. &
                & (sed_type(is) == par_sed_type_CaCO3) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_CaCO3) &
                & ) then
@@ -1762,16 +1762,16 @@ CONTAINS
     ! *** calculate sediment diagenesis defining variables ***
     ! volume fraction of opal in sediments
     loc_sed_vol_top = fun_calc_sed_vol(dum_sed_top(:))
-    loc_frac_opal = dum_sed_top(is_opal)/loc_sed_vol_top
+    loc_frac_opal = dum_sed_top(iss_opal)/loc_sed_vol_top
     ! make asymptotic [Si] dependent on the ratio of sediment (top) refrac to opal (wt%/wt%) (if selected)
     ! NOTE: cap ratio at 'par_sed_opal_Sitoopalmax'
     IF (opt_sed(iopt_sed_diagen_AltoasymSi)) THEN
-       if (dum_sed_top(is_opal) < const_real_nullsmall) then
+       if (dum_sed_top(iss_opal) < const_real_nullsmall) then
           loc_opaltorefrac = 0.0
-       elseIF ((conv_det_cm3_g*dum_sed_top(is_det)) > (par_sed_opal_Sitoopalmax*conv_opal_cm3_g*dum_sed_top(is_opal))) THEN
+       elseIF ((conv_det_cm3_g*dum_sed_top(iss_det)) > (par_sed_opal_Sitoopalmax*conv_opal_cm3_g*dum_sed_top(iss_opal))) THEN
           loc_opaltorefrac = par_sed_opal_Sitoopalmax
        ELSE
-          loc_opaltorefrac = (conv_det_cm3_g*dum_sed_top(is_det))/(conv_opal_cm3_g*dum_sed_top(is_opal))
+          loc_opaltorefrac = (conv_det_cm3_g*dum_sed_top(iss_det))/(conv_opal_cm3_g*dum_sed_top(iss_opal))
        END IF
     ELSE
        loc_opaltorefrac = 0.0
@@ -1830,7 +1830,7 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_opal) .OR. &
+               & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                & ) then
@@ -1839,17 +1839,17 @@ CONTAINS
        end do
     else
        ! cap maximum dissolution
-       IF (loc_dis >= (dum_sed_new(is_opal) + dum_sed_top(is_opal))) THEN
-          dum_sed_dis(is_opal) = dum_sed_new(is_opal) + dum_sed_top(is_opal)
+       IF (loc_dis >= (dum_sed_new(iss_opal) + dum_sed_top(iss_opal))) THEN
+          dum_sed_dis(iss_opal) = dum_sed_new(iss_opal) + dum_sed_top(iss_opal)
        ELSE
-          dum_sed_dis(is_opal) = loc_dis
+          dum_sed_dis(iss_opal) = loc_dis
        ENDIF
        ! calculate dissolution components from new (rain) and old (core-top) sediments
-       IF (dum_sed_dis(is_opal) >= dum_sed_new(is_opal)) THEN
-          loc_sed_dis_new = dum_sed_new(is_opal)
-          loc_sed_dis_top = dum_sed_dis(is_opal) - dum_sed_new(is_opal)
+       IF (dum_sed_dis(iss_opal) >= dum_sed_new(iss_opal)) THEN
+          loc_sed_dis_new = dum_sed_new(iss_opal)
+          loc_sed_dis_top = dum_sed_dis(iss_opal) - dum_sed_new(iss_opal)
        else
-          loc_sed_dis_new = dum_sed_dis(is_opal)
+          loc_sed_dis_new = dum_sed_dis(iss_opal)
           loc_sed_dis_top = 0.0
        end IF
        ! calculate isotope and trace metal dissolution fluxes
@@ -1858,17 +1858,17 @@ CONTAINS
        DO l=1,nt_sed
           is = conv_iselected_is(l)
           if ( &
-               & (sed_dep(is) == is_opal) .OR. &
+               & (sed_dep(is) == iss_opal) .OR. &
                & (sed_type(is) == par_sed_type_opal) .OR. &
                & (sed_type(sed_dep(is)) == par_sed_type_opal) &
                & ) then
-             if ((is /= is_opal) .AND. (sed_type(is) /= par_sed_type_scavenged)) then
+             if ((is /= iss_opal) .AND. (sed_type(is) /= par_sed_type_scavenged)) then
                 dum_sed_dis(is) = 0.0
-                if (dum_sed_new(is_opal) > const_real_nullsmall) then
-                   dum_sed_dis(is) = dum_sed_dis(is) + (dum_sed_new(is)/dum_sed_new(is_opal))*loc_sed_dis_new
+                if (dum_sed_new(iss_opal) > const_real_nullsmall) then
+                   dum_sed_dis(is) = dum_sed_dis(is) + (dum_sed_new(is)/dum_sed_new(iss_opal))*loc_sed_dis_new
                 end if
-                if (dum_sed_top(is_opal) > const_real_nullsmall) then
-                   dum_sed_dis(is) = dum_sed_dis(is) + (dum_sed_top(is)/dum_sed_top(is_opal))*loc_sed_dis_top
+                if (dum_sed_top(iss_opal) > const_real_nullsmall) then
+                   dum_sed_dis(is) = dum_sed_dis(is) + (dum_sed_top(is)/dum_sed_top(iss_opal))*loc_sed_dis_top
                 end if
              end if
           end if
@@ -2018,7 +2018,7 @@ CONTAINS
     loc_dsed(:,:)   = 0.0
     loc_dsed_top(:) = 0.0
     ! (2) calculate sediment porosities
-    loc_frac_CaCO3 = dum_sed_top(is_CaCO3)/fun_calc_sed_vol(dum_sed_top(:))
+    loc_frac_CaCO3 = dum_sed_top(iss_CaCO3)/fun_calc_sed_vol(dum_sed_top(:))
     loc_r_sed_por = fun_calc_r_sed_por(loc_frac_CaCO3,par_sed_top_th)
     ! (3) re-grid biodiffusion coefficient to boudaries between sediment layers
     !     (d = n_sed_mix being the index corresponding to the boundary between stack and surface ('top') sediment layer)

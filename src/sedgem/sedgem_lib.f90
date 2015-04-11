@@ -529,7 +529,7 @@ CONTAINS
                    ! particulate organic matter components
                    ! NOTE: mass (or volume) fraction has little meaning for the P,N,Fe,O2 components of POM,
                    !       so just calculate the ratio of these components with POC
-                   if (loc_sed(is_POC,i,j) > const_real_nullsmall) loc_sed(is,i,j) = sed_top(is,i,j)/sed_top(is_POC,i,j)
+                   if (loc_sed(iss_POC,i,j) > const_real_nullsmall) loc_sed(is,i,j) = sed_top(is,i,j)/sed_top(iss_POC,i,j)
                 case (par_sed_type_age)
                    ! age
                    ! NOTE: extract core-top age

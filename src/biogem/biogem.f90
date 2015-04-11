@@ -735,10 +735,10 @@ CONTAINS
              IF (n_k >= loc_k1) THEN
                 loc_k_icefree = (1.0 - phys_ocnatm(ipoa_seaice,i,j))
                 ! Aeolian solubilities
-                if (force_flux_sed(is_det,i,j) > const_real_nullsmall) then
-                   phys_ocnatm(ipoa_solFe,i,j) = force_flux_sed(is_det,i,j)**(par_det_Fe_sol_exp - 1.0)
-                   loc_det_tot = loc_det_tot + force_flux_sed(is_det,i,j)
-                   loc_det_sol_tot = loc_det_sol_tot + phys_ocnatm(ipoa_solFe,i,j)*force_flux_sed(is_det,i,j)
+                if (force_flux_sed(iss_det,i,j) > const_real_nullsmall) then
+                   phys_ocnatm(ipoa_solFe,i,j) = force_flux_sed(iss_det,i,j)**(par_det_Fe_sol_exp - 1.0)
+                   loc_det_tot = loc_det_tot + force_flux_sed(iss_det,i,j)
+                   loc_det_sol_tot = loc_det_sol_tot + phys_ocnatm(ipoa_solFe,i,j)*force_flux_sed(iss_det,i,j)
                 else
                    phys_ocnatm(ipoa_solFe,i,j) = 0.0
                 end if
@@ -877,7 +877,7 @@ CONTAINS
                 !       and then from mass of dust to mass of iron in the dust ...
                 ! total aeolian Fe input (mol yr-1)
                 phys_ocnatm(ipoa_totFe,i,j) = &
-                     & conv_Fe_g_mol*par_det_Fe_frac*conv_det_mol_g*phys_ocn(ipo_M,i,j,n_k)*bio_part(is_det,i,j,n_k)/loc_dtyr
+                     & conv_Fe_g_mol*par_det_Fe_frac*conv_det_mol_g*phys_ocn(ipo_M,i,j,n_k)*bio_part(iss_det,i,j,n_k)/loc_dtyr
                 ! dissolved Fe input (mol yr-1)
                 loc_force_flux_dust(io_Fe) = phys_ocnatm(ipoa_solFe,i,j)*phys_ocnatm(ipoa_totFe,i,j)
                 ! update ocean flux array
@@ -896,7 +896,7 @@ CONTAINS
                 ! NOTE: if no weathering flux set (<loc_fweather_tot> = 0.0) do not attempt to balance burial (e.g. may be Fe)
                 ! NOTE: if there is no preservation (or negative preservation, i.e. erosion), set weathering to zero
                 ! NOTE: scale returned scavenged Fe according to value of par_scav_fremin
-                ! NOTE: allow for (optional) return of Fe incorporated into organic matter (is_POFe)
+                ! NOTE: allow for (optional) return of Fe incorporated into organic matter (iss_POFe)
                 ! NOTE: make special case for 'scavenged' (POM-bound) S -- return to water column in a non-SEDGEM closed system
                 if (ctrl_force_sed_closedsystem) then
                    If (flag_sedgem) then
@@ -922,7 +922,7 @@ CONTAINS
                             lo = conv_ls_lo_i(loc_i,ls)
                             if (lo > 0) then
                                if (sed_type(l2is(ls)) == par_sed_type_scavenged) then
-                                  if ((l2is(ls) == is_POM_S) .OR. (sed_dep(l2is(ls)) == is_POM_S)) then
+                                  if ((l2is(ls) == iss_POM_S) .OR. (sed_dep(l2is(ls)) == iss_POM_S)) then
                                      locij_fsedocn(l2io(lo),i,j) = locij_fsedocn(l2io(lo),i,j) + &
                                           & loc_conv_ls_lo(lo,ls)*bio_settle(l2is(ls),i,j,loc_k1)
                                   else
@@ -1266,8 +1266,8 @@ CONTAINS
                 SELECT CASE (par_bio_prodopt)
                 CASE ('bio_POCflux')
                    force_restore_docn_nuts(io_PO4) = -phys_ocn(ipo_rM,i,j,n_k)*loc_dtyr* &
-                        & conv_sed_ocn(io_PO4,is_POP)*bio_part_red(is_POC,is_POP,i,j)*locijk_fpart(is_POC,i,j,n_k)
-                   locijk_fpart(is_POC,i,j,n_k) = 0.0
+                        & conv_sed_ocn(io_PO4,iss_POP)*bio_part_red(iss_POC,iss_POP,i,j)*locijk_fpart(iss_POC,i,j,n_k)
+                   locijk_fpart(iss_POC,i,j,n_k) = 0.0
                 CASE DEFAULT
                    ! ### INSERT CODE TO INCLUDE ADDITIONAL SPECIAL CASES OF SEDIMENT FLUX FORCING ################################## !
                    !
@@ -1704,7 +1704,7 @@ CONTAINS
                 IF (ctrl_debug_lvl1 .AND. loc_debug_ij) print*, &
                      & '*** OCEAN ABIOTIC PRECIPITATION ***'
                 ! *** OCEAN ABIOTIC PRECIPITATION ***
-                if (ctrl_bio_CaCO3precip .AND. sed_select(is_CaCO3)) then
+                if (ctrl_bio_CaCO3precip .AND. sed_select(iss_CaCO3)) then
                    call sub_calc_bio_uptake_abio(i,j,loc_k1,loc_dtyr)
                 end if
 
@@ -1719,7 +1719,7 @@ CONTAINS
                 ! NOTE: although <locijk_focn> Fe is added to the remin array within the sub_calc_geochem_Fe subroutine,
                 !       the same flux is subtracted again after equilibrium has been calculated,
                 !       hence <locijk_focn> Fe later can be added 'as normal' in updating the <ocn> array
-                if (sed_select(is_det) .AND. ocn_select(io_Fe)) then
+                if (sed_select(iss_det) .AND. ocn_select(io_Fe)) then
                    call sub_calc_geochem_Fe(i,j,loc_k1,loc_dtyr*phys_ocn(ipo_rM,i,j,:)*locijk_focn(io_Fe,i,j,:))
                 end If
 
@@ -1759,11 +1759,11 @@ CONTAINS
                    end SELECT
                 end do
                 ! (4) set age tracers
-                if (sed_select(is_CaCO3_age)) then
-                   dum_sfxsed1(is_CaCO3_age,i,j) = loc_t*dum_sfxsed1(is_CaCO3,i,j)
+                if (sed_select(iss_CaCO3_age)) then
+                   dum_sfxsed1(iss_CaCO3_age,i,j) = loc_t*dum_sfxsed1(iss_CaCO3,i,j)
                 end if
-                if (sed_select(is_det_age)) then
-                   dum_sfxsed1(is_det_age,i,j) = loc_t*dum_sfxsed1(is_det,i,j)
+                if (sed_select(iss_det_age)) then
+                   dum_sfxsed1(iss_det_age,i,j) = loc_t*dum_sfxsed1(iss_det,i,j)
                 end if
 
                 IF (ctrl_debug_lvl1 .AND. loc_debug_ij) &
@@ -2961,26 +2961,26 @@ CONTAINS
                       loc_tot_A = 0.0
                       DO i=1,n_i
                          DO j=1,n_j
-                            if ((sed_type(sed_dep(is)) == par_sed_type_POM) .OR. (sed_dep(is) == is_POC)) then
-                               If (dum_sfcsed1(is_POC,i,j) > 0.1) then
+                            if ((sed_type(sed_dep(is)) == par_sed_type_POM) .OR. (sed_dep(is) == iss_POC)) then
+                               If (dum_sfcsed1(iss_POC,i,j) > 0.1) then
                                   loc_sig = loc_sig + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)*dum_sfcsed1(is,i,j)
                                   loc_tot_A = loc_tot_A + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)
                                end if
                             end if
-                            if ((sed_type(sed_dep(is)) == par_sed_type_CaCO3) .OR. (sed_dep(is) == is_CaCO3)) then
-                               If (dum_sfcsed1(is_CaCO3,i,j) > 10.0) then
+                            if ((sed_type(sed_dep(is)) == par_sed_type_CaCO3) .OR. (sed_dep(is) == iss_CaCO3)) then
+                               If (dum_sfcsed1(iss_CaCO3,i,j) > 10.0) then
                                   loc_sig = loc_sig + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)*dum_sfcsed1(is,i,j)
                                   loc_tot_A = loc_tot_A + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)
                                end if
                             end if
-                            if ((sed_type(sed_dep(is)) == par_sed_type_opal) .OR. (sed_dep(is) == is_opal)) then
-                               If (dum_sfcsed1(is_opal,i,j) > 1.0) then
+                            if ((sed_type(sed_dep(is)) == par_sed_type_opal) .OR. (sed_dep(is) == iss_opal)) then
+                               If (dum_sfcsed1(iss_opal,i,j) > 1.0) then
                                   loc_sig = loc_sig + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)*dum_sfcsed1(is,i,j)
                                   loc_tot_A = loc_tot_A + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)
                                end if
                             end if
-                            if ((sed_type(sed_dep(is)) == par_sed_type_det) .OR. (sed_dep(is) == is_det)) then
-                               If (dum_sfcsed1(is_det,i,j) > 0.1) then
+                            if ((sed_type(sed_dep(is)) == par_sed_type_det) .OR. (sed_dep(is) == iss_det)) then
+                               If (dum_sfcsed1(iss_det,i,j) > 0.1) then
                                   loc_sig = loc_sig + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)*dum_sfcsed1(is,i,j)
                                   loc_tot_A = loc_tot_A + phys_ocn(ipo_A,i,j,n_k)*dum_sfcsed1(sed_dep(is),i,j)
                                end if
