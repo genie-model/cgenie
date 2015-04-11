@@ -800,7 +800,7 @@ CONTAINS
 
     ! d13C
     ! NOTE: does not matter how the standard is derived -- it is al the same standard! (13C)
-    loc_standard = const_standards(atm_type(ia_pCO2_13C))
+    loc_standard = const_standards(atm_type(ias_pCO2_13C))
     loc_d13C = fun_calc_isotope_delta( &
          & dum_sfcatm1(ia_pCO2,n_i,n_j),dum_sfcatm1(ia_pCO2_13C,n_i,n_j),loc_standard,.FALSE.,const_nulliso &
          & )

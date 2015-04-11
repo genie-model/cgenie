@@ -3328,33 +3328,36 @@ CONTAINS
 
   ! ****************************************************************************************************************************** !
   ! Update atmosphere tracer restoring forcing function value
-  SUBROUTINE sub_update_force_restore_atm(dum_t,dum_ia)
-    ! dummy arguments
-    REAL,INTENT(in)::dum_t
-    INTEGER,INTENT(in)::dum_ia
-    ! local variables
-    INTEGER::i,j
-    REAL::loc_x
-    REAL::loc_force_restore_atm
-    real::loc_tot,loc_standard
+  SUBROUTINE sub_update_force_restore_atm(t, ia)
+    IMPLICIT NONE
+    REAL,    INTENT(IN) :: t
+    INTEGER, INTENT(IN) :: ia
+
+    INTEGER :: i, j, ias
+    REAL :: loc_x
+    REAL :: loc_force_restore_atm
+    REAL :: loc_tot, loc_standard
+
+    ias = ia_ias(ia)
+
     ! calculate new atmosphere forcing time series values
-    CALL sub_update_sig(dum_t,force_restore_atm_sig(dum_ia,1,:),force_restore_atm_sig_i(dum_ia,:),loc_x)
-    force_restore_atm_sig_x(dum_ia) = &
-         & (1 - loc_x)*force_restore_atm_sig(dum_ia,2,force_restore_atm_sig_i(dum_ia,2)) + &
-         & loc_x*force_restore_atm_sig(dum_ia,2,force_restore_atm_sig_i(dum_ia,1))
+    CALL sub_update_sig(t, force_restore_atm_sig(ia,1,:), force_restore_atm_sig_i(ia,:), loc_x)
+    force_restore_atm_sig_x(ia) = &
+         & (1 - loc_x)*force_restore_atm_sig(ia,2,force_restore_atm_sig_i(ia,2)) + &
+         & loc_x*force_restore_atm_sig(ia,2,force_restore_atm_sig_i(ia,1))
     ! update prescribed (restoring) boundary conditions
     DO i=1,n_i
        DO j=1,n_j
           loc_force_restore_atm =  &
-               & force_restore_atm_I(dum_ia,i,j) + &
-               & force_restore_atm_sig_x(dum_ia)*(force_restore_atm_II(dum_ia,i,j) - force_restore_atm_I(dum_ia,i,j))
-          SELECT CASE (atm_type(dum_ia))
+               & force_restore_atm_I(ia,i,j) + &
+               & force_restore_atm_sig_x(ia)*(force_restore_atm_II(ia,i,j) - force_restore_atm_I(ia,i,j))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             force_restore_atm(dum_ia,i,j) = loc_force_restore_atm
-          case (n_itype_min:n_itype_max)
-             loc_tot  = force_restore_atm(ias_ia(atm_dep(dum_ia)),i,j)
-             loc_standard = const_standards(atm_type(dum_ia))
-             force_restore_atm(dum_ia,i,j) = fun_calc_isotope_fraction(loc_force_restore_atm,loc_standard)*loc_tot
+             force_restore_atm(ia,i,j) = loc_force_restore_atm
+          CASE (n_itype_min:n_itype_max)
+             loc_tot  = force_restore_atm(ias_ia(atm_dep(ias)),i,j)
+             loc_standard = const_standards(atm_type(ias))
+             force_restore_atm(ia,i,j) = fun_calc_isotope_fraction(loc_force_restore_atm,loc_standard)*loc_tot
           END SELECT
        END DO
     END DO
@@ -3364,38 +3367,40 @@ CONTAINS
 
   ! ****************************************************************************************************************************** !
   ! Update atmosphere tracer flux forcing function value
-  SUBROUTINE sub_update_force_flux_atm(dum_t,dum_ia)
-    ! dummy arguments
-    REAL,INTENT(in)::dum_t
-    INTEGER,INTENT(in)::dum_ia
-    ! local variables
-    INTEGER::i,j
-    REAL::loc_x
-    REAL::loc_force_flux_atm_tot
-    REAL::loc_force_flux_atm_rtot
-    REAL::loc_force_flux_atm
-    real::loc_tot,loc_standard
+  SUBROUTINE sub_update_force_flux_atm(t, ia)
+    IMPLICIT NONE
+    REAL,    INTENT(IN) :: t
+    INTEGER, INTENT(IN) :: ia
+
+    INTEGER :: i, j, ias
+    REAL :: loc_x
+    REAL :: loc_force_flux_atm_tot, loc_force_flux_atm_rtot
+    REAL :: loc_force_flux_atm
+    REAL :: loc_tot, loc_standard
+
+    ias = ia_ias(ia)
+
     ! calculate new atmosphere forcing time series values
-    CALL sub_update_sig(dum_t,force_flux_atm_sig(dum_ia,1,:),force_flux_atm_sig_i(dum_ia,:),loc_x)
-    force_flux_atm_sig_x(dum_ia) = &
-         & (1 - loc_x)*force_flux_atm_sig(dum_ia,2,force_flux_atm_sig_i(dum_ia,2)) + &
-         & loc_x*force_flux_atm_sig(dum_ia,2,force_flux_atm_sig_i(dum_ia,1))
+    CALL sub_update_sig(t, force_flux_atm_sig(ia,1,:), force_flux_atm_sig_i(ia,:), loc_x)
+    force_flux_atm_sig_x(ia) = &
+         & (1 - loc_x)*force_flux_atm_sig(ia,2,force_flux_atm_sig_i(ia,2)) + &
+         & loc_x*force_flux_atm_sig(ia,2,force_flux_atm_sig_i(ia,1))
     ! update flux boundary conditions
     ! NOTE: flux forcings are in units of mol yr-1
     loc_force_flux_atm_tot = 0.0
     DO i=1,n_i
        DO j=1,n_j
           loc_force_flux_atm = &
-               & force_flux_atm_I(dum_ia,i,j) + &
-               & force_flux_atm_sig_x(dum_ia)*(force_flux_atm_II(dum_ia,i,j) - force_flux_atm_I(dum_ia,i,j))
-          SELECT CASE (atm_type(dum_ia))
+               & force_flux_atm_I(ia,i,j) + &
+               & force_flux_atm_sig_x(ia)*(force_flux_atm_II(ia,i,j) - force_flux_atm_I(ia,i,j))
+          SELECT CASE (atm_type(ias))
           CASE (1)
-             force_flux_atm(dum_ia,i,j) = loc_force_flux_atm
+             force_flux_atm(ia,i,j) = loc_force_flux_atm
              loc_force_flux_atm_tot = loc_force_flux_atm_tot + loc_force_flux_atm
-          case (n_itype_min:n_itype_max)
-             loc_tot  = force_flux_atm(ias_ia(atm_dep(dum_ia)),i,j)
-             loc_standard = const_standards(atm_type(dum_ia))
-             force_flux_atm(dum_ia,i,j) = fun_calc_isotope_fraction(loc_force_flux_atm,loc_standard)*loc_tot
+          CASE (n_itype_min:n_itype_max)
+             loc_tot  = force_flux_atm(ias_ia(atm_dep(ias)),i,j)
+             loc_standard = const_standards(atm_type(ias))
+             force_flux_atm(ia,i,j) = fun_calc_isotope_fraction(loc_force_flux_atm,loc_standard)*loc_tot
           END SELECT
        END DO
     END DO
@@ -3405,17 +3410,17 @@ CONTAINS
     !       the isotopic tracers will be automatically normalized because they are related directly to the total flux,
     !       and when this subroutine call is made for an isotopic tracer,
     !       it has already been called to deal with the related bulk tracer where the normalization is done
-    IF (force_flux_atm_scale(dum_ia)) THEN
-       if (abs(loc_force_flux_atm_tot) > const_real_nullsmall) then
+    IF (force_flux_atm_scale(ia)) THEN
+       IF (ABS(loc_force_flux_atm_tot) > const_real_nullsmall) THEN
           loc_force_flux_atm_rtot = 1.0/loc_force_flux_atm_tot
-       else
+       ELSE
           loc_force_flux_atm_rtot = 0.0
-       end if
+       END IF
        DO i=1,n_i
           DO j=1,n_j
-             SELECT CASE (atm_type(dum_ia))
+             SELECT CASE (atm_type(ias))
              CASE (1)
-                force_flux_atm(dum_ia,i,j) = force_flux_atm(dum_ia,i,j)*force_flux_atm_sig_x(dum_ia)*loc_force_flux_atm_rtot
+                force_flux_atm(ia,i,j) = force_flux_atm(ia,i,j)*force_flux_atm_sig_x(ia)*loc_force_flux_atm_rtot
              END SELECT
           END DO
        END DO

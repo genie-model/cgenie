@@ -1136,7 +1136,7 @@ CONTAINS
                       IF (force_restore_atm_sig_i(ia,1) /= force_restore_atm_sig_i(ia,2)) THEN
                          ! catch missing restoring data (non-isotope tracer values < 0.0) => force restoring flux to zero
                          ! also catch 'null' isotopic values
-                         SELECT CASE (atm_type(ia))
+                         SELECT CASE (atm_type(ias))
                          CASE (1)
                             if (force_restore_atm(ia,i,j) < 0.0) force_restore_atm(ia,i,j) = dum_sfcatm1(ia,i,j)
                          case default
@@ -1160,7 +1160,7 @@ CONTAINS
                 ! NOTE: if no correspondence, the NULL index of the ocean tracer array provides the dustbin
                 DO ia = 3, n_atm
                    ias = ia_ias(ia)
-                   IF (atm_type(ia) == 1) THEN
+                   IF (atm_type(ias) == 1) THEN
                       if (ocnatm_airsea_eqm(ia)) then
                          loc_tot_i = conv_atm_ocn_i(0,ias)
                          do loc_i=1,loc_tot_i

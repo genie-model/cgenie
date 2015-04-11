@@ -1561,7 +1561,7 @@ CONTAINS
     ! NOTE: the oringal calculation was of the the flux imposed from the ocean (but not subtracted from the ocean) but less any
     !       transfer from the ocean to the atm via air-sea gas exchange, i.e.
     !       loc_sig = int_focnatm_sig(ia)/int_t_sig - int_diag_airsea_sig(ia)/int_t_sig
-    !       loc_tot  = int_focnatm_sig(atm_dep(ia))/int_t_sig - int_diag_airsea_sig(atm_dep(ia))/int_t_sig
+    !       loc_tot  = int_focnatm_sig(atm_dep(ias))/int_t_sig - int_diag_airsea_sig(ias_ia(atm_dep(ias)))/int_t_sig
     !       loc_frac = int_focnatm_sig(ia)/int_t_sig - int_diag_airsea_sig(ia)/int_t_sig
     IF (ctrl_data_save_sig_diag .AND. (.NOT. ctrl_data_save_inversion)) THEN
        DO ia = 3, n_atm
