@@ -132,9 +132,7 @@ CONTAINS
     ! *** UPDATE ATMOSPHERIC COMPOSITION ***
     ! set internal atmospheric flux
     fatm = 0.0
-    DO ia = 1, nt_atm
-       fatm(ia,:,:) = dum_sfxsumatm(ia,:,:)
-    END DO
+    fatm = dum_sfxsumatm
 
     ! NOTE: flux <fatm> in (mol m-2 per timestep)
     ! update atmospheric composition

@@ -1115,7 +1115,7 @@ CONTAINS
     real,INTENT(in)::dum_dtyr                                  !
     real,DIMENSION(:,:,:),intent(in)::dum_sfcsumocn    !
     ! local variables
-    INTEGER::i,j,l,is
+    INTEGER::i,j,is,iss
     integer::ios  ! for file checks
     CHARACTER(len=255)::loc_filename
     REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
@@ -1124,8 +1124,8 @@ CONTAINS
     real::loc_tot2_sedgrid
     real::loc_pres_sedgrid
     real::loc_rain_sedgrid
-    REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fsed                    !
-    REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fdis                    !
+    REAL, DIMENSION(nt_sed,n_i,n_j) :: loc_fsed
+    REAL, DIMENSION(nt_sed,n_i,n_j) :: loc_fdis
     real::loc_mean_sedgrid                                     !
     real::loc_tot_mask_area                                    !
     real::loc_sed_d13C_mean                                    !
@@ -1150,35 +1150,25 @@ CONTAINS
     ! calculate core-top sediment composition data
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! mean (last 2 time-step averaged) sediemnt and dissolution
-    loc_fsed(:,:,:) = (sed_fsed(:,:,:) + sed_fsed_OLD(:,:,:))/loc_dt
-    loc_fdis(:,:,:) = (sed_fdis(:,:,:) + sed_fdis_OLD(:,:,:))/loc_dt
-    ! calculate local sediment preservation (normalized fraction)
-    DO l=1,nt_sed
-       is = is_iss(l)
-       DO i=1,n_i
-          DO j=1,n_j
-             IF (loc_fsed(is,i,j) > const_real_nullsmall) THEN
-                loc_sed_preservation(is,i,j) = (loc_fsed(is,i,j) - loc_fdis(is,i,j))/loc_fsed(is,i,j)
-             else
-                loc_sed_preservation(is,i,j) = 0.0
-             end if
-          end do
-       end do
+    do is = 1, nt_sed
+       iss = is_iss(is)
+       loc_fsed(is,:,:) = (sed_fsed(iss,:,:) + sed_fsed_OLD(iss,:,:))/loc_dt
+       loc_fdis(is,:,:) = (sed_fdis(iss,:,:) + sed_fdis_OLD(iss,:,:))/loc_dt
     end do
     ! calculate d13C
     DO i=1,n_i
        DO j=1,n_j
-          if (loc_mask_reef(i,j)*loc_fsed(iss_CaCO3,i,j) > const_real_nullsmall) then
-             loc_tot  = loc_fsed(sed_dep(iss_CaCO3_13C),i,j)
-             loc_frac = loc_fsed(iss_CaCO3_13C,i,j)
+          if (loc_mask_reef(i,j)*loc_fsed(is_CaCO3,i,j) > const_real_nullsmall) then
+             loc_tot  = loc_fsed(iss_is(sed_dep(iss_CaCO3_13C)),i,j)
+             loc_frac = loc_fsed(is_CaCO3_13C,i,j)
              loc_standard = const_standards(sed_type(iss_CaCO3_13C))
              loc_CaCO3_d13C(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           else
              loc_CaCO3_d13C(i,j) = 0.0
           end if
-          if (loc_mask_reef(i,j)*loc_fsed(iss_POC,i,j) > const_real_nullsmall) then
-             loc_tot  = loc_fsed(sed_dep(iss_POC_13C),i,j)
-             loc_frac = loc_fsed(iss_POC_13C,i,j)
+          if (loc_mask_reef(i,j)*loc_fsed(is_POC,i,j) > const_real_nullsmall) then
+             loc_tot  = loc_fsed(iss_is(sed_dep(iss_POC_13C)),i,j)
+             loc_frac = loc_fsed(is_POC_13C,i,j)
              loc_standard = const_standards(sed_type(iss_POC_13C))
              loc_POC_d13C(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
           else
@@ -1219,8 +1209,8 @@ CONTAINS
     ! local variables
     loc_tot_mask_area = sum(loc_mask_dsea(:,:)*loc_area(:,:))
     ! POC
-    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(iss_POC,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(is_POC,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1246,8 +1236,8 @@ CONTAINS
          & ' Mean wt% POC              :',loc_mean_sedgrid,' %'
     call check_iostat(ios,__LINE__,__FILE__)
     ! CaCO3
-    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(iss_CaCO3,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(is_CaCO3,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1273,8 +1263,8 @@ CONTAINS
          & ' Mean wt% CaCO3            :',loc_mean_sedgrid,' %'
     call check_iostat(ios,__LINE__,__FILE__)
     ! CaCO3:POC
-    loc_tot1_sedgrid = SUM(loc_mask_dsea(:,:)*loc_fsed(iss_POC,:,:))
-    loc_tot2_sedgrid = SUM(loc_mask_dsea(:,:)*loc_fsed(iss_CaCO3,:,:))
+    loc_tot1_sedgrid = SUM(loc_mask_dsea(:,:)*loc_fsed(is_POC,:,:))
+    loc_tot2_sedgrid = SUM(loc_mask_dsea(:,:)*loc_fsed(is_CaCO3,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_rain_sedgrid = loc_tot2_sedgrid/loc_tot1_sedgrid
     else
@@ -1285,8 +1275,8 @@ CONTAINS
          & ' CaCO3/POC rain ratio      :',loc_rain_sedgrid
     call check_iostat(ios,__LINE__,__FILE__)
     ! opal
-    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(iss_opal,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(iss_opal,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(is_opal,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(is_opal,:,:))
     if (abs(loc_tot1_sedgrid) > 0.0) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1313,16 +1303,16 @@ CONTAINS
     ! Li
     if (sed_select(iss_LiCO3) .AND. sed_select(iss_detLi)) then
        Write(unit=out,fmt=*) '---------------------------------'
-       loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(iss_LiCO3,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(iss_LiCO3,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(is_LiCO3,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(is_LiCO3,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 sink             :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 source           :',loc_tot2_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
-       loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(iss_detLi,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(iss_detLi,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fsed(is_detLi,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_dsea(:,:)*loc_area(:,:)*loc_fdis(is_detLi,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li detrital sink          :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
@@ -1348,8 +1338,8 @@ CONTAINS
     ! local variables
     loc_tot_mask_area = sum(loc_mask_reef(:,:)*loc_area(:,:))
     ! CaCO3
-    loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(iss_CaCO3,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(is_CaCO3,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1368,10 +1358,10 @@ CONTAINS
     call check_iostat(ios,__LINE__,__FILE__)
     Write(unit=out,fmt=*) '---------------------------------'
     ! d13C (weighted by area and CaCO3 sedimentation rate)
-    if (sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:)) > const_real_nullsmall) then
+    if (sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:)) > const_real_nullsmall) then
        loc_sed_d13C_mean = &
-            & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:)*loc_CaCO3_d13C(:,:))/ &
-            & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:))
+            & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:)*loc_CaCO3_d13C(:,:))/ &
+            & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:))
     else
        loc_sed_d13C_mean = 0.0
     end if
@@ -1380,16 +1370,16 @@ CONTAINS
     Write(unit=out,fmt=*) '---------------------------------'
     ! Li
     if (sed_select(iss_LiCO3) .AND. sed_select(iss_detLi)) then
-       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_LiCO3,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(iss_LiCO3,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_LiCO3,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(is_LiCO3,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 sink             :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 source           :',loc_tot2_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
-       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_detLi,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(iss_detLi,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_detLi,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fdis(is_detLi,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li detrital sink          :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
@@ -1399,7 +1389,7 @@ CONTAINS
     end if
     ! Corg
     if (par_sed_Corgburial > const_real_nullsmall) then
-       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:))
        if (loc_tot_mask_area > const_real_nullsmall) then
           loc_mean_sedgrid = sum(loc_mask_reef(:,:)*loc_sed_coretop(iss_POC,:,:)*loc_area(:,:))/loc_tot_mask_area
        else
@@ -1414,10 +1404,10 @@ CONTAINS
        call check_iostat(ios,__LINE__,__FILE__)
        Write(unit=out,fmt=*) '---------------------------------'
        ! d13C (weighted by area and POC sedimentation rate)
-       if (sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:)) > const_real_nullsmall) then
+       if (sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:)) > const_real_nullsmall) then
           loc_sed_d13C_mean = &
-               & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:)*loc_POC_d13C(:,:))/ &
-               & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:))
+               & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:)*loc_POC_d13C(:,:))/ &
+               & sum(loc_mask_reef(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:))
        else
           loc_sed_d13C_mean = 0.0
        end if
@@ -1441,8 +1431,8 @@ CONTAINS
     ! local variables
     loc_tot_mask_area = sum(loc_mask_muds(:,:)*loc_area(:,:))
     ! POC
-    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(iss_POC,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(iss_POC,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(is_POC,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(is_POC,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1468,8 +1458,8 @@ CONTAINS
          & ' Mean wt% POC              :',loc_mean_sedgrid,' %'
     call check_iostat(ios,__LINE__,__FILE__)
     ! CaCO3
-    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(iss_CaCO3,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(iss_CaCO3,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(is_CaCO3,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(is_CaCO3,:,:))
     if (abs(loc_tot1_sedgrid) > const_real_nullsmall) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1508,8 +1498,8 @@ CONTAINS
          & loc_rain_sedgrid
     call check_iostat(ios,__LINE__,__FILE__)
     ! opal
-    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(iss_opal,:,:))
-    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(iss_opal,:,:))
+    loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(is_opal,:,:))
+    loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(is_opal,:,:))
     if (abs(loc_tot1_sedgrid) > 0.0) then
        loc_pres_sedgrid = 100.0*(loc_tot1_sedgrid - loc_tot2_sedgrid)/loc_tot1_sedgrid
     else
@@ -1536,16 +1526,16 @@ CONTAINS
     ! Li
     if (sed_select(iss_LiCO3) .AND. sed_select(iss_detLi)) then
        Write(unit=out,fmt=*) '---------------------------------'
-       loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(iss_LiCO3,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(iss_LiCO3,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(is_LiCO3,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(is_LiCO3,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 sink             :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li CaCO3 source           :',loc_tot2_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)
-       loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(iss_detLi,:,:))
-       loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(iss_detLi,:,:))
+       loc_tot1_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fsed(is_detLi,:,:))
+       loc_tot2_sedgrid = sum(loc_mask_muds(:,:)*loc_area(:,:)*loc_fdis(is_detLi,:,:))
        write(unit=out,fmt='(A28,e14.6,A12,f7.3,A9)',iostat=ios) &
             & ' Li detrital sink          :',loc_tot1_sedgrid,' mol yr-1'
        call check_iostat(ios,__LINE__,__FILE__)

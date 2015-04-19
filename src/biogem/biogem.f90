@@ -630,6 +630,8 @@ CONTAINS
 
     ! *** INITIALIZE LOCAL ARRAYS ***
     locij_fatm = 0.0
+    loc_datm_restore = 0.0
+    loc_force_restore_atm_tmod = 0.0
     locij_focnatm = 0.0
     locijk_ocn = 0.0
     locijk_focn = 0.0
@@ -2418,6 +2420,7 @@ CONTAINS
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
 
+    locij_focnatm = 0.0
     loc_opsi = 0.0 ; loc_zpsi = 0.0 ; loc_opsia = 0.0 ; loc_opsip = 0.0
 
     ! *** TIME-SLICE DATA UPDATE ***

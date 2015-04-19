@@ -1,3 +1,8 @@
+%% CURRENT STATUS:
+%%
+%%  Atmospheric tracers mostly done: the remaining thing to do before
+%%  going onto the sediment tracers are the BIOGEM forcing arrays.
+
 \documentclass[a4paper,10pt,article]{memoir}
 
 \usepackage[a4paper,margin=1in]{geometry}
@@ -40,6 +45,15 @@
 
 \maketitle
 
+\textbf{Not yet done:}
+\begin{itemize}
+  \item{Tracer reorganisation}
+  \item{BIOGEM array-to-vector reorganisation}
+\end{itemize}
+
+%======================================================================
+\chapter{``Everything allocatable''}
+
 General guidelines:
 \begin{enumerate}
   \item{Rationalise coordinate dimension size variables before doing
@@ -59,92 +73,8 @@ General guidelines:
     initialisation, step and tear-down routines into a single module.}
 \end{enumerate}
 
-\textbf{Not yet done:}
-\begin{itemize}
-  \item{Tracer reorganisation}
-  \item{\texttt{maxnyr} and \texttt{maxisles} in GOLDSTEIN}
-  \item{Status and error checks for \texttt{ALLOCATE}s}
-\end{itemize}
-
-%======================================================================
-\chapter{Shared}
-
-\section{Tracer counts}
-
-Tracer counts are defined in \texttt{common/gem\_cmn.f90} as
-\texttt{PARAMETER}s:
-
-\begin{verbatim}
-  INTEGER,PARAMETER::n_atm = 19
-  INTEGER,PARAMETER::n_ocn = 95
-  INTEGER,PARAMETER::n_sed = 79
-\end{verbatim}
-
-and also in \texttt{wrappers/genie\_control.f90}:
-
-\begin{verbatim}
-  INTEGER, PARAMETER :: intrac_atm_max=19, intrac_ocn_max=95, intrac_sed_max=79
-\end{verbatim}
-
-Instead, these \emph{maximum} tracer counts should be kept as
-\texttt{PARAMETER}s while the \emph{actual} tracer counts are
-determined from the \texttt{atm\_select}, \texttt{ocn\_select} and
-\texttt{sed\_select} arrays:
-
-\begin{verbatim}
-  INTEGER, PARAMETER :: &
-    & n_atm_max = 19, n_ocn_max = 95, n_sed_max = 79
-
-  ...
-
-  n_atm = COUNT(atm_select)
-  n_ocn = COUNT(ocn_select)
-  n_sed = COUNT(sed_select)
-\end{verbatim}
-
-and index mapping arrays should be defined as:
-
-\begin{verbatim}
-  INTEGER, DIMENSION(:), ALLOCATABLE :: &
-    & idx_to_atm, idx_to_ocn, idx_to_sed
-  INTEGER, DIMENSION(n_atm_max) :: atm_to_idx
-  INTEGER, DIMENSION(n_ocn_max) :: ocn_to_idx
-  INTEGER, DIMENSION(n_sed_max) :: sed_to_idx
-\end{verbatim}
-
-one set giving the mapping from the index into tracer arrays to the
-tracer ID (all the existing \texttt{io\_...} constants) and the other
-giving the mapping from the tracer ID to the index into tracer arrays
-(with a default value of $-1$ for unused tracers).  These things
-should all be set up immediately after the main GENIE namelist is read
-so that all of the array sizes are assigned before any of the
-sub-modules are initialised.
-
-Some of this sort of thing has already been partially done in
-\texttt{common/gem\_util.f90} and \texttt{common/gem\_cmn.f90}.  That
-stuff should be cleaned up and used for this.  There should be one
-common set of tracer index maps for each tracer type (atmosphere,
-ocean, sediment) across all modules.
-
-\emph{Might it be a good idea to actually make the \texttt{io\_...}
-  constants non-constant and assign the index values to them
-  directly?  Depends on how these things are used elsewhere.}
-
-%======================================================================
-\chapter{\texttt{gemlite}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-   15 & \texttt{end\_gemlite.f90} \\
-   89 & \texttt{gemlite\_data.f90} \\
-   95 & \texttt{gemlite\_lib.f90} \\
-  113 & \texttt{cpl\_comp\_gemlite.f90} \\
-  113 & \texttt{initialise\_gemlite.f90} \\
-  541 & \texttt{gemlite.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{gemlite}}
 
 These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
 
@@ -153,8 +83,6 @@ These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
   INTEGER,PARAMETER::n_j = ilat1_ocn
   INTEGER,PARAMETER::n_k = inl1_ocn
 \end{verbatim}
-
-\section{Array definitions}
 
 Most are already \texttt{ALLOCATABLE}, except for:
 
@@ -165,8 +93,6 @@ Most are already \texttt{ALLOCATABLE}, except for:
   REAL,DIMENSION(0:n_j)::goldstein_sv
 \end{verbatim}
 
-\section{Allocation and deallocation}
-
 \begin{itemize}
   \item{Needed to set up \texttt{gemlite} as a proper F90 module in
     order to have calling interfaces that will work with assumed-shape
@@ -174,8 +100,6 @@ Most are already \texttt{ALLOCATABLE}, except for:
   \item{Tracer counts!  (Probably like more or less all the other
     biogeochemistry modules.)}
 \end{itemize}
-
-\section{Special considerations}
 
 The \texttt{maxisles} variable is used in the following allocations:
 
@@ -192,19 +116,8 @@ The \texttt{maxisles} variable is used in the following allocations:
 
 All now allocated to the exact number of islands.
 
-%======================================================================
-\chapter{\texttt{goldsteinseaice}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-   84 & \texttt{gold\_seaice\_lib.f90} \\
-  355 & \texttt{gold\_seaice\_netcdf.f90} \\
-  445 & \texttt{gold\_seaice\_data.f90} \\
- 1027 & \texttt{gold\_seaice.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{goldsteinseaice}}
 
 These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
 
@@ -213,8 +126,6 @@ These need to be redefined \emph{not} to be \texttt{PARAMETER}s:
   INTEGER, PARAMETER :: maxj = GOLDSTEINNLATS
   INTEGER, PARAMETER :: maxk = GOLDSTEINNLEVS
 \end{verbatim}
-
-\section{Array definitions}
 
 All defined in \texttt{gold\_seaice\_lib.f90}; all need to be made
 \texttt{ALLOCATABLE}:
@@ -239,28 +150,13 @@ as do the following from \texttt{gold\_seaice\_netcdf.f90}:
   REAL, DIMENSION(maxj) :: nclat1, nclat2, nclat3
 \end{verbatim}
 
-\section{Allocation and deallocation}
-
 Need to be careful not to use coordinate size variables in subroutine
 argument definitions \emph{before they're assigned values!}  The
 Fortran compiler doesn't help you to spot this, so it produces weird
 run-time errors.
 
-
-%======================================================================
-\chapter{\texttt{ents}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-  129 & \texttt{ents\_data.f90} \\
-  195 & \texttt{ents\_lib.f90} \\
-  654 & \texttt{ents\_netcdf.f90} \\
-  673 & \texttt{ents\_diag.f90} \\
-  802 & \texttt{ents.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{ents}}
 
 Same as in other modules:
 
@@ -270,8 +166,6 @@ Same as in other modules:
 
 (Also the usual \texttt{maxi}/\texttt{imax},
 \texttt{maxj}/\texttt{jmax} duplication.)
-
-\section{Array definitions}
 
 All defined in \texttt{gold\_seaice\_lib.f90}; all need to be made
 \texttt{ALLOCATABLE}:
@@ -291,27 +185,12 @@ All defined in \texttt{gold\_seaice\_lib.f90}; all need to be made
   REAL :: fxavg(7,maxi,maxj)
 \end{verbatim}
 
-\section{Allocation and deallocation}
-
 Some cases where initialisation is really needed: all the fixed-size
 arrays were defined as \texttt{SAVE} so they got initialised
 automatically.
 
-
-%======================================================================
-\chapter{\texttt{embm}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-   250 & \texttt{embm\_lib.f90} \\
-   294 & \texttt{embm\_data.f90} \\
-   412 & \texttt{embm\_netcdf.f90} \\
-   794 & \texttt{embm\_diag.f90} \\
-  3593 & \texttt{embm.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{embm}}
 
 \begin{verbatim}
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
@@ -322,8 +201,6 @@ automatically.
 
 Here, \texttt{maxl} isn't used, but these \texttt{maxnyr} and
 \texttt{en\_ntimes\_max} things will require some attention.
-
-\section{Array definitions}
 
 \begin{verbatim}
   INTEGER :: k1(0:maxi+1,0:maxj+1)
@@ -367,8 +244,6 @@ Here, \texttt{maxl} isn't used, but these \texttt{maxnyr} and
   INTEGER, DIMENSION(maxi,maxj) :: iroff, jroff
 \end{verbatim}
 
-\section{Special considerations}
-
 The \texttt{maxnyr} (400) and \texttt{en\_ntimes\_max} (2000) things
 are used in the following allocations:
 
@@ -390,24 +265,8 @@ are used in the following allocations:
 Now removed and replaced with more appropriate allocations where
 required.
 
-%======================================================================
-\chapter{\texttt{atchem}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-   15 & \texttt{end\_atchem.f90} \\
-   41 & \texttt{initialise\_atchem.f90} \\
-   66 & \texttt{cpl\_flux\_atchem.f90} \\
-  110 & \texttt{atchem\_data\_netCDF.f90} \\
-  131 & \texttt{atchem\_lib.f90} \\
-  146 & \texttt{cpl\_comp\_atchem.f90} \\
-  149 & \texttt{atchem\_box.f90} \\
-  154 & \texttt{atchem.f90} \\
-  285 & \texttt{atchem\_data.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{atchem}}
 
 \begin{verbatim}
   INTEGER,PARAMETER::n_i = ilon1_atm
@@ -418,8 +277,6 @@ required.
 The \texttt{n\_phys\_atm} variable will be dealt with in the
 ``tracers'' stuff.
 
-\section{Array definitions}
-
 \begin{verbatim}
   real,dimension(n_atm,n_i,n_j) :: atm
   real,dimension(n_atm,n_i,n_j) :: fatm
@@ -427,25 +284,8 @@ The \texttt{n\_phys\_atm} variable will be dealt with in the
   real,dimension(n_atm,n_i,n_j) :: atm_slabbiosphere
 \end{verbatim}
 
-
-%======================================================================
-\chapter{\texttt{rokgem}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-  29 & \texttt{end\_rokgem.f90} \\
-  46 & \texttt{cpl\_flux\_rokatm.f90} \\
-  66 & \texttt{cpl\_flux\_rokocn.f90} \\
- 167 & \texttt{rokgem.f90} \\
- 274 & \texttt{initialise\_rokgem.f90} \\
- 405 & \texttt{rokgem\_lib.f90} \\
- 453 & \texttt{rokgem\_data\_netCDF.f90} \\
- 827 & \texttt{rokgem\_data.f90} \\
-1737 & \texttt{rokgem\_box.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{rokgem}}
 
 \begin{verbatim}
   INTEGER,PARAMETER :: n_i = ilon1_rok
@@ -456,8 +296,6 @@ The \texttt{n\_phys\_atm} variable will be dealt with in the
   INTEGER,PARAMETER :: n_jo = ilat1_rok
   INTEGER,PARAMETER :: n_ko = inl1_ocn
 \end{verbatim}
-
-\section{Array definitions}
 
 Some are already \texttt{ALLOCATABLE}...
 
@@ -487,35 +325,8 @@ Some are already \texttt{ALLOCATABLE}...
   REAL :: calibrate_P_2D(n_i,n_j)
 \end{verbatim}
 
-\section{Allocation and deallocation}
-
-
-%======================================================================
-\chapter{Miscellaneous}
-
-\section{Source files}
-
-\section{Coordinate variables}
-
-\section{Array definitions}
-
-\section{Allocation and deallocation}
-
-
-%======================================================================
-\chapter{\texttt{goldstein}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-   260 & \texttt{goldstein\_lib.f90} \\
-   446 & \texttt{goldstein\_data.f90} \\
-   718 & \texttt{goldstein\_netcdf.f90} \\
-  1147 & \texttt{goldstein\_diag.f90} \\
-  3524 & \texttt{goldstein.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{goldstein}}
 
 \begin{verbatim}
   INTEGER, PARAMETER :: maxi=GOLDSTEINNLONS, maxj=GOLDSTEINNLATS
@@ -524,8 +335,6 @@ Some are already \texttt{ALLOCATABLE}...
   INTEGER, PARAMETER :: mpxi=maxi, mpxj=maxj+1
   INTEGER, PARAMETER :: maxisles=GOLDSTEINMAXISLES, mpi=2 * (maxi + maxj)
 \end{verbatim}
-
-\section{Array definitions}
 
 \begin{verbatim}
   INTEGER :: k1(0:maxi+1,0:maxj+1), ku(2,maxi,maxj), mk(maxi+1,maxj)
@@ -573,33 +382,11 @@ Some are already \texttt{ALLOCATABLE}...
   LOGICAL :: getj(maxi,maxj)
 \end{verbatim}
 
-\section{Allocation and deallocation}
+%----------------------------------------------------------------------
+\section{\texttt{sedgem}}
 
-
-%======================================================================
-\chapter{\texttt{sedgem}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
- 114 & \texttt{sedgem\_box\_benthic.f90} \\
- 127 & \texttt{end\_sedgem.f90} \\
- 146 & \texttt{cpl\_comp\_sedgem.f90} \\
- 154 & \texttt{cpl\_flux\_sedgem.f90} \\
- 208 & \texttt{initialise\_sedgem.f90} \\
- 474 & \texttt{sedgem\_box\_ridgwelletal2003\_sedflx.f90} \\
- 570 & \texttt{sedgem.f90} \\
- 592 & \texttt{sedgem\_lib.f90} \\
-1042 & \texttt{sedgem\_box\_archer1991\_sedflx.f90} \\
-1573 & \texttt{sedgem\_data\_netCDF.f90} \\
-2067 & \texttt{sedgem\_box.f90} \\
-2412 & \texttt{sedgem\_data.f90} \\
-\end{tabular}
-
-Need to merge \texttt{sedgem.f90} \\ \texttt{initialise\_sedgem.f90}
-and \texttt{end\_sedgem.f90}.
-
-\section{Coordinate variables}
+Need to merge \texttt{sedgem.f90}, \texttt{initialise\_sedgem.f90} and
+\texttt{end\_sedgem.f90}.
 
 \begin{verbatim}
   INTEGER, PARAMETER :: n_i = ilon1_sed
@@ -608,29 +395,11 @@ and \texttt{end\_sedgem.f90}.
   INTEGER, PARAMETER :: n_opt_sed = 26
 \end{verbatim}
 
-\section{Array definitions}
-
 Almost everything is already allocatable.  Should be pretty easy to
 do.
 
-%======================================================================
-\chapter{\texttt{biogem}}
-
-\section{Source files}
-
-\begin{tabular}{rl}
-  66 & \texttt{end\_biogem.f90} \\
-  92 & \texttt{cpl\_comp\_biogem.f90} \\
- 353 & \texttt{initialise\_biogem.f90} \\
-1647 & \texttt{biogem\_lib.f90} \\
-2470 & \texttt{biogem\_data\_ascii.f90} \\
-2695 & \texttt{biogem.f90} \\
-2994 & \texttt{biogem\_data\_netCDF.f90} \\
-3146 & \texttt{biogem\_data.f90} \\
-3867 & \texttt{biogem\_box.f90} \\
-\end{tabular}
-
-\section{Coordinate variables}
+%----------------------------------------------------------------------
+\section{\texttt{biogem}}
 
 \begin{verbatim}
   INTEGER,PARAMETER::n_i = ilon1_ocn
@@ -650,10 +419,796 @@ do.
   INTEGER,PARAMETER::n_diag_misc_2D = 07
 \end{verbatim}
 
-\section{Array definitions}
+Lots of arrays...
 
-Lots...
 
-\section{Allocation and deallocation}
+
+%======================================================================
+\chapter{Tracer reorganisation}
+
+\subsection*{Tracer counts}
+
+Tracer counts are defined in \texttt{common/gem\_cmn.f90} as
+\texttt{PARAMETER}s:
+\begin{verbatim}
+  INTEGER,PARAMETER::n_atm = 19
+  INTEGER,PARAMETER::n_ocn = 95
+  INTEGER,PARAMETER::n_sed = 79
+\end{verbatim}
+and also in \texttt{wrappers/genie\_control.f90}:
+\begin{verbatim}
+  INTEGER, PARAMETER :: intrac_atm_max=19, intrac_ocn_max=95, intrac_sed_max=79
+\end{verbatim}
+Instead, these \emph{maximum} tracer counts should be kept as
+\texttt{PARAMETER}s while the \emph{actual} tracer counts are
+determined from the \texttt{atm\_select}, \texttt{ocn\_select} and
+\texttt{sed\_select} arrays:
+\begin{verbatim}
+  INTEGER, PARAMETER :: &
+    & n_atm_max = 19, n_ocn_max = 95, n_sed_max = 79
+
+  ...
+
+  n_atm = COUNT(atm_select)
+  n_ocn = COUNT(ocn_select)
+  n_sed = COUNT(sed_select)
+\end{verbatim}
+and index mapping arrays should be defined as:
+\begin{verbatim}
+  INTEGER, DIMENSION(:), ALLOCATABLE :: &
+    & idx_to_atm, idx_to_ocn, idx_to_sed
+  INTEGER, DIMENSION(n_atm_max) :: atm_to_idx
+  INTEGER, DIMENSION(n_ocn_max) :: ocn_to_idx
+  INTEGER, DIMENSION(n_sed_max) :: sed_to_idx
+\end{verbatim}
+one set giving the mapping from the index into tracer arrays to the
+tracer ID (all the existing \texttt{io\_...} constants) and the other
+giving the mapping from the tracer ID to the index into tracer arrays
+(with a default value of $-1$ for unused tracers).  These things
+should all be set up immediately after the main GENIE namelist is read
+so that all of the array sizes are assigned before any of the
+sub-modules are initialised.
+
+Some of this sort of thing has already been partially done in
+\texttt{common/gem\_util.f90} and \texttt{common/gem\_cmn.f90}.  That
+stuff should be cleaned up and used for this.  There should be one
+common set of tracer index maps for each tracer type (atmosphere,
+ocean, sediment) across all modules.
+
+
+
+\subsection*{General principles}
+
+The basic procedure will be something like this:
+\begin{enumerate}
+  \item{Globally rename all \texttt{ia\_...}, \texttt{io\_...},
+    \texttt{is\_...} constants to \texttt{ias\_...},
+    \texttt{ios\_...}, \texttt{iss\_...} (the ``\texttt{s}'' is for
+    ``select'').  From now on, I'll use the atmosphere version of
+    these things as a proxy for all three types.}
+  \item{TEST}
+  \item{Introduce new \texttt{ia\_...}\emph{variables} that will refer
+    to the actual locations of these species in the dynamics arrays.
+    References to \texttt{atm\_select} will still use the
+    \texttt{ias\_...} constant index values.}
+  \item{Work out what sort of mapping is needed between the constant
+    \texttt{ias\_...} values and the variable \texttt{ia\_...}
+    values.}
+  \item{Come up with better names for \texttt{n\_atm} and
+    \texttt{n\_l\_atm}.}
+  \item{Set up tracer counting, \texttt{ia\_...} variable assignment,
+    mapping calculations in GENIE initialisation (rework existing code
+    in \texttt{gem\_cmn.f90} and \texttt{gem\_util.f90}).}
+  \item{TEST}
+  \item{Replace all array sizing based on \texttt{n\_atm} by
+    \texttt{n\_l\_atm}.  Statically sized arrays all become
+    ALLOCATABLE.  Record which arrays these are and check up on each
+    use site to make sure that there are no problems (e.g. with slices
+    or the whole array being used in a way that won't work any more).}
+  \item{Replace indexing into dynamics arrays with \texttt{ia\_...}
+    versions.}
+  \item{TEST}
+  \item{Do the same for the sediment and ocean tracers.  (Do them in
+    atmosphere, sediment, ocean order because the number of
+    occurrences of \texttt{ia\_...}, \texttt{is\_...} and
+    \texttt{io\_...} are respectively 290, 1117 and 2745!}
+  \item{Think about replacing \texttt{ipa\_...}, \texttt{ipo\_...} and
+    similar indexing schemes with F90 derived types.}
+\end{enumerate}
+
+%----------------------------------------------------------------------
+\section{Atmospheric tracers}
+
+\subsection{Atmospheric tracer indexing}
+
+\subsubsection{Index variables}
+
+Indexes:
+\begin{center}
+\begin{tabular}{lcl}
+  \textbf{Name} & \textbf{Index} & \\
+\texttt{ia\_T}         &  1 & Temperature \\
+\texttt{ia\_q}         &  2 & Specific humidity \\
+\texttt{ia\_pCO2}      &  3 & $\mathrm{pCO_2}$ \\
+\texttt{ia\_pCO2\_13C} &  4 & $\mathrm{^{13}C}$ ($\mathrm{pCO_2}$) \\
+\texttt{ia\_pCO2\_14C} &  5 & $\mathrm{^{14}C}$ ($\mathrm{pCO_2}$) \\
+\texttt{ia\_pO2}       &  6 & $\mathrm{pO_2}$ \\
+\texttt{ia\_pO2\_18O}  &  7 & $\mathrm{^{18}O}$ ($\mathrm{pO_2}$) \\
+\texttt{ia\_pN2}       &  8 & $\mathrm{pN_2}$ \\
+\texttt{ia\_pN2\_15N}  &  9 & $\mathrm{^{15}N}$ ($\mathrm{pN_2}$) \\
+\texttt{ia\_pCH4}      & 10 & $\mathrm{pCH_4}$ \\
+\texttt{ia\_pCH4\_13C} & 11 & $\mathrm{^{13}C}$ ($\mathrm{pCH_4}$) \\
+\texttt{ia\_pCH4\_14C} & 12 & $\mathrm{^{14}C}$ ($\mathrm{pCH_4}$) \\
+\texttt{ia\_pSF6}      & 13 & Halo-carbon \\
+\texttt{ia\_pN2O}      & 14 & $\mathrm{pN_2}$ \\
+\texttt{ia\_pN2O\_15N} & 15 & $\mathrm{^{15}N}$ ($\mathrm{pN_2}$) \\
+\texttt{ia\_pH2S}      & 16 & $\mathrm{pH_2S}$ \\
+\texttt{ia\_pH2S\_34S} & 17 & $\mathrm{pH_2S}$ \\
+\texttt{ia\_pCFC11}    & 18 & Halo-carbon \\
+\texttt{ia\_pCFC12}    & 19 & Halo-carbon
+\end{tabular}
+\end{center}
+
+Occurrences:
+\begin{center}
+\begin{tabular}{lccccc}
+  \textbf{File} & \textbf{Count} & \textbf{\texttt{ias}} &
+  \textbf{Rename} & \textbf{Alloc} & \textbf{Check} \\
+  \texttt{atchem/atchem.f90}               &  6 & Yes &  \\
+  \texttt{atchem/atchem\_box.f90}          & 29 & Yes &  \\
+  \texttt{atchem/atchem\_data.f90}         &  8 & Yes &  \\
+  \texttt{biogem/biogem\_box.f90}          & 22 & Yes &  \\
+  \texttt{biogem/biogem\_data\_netCDF.f90} & 18 & Yes &  \\
+  \texttt{biogem/biogem.f90}               & 71 & Yes &  \\
+  \texttt{biogem/biogem\_data\_ascii.f90}  & 22 & Yes &  \\
+  \texttt{biogem/biogem\_data.f90}         &  9 & Yes &  \\
+  \texttt{gemlite/gemlite.f90}             & 14 & Yes &  \\
+  \texttt{rokgem/rokgem\_data\_netCDF.f90} &  1 & Yes &  \\
+  \texttt{rokgem/rokgem\_box.f90}          & 27 & Yes &  \\
+  \texttt{common/gem\_carbchem.f90}        &  2 & Yes &  \\
+  \texttt{common/gem\_cmn.f90}             & 20 & Yes &  \\
+  \texttt{common/gem\_util.f90}            & 38 & Yes &  \\
+\end{tabular}
+\end{center}
+
+\newpage
+\subsubsection{Index mapping}
+
+Arrays defined using \texttt{n\_atm\_all} (\texttt{+} means should be
+able to switch to \texttt{ia\_...} indexing without problems,
+\texttt{?} means unsure, \texttt{X} means potential problems,
+\texttt{-} means that this array \emph{should} be dimensioned as
+\texttt{n\_atm\_all}, \texttt{R} means replace with an equivalent
+array dimensioned as \texttt{n\_atm} and set up appropriately):
+
+\begin{verbatim}
+atchem.f90 (initialise_atchem):
++  ALLOCATE(atm(n_atm_all,n_i,n_j),STAT=alloc_error)
++  ALLOCATE(fatm(n_atm_all,n_i,n_j),STAT=alloc_error)
++  ALLOCATE(atm_slabbiosphere(n_atm_all,n_i,n_j),STAT=alloc_error)
+
+atchem.f90 (step_atchem):
++  REAL,DIMENSION(n_atm_all)::loc_atm_tot
++  REAL,DIMENSION(n_atm_all,n_i,n_j)::locij_fatm
++  REAL,DIMENSION(n_atm_all)::loc_fracdecay_atm
+
+atchem_box.f90 (sub_calc_terrCO2exchange):
++  REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm
+
+atchem_box.f90 (sub_calc_wetlands_CH4):
++  REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm
+
+atchem_box.f90 (sub_calc_generate_14C):
++  REAL,DIMENSION(n_atm_all),intent(inout)::dum_fatm
+
+atchem_lib.f90 (module):
+-  REAL,DIMENSION(n_atm_all)::atm_init
+
+atchem_data.f90 (sub_data_load_rst):
+X  integer,DIMENSION(n_atm_all)::loc_conv_iselected_ia
+
+genie_global.f90 (allocate_genie_global):
++  ALLOCATE(genie_sfcatm(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)
++  ALLOCATE(genie_sfxsumatm(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)
++  ALLOCATE(genie_sfcatm1(n_atm_all,ilon1_ocn,ilat1_ocn),STAT=status)
++  ALLOCATE(genie_sfxatm1(n_atm_all,ilon1_ocn,ilat1_ocn),STAT=status)
++  ALLOCATE(genie_sfcatm_lnd(n_atm_all,ilon1_lnd,ilat1_lnd),STAT=status)
++  ALLOCATE(genie_sfxatm_lnd(n_atm_all,ilon1_lnd,ilat1_lnd),STAT=status)
++  ALLOCATE(genie_sfxsumatm1_gem(n_atm_all,ilon1_ocn,ilat1_ocn),STAT=status)
++  ALLOCATE(genie_atm1(n_atm_all,ilon1_atm,ilat1_atm),STAT=status)
+
+biogem.f90 (fun_calc_ocnatm_flux):
++  REAL,dimension(n_atm_all)::fun_calc_ocnatm_flux
++  REAL,dimension(n_atm_all)::loc_focnatm,loc_fatmocn
++  REAL,dimension(n_atm_all)::loc_dflux
+
+biogem_lib.f90 (module):
+?  REAL,DIMENSION(n_atm_all)::par_atm_force_scale_time
+?  REAL,DIMENSION(n_atm_all)::par_atm_force_scale_val
+?  LOGICAL, DIMENSION(n_atm_all) :: ocnatm_airsea_eqm
+?  REAL,DIMENSION(n_atm_all)::int_ocnatm_sig
+?  REAL,DIMENSION(n_atm_all)::int_focnatm_sig
+?  REAL,DIMENSION(n_atm_all)::int_diag_airsea_sig
+?  REAL,DIMENSION(n_atm_all)::int_diag_forcing_sig
+?  REAL,DIMENSION(n_atm_all,2,n_data_max)::force_restore_atm_sig
+?  REAL,DIMENSION(n_atm_all)::force_restore_atm_sig_x
+?  REAL,DIMENSION(n_atm_all)::force_restore_atm_tconst
+?  INTEGER,DIMENSION(n_atm_all,2)::force_restore_atm_sig_i
+?  LOGICAL,DIMENSION(n_atm_all)::force_restore_atm_select
+?  REAL,DIMENSION(n_atm_all,2,n_data_max)::force_flux_atm_sig
+?  REAL,DIMENSION(n_atm_all)::force_flux_atm_sig_x
+?  INTEGER,DIMENSION(n_atm_all,2)::force_flux_atm_sig_i
+?  LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_select
+?  LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_scale
+?  integer,DIMENSION(n_atm_all)::force_atm_uniform
+?  integer,DIMENSION(n_atm_all)::force_atm_point_i
+?  integer,DIMENSION(n_atm_all)::force_atm_point_j
+
+rokgem_box.f90 (sub_glob_avg_weath):
++  REAL :: loc_force_flux_weather_a(n_atm_all)
++  REAL :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)
+
+rokgem_box.f90 (sub_2D_weath):
++  REAL :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)
+
+gem_cmn.f90 (module):
+-  LOGICAL,DIMENSION(n_atm_all)::atm_select
+-? integer,DIMENSION(n_atm_all)::atm_type
+-? integer,DIMENSION(n_atm_all)::atm_dep
+-  CHARACTER(len=16),DIMENSION(n_atm_all)::string_atm
+-  CHARACTER(len=128),DIMENSION(n_atm_all)::string_longname_atm
+X  CHARACTER(len=16),DIMENSION(n_atm_all)::string_atm_tname
+X  CHARACTER(len=128),DIMENSION(n_atm_all)::string_atm_tlname
+-  CHARACTER(len=12),DIMENSION(n_atm_all)::string_atm_unit
+-? REAL,DIMENSION(n_atm_all,2)::atm_mima
+X  INTEGER,DIMENSION(n_atm_all)::conv_ia_lselected
+X  INTEGER,DIMENSION(n_atm_all)::ia2l
+X  real,DIMENSION(n_atm_all,n_ocn)::conv_ocn_atm
+X  real,DIMENSION(n_ocn,n_atm_all)::conv_atm_ocn
+X  integer,DIMENSION(0:n_atm_all,0:n_ocn)::conv_ocn_atm_i
+X  integer,DIMENSION(0:n_ocn,0:n_atm_all)::conv_atm_ocn_i
+?  REAL,DIMENSION(n_atm_all)::const_lambda_atm
+-  real,dimension(4,n_atm_all)::par_Sc_coef
+-  real,dimension(6,n_atm_all)::par_bunsen_coef
+\end{verbatim}
+
+Removed: \texttt{conv\_iselected\_ia}, \texttt{conv\_ia\_lselected},
+\texttt{l2ia}, \texttt{ia2l} (replaced by \texttt{ia\_ias} and
+\texttt{ias\_ia} index maps).
+
+
+\subsubsection{Array dimension names}
+
+Rename \texttt{n\_atm} to \texttt{n\_atm\_all} and rename
+\texttt{n\_l\_atm} to \texttt{n\_atm}.  Also replace
+\texttt{intrac\_atm\_max} by \texttt{n\_atm\_all} and remove the
+redundant tracer count definition from \texttt{genie\_control.f90}
+(adding imports of \texttt{gem\_cmn} as necessary).
+
+\subsection{Atmospheric tracer arrays}
+
+The tricky thing here is tracing through all the references to
+different permutations of the tracer arrays in different places.  The
+best way to deal with it is to do a couple of related arrays at a time
+and retest.
+
+\subsection{Other arrays}
+
+As well as the main tracer arrays, there are some module-local arrays
+that can also be trimmed down:
+\begin{verbatim}
+  biogem/biogem.f90:66: ALLOCATE(ocnatm_airsea_pv(n_atm_all,n_i,n_j),STAT=alloc_error)
+  biogem/biogem.f90:68: ALLOCATE(ocnatm_airsea_solconst(n_atm_all,n_i,n_j),STAT=alloc_error)
+  biogem/biogem.f90:98: ALLOCATE(diag_forcing(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:156: ALLOCATE(force_restore_atm(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:158: ALLOCATE(force_restore_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:160: ALLOCATE(force_restore_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:165: ALLOCATE(force_flux_atm(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:167: ALLOCATE(force_flux_atm_I(n_atm_all,n_i,n_j),STAT=alloc_error)
+biogem/biogem.f90:169: ALLOCATE(force_flux_atm_II(n_atm_all,n_i,n_j),STAT=alloc_error)
+  rokgem/rokgem_box.f90:480: REAL :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)
+  rokgem/rokgem_box.f90:1426: REAL :: loc_force_flux_weather_a_land(n_atm_all,n_i,n_j)
+\end{verbatim}
+
+\subsection{Diagnosing breakages}
+
+After the changes so far, the following test jobs are broken:
+
+\begin{verbatim}
+cover/ridgwell-schmidt-2010      [01m 05s]  [FIXED]
+cover/ocean-geochem-spin-up      [01m 44s]  [FIXED]
+cover/ridgwell-hargreaves-2007   [03m 01s]  [FIXED]
+cover/gem-adapt-auto             [03m 02s]  [FIXED]
+cover/ocean-geochem-spin-up-2    [03m 07s]  [FIXED]
+cover/calcium-isotopes           [04m 57s]  [FIXED]
+cover/ridgwell-schmidt-2010-mud  [08m 58s]  [FIXED]
+cover/nitrogen-no3               [11m 27s]  [FIXED]
+cover/eocene-ch4                 [09m 57s]  [FIXED]
+cover/fe-atmos-ch4               [10m 00s]  [FIXED]
+
+cover/simple-corg-diagen         [10m 13s]
+  sedgem/fields_sedgem_2d.nc
+  biogem/biogem_series_fseaair_pO2.res
+  biogem/biogem_series_focnatm_pO2.res
+  biogem/biogem_series_ocn_H2S.res
+  biogem/fields_biogem_3d.nc
+  biogem/biogem_series_focnatm_pCO2.res
+  biogem/biogem_series_focnatm_pCO2_13C.res
+  biogem/fields_biogem_2d.nc
+  biogem/biogem_series_fseaair_pH2S.res
+\end{verbatim}
+
+\subsection{Checks}
+
+After changing all the tracer arrays to \texttt{ALLOCATABLE} of size
+\texttt{n\_atm}, the following references to \texttt{n\_atm\_all}
+remain.  The unlabelled ones still require attention.
+
+\begin{verbatim}
+OK atchem/atchem_lib.f90:20: REAL,DIMENSION(n_atm_all)::atm_init
+OK atchem/atchem_data.f90:98: INTEGER, DIMENSION(n_atm_all) :: dummy_ias_ia
+OK biogem/biogem_lib.f90:462: REAL,DIMENSION(n_atm_all)::par_atm_force_scale_time
+OK biogem/biogem_lib.f90:463: REAL,DIMENSION(n_atm_all)::par_atm_force_scale_val
+?  biogem/biogem_lib.f90:787: LOGICAL, DIMENSION(n_atm_all) :: ocnatm_airsea_eqm
++  biogem/biogem_lib.f90:819: REAL,DIMENSION(n_atm_all)::int_ocnatm_sig
++  biogem/biogem_lib.f90:821: REAL,DIMENSION(n_atm_all)::int_focnatm_sig
++  biogem/biogem_lib.f90:838: REAL,DIMENSION(n_atm_all)::int_diag_airsea_sig
++  biogem/biogem_lib.f90:839: REAL,DIMENSION(n_atm_all)::int_diag_forcing_sig
++  biogem/biogem_lib.f90:918: REAL,DIMENSION(n_atm_all)::force_restore_atm_sig_x
++  biogem/biogem_lib.f90:919: REAL,DIMENSION(n_atm_all)::force_restore_atm_tconst
++  biogem/biogem_lib.f90:921: LOGICAL,DIMENSION(n_atm_all)::force_restore_atm_select
++  biogem/biogem_lib.f90:936: REAL,DIMENSION(n_atm_all)::force_flux_atm_sig_x
++  biogem/biogem_lib.f90:938: LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_select
++  biogem/biogem_lib.f90:939: LOGICAL,DIMENSION(n_atm_all)::force_flux_atm_scale
++  biogem/biogem_lib.f90:951: integer,DIMENSION(n_atm_all)::force_atm_uniform
++  biogem/biogem_lib.f90:954: integer,DIMENSION(n_atm_all)::force_atm_point_i
++  biogem/biogem_lib.f90:957: integer,DIMENSION(n_atm_all)::force_atm_point_j
++  rokgem/rokgem_box.f90:478: REAL :: loc_force_flux_weather_a(n_atm_all)
+OK common/gem_cmn.f90:36: LOGICAL,DIMENSION(n_atm_all)::atm_select
+OK common/gem_cmn.f90:363: INTEGER, DIMENSION(n_atm_all) :: atm_type
+OK common/gem_cmn.f90:367: INTEGER, DIMENSION(n_atm_all) :: atm_dep
+OK common/gem_cmn.f90:372: CHARACTER(len=16), DIMENSION(n_atm_all) :: string_atm
+OK common/gem_cmn.f90:376: CHARACTER(len=128), DIMENSION(n_atm_all) :: string_longname_atm
+OK common/gem_cmn.f90:379: CHARACTER(len=12), DIMENSION(n_atm_all) :: string_atm_unit
+OK common/gem_cmn.f90:395: INTEGER, DIMENSION(n_atm_all) :: ias_ia
+OK common/gem_cmn.f90:380: REAL, DIMENSION(n_atm_all,2) :: atm_mima
+\end{verbatim}
+A few ``special'' arrays that it makes sense to index by the fixed
+tracer IDs:
+\begin{verbatim}
+OK common/gem_cmn.f90:24: INTEGER,PARAMETER::n_atm_all = 19
+OK common/gem_cmn.f90:412: real,DIMENSION(n_atm_all,n_ocn)::conv_ocn_atm
+OK common/gem_cmn.f90:413: real,DIMENSION(n_ocn,n_atm_all)::conv_atm_ocn
+OK common/gem_cmn.f90:434: integer,DIMENSION(0:n_atm_all,0:n_ocn)::conv_ocn_atm_i
+OK common/gem_cmn.f90:435: integer,DIMENSION(0:n_ocn,0:n_atm_all)::conv_atm_ocn_i
+OK common/gem_cmn.f90:740: real,dimension(4,n_atm_all)::par_Sc_coef
+OK common/gem_cmn.f90:742: real,dimension(6,n_atm_all)::par_bunsen_coef
+\end{verbatim}
+
+\begin{verbatim}
++  biogem/biogem_lib.f90:920: INTEGER,DIMENSION(n_atm_all,2)::force_restore_atm_sig_i
++  biogem/biogem_lib.f90:937: INTEGER,DIMENSION(n_atm_all,2)::force_flux_atm_sig_i
+\end{verbatim}
+
+\begin{verbatim}
++  biogem/biogem_lib.f90:917: REAL,DIMENSION(n_atm_all,2,n_data_max)::force_restore_atm_sig
++  biogem/biogem_lib.f90:935: REAL,DIMENSION(n_atm_all,2,n_data_max)::force_flux_atm_sig
+\end{verbatim}
+
+\begin{verbatim}
+OK biogem/biogem_data.f90:1832: do ias=1,n_atm_all
++  rokgem/rokgem_box.f90:921: DO k=1,n_atm_all
+OK common/gem_data.f90:95: &   4,n_atm_all &
+OK common/gem_data.f90:132: &   6,n_atm_all &
+OK common/gem_util.f90:1290: do ia=1,n_atm_all
+OK common/gem_util.f90:1299: do ia=1,n_atm_all
+OK common/gem_util.f90:1719: DO ias = 1, n_atm_all
+\end{verbatim}
+
+\subsection{Diagnosing more breakages}
+
+After completing all the atmospheric tracer changes, the following
+test jobs are still broken:
+
+\begin{verbatim}
+cover/eocene-ch4
+
+ =======================================================
+  >>> Initialising BIOGEM ocean biogeochem. module ...
+==2048== Invalid read of size 4
+==2048==    at 0x47F4ED: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1889)
+==2048==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2048==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2048==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2048==    by 0x405B97: main (genie.f90:7)
+==2048==  Address 0x167be968 is 8 bytes before a block of size 32 alloc'd
+==2048==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2048==    by 0x4432EE: __biogem_MOD_initialise_biogem (biogem.f90:178)
+==2048==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2048==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2048==    by 0x405B97: main (genie.f90:7)
+==2048==
+==2048== Invalid read of size 4
+==2048==    at 0x47F762: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1900)
+==2048==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2048==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2048==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2048==    by 0x405B97: main (genie.f90:7)
+==2048==  Address 0x167beac8 is 8 bytes before a block of size 32 alloc'd
+==2048==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2048==    by 0x44444B: __biogem_MOD_initialise_biogem (biogem.f90:195)
+==2048==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2048==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2048==    by 0x405B97: main (genie.f90:7)
+==2048==
+  <<< Initialisation complete
+ =======================================================
+ =======================================================
+  >>> Initialising ATCHEM atmospheric chem. module ...
+  <<< Initialisation complete
+ =======================================================
+
+
+\end{verbatim}
+
+\begin{verbatim}
+cover/fe-atmos-ch4
+
+  <<< Initialisation complete
+ =======================================================
+ =======================================================
+  >>> Initialising BIOGEM ocean biogeochem. module ...
+==2046== Invalid read of size 4
+==2046==    at 0x47F4ED: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1889)
+==2046==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2046==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2046==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2046==    by 0x405B97: main (genie.f90:7)
+==2046==  Address 0x1d57e0d8 is 8 bytes before a block of size 28 alloc'd
+==2046==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2046==    by 0x4432EE: __biogem_MOD_initialise_biogem (biogem.f90:178)
+==2046==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2046==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2046==    by 0x405B97: main (genie.f90:7)
+==2046==
+==2046== Invalid read of size 4
+==2046==    at 0x47F762: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1900)
+==2046==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2046==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2046==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2046==    by 0x405B97: main (genie.f90:7)
+==2046==  Address 0x1d57e238 is 8 bytes before a block of size 28 alloc'd
+==2046==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2046==    by 0x44444B: __biogem_MOD_initialise_biogem (biogem.f90:195)
+==2046==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2046==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2046==    by 0x405B97: main (genie.f90:7)
+==2046==
+  <<< Initialisation complete
+ =======================================================
+ =======================================================
+  >>> Initialising ATCHEM atmospheric chem. module ...
+  <<< Initialisation complete
+
+\end{verbatim}
+
+\begin{verbatim}
+cover/simple-corg-diagen
+
+  <<< Initialisation complete
+ =======================================================
+ =======================================================
+  >>> Initialising BIOGEM ocean biogeochem. module ...
+==2047== Invalid read of size 4
+==2047==    at 0x47F4ED: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1889)
+==2047==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2047==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2047==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==  Address 0x158b7198 is 8 bytes before a block of size 24 alloc'd
+==2047==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2047==    by 0x4432EE: __biogem_MOD_initialise_biogem (biogem.f90:178)
+==2047==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2047==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+==2047== Invalid read of size 4
+==2047==    at 0x47F762: __biogem_data_MOD_sub_check_par_biogem (biogem_data.f90:1900)
+==2047==    by 0x44DE4E: __biogem_MOD_initialise_biogem (biogem.f90:471)
+==2047==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2047==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==  Address 0x2148efb8 is 8 bytes before a block of size 24 alloc'd
+==2047==    at 0x9FEAF90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2047==    by 0x44444B: __biogem_MOD_initialise_biogem (biogem.f90:195)
+==2047==    by 0x6FAE31: __genie_ini_wrappers_MOD_initialise_biogem_wrapper (genie_ini_wrappers.f90:72)
+==2047==    by 0x402BDF: MAIN__ (genie.f90:31)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+  <<< Initialisation complete
+ =======================================================
+ =======================================================
+  >>> Initialising ATCHEM atmospheric chem. module ...
+  <<< Initialisation complete
+ =======================================================
+
+
+==2047==
+==2047== Conditional jump or move depends on uninitialised value(s)
+==2047==    at 0xE28C578: __printf_fp (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE287406: vfprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2B2BE8: vsnprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2911D1: snprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xD8B41E8: write_float (write_float.def:1289)
+==2047==    by 0xD8AD6CB: formatted_transfer_scalar_write (transfer.c:1764)
+==2047==    by 0xD8AD6CB: formatted_transfer (transfer.c:2002)
+==2047==    by 0x4A7162: __biogem_data_ascii_MOD_sub_data_save_global_av (biogem_data_ascii.f90:2148)
+==2047==    by 0x41F3C5: __biogem_MOD_diag_biogem_timeslice (biogem.f90:2653)
+==2047==    by 0x6FB6C6: __genie_loop_wrappers_MOD_diag_biogem_timeslice_wrapper (genie_loop_wrappers.f90:348)
+==2047==    by 0x4041E9: MAIN__ (genie.f90:268)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+==2047== Use of uninitialised value of size 8
+==2047==    at 0xE28CA82: __printf_fp (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE287406: vfprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2B2BE8: vsnprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2911D1: snprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xD8B41E8: write_float (write_float.def:1289)
+==2047==    by 0xD8AD6CB: formatted_transfer_scalar_write (transfer.c:1764)
+==2047==    by 0xD8AD6CB: formatted_transfer (transfer.c:2002)
+==2047==    by 0x4A7162: __biogem_data_ascii_MOD_sub_data_save_global_av (biogem_data_ascii.f90:2148)
+==2047==    by 0x41F3C5: __biogem_MOD_diag_biogem_timeslice (biogem.f90:2653)
+==2047==    by 0x6FB6C6: __genie_loop_wrappers_MOD_diag_biogem_timeslice_wrapper (genie_loop_wrappers.f90:348)
+==2047==    by 0x4041E9: MAIN__ (genie.f90:268)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+==2047== Use of uninitialised value of size 8
+==2047==    at 0xE284948: __mpn_lshift (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE28CA86: __printf_fp (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE287406: vfprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2B2BE8: vsnprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2911D1: snprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xD8B41E8: write_float (write_float.def:1289)
+==2047==    by 0xD8AD6CB: formatted_transfer_scalar_write (transfer.c:1764)
+==2047==    by 0xD8AD6CB: formatted_transfer (transfer.c:2002)
+==2047==    by 0x4A7162: __biogem_data_ascii_MOD_sub_data_save_global_av (biogem_data_ascii.f90:2148)
+==2047==    by 0x41F3C5: __biogem_MOD_diag_biogem_timeslice (biogem.f90:2653)
+==2047==    by 0x6FB6C6: __genie_loop_wrappers_MOD_diag_biogem_timeslice_wrapper (genie_loop_wrappers.f90:348)
+==2047==    by 0x4041E9: MAIN__ (genie.f90:268)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+==2047== Use of uninitialised value of size 8
+==2047==    at 0xE28494B: __mpn_lshift (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE28CA86: __printf_fp (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE287406: vfprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2B2BE8: vsnprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xE2911D1: snprintf (in /usr/lib/libc-2.21.so)
+==2047==    by 0xD8B41E8: write_float (write_float.def:1289)
+==2047==    by 0xD8AD6CB: formatted_transfer_scalar_write (transfer.c:1764)
+==2047==    by 0xD8AD6CB: formatted_transfer (transfer.c:2002)
+==2047==    by 0x4A7162: __biogem_data_ascii_MOD_sub_data_save_global_av (biogem_data_ascii.f90:2148)
+==2047==    by 0x41F3C5: __biogem_MOD_diag_biogem_timeslice (biogem.f90:2653)
+==2047==    by 0x6FB6C6: __genie_loop_wrappers_MOD_diag_biogem_timeslice_wrapper (genie_loop_wrappers.f90:348)
+==2047==    by 0x4041E9: MAIN__ (genie.f90:268)
+==2047==    by 0x405B97: main (genie.f90:7)
+==2047==
+\end{verbatim}
+
+
+\begin{verbatim}
+sedgem/fields_sedgem_2d.nc
+biogem/fields_biogem_3d.nc
+biogem/biogem_series_fseaair_pO2.res
+biogem/biogem_series_focnatm_pO2.res
+biogem/biogem_series_ocn_H2S.res
+biogem/biogem_series_focnatm_pCO2.res
+biogem/biogem_series_focnatm_pCO2_13C.res
+biogem/fields_biogem_2d.nc
+biogem/biogem_series_fseaair_pH2S.res
+\end{verbatim}
+
+%----------------------------------------------------------------------
+\section{Sediment tracers}
+
+\subsection{Step 1: name changes and indexing setup}
+
+\begin{enumerate}
+  \item{Global replace of \texttt{n\_sed} with \texttt{nt\_sed\_all}.}
+  \item{Global replace of \texttt{n\_l\_sed} with \texttt{nt\_sed}.}
+  \item{Global replace of \texttt{is\_...} tracer indexes with
+    \texttt{iss\_...}.}
+  \item{Add \texttt{is\_...} variables and set up initialisation.}
+  \item{Indexing for \texttt{string\_sed} and friends.}
+  \item{Global replace \texttt{intrac\_sed\_max} with \texttt{nt\_sed\_all}.}
+\end{enumerate}
+
+\subsection{Step 2: array definitions}
+
+\newpage
+\begin{small}
+\begin{verbatim}
+wrappers/genie_global.f90:
+14:   USE gem_cmn, ONLY: nt_sed_all
+1045: ALLOCATE(genie_sfcsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+1047: ALLOCATE(genie_sfxsumsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+1049: ALLOCATE(genie_sfxsumsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+1051: ALLOCATE(genie_sfcsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+1053: ALLOCATE(genie_sfxsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+
+wrappers/genie_loop_wrappers.f90:
+176:  & nt_sed_all, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
+190:  CALL cpl_flux_sedsed1(nt_sed_all, ilon1_ocn, ilat1_ocn, &
+
+sedgem/sedgem_data.f90:
+213:  integer,DIMENSION(nt_sed_all)::loc_is_iss
+664:  do is=1,nt_sed_all
+982:  REAL,DIMENSION(nt_sed_all)::loc_sed
+1121: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
+1122: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
+1127: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fsed
+1128: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fdis
+1708: ALLOCATE(loc_sed_save(nt_sed_all,n_i,n_j,0:n_sed_tot),STAT=alloc_error)
+2072: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
+2073: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
+
+sedgem/sedgem_data_netCDF.f90:
+281:  real,dimension(nt_sed_all)::loc_sed
+1231: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
+1232: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
+1425: DO is=1,nt_sed_all
+1548: DO is=1,nt_sed_all
+
+sedgem/sedgem.f90:
+69:   ALLOCATE(sed(nt_sed_all,n_i,n_j,n_sed_tot),STAT=alloc_error)
+71:   ALLOCATE(sed_top(nt_sed_all,n_i,n_j),STAT=alloc_error)
+77:   ALLOCATE(sed_fsed(nt_sed_all,n_i,n_j),STAT=alloc_error)
+79:   ALLOCATE(sed_fdis(nt_sed_all,n_i,n_j),STAT=alloc_error)
+93:   ALLOCATE(sed_fsed_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
+95:   ALLOCATE(sed_fdis_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
+247:  REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
+255:  real,DIMENSION(nt_sed_all,n_i,n_j)::loc_sfxsumsed_OLD
+
+sedgem/sedgem_box.f90:
+78:   REAL,DIMENSION(nt_sed_all)::loc_new_sed
+79:   REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+80:   REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+635:  do is=1,nt_sed_all
+639:  do is=1,nt_sed_all
+643:  do is=1,nt_sed_all
+735:  REAL,DIMENSION(nt_sed_all)::loc_new_sed
+736:  REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+737:  REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+1091: do is=1,nt_sed_all
+1095: do is=1,nt_sed_all
+1099: do is=1,nt_sed_all
+1156: REAL,DIMENSION(nt_sed_all)::loc_new_sed
+1157: REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+1158: REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+1563: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
+1564: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
+1565: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
+1737: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
+1738: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
+1739: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
+1940: REAL,INTENT(inout),DIMENSION(nt_sed_all,0:par_n_sed_mix)::dum_sed
+1941: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_top
+
+sedgem/sedgem_lib.f90:
+322:  real,DIMENSION(nt_sed_all)::conv_sed_cm3_mol
+323:  real,DIMENSION(nt_sed_all)::conv_sed_mol_cm3
+324:  real,DIMENSION(nt_sed_all)::conv_sed_cm3_g
+325:  real,DIMENSION(nt_sed_all)::conv_sed_g_cm3
+326:  real,DIMENSION(nt_sed_all)::conv_sed_mask
+397:  REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
+412:  REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
+496:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::fun_sed_coretop
+501:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed
+
+biogem/biogem_box.f90:
+361:  real,dimension(nt_sed_all,n_k)::loc_bio_part_DOM
+362:  real,dimension(nt_sed_all,n_k)::loc_bio_part_RDOM
+1528: real,dimension(nt_sed_all,n_k)::loc_bio_part
+2299: real,dimension(nt_sed_all,n_k)::loc_bio_part
+3503: real,dimension(nt_sed_all,n_i,n_j,n_k)::loc_bio_part
+
+biogem/biogem.f90:
+72:   ALLOCATE(bio_part(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+76:   ALLOCATE(bio_settle(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+78:   ALLOCATE(bio_part_red(nt_sed_all,nt_sed_all,n_i,n_j),STAT=alloc_error)
+109:  ALLOCATE(int_bio_part_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+111:  ALLOCATE(int_bio_settle_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+129:  ALLOCATE(int_sfcsed1_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
+131:  ALLOCATE(int_focnsed_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
+200:  ALLOCATE(force_flux_sed(nt_sed_all,n_i,n_j),STAT=alloc_error)
+202:  ALLOCATE(force_flux_sed_I(nt_sed_all,n_i,n_j),STAT=alloc_error)
+204:  ALLOCATE(force_flux_sed_II(nt_sed_all,n_i,n_j),STAT=alloc_error)
+593:  REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::locijk_fpart
+603:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+608:  REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
+2417: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+2701: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+
+biogem/biogem_lib.f90:
+820:  REAL,DIMENSION(nt_sed_all)::int_fexport_sig
+822:  REAL,DIMENSION(nt_sed_all)::int_focnsed_sig
+834:  REAL,DIMENSION(nt_sed_all)::int_ocnsed_sig
+943:  REAL,DIMENSION(nt_sed_all,2,n_data_max)::force_flux_sed_sig
+944:  REAL,DIMENSION(nt_sed_all)::force_flux_sed_sig_x
+945:  INTEGER,DIMENSION(nt_sed_all,2)::force_flux_sed_sig_i
+946:  LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_select
+947:  LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_scale
+953:  integer,DIMENSION(nt_sed_all)::force_sed_uniform
+956:  integer,DIMENSION(nt_sed_all)::force_sed_point_i
+959:  integer,DIMENSION(nt_sed_all)::force_sed_point_j
+1266: REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed
+
+biogem/biogem_data.f90:
+449:  integer,DIMENSION(nt_sed_all)::loc_is_iss
+729:  real,dimension(1:n_ocn,1:nt_sed_all)::loc_conv_sed_ocn
+730:  integer,dimension(0:n_ocn,0:nt_sed_all)::loc_tracerrelationships
+1914: do is=1,nt_sed_all
+1971: do is=1,nt_sed_all
+
+common/gem_cmn.f90:
+26:   INTEGER,PARAMETER::nt_sed_all = 79
+38:   LOGICAL,DIMENSION(nt_sed_all)::sed_select
+447:  INTEGER, DIMENSION(nt_sed_all) :: sed_type
+451:  INTEGER, DIMENSION(nt_sed_all) :: sed_dep
+455:  CHARACTER(len=16), DIMENSION(nt_sed_all) :: string_sed
+459:  CHARACTER(len=128), DIMENSION(nt_sed_all) :: string_longname_sed
+467:  CHARACTER(len=12), DIMENSION(nt_sed_all) :: string_sed_unit
+468:  REAL, DIMENSION(nt_sed_all,2) :: sed_mima
+479:  INTEGER, DIMENSION(nt_sed_all) :: iss_is
+490:  real,DIMENSION(nt_sed_all,n_ocn)::conv_ocn_sed
+491:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn
+494:  real,DIMENSION(nt_sed_all,n_ocn)::conv_DOM_POM
+495:  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_DOM
+496:  real,DIMENSION(nt_sed_all,n_ocn)::conv_RDOM_POM
+497:  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_RDOM
+498:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_N
+499:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_S
+500:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_meth
+512:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_ocn_sed_i
+513:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i
+516:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_DOM_POM_i
+517:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_DOM_i
+518:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_RDOM_POM_i
+519:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_RDOM_i
+520:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_N
+521:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_S
+522:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_meth
+784:  REAL,DIMENSION(nt_sed_all)::const_lambda_sed
+
+common/initialise_gem.f90
+62:   do is=1,nt_sed_all
+
+common/gem_util.f90:
+1268: do is=1,nt_sed_all
+1277: do is=1,nt_sed_all
+1312: do is=1,nt_sed_all
+1321: do is=1,nt_sed_all
+1334: do is=1,nt_sed_all
+1343: do is=1,nt_sed_all
+1355: do is=1,nt_sed_all
+1367: do is=1,nt_sed_all
+1379: do is=1,nt_sed_all
+1399: real,dimension(1:n_ocn,1:nt_sed_all),INTENT(in)::dum_conv_sed_ocn
+1403: integer,dimension(0:n_ocn,0:nt_sed_all)::fun_recalc_tracerrelationships_i
+1409: integer,dimension(0:n_ocn,0:nt_sed_all)::loc_conv_sed_ocn_i
+1418: do is=1,nt_sed_all
+1443: real,dimension(n_ocn,nt_sed_all),INTENT(in)::dum_sed_ocn
+1461: do is=1,nt_sed_all
+1483: integer,dimension(0:n_ocn,0:nt_sed_all),INTENT(in)::dum_sed_ocn_i
+1505: do is=1,nt_sed_all
+1528: real,dimension(nt_sed_all,n_ocn),INTENT(in)::dum_ocn_sed
+1547: do is=1,nt_sed_all
+1568: integer,dimension(0:nt_sed_all,0:n_ocn),INTENT(in)::dum_ocn_sed_i
+1587: do is=1,nt_sed_all
+2074: do iss = 1, nt_sed_all
+\end{verbatim}
+\end{small}
+
+%----------------------------------------------------------------------
+\section{Ocean tracers}
 
 \end{document}

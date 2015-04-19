@@ -24,7 +24,7 @@ PROGRAM nccompare
   CHARACTER(LEN=128), DIMENSION(:), ALLOCATABLE :: varnames1, varnames2
 
   INTEGER :: ivar1, ivar2
-  LOGICAL :: err = .FALSE.
+  LOGICAL :: err = .FALSE., tst
 
 
   ! Parse command line.
@@ -49,8 +49,10 @@ PROGRAM nccompare
   ! Determine which variables are in both files and compare them.
   DO ivar1 = 1, nvars1
      DO ivar2 = 1, nvars2
-        IF (varnames1(ivar1) == varnames2(ivar2)) &
-             & err = err .OR. .NOT. compare_variables(ivar1, ivar2)
+        IF (varnames1(ivar1) == varnames2(ivar2)) THEN
+           tst = compare_variables(ivar1, ivar2)
+           err = err .OR. .NOT. tst
+        END IF
      END DO
   END DO
 
@@ -176,6 +178,7 @@ CONTAINS
     INTEGER :: nvals1, nvals2
     INTEGER :: idim
     REAL, DIMENSION(:), ALLOCATABLE :: vals1, vals2
+    LOGICAL, DIMENSION(:), ALLOCATABLE :: msk
     REAL :: max_absdiff
     INTEGER :: max_reldiff
 
@@ -224,6 +227,7 @@ CONTAINS
     starts(:) = 1
     ALLOCATE(vals1(nvals1))
     ALLOCATE(vals2(nvals2))
+    ALLOCATE(msk(nvals1))
     CALL nc_check(NF90_GET_VAR(nc1, ivar1, vals1, START=starts, COUNT=dimlens1))
     CALL nc_check(NF90_GET_VAR(nc2, ivar2, vals2, START=starts, COUNT=dimlens2))
     DEALLOCATE(starts)
@@ -231,10 +235,16 @@ CONTAINS
     DEALLOCATE(dimlens2)
 
     ! Calculate absolute and relative differences.
-    max_absdiff = MAXVAL(ABS(vals1 - vals2))
-    max_reldiff = MAXVAL(float_compare(vals1, vals2))
+    WHERE (vals1 > 1.0E36)  vals1 = 1.0E36
+    WHERE (vals1 < -1.0E36) vals1 = -1.0E36
+    WHERE (vals2 > 1.0E36)  vals2 = 1.0E36
+    WHERE (vals2 < -1.0E36) vals2 = -1.0E36
+    msk = vals1 <= 1.0E36 .AND. vals2 <= 1.0E36
+    max_absdiff = MAXVAL(ABS(vals1 - vals2), MASK=msk)
+    max_reldiff = MAXVAL(float_compare(vals1, vals2), MASK=msk)
     DEALLOCATE(vals1)
     DEALLOCATE(vals2)
+    DEALLOCATE(msk)
 
     ! Check.
     IF (min_abs > TINY(0.0) .AND. max_absdiff > min_abs) THEN

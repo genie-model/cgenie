@@ -1448,7 +1448,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    INTEGER::io,is
+    INTEGER::io,iss
     real,dimension(n_l_ocn,nt_sed)::loc_lslo               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
@@ -1458,10 +1458,10 @@ CONTAINS
     ! TRANSFORM INDICES
     ! -------------------------------------------------------- !
     ! re-index array to compact tracer format
-    do is=1,nt_sed_all
+    do iss = 1, nt_sed_all
        do io=1,n_ocn
-          if (ocn_select(io) .AND. sed_select(is) .AND. (abs(dum_sed_ocn(io,is)) > const_real_nullsmall)) then
-             loc_lslo(io2l(io),iss_is(is)) = dum_sed_ocn(io,is)
+          if (ocn_select(io) .AND. sed_select(iss) .AND. (abs(dum_sed_ocn(io,iss)) > const_real_nullsmall)) then
+             loc_lslo(io2l(io),iss_is(iss)) = dum_sed_ocn(io,iss)
           end if
        end do
     end do
@@ -1488,7 +1488,7 @@ CONTAINS
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
-    INTEGER::io,is
+    INTEGER::io,iss
     integer,dimension(0:n_l_ocn,0:nt_sed)::loc_lslo_i               !
     ! -------------------------------------------------------- !
     ! INITIALIZE
@@ -1502,11 +1502,11 @@ CONTAINS
     !       (the specific ocean tracer number is held in dum_sed_ocn_i(io,is)
     !       hence, it is dum_sed_ocn_i(io,is) that is converted to the compact tracer numbering format for ocean tracers
     !       ('is' is converted to the compact tracer numbering format for solid tracers as normal)
-    do is=1,nt_sed_all
-       loc_lslo_i(0,iss_is(is)) = dum_sed_ocn_i(0,is)
+    do iss = 1, nt_sed_all
+       loc_lslo_i(0,iss_is(iss)) = dum_sed_ocn_i(0,iss)
        do io=1,n_ocn
-          if (abs(dum_sed_ocn_i(io,is)) > 0) then
-             loc_lslo_i(io,iss_is(is)) = io2l(dum_sed_ocn_i(io,is))
+          if (abs(dum_sed_ocn_i(io,iss)) > 0) then
+             loc_lslo_i(io,iss_is(iss)) = io2l(dum_sed_ocn_i(io,iss))
           end if
        end do
     end do
