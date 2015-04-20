@@ -1574,7 +1574,7 @@ CONTAINS
     !----------------------------------------------------------------
     If (ctrl_data_save_slice_focnsed) then
        DO is = 1, nt_sed
-          iss = is_iss(l)
+          iss = is_iss(is)
           loc_ij(:,:) = const_real_zero
           DO i=1,n_i
              DO j=1,n_j

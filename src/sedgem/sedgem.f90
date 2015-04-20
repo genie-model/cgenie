@@ -100,11 +100,15 @@ CONTAINS
     ! ---------------------------------------------------------- ! initialize allocated arrays
     IF (ctrl_misc_debug2) print*, 'initialize allocated arrays'
     ! initialize dynamically-allocated arrays (those not done elsewhere)
-    sed_fsed(:,:,:)      = 0.0   !
-    sed_fdis(:,:,:)      = 0.0   !
+    sed = 0.0
+    sed_top = 0.0
+    sed_fsed = 0.0
+    sed_fdis = 0.0
     sedocn_fnet(:,:,:)   = 0.0   !
     sed_carb(:,:,:)      = 0.0   !
     sed_carbconst(:,:,:) = 0.0   !
+    sed_fsed_OLD = 0.0
+    sed_fdis_OLD = 0.0
     ! ---------------------------------------------------------- ! main initialization
     IF (ctrl_misc_debug2) print*, 'main initialization'
     ! setup SedGeM grid

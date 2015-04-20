@@ -1639,4 +1639,23 @@ CONTAINS
   END FUNCTION fun_data_timesnap_filename
   ! ****************************************************************************************************************************** !
 
+
+  FUNCTION test_force_restore_atm_select(ias)
+    IMPLICIT NONE
+    LOGICAL :: test_force_restore_atm_select
+    INTEGER, INTENT(IN) :: ias
+
+    test_force_restore_atm_select = .FALSE.
+    IF (atm_select(ias)) test_force_restore_atm_select = force_restore_atm_select(ias_ia(ias))
+  END FUNCTION test_force_restore_atm_select
+
+  FUNCTION test_force_flux_atm_select(ias)
+    IMPLICIT NONE
+    LOGICAL :: test_force_flux_atm_select
+    INTEGER, INTENT(IN) :: ias
+
+    test_force_flux_atm_select = .FALSE.
+    IF (atm_select(ias)) test_force_flux_atm_select = force_flux_atm_select(ias_ia(ias))
+  END FUNCTION test_force_flux_atm_select
+
 END MODULE biogem_lib

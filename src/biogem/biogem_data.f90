@@ -1845,9 +1845,9 @@ CONTAINS
           end if
           if (atm_select(atm_dep(ias)) .AND. (io /= atm_type(ias))) then
              if ( &
-                  & (force_restore_atm_select(ia) .AND. (.NOT. force_restore_atm_select(ias_ia(atm_dep(ias))))) &
+                  & (force_restore_atm_select(ia) .AND. (.NOT. test_force_restore_atm_select(atm_dep(ias)))) &
                   & .OR. &
-                  & (.NOT. (force_restore_atm_select(ia)) .AND. force_restore_atm_select(ias_ia(atm_dep(ias)))) &
+                  & (.NOT. (force_restore_atm_select(ia)) .AND. test_force_restore_atm_select(atm_dep(ias))) &
                   & ) then
                 loc_string1 = string_atm(ias)
                 loc_string2 = string_atm(atm_dep(ias))
@@ -2308,11 +2308,11 @@ CONTAINS
     ! detrmine whether to save inversion diagnostics
     ctrl_data_save_inversion = .false.
     IF ( &
-         & (force_restore_ocn_select(io_colr) .AND. (force_flux_atm_select(ia_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
+         & (force_restore_ocn_select(io_colr) .AND. (test_force_flux_atm_select(ias_pCO2) .OR. force_flux_ocn_select(io_DIC))) &
          & .OR. &
-         & (force_restore_atm_select(ia_pCO2_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
+         & (test_force_restore_atm_select(ias_pCO2_13C) .AND. test_force_flux_atm_select(ias_pCO2_13C)) &
          & .OR. &
-         & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) &
+         & (force_restore_ocn_select(io_DIC_13C) .AND. test_force_flux_atm_select(ias_pCO2_13C)) &
          & .OR. &
          & (force_restore_ocn_select(io_DIC_13C) .AND. force_flux_ocn_select(io_DIC_13C)) &
          & .OR. &

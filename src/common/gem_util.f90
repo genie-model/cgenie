@@ -1861,7 +1861,7 @@ CONTAINS
     END DO
     ! zero selected tracer counter
     l = 0
-    iss_is = -1
+    iss_is = 0
     ! count number of included ('active') tracers
     DO n = 1, loc_n_elements
        IF (sed_select(n)) THEN

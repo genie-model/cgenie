@@ -2225,8 +2225,16 @@ CONTAINS
     ! total ocean-atmosphere interface area
     loc_ocnatm_tot_A = sum(phys_ocnatm(ipoa_A,:,:))
     ! calculate local isotopic variables
-    loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
-    loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2_13C,:,:))/loc_ocnatm_tot_A
+    IF (atm_select(ias_pCO2)) THEN
+       loc_tot  = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2,:,:))/loc_ocnatm_tot_A
+    ELSE
+       loc_tot = 0.0
+    END IF
+    IF (atm_select(ias_pCO2_13C)) THEN
+       loc_frac = SUM(phys_ocnatm(ipoa_A,:,:)*dum_sfcatm1(ia_pCO2_13C,:,:))/loc_ocnatm_tot_A
+    ELSE
+       loc_frac = 0.0
+    END IF
     loc_standard = const_standards(atm_type(ias_pCO2_13C))
     if (loc_frac < const_real_nullsmall) then
        loc_frac = fun_calc_isotope_fraction(0.0,loc_standard)*loc_tot

@@ -776,7 +776,7 @@ CONTAINS
                          loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_ohm_arg,i,j,n_k)/loc_k_tot_icefree
                       end if
                    end if
-                elseif (force_flux_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
+                elseif (test_force_flux_atm_select(ias_pCO2) .AND. test_force_flux_atm_select(ias_pCO2_13C)) THEN
                    IF (force_restore_ocn_select(io_colr)) THEN
                       loc_force_actual = loc_force_actual + loc_k_icefree*carb(ic_H,i,j,n_k)/loc_k_tot_icefree
                    end if
@@ -785,7 +785,7 @@ CONTAINS
                 IF ( &
                      & (force_restore_ocn_select(io_DIC) .AND. force_restore_ocn_select(io_DIC_13C)) &
                      &  .AND. &
-                     & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ia_pCO2_13C)) &
+                     & (force_flux_ocn_select(io_DIC_13C) .OR. test_force_flux_atm_select(ias_pCO2_13C)) &
                      & ) THEN
                    loc_standard = const_standards(ocn_type(io_DIC_13C))
                    loc_force_actual_d13C = loc_force_actual_d13C + loc_k_icefree*&
@@ -1285,7 +1285,7 @@ CONTAINS
                      & '*** INVERSIONS ***'
                 IF (force_restore_ocn_select(io_ALK) .AND. force_flux_ocn_select(io_ALK)) THEN
                    ! (1) INVERSIONS: ocean ALK adjustment
-                   IF (force_restore_atm_select(ia_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
+                   IF (test_force_restore_atm_select(ias_pCO2) .AND. (par_force_invert_ohmega < const_real_nullsmall)) THEN
                       ! (2a) ocean ALK [GEOENGINEEGING of pCO2]
                       ! NOTE: re-scale the 'target' in case the atm flux forcing has been scaled (same param applied to both)
                       loc_force_actual = dum_sfcatm1(ia_pCO2,i,j)
@@ -1365,9 +1365,9 @@ CONTAINS
                    diag_misc_2D(idiag_misc_2D_FCa,i,j)      = sum(locijk_focn(io_Ca,i,j,:))
                 else
                    ! (2) INVERSIONS: ATMOSPHERIC pCO2
-                   IF (force_restore_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2)) THEN
+                   IF (test_force_restore_atm_select(ias_pCO2) .AND. test_force_flux_atm_select(ias_pCO2)) THEN
                       locij_fatm(ia_pCO2,i,j) = 0.0
-                      IF (force_restore_atm_select(ia_pCO2_13C) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
+                      IF (test_force_restore_atm_select(ias_pCO2_13C) .AND. test_force_flux_atm_select(ias_pCO2_13C)) THEN
                          locij_fatm(ia_pCO2_13C,i,j) = 0.0
                          ! (2a) atmosphere pCO2-13C
                          ! NOTE: this code has a similar effect of restoring forcing, except that it allows
@@ -1423,7 +1423,7 @@ CONTAINS
                    elseif ( &
                         & force_restore_ocn_select(io_DIC_13C) &
                         & .AND. &
-                        & (force_flux_ocn_select(io_DIC_13C) .OR. force_flux_atm_select(ia_pCO2_13C)) &
+                        & (force_flux_ocn_select(io_DIC_13C) .OR. test_force_flux_atm_select(ias_pCO2_13C)) &
                         & ) THEN
                       ! (3) INVERSIONS: ocean DIC d13C [SURFACE ONLY] -- DIC *OR* pCO2 fluxes ...
                       ! calculate local variables
@@ -1448,7 +1448,7 @@ CONTAINS
                               & force_flux_locn(io2l(io_DIC),i,j,n_k),force_flux_locn(io2l(io_DIC_13C),i,j,n_k), &
                               & loc_standard,.FALSE.,const_real_null &
                               & )
-                      elseIF (force_flux_atm_select(ia_pCO2_13C)) then
+                      elseIF (test_force_flux_atm_select(ias_pCO2_13C)) then
                          loc_frac = force_flux_atm(ia_pCO2_13C,i,j)/force_flux_atm(ia_pCO2,i,j)
                          loc_delta_source = fun_calc_isotope_delta( &
                               & force_flux_atm(ia_pCO2,i,j),force_flux_atm(ia_pCO2_13C,i,j), &
@@ -1483,7 +1483,7 @@ CONTAINS
                          diag_misc_2D(idiag_misc_2D_FDIC_13C,i,j) = locijk_focn(io_DIC_13C,i,j,n_k)
                          locij_fatm(ia_pCO2,i,j) = 0.0
                          locij_fatm(ia_pCO2_13C,i,j) = 0.0
-                      elseIF (force_flux_atm_select(ia_pCO2_13C)) then
+                      elseIF (test_force_flux_atm_select(ias_pCO2_13C)) then
                          locij_fatm(ia_pCO2,i,j) = loc_force_sign*force_flux_atm(ia_pCO2,i,j)
                          locij_fatm(ia_pCO2_13C,i,j) = loc_frac*locij_fatm(ia_pCO2,i,j)
                          diag_misc_2D(idiag_misc_2D_FpCO2,i,j)     = locij_fatm(ia_pCO2,i,j)
@@ -1538,7 +1538,7 @@ CONTAINS
                       end DO
                    end If
                    IF (force_restore_ocn_select(io_colr)) THEN
-                      IF (force_flux_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2_13C)) THEN
+                      IF (test_force_flux_atm_select(ias_pCO2) .AND. test_force_flux_atm_select(ias_pCO2_13C)) THEN
                          ! (5) INVERSIONS: ocean pH
                          loc_force_target = force_restore_locn(io2l(io_colr),i,j,n_k)
                          ! replace mean global pH by point value
@@ -1792,10 +1792,10 @@ CONTAINS
                    END DO
                 end IF
 
-                IF (force_restore_atm_select(ia_pCO2) .AND. force_flux_atm_select(ia_pCO2)) THEN
+                IF (test_force_restore_atm_select(ias_pCO2) .AND. test_force_flux_atm_select(ias_pCO2)) THEN
                    locij_fatm(ia_pCO2,i,j) = 0.0
-                   if (force_restore_atm_select(ia_pCO2_13C)) locij_fatm(ia_pCO2_13C,i,j) = 0.0
-                   if (force_restore_atm_select(ia_pCO2_14C)) locij_fatm(ia_pCO2_14C,i,j) = 0.0
+                   if (test_force_restore_atm_select(ias_pCO2_13C)) locij_fatm(ia_pCO2_13C,i,j) = 0.0
+                   if (test_force_restore_atm_select(ias_pCO2_14C)) locij_fatm(ia_pCO2_14C,i,j) = 0.0
                 end if
              end if
 
@@ -2420,7 +2420,7 @@ CONTAINS
     REAL,DIMENSION(n_ocn,n_i,n_j)::locij_fsedocn                   ! local sed->ocean change (ocn tracer currency) (mol)
     REAL,DIMENSION(2)::loc_opsia_minmax,loc_opsip_minmax           !
 
-    locij_focnatm = 0.0
+    locij_focnatm = 0.0 ; locij_focnsed = 0.0 ; locij_fsedocn = 0.0
     loc_opsi = 0.0 ; loc_zpsi = 0.0 ; loc_opsia = 0.0 ; loc_opsip = 0.0
 
     ! *** TIME-SLICE DATA UPDATE ***
