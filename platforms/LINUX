@@ -1,4 +1,5 @@
 # Fortran 90 platform definitions.
+
 f90 = {
     # Compiler name.
     'compiler': 'gfortran',
@@ -30,6 +31,12 @@ f90 = {
     'module_dir': '-J',      # Module file output directory.
     'define': '-D'           # Preprocessor definitions.
 }
+
+
+# Platform runtime environment variables.
+
+runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
+
 
 # NetCDF platform definitions.
 

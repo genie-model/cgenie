@@ -338,6 +338,10 @@ tend = None
 def run(cont=None):
     global tstart
     message('RUNNING: ' + model_config.display_model_version)
+    platform = U.discover_platform()
+    execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+    if 'runtime_env' in locals():
+        for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
     logfp = open('run.log', 'w')
     tstart = dt.datetime.now()
     manage(os.path.join('.', exe_name), logfp, run2, cont)

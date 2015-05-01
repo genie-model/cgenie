@@ -27,6 +27,9 @@ f90 = {
     'define': '-D'           # Preprocessor definitions.
 }
 
+# Platform runtime environment variables.
+runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
+
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.

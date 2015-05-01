@@ -12,7 +12,14 @@ f90 = {
     'debug': ['-g'],
 
     # Optimisation flags.
-    'optimise': ['-O3', '-funroll-loops'],
+    'ship': ['-O3', '-funroll-loops'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-O3', '-pg'],
+    'profile_link': ['-pg'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-fbounds-check'],
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.
@@ -26,7 +33,7 @@ runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.
-    'base': '/share/apps/netcdf/4.0/fnu_fc_4.4.4/',
+    'base': '/state/partition1/apps/netcdf/4.0/gnu_fc_4.4.6',
 
     # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
     # 'netcdff' if the F90 library is split).
