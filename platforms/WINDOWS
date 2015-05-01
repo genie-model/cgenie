@@ -22,7 +22,7 @@ f90 = {
     # Default flags.
     'baseflags': ['/fpp', '/heap-arrays:0',
                   '/warn:declarations', '/real-size:64'],
-    'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:16777216'],
+    'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
 
     # Debug flags.
     'debug': ['/debug:full', '/Od', '/Fdvc120.pdb',
