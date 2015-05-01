@@ -618,7 +618,7 @@ CONTAINS
   ! INITIALIZE SEDIMENT PARAMETERS
   SUBROUTINE sub_init_sed()
     ! local variables
-    INTEGER::l,is,n                      ! grid and tracer index counters
+    INTEGER::is,iss,n                      ! grid and tracer index counters
     ! set default array values
     conv_sed_mol_cm3(:)      = 1.0       !
     conv_sed_cm3_mol(:)      = 1.0       !
@@ -629,44 +629,44 @@ CONTAINS
     sed_fsed(:,:,:) = 0.0                !
     sed_fdis(:,:,:) = 0.0                !
     ! set up conversion of mol -> cm3 and cm3 -> g (and reciprocals)
-    DO l=1,nt_sed
-       is = is_iss(l)
+    DO is=1,nt_sed
+       iss = is_iss(is)
        ! criterion for particulate organic matter (POM), elemental components, and particle-reactive scavenged elements
-       if ((sed_dep(is) == iss_POC .AND. sed_type(is) < 10) .OR. (sed_type(is) == par_sed_type_POM)) then
-          conv_sed_mol_cm3(is) = conv_POC_mol_cm3
-          conv_sed_cm3_g(is)   = conv_POC_cm3_g
+       if ((sed_dep(iss) == iss_POC .AND. sed_type(iss) < 10) .OR. (sed_type(iss) == par_sed_type_POM)) then
+          conv_sed_mol_cm3(iss) = conv_POC_mol_cm3
+          conv_sed_cm3_g(iss)   = conv_POC_cm3_g
        end if
        ! criterion for carbonate, elemental components, and particle-reactive scavenged elements
-       if ((sed_dep(is) == iss_CaCO3 .AND. sed_type(is) < 10) .OR. (sed_type(is) == par_sed_type_CaCO3)) then
-          conv_sed_mol_cm3(is) = conv_cal_mol_cm3
-          conv_sed_cm3_g(is)   = conv_cal_cm3_g
+       if ((sed_dep(iss) == iss_CaCO3 .AND. sed_type(iss) < 10) .OR. (sed_type(iss) == par_sed_type_CaCO3)) then
+          conv_sed_mol_cm3(iss) = conv_cal_mol_cm3
+          conv_sed_cm3_g(iss)   = conv_cal_cm3_g
        end if
        ! criterion for opal, elemental components, and particle-reactive scavenged elements
-       if ((sed_dep(is) == iss_opal .AND. sed_type(is) < 10) .OR. (sed_type(is) == par_sed_type_opal)) then
-          conv_sed_mol_cm3(is) = conv_opal_mol_cm3
-          conv_sed_cm3_g(is)   = conv_opal_cm3_g
+       if ((sed_dep(iss) == iss_opal .AND. sed_type(iss) < 10) .OR. (sed_type(iss) == par_sed_type_opal)) then
+          conv_sed_mol_cm3(iss) = conv_opal_mol_cm3
+          conv_sed_cm3_g(iss)   = conv_opal_cm3_g
        end if
        ! detrital and refractory material
-       if ((sed_dep(is) == iss_det .AND. sed_type(is) < 10) .OR. (sed_type(is) == par_sed_type_abio)) then
-          conv_sed_mol_cm3(is) = conv_det_mol_cm3
-          conv_sed_cm3_g(is)   = conv_det_cm3_g
+       if ((sed_dep(iss) == iss_det .AND. sed_type(iss) < 10) .OR. (sed_type(iss) == par_sed_type_abio)) then
+          conv_sed_mol_cm3(iss) = conv_det_mol_cm3
+          conv_sed_cm3_g(iss)   = conv_det_cm3_g
        end if
        ! 'dependent' components (isotopes and 'age')
-       conv_sed_mol_cm3(is) = conv_sed_mol_cm3(sed_dep(is))
-       conv_sed_cm3_g(is)   = conv_sed_cm3_g(sed_dep(is))
+       conv_sed_mol_cm3(iss) = conv_sed_mol_cm3(sed_dep(iss))
+       conv_sed_cm3_g(iss)   = conv_sed_cm3_g(sed_dep(iss))
        ! reciprocal conversion
-       if(conv_sed_mol_cm3(is) > const_real_nullsmall) conv_sed_cm3_mol(is) = 1.0/conv_sed_mol_cm3(is)
-       if(conv_sed_cm3_g(is) > const_real_nullsmall)   conv_sed_g_cm3(is)   = 1.0/conv_sed_cm3_g(is)
+       if(conv_sed_mol_cm3(iss) > const_real_nullsmall) conv_sed_cm3_mol(iss) = 1.0/conv_sed_mol_cm3(iss)
+       if(conv_sed_cm3_g(iss) > const_real_nullsmall)   conv_sed_g_cm3(iss)   = 1.0/conv_sed_cm3_g(iss)
     end DO
     ! set up the mask for defining which sedimentary components contribute to the actual volume of the sediments
     ! (and which are therefore 'virtual')
     ! => POC, CaCO3, opal, miscellaneous detrital material ('det'), ash, iron oxides (FeO)
-    do is=1,nt_sed_all
-       SELECT CASE (sed_type(is))
+    do iss=1,nt_sed_all
+       SELECT CASE (sed_type(iss))
        case (par_sed_type_bio,par_sed_type_abio)
-          conv_sed_mask(is) = 1.0
+          conv_sed_mask(iss) = 1.0
        case default
-          conv_sed_mask(is) = 0.0
+          conv_sed_mask(iss) = 0.0
        end select
     end do
     ! allocate size of look-up tables and load data -- CaCO3
@@ -1119,7 +1119,6 @@ CONTAINS
     integer::ios  ! for file checks
     CHARACTER(len=255)::loc_filename
     REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
-    REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
     real::loc_tot1_sedgrid
     real::loc_tot2_sedgrid
     real::loc_pres_sedgrid
@@ -1666,7 +1665,7 @@ CONTAINS
   SUBROUTINE sub_sedgem_save_sedcore()
     USE genie_util, ONLY: check_unit, check_iostat
     ! local variables
-    integer::i,j,o,l,is                                                !
+    integer::i,j,o,is,iss                                                !
     integer::ios                                                       ! file checks
     CHARACTER(len=255)::loc_filename                                   !
     real::loc_tot,loc_frac,loc_standard                                !
@@ -1688,7 +1687,7 @@ CONTAINS
     real::loc_ash_tot                                                  !
     INTEGER,DIMENSION(n_i,n_j)::loc_n_sed_stack_top    ! sediment stack top layer number
     REAL,DIMENSION(n_i,n_j)::loc_sed_stack_top_th      ! sediment stack top layer thickness
-    integer::loc_l,loc_nt_sed                                         !
+    integer::loc_is,loc_nt_sed                                         !
     integer,DIMENSION(n_sed_tot)::loc_is_iss                !
 
     ! *** initialize variables ***
@@ -1886,31 +1885,31 @@ CONTAINS
              ! *** (i) calculate isotopic values in 'per mil' units
              !         NOTE: filter the result to remove the 'null' value when a delta cannot be calculated
              !               because this will screw up writing in the ASCII format later
-             DO l=1,nt_sed
-                is = is_iss(l)
-                SELECT CASE (sed_type(is))
+             DO is=1,nt_sed
+                iss = is_iss(is)
+                SELECT CASE (sed_type(iss))
                 case (n_itype_min:n_itype_max)
                    DO o = 0,n_sed_tot
-                      loc_tot  = loc_sed_save(sed_dep(is),i,j,o)
-                      loc_frac = loc_sed_save(is,i,j,o)
-                      loc_standard = const_standards(sed_type(is))
+                      loc_tot  = loc_sed_save(sed_dep(iss),i,j,o)
+                      loc_frac = loc_sed_save(iss,i,j,o)
+                      loc_standard = const_standards(sed_type(iss))
                       loc_delta = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
                       If (loc_delta == const_real_null) then
-                         loc_sed_save(is,i,j,o) = const_real_zero
+                         loc_sed_save(iss,i,j,o) = const_real_zero
                       else
-                         loc_sed_save(is,i,j,o) = loc_delta
+                         loc_sed_save(iss,i,j,o) = loc_delta
                       end If
                    end DO
                 end SELECT
              end do
 
              ! *** (h) convert mass or volume fraction to % units
-             DO l=1,nt_sed
-                is = is_iss(l)
-                SELECT CASE (sed_type(is))
+             DO is=1,nt_sed
+                iss = is_iss(is)
+                SELECT CASE (sed_type(iss))
                 case (par_sed_type_bio,par_sed_type_abio)
                    DO o = 0,n_sed_tot
-                      loc_sed_save(is,i,j,o) = 100.0*loc_sed_save(is,i,j,o)
+                      loc_sed_save(iss,i,j,o) = 100.0*loc_sed_save(iss,i,j,o)
                    end DO
                 end SELECT
              end do
@@ -1944,16 +1943,16 @@ CONTAINS
     ! NOTE: the '%' character is included at the start of the column header as an aid to MATLAB data importing
     ! define sub-set of selected tracer to be saved
     loc_is_iss(:) = 0
-    loc_l = 0
-    DO l=1,nt_sed
-       is = is_iss(l)
-       SELECT CASE (sed_type(is))
+    loc_is = 0
+    DO is=1,nt_sed
+       iss = is_iss(is)
+       SELECT CASE (sed_type(iss))
        CASE (par_sed_type_bio,par_sed_type_abio,n_itype_min:n_itype_max)
-          loc_l = loc_l + 1
-          loc_is_iss(loc_l) = is
+          loc_is = loc_is + 1
+          loc_is_iss(loc_is) = iss
        END SELECT
     end DO
-    loc_nt_sed = loc_l
+    loc_nt_sed = loc_is
     ! save data
     DO i = 1,n_i
        DO j = 1,n_j
@@ -1973,7 +1972,7 @@ CONTAINS
                   & '     14C age',                              &
                   & ' D14C (o/oo)',                              &
                   & ' Phi (cm3 cm-3)',                           &
-                  & (trim(string_sed(loc_is_iss(loc_l))),loc_l=1,loc_nt_sed)
+                  & (trim(string_sed(loc_is_iss(loc_is))),loc_is=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              o = 0
              write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -1985,7 +1984,7 @@ CONTAINS
                   & loc_sed_save_age_14C(i,j,o),                           &
                   & loc_sed_save_CaCO3_D14C(i,j,o),                        &
                   & loc_sed_save_poros(i,j,o),                             &
-                  & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+                  & (loc_sed_save(loc_is_iss(loc_is),i,j,o),loc_is=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              o = 1
              write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -1997,7 +1996,7 @@ CONTAINS
                   & loc_sed_save_age_14C(i,j,o),                           &
                   & loc_sed_save_CaCO3_D14C(i,j,o),                        &
                   & loc_sed_save_poros(i,j,o),                             &
-                  & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+                  & (loc_sed_save(loc_is_iss(loc_is),i,j,o),loc_is=1,loc_nt_sed)
              call check_iostat(ios,__LINE__,__FILE__)
              do o=2,n_sed_tot
                 write(unit=out,fmt='(I4,2f10.3,3f14.3,f12.3,f15.3,999f10.3)',iostat=ios) &
@@ -2009,7 +2008,7 @@ CONTAINS
                      & loc_sed_save_age_14C(i,j,o),                                      &
                      & loc_sed_save_CaCO3_D14C(i,j,o),                                   &
                      & loc_sed_save_poros(i,j,o),                                        &
-                     & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+                     & (loc_sed_save(loc_is_iss(loc_is),i,j,o),loc_is=1,loc_nt_sed)
                 call check_iostat(ios,__LINE__,__FILE__)
              end do
              CLOSE(unit=out,iostat=ios)
@@ -2057,7 +2056,7 @@ CONTAINS
     real,INTENT(in)::dum_dtyr
     real,DIMENSION(:,:,:),intent(in)::dum_sfcsumocn
     ! local variables
-    INTEGER::i,j,l,io,is,ic,ips          !
+    INTEGER::i,j,l,is,io,iss,ic,ips          !
     CHARACTER(len=255)::loc_filename
     REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
     REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
@@ -2083,14 +2082,14 @@ CONTAINS
     ! calculate core-top sediment composition data
     loc_sed_coretop(:,:,:) = fun_sed_coretop()
     ! calculate local sediment preservation (%)
-    DO l=1,nt_sed
-       is = is_iss(l)
+    DO is = 1, nt_sed
+       iss = is_iss(is)
        DO i=1,n_i
           DO j=1,n_j
-             IF (sed_fsed(is,i,j) > const_real_nullsmall) THEN
-                loc_sed_preservation(is,i,j) = 100.0*(sed_fsed(is,i,j) - sed_fdis(is,i,j))/sed_fsed(is,i,j)
+             IF (sed_fsed(iss,i,j) > const_real_nullsmall) THEN
+                loc_sed_preservation(iss,i,j) = 100.0*(sed_fsed(iss,i,j) - sed_fdis(iss,i,j))/sed_fsed(iss,i,j)
              else
-                loc_sed_preservation(is,i,j) = 0.0
+                loc_sed_preservation(iss,i,j) = 0.0
              end if
           end do
        end do
@@ -2112,71 +2111,71 @@ CONTAINS
     CALL sub_save_data_ij(loc_filename,n_i,n_j,phys_sed(ips_lone,:,:) - phys_sed(ips_dlon,:,:))
     ! save interface flux data
     ! NOTE: flux data must be converted from units of (mol cm-2) to (mol cm-2 yr-1)
-    DO l=1,nt_sed
-       is = is_iss(l)
+    DO is = 1, nt_sed
+       iss = is_iss(is)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
-             SELECT CASE (sed_type(is))
+             SELECT CASE (sed_type(iss))
              CASE (par_sed_type_bio,par_sed_type_abio)
                 ! solids
-                loc_ij(i,j) = sed_fsed(is,i,j)/dum_dtyr
+                loc_ij(i,j) = sed_fsed(iss,i,j)/dum_dtyr
              case (n_itype_min:n_itype_max)
                 ! isotopes
-                loc_tot  = sed_fsed(sed_dep(is),i,j)
-                loc_frac = sed_fsed(is,i,j)
-                loc_standard = const_standards(sed_type(is))
+                loc_tot  = sed_fsed(sed_dep(iss),i,j)
+                loc_frac = sed_fsed(iss,i,j)
+                loc_standard = const_standards(sed_type(iss))
                 loc_ij(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
              END SELECT
           end do
        end do
-       SELECT CASE (sed_type(is))
+       SELECT CASE (sed_type(iss))
        CASE (par_sed_type_bio,par_sed_type_abio,n_itype_min:n_itype_max)
           loc_filename = &
-               & TRIM(par_outdir_name)//'seddiag_fsed_'//TRIM(string_sed(is))//string_results_ext
+               & TRIM(par_outdir_name)//'seddiag_fsed_'//TRIM(string_sed(iss))//string_results_ext
           CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
        END SELECT
     END DO
-    DO l=1,nt_sed
-       is = is_iss(l)
+    DO is = 1, nt_sed
+       iss = is_iss(is)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
-             SELECT CASE (sed_type(is))
+             SELECT CASE (sed_type(iss))
              CASE (par_sed_type_bio,par_sed_type_abio)
                 ! solids
-                loc_ij(i,j) = sed_fdis(is,i,j)/dum_dtyr
+                loc_ij(i,j) = sed_fdis(iss,i,j)/dum_dtyr
              case (n_itype_min:n_itype_max)
                 ! isotopes
-                loc_tot  = sed_fsed(sed_dep(is),i,j)
-                loc_frac = sed_fsed(is,i,j)
-                loc_standard = const_standards(sed_type(is))
+                loc_tot  = sed_fsed(sed_dep(iss),i,j)
+                loc_frac = sed_fsed(iss,i,j)
+                loc_standard = const_standards(sed_type(iss))
                 loc_ij(i,j) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_nulliso)
              END SELECT
           end do
        end do
-       SELECT CASE (sed_type(is))
+       SELECT CASE (sed_type(iss))
        CASE (par_sed_type_bio,par_sed_type_abio,n_itype_min:n_itype_max)
           loc_filename = &
-               & TRIM(par_outdir_name)//'seddiag_fdis_'//TRIM(string_sed(is))//string_results_ext
+               & TRIM(par_outdir_name)//'seddiag_fdis_'//TRIM(string_sed(iss))//string_results_ext
           CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
        END SELECT
     END DO
-    DO l=1,nt_sed
-       is = is_iss(l)
+    DO is = 1, nt_sed
+       iss = is_iss(is)
        loc_ij(:,:) = const_real_zero
        DO i=1,n_i
           DO j=1,n_j
-             SELECT CASE (sed_type(is))
+             SELECT CASE (sed_type(iss))
              CASE (par_sed_type_bio,par_sed_type_abio)
-                loc_ij(i,j) = loc_sed_preservation(is,i,j)
+                loc_ij(i,j) = loc_sed_preservation(iss,i,j)
              END SELECT
           end do
        end do
-       SELECT CASE (sed_type(is))
+       SELECT CASE (sed_type(iss))
        CASE (par_sed_type_bio,par_sed_type_abio)
           loc_filename = &
-               & TRIM(par_outdir_name)//'seddiag_pres_'//TRIM(string_sed(is))//string_results_ext
+               & TRIM(par_outdir_name)//'seddiag_pres_'//TRIM(string_sed(iss))//string_results_ext
           CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_ij(:,:))
        end SELECT
     END DO
@@ -2242,13 +2241,13 @@ CONTAINS
     ! save core-top data
     ! NOTE: the call to fun_sed_coretop made in populating <loc_sed_coretop> has already made the necessary type conversions
     !       for solid tracers as wt%, isotopes in per mill, and recovery of the carbonate 'age' value
-    DO l=1,nt_sed
-       is = is_iss(l)
-       SELECT CASE (sed_type(is))
+    DO is = 1, nt_sed
+       iss = is_iss(is)
+       SELECT CASE (sed_type(iss))
        CASE (par_sed_type_bio,par_sed_type_abio,par_sed_type_age,n_itype_min:n_itype_max)
           loc_filename = &
-               & TRIM(par_outdir_name)//'seddiag_sed_'//TRIM(string_sed(is))//string_results_ext
-          CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_sed_coretop(is,:,:))
+               & TRIM(par_outdir_name)//'seddiag_sed_'//TRIM(string_sed(iss))//string_results_ext
+          CALL sub_save_data_ij(loc_filename,n_i,n_j,loc_sed_coretop(iss,:,:))
        end SELECT
     END DO
     ! save phys (grid) details

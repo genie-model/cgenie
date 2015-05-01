@@ -995,17 +995,42 @@ cover/simple-corg-diagen
 \end{verbatim}
 
 
+\subsection{Still broken: \texttt{simple-corg-diagen}}
+
 \begin{verbatim}
-sedgem/fields_sedgem_2d.nc
+sedgem/fields_sedgem_2d.nc                  [FINAL OUTPUT ONLY]
 biogem/fields_biogem_3d.nc
-biogem/biogem_series_fseaair_pO2.res
-biogem/biogem_series_focnatm_pO2.res
-biogem/biogem_series_ocn_H2S.res
-biogem/biogem_series_focnatm_pCO2.res
-biogem/biogem_series_focnatm_pCO2_13C.res
+  ocn_DIC_13C                                1.5 ->
+  ocn_H2S                                   49.5 ->
+  carb_H                                    49.5 ->
+  carb_fug_CO2                              99.5 ->
+  carb_conc_CO2                             49.5 ->
+  carb_conc_CO3                             49.5 ->
+  carb_conc_HCO3                            99.5 ->
+  carb_ohm_cal                              99.5 ->
+  carb_ohm_arg                              49.5 ->
+  carb_dCO3_cal                             49.5 ->
+  carb_dCO3_arg                             49.5 ->
+  phys_u                                     1.5 -> ?
+  phys_v                                     1.5 -> ?
+  carb_d13C_CO32                             1.5 -> ***
+biogem/biogem_series_fseaair_pO2.res        55.5 ->
+biogem/biogem_series_focnatm_pO2.res        49.5 ->
+biogem/biogem_series_ocn_H2S.res            29.5 ->
+biogem/biogem_series_focnatm_pCO2.res       29.5 ->
+biogem/biogem_series_focnatm_pCO2_13C.res   29.5 ->
 biogem/fields_biogem_2d.nc
-biogem/biogem_series_fseaair_pH2S.res
+  atm_dpCO2                                 49.5 ->
+biogem/biogem_series_fseaair_pH2S.res       29.5 ->
 \end{verbatim}
+
+Careful comparison of the results for a long (5000 year) simulation
+here seems to indicate that the differences are small and are probably
+due to compiler reordering of floating point operations somewhere.  (I
+can't be definite about that, but the differences in the results are
+definitely all below the threshold of scientific significance, so I
+don't want to spend any more time trying to track down precisely
+what's going on here.)
 
 %----------------------------------------------------------------------
 \section{Sediment tracers}
@@ -1022,191 +1047,497 @@ biogem/biogem_series_fseaair_pH2S.res
   \item{Global replace \texttt{intrac\_sed\_max} with \texttt{nt\_sed\_all}.}
 \end{enumerate}
 
+\textbf{SHOULD SET \texttt{iss\_is} TO ZERO FOR UNUSED TRACERS AND
+  SIZE ALL \texttt{nt\_sed} ARRAYS AS \texttt{0:nt\_sed} TO AVOID NEED
+  FOR \texttt{sed\_select} CHECKS.  (DO SAME FOR ATMOSPHERIC
+  TRACERS?)}
+
 \subsection{Step 2: array definitions}
 
+\texttt{OK} means already sorted; \texttt{NA} means removed;
+\texttt{SZ} means size parameters that can probably just be removed;
+\texttt{+} means need to change to \texttt{nt\_sed}; \texttt{!!} means
+sediment tracer checks needed; \texttt{->} means skip for now.
+
 \newpage
+References to \texttt{nt\_sed\_all}:
+
 \begin{small}
 \begin{verbatim}
-wrappers/genie_global.f90:
-14:   USE gem_cmn, ONLY: nt_sed_all
-1045: ALLOCATE(genie_sfcsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
-1047: ALLOCATE(genie_sfxsumsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
-1049: ALLOCATE(genie_sfxsumsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
-1051: ALLOCATE(genie_sfcsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
-1053: ALLOCATE(genie_sfxsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+wrappers/genie_global.f90: [1]
+OK    14: USE gem_cmn, ONLY: nt_sed_all
+ +  1045: ALLOCATE(genie_sfcsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+ +  1047: ALLOCATE(genie_sfxsumsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+ +  1049: ALLOCATE(genie_sfxsumsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+ +  1051: ALLOCATE(genie_sfcsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+ +  1053: ALLOCATE(genie_sfxsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
 
 wrappers/genie_loop_wrappers.f90:
-176:  & nt_sed_all, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
-190:  CALL cpl_flux_sedsed1(nt_sed_all, ilon1_ocn, ilat1_ocn, &
+SZ   176: & nt_sed_all, ilon1_ocn, ilat1_ocn, ilon1_sed, ilat1_sed, &
+SZ   190: CALL cpl_flux_sedsed1(nt_sed_all, ilon1_ocn, ilat1_ocn, &
 
 sedgem/sedgem_data.f90:
-213:  integer,DIMENSION(nt_sed_all)::loc_is_iss
-664:  do is=1,nt_sed_all
-982:  REAL,DIMENSION(nt_sed_all)::loc_sed
-1121: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
-1122: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
-1127: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fsed
-1128: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fdis
-1708: ALLOCATE(loc_sed_save(nt_sed_all,n_i,n_j,0:n_sed_tot),STAT=alloc_error)
-2072: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
-2073: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
+OK   213: integer,DIMENSION(nt_sed_all)::loc_is_iss
+ +   664: do is=1,nt_sed_all [conv_sed_mask]
+->   982: REAL,DIMENSION(nt_sed_all)::loc_sed
+ +  1121: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop [fun_sed_coretop]
+NA  1122: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
+!!  1127: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fsed
+!!  1128: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_fdis
+ +  1708: ALLOCATE(loc_sed_save(nt_sed_all,n_i,n_j,0:n_sed_tot),STAT=alloc_error) [sed,sed_top]
+ +  2072: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop [fun_sed_coretop]
+ +  2073: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation [sed_fsed,sed_fdis]
 
 sedgem/sedgem_data_netCDF.f90:
-281:  real,dimension(nt_sed_all)::loc_sed
-1231: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop
-1232: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation
-1425: DO is=1,nt_sed_all
-1548: DO is=1,nt_sed_all
+->   281: real,dimension(nt_sed_all)::loc_sed
+ +  1231: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_coretop [fun_sed_coretop]
+ +  1232: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed_preservation [sed_fsed,sed_fdis]
+OK  1425: DO is=1,nt_sed_all
+OK  1548: DO is=1,nt_sed_all
 
 sedgem/sedgem.f90:
-69:   ALLOCATE(sed(nt_sed_all,n_i,n_j,n_sed_tot),STAT=alloc_error)
-71:   ALLOCATE(sed_top(nt_sed_all,n_i,n_j),STAT=alloc_error)
-77:   ALLOCATE(sed_fsed(nt_sed_all,n_i,n_j),STAT=alloc_error)
-79:   ALLOCATE(sed_fdis(nt_sed_all,n_i,n_j),STAT=alloc_error)
-93:   ALLOCATE(sed_fsed_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
-95:   ALLOCATE(sed_fdis_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
-247:  REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
-255:  real,DIMENSION(nt_sed_all,n_i,n_j)::loc_sfxsumsed_OLD
+ +    69: ALLOCATE(sed(nt_sed_all,n_i,n_j,n_sed_tot),STAT=alloc_error)
+ +    71: ALLOCATE(sed_top(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +    77: ALLOCATE(sed_fsed(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +    79: ALLOCATE(sed_fdis(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +    93: ALLOCATE(sed_fsed_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +    95: ALLOCATE(sed_fdis_OLD(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   247: REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
+ +   255: real,DIMENSION(nt_sed_all,n_i,n_j)::loc_sfxsumsed_OLD
 
 sedgem/sedgem_box.f90:
-78:   REAL,DIMENSION(nt_sed_all)::loc_new_sed
-79:   REAL,DIMENSION(nt_sed_all)::loc_dis_sed
-80:   REAL,DIMENSION(nt_sed_all)::loc_exe_sed
-635:  do is=1,nt_sed_all
-639:  do is=1,nt_sed_all
-643:  do is=1,nt_sed_all
-735:  REAL,DIMENSION(nt_sed_all)::loc_new_sed
-736:  REAL,DIMENSION(nt_sed_all)::loc_dis_sed
-737:  REAL,DIMENSION(nt_sed_all)::loc_exe_sed
-1091: do is=1,nt_sed_all
-1095: do is=1,nt_sed_all
-1099: do is=1,nt_sed_all
-1156: REAL,DIMENSION(nt_sed_all)::loc_new_sed
-1157: REAL,DIMENSION(nt_sed_all)::loc_dis_sed
-1158: REAL,DIMENSION(nt_sed_all)::loc_exe_sed
-1563: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
-1564: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
-1565: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
-1737: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
-1738: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
-1739: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
-1940: REAL,INTENT(inout),DIMENSION(nt_sed_all,0:par_n_sed_mix)::dum_sed
-1941: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_top
+ +    78: REAL,DIMENSION(nt_sed_all)::loc_new_sed
+ +    79: REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+ +    80: REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+ ?   635: do is=1,nt_sed_all
+ ?   639: do is=1,nt_sed_all
+ ?   643: do is=1,nt_sed_all
+ +   735: REAL,DIMENSION(nt_sed_all)::loc_new_sed
+ +   736: REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+ +   737: REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+ ?  1091: do is=1,nt_sed_all
+ ?  1095: do is=1,nt_sed_all
+ ?  1099: do is=1,nt_sed_all
+ +  1156: REAL,DIMENSION(nt_sed_all)::loc_new_sed
+ +  1157: REAL,DIMENSION(nt_sed_all)::loc_dis_sed
+ +  1158: REAL,DIMENSION(nt_sed_all)::loc_exe_sed
+ +  1563: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
+ +  1564: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
+ +  1565: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
+ +  1737: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_dis
+ +  1738: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_new
+ +  1739: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed_top
+ +  1940: REAL,INTENT(inout),DIMENSION(nt_sed_all,0:par_n_sed_mix)::dum_sed
+ +  1941: REAL,INTENT(inout),DIMENSION(nt_sed_all)::dum_sed_top
 
 sedgem/sedgem_lib.f90:
-322:  real,DIMENSION(nt_sed_all)::conv_sed_cm3_mol
-323:  real,DIMENSION(nt_sed_all)::conv_sed_mol_cm3
-324:  real,DIMENSION(nt_sed_all)::conv_sed_cm3_g
-325:  real,DIMENSION(nt_sed_all)::conv_sed_g_cm3
-326:  real,DIMENSION(nt_sed_all)::conv_sed_mask
-397:  REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
-412:  REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
-496:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::fun_sed_coretop
-501:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed
+ +   322: real,DIMENSION(nt_sed_all)::conv_sed_cm3_mol
+ +   323: real,DIMENSION(nt_sed_all)::conv_sed_mol_cm3
+ +   324: real,DIMENSION(nt_sed_all)::conv_sed_cm3_g
+ +   325: real,DIMENSION(nt_sed_all)::conv_sed_g_cm3
+ +   326: real,DIMENSION(nt_sed_all)::conv_sed_mask
+ +   397: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
+ +   412: REAL,INTENT(in),DIMENSION(nt_sed_all)::dum_sed
+ +   496: REAL,DIMENSION(nt_sed_all,n_i,n_j)::fun_sed_coretop
+ +   501: REAL,DIMENSION(nt_sed_all,n_i,n_j)::loc_sed
 
 biogem/biogem_box.f90:
-361:  real,dimension(nt_sed_all,n_k)::loc_bio_part_DOM
-362:  real,dimension(nt_sed_all,n_k)::loc_bio_part_RDOM
-1528: real,dimension(nt_sed_all,n_k)::loc_bio_part
-2299: real,dimension(nt_sed_all,n_k)::loc_bio_part
-3503: real,dimension(nt_sed_all,n_i,n_j,n_k)::loc_bio_part
+ +   361: real,dimension(nt_sed_all,n_k)::loc_bio_part_DOM
+ +   362: real,dimension(nt_sed_all,n_k)::loc_bio_part_RDOM
+ +  1528: real,dimension(nt_sed_all,n_k)::loc_bio_part
+ +  2299: real,dimension(nt_sed_all,n_k)::loc_bio_part
+ +  3503: real,dimension(nt_sed_all,n_i,n_j,n_k)::loc_bio_part
 
 biogem/biogem.f90:
-72:   ALLOCATE(bio_part(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
-76:   ALLOCATE(bio_settle(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
-78:   ALLOCATE(bio_part_red(nt_sed_all,nt_sed_all,n_i,n_j),STAT=alloc_error)
-109:  ALLOCATE(int_bio_part_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
-111:  ALLOCATE(int_bio_settle_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
-129:  ALLOCATE(int_sfcsed1_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
-131:  ALLOCATE(int_focnsed_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
-200:  ALLOCATE(force_flux_sed(nt_sed_all,n_i,n_j),STAT=alloc_error)
-202:  ALLOCATE(force_flux_sed_I(nt_sed_all,n_i,n_j),STAT=alloc_error)
-204:  ALLOCATE(force_flux_sed_II(nt_sed_all,n_i,n_j),STAT=alloc_error)
-593:  REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::locijk_fpart
-603:  REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
-608:  REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
-2417: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
-2701: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+ +    72: ALLOCATE(bio_part(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+ +    76: ALLOCATE(bio_settle(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+ +    78: ALLOCATE(bio_part_red(nt_sed_all,nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   109: ALLOCATE(int_bio_part_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+ +   111: ALLOCATE(int_bio_settle_timeslice(nt_sed_all,n_i,n_j,n_k),STAT=alloc_error)
+ +   129: ALLOCATE(int_sfcsed1_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   131: ALLOCATE(int_focnsed_timeslice(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   200: ALLOCATE(force_flux_sed(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   202: ALLOCATE(force_flux_sed_I(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   204: ALLOCATE(force_flux_sed_II(nt_sed_all,n_i,n_j),STAT=alloc_error)
+ +   593: REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::locijk_fpart
+ +   603: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+ +   608: REAL,DIMENSION(nt_sed_all)::loc_fracdecay_sed
+ +  2417: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
+ +  2701: REAL,DIMENSION(nt_sed_all,n_i,n_j)::locij_focnsed
 
 biogem/biogem_lib.f90:
-820:  REAL,DIMENSION(nt_sed_all)::int_fexport_sig
-822:  REAL,DIMENSION(nt_sed_all)::int_focnsed_sig
-834:  REAL,DIMENSION(nt_sed_all)::int_ocnsed_sig
-943:  REAL,DIMENSION(nt_sed_all,2,n_data_max)::force_flux_sed_sig
-944:  REAL,DIMENSION(nt_sed_all)::force_flux_sed_sig_x
-945:  INTEGER,DIMENSION(nt_sed_all,2)::force_flux_sed_sig_i
-946:  LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_select
-947:  LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_scale
-953:  integer,DIMENSION(nt_sed_all)::force_sed_uniform
-956:  integer,DIMENSION(nt_sed_all)::force_sed_point_i
-959:  integer,DIMENSION(nt_sed_all)::force_sed_point_j
-1266: REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed
+ +   820: REAL,DIMENSION(nt_sed_all)::int_fexport_sig
+ +   822: REAL,DIMENSION(nt_sed_all)::int_focnsed_sig
+ +   834: REAL,DIMENSION(nt_sed_all)::int_ocnsed_sig
+ +   943: REAL,DIMENSION(nt_sed_all,2,n_data_max)::force_flux_sed_sig
+ +   944: REAL,DIMENSION(nt_sed_all)::force_flux_sed_sig_x
+ +   945: INTEGER,DIMENSION(nt_sed_all,2)::force_flux_sed_sig_i
+ +   946: LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_select
+ +   947: LOGICAL,DIMENSION(nt_sed_all)::force_flux_sed_scale
+ +   953: integer,DIMENSION(nt_sed_all)::force_sed_uniform
+ +   956: integer,DIMENSION(nt_sed_all)::force_sed_point_i
+ +   959: integer,DIMENSION(nt_sed_all)::force_sed_point_j
+ +  1266: REAL,DIMENSION(nt_sed_all,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed
 
 biogem/biogem_data.f90:
-449:  integer,DIMENSION(nt_sed_all)::loc_is_iss
-729:  real,dimension(1:n_ocn,1:nt_sed_all)::loc_conv_sed_ocn
-730:  integer,dimension(0:n_ocn,0:nt_sed_all)::loc_tracerrelationships
-1914: do is=1,nt_sed_all
-1971: do is=1,nt_sed_all
+ +   449:  integer,DIMENSION(nt_sed_all)::loc_is_iss
+ ?   729:  real,dimension(1:n_ocn,1:nt_sed_all)::loc_conv_sed_ocn
+ ?   730:  integer,dimension(0:n_ocn,0:nt_sed_all)::loc_tracerrelationships
+ ?  1914: do is=1,nt_sed_all
+ ?  1971: do is=1,nt_sed_all
 
 common/gem_cmn.f90:
-26:   INTEGER,PARAMETER::nt_sed_all = 79
-38:   LOGICAL,DIMENSION(nt_sed_all)::sed_select
-447:  INTEGER, DIMENSION(nt_sed_all) :: sed_type
-451:  INTEGER, DIMENSION(nt_sed_all) :: sed_dep
-455:  CHARACTER(len=16), DIMENSION(nt_sed_all) :: string_sed
-459:  CHARACTER(len=128), DIMENSION(nt_sed_all) :: string_longname_sed
-467:  CHARACTER(len=12), DIMENSION(nt_sed_all) :: string_sed_unit
-468:  REAL, DIMENSION(nt_sed_all,2) :: sed_mima
-479:  INTEGER, DIMENSION(nt_sed_all) :: iss_is
-490:  real,DIMENSION(nt_sed_all,n_ocn)::conv_ocn_sed
-491:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn
-494:  real,DIMENSION(nt_sed_all,n_ocn)::conv_DOM_POM
-495:  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_DOM
-496:  real,DIMENSION(nt_sed_all,n_ocn)::conv_RDOM_POM
-497:  real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_RDOM
-498:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_N
-499:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_S
-500:  real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_meth
-512:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_ocn_sed_i
-513:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i
-516:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_DOM_POM_i
-517:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_DOM_i
-518:  integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_RDOM_POM_i
-519:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_RDOM_i
-520:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_N
-521:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_S
-522:  integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_meth
-784:  REAL,DIMENSION(nt_sed_all)::const_lambda_sed
+OK    26: INTEGER,PARAMETER::nt_sed_all = 79
+OK    38: LOGICAL,DIMENSION(nt_sed_all)::sed_select
+OK   447: INTEGER, DIMENSION(nt_sed_all) :: sed_type
+OK   451: INTEGER, DIMENSION(nt_sed_all) :: sed_dep
+OK   455: CHARACTER(len=16), DIMENSION(nt_sed_all) :: string_sed
+OK   459: CHARACTER(len=128), DIMENSION(nt_sed_all) :: string_longname_sed
+OK   467: CHARACTER(len=12), DIMENSION(nt_sed_all) :: string_sed_unit
+OK   468: REAL, DIMENSION(nt_sed_all,2) :: sed_mima
+OK   479: INTEGER, DIMENSION(nt_sed_all) :: iss_is
+ ?   490: real,DIMENSION(nt_sed_all,n_ocn)::conv_ocn_sed
+ ?   491: real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn
+ ?   494: real,DIMENSION(nt_sed_all,n_ocn)::conv_DOM_POM
+ ?   495: real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_DOM
+ ?   496: real,DIMENSION(nt_sed_all,n_ocn)::conv_RDOM_POM
+ ?   497: real,DIMENSION(n_ocn,nt_sed_all)::conv_POM_RDOM
+ ?   498: real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_N
+ ?   499: real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_S
+ ?   500: real,DIMENSION(n_ocn,nt_sed_all)::conv_sed_ocn_meth
+ ?   512: integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_ocn_sed_i
+ ?   513: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i
+ ?   516: integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_DOM_POM_i
+ ?   517: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_DOM_i
+ ?   518: integer,DIMENSION(0:nt_sed_all,0:n_ocn)::conv_RDOM_POM_i
+ ?   519: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_POM_RDOM_i
+ ?   520: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_N
+ ?   521: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_S
+ ?   522: integer,DIMENSION(0:n_ocn,0:nt_sed_all)::conv_sed_ocn_i_meth
+ ?   784: REAL,DIMENSION(nt_sed_all)::const_lambda_sed
 
 common/initialise_gem.f90
-62:   do is=1,nt_sed_all
+ ?    62: do is=1,nt_sed_all
 
 common/gem_util.f90:
-1268: do is=1,nt_sed_all
-1277: do is=1,nt_sed_all
-1312: do is=1,nt_sed_all
-1321: do is=1,nt_sed_all
-1334: do is=1,nt_sed_all
-1343: do is=1,nt_sed_all
-1355: do is=1,nt_sed_all
-1367: do is=1,nt_sed_all
-1379: do is=1,nt_sed_all
-1399: real,dimension(1:n_ocn,1:nt_sed_all),INTENT(in)::dum_conv_sed_ocn
-1403: integer,dimension(0:n_ocn,0:nt_sed_all)::fun_recalc_tracerrelationships_i
-1409: integer,dimension(0:n_ocn,0:nt_sed_all)::loc_conv_sed_ocn_i
-1418: do is=1,nt_sed_all
-1443: real,dimension(n_ocn,nt_sed_all),INTENT(in)::dum_sed_ocn
-1461: do is=1,nt_sed_all
-1483: integer,dimension(0:n_ocn,0:nt_sed_all),INTENT(in)::dum_sed_ocn_i
-1505: do is=1,nt_sed_all
-1528: real,dimension(nt_sed_all,n_ocn),INTENT(in)::dum_ocn_sed
-1547: do is=1,nt_sed_all
-1568: integer,dimension(0:nt_sed_all,0:n_ocn),INTENT(in)::dum_ocn_sed_i
-1587: do is=1,nt_sed_all
-2074: do iss = 1, nt_sed_all
+ ?  1268: do is=1,nt_sed_all
+ ?  1277: do is=1,nt_sed_all
+ ?  1312: do is=1,nt_sed_all
+ ?  1321: do is=1,nt_sed_all
+ ?  1334: do is=1,nt_sed_all
+ ?  1343: do is=1,nt_sed_all
+ ?  1355: do is=1,nt_sed_all
+ ?  1367: do is=1,nt_sed_all
+ ?  1379: do is=1,nt_sed_all
+ ?  1399: real,dimension(1:n_ocn,1:nt_sed_all),INTENT(in)::dum_conv_sed_ocn
+ ?  1403: integer,dimension(0:n_ocn,0:nt_sed_all)::fun_recalc_tracerrelationships_i
+ ?  1409: integer,dimension(0:n_ocn,0:nt_sed_all)::loc_conv_sed_ocn_i
+ ?  1418: do is=1,nt_sed_all
+ ?  1443: real,dimension(n_ocn,nt_sed_all),INTENT(in)::dum_sed_ocn
+ ?  1461: do is=1,nt_sed_all
+ ?  1483: integer,dimension(0:n_ocn,0:nt_sed_all),INTENT(in)::dum_sed_ocn_i
+ ?  1505: do is=1,nt_sed_all
+ ?  1528: real,dimension(nt_sed_all,n_ocn),INTENT(in)::dum_ocn_sed
+ ?  1547: do is=1,nt_sed_all
+ ?  1568: integer,dimension(0:nt_sed_all,0:n_ocn),INTENT(in)::dum_ocn_sed_i
+ ?  1587: do is=1,nt_sed_all
+ ?  2074: do iss = 1, nt_sed_all
 \end{verbatim}
 \end{small}
+
+
+References to \texttt{nt\_sed}:
+
+\begin{small}
+\begin{verbatim}
+sedgem/sedgem_data.f90:
+ ?   212:  integer::loc_nt_sed
+
+sedgem/sedgem_data.f90:
+ ?   299:  DO l=1,nt_sed
+ ?   366:  & loc_nt_sed,
+ ?   367:  & (loc_is_iss(l),l=1,loc_nt_sed),
+ ?   368:  & (sed(loc_is_iss(l),:,:,:),l=1,loc_nt_sed),
+ ?   369:  & (sed_top(loc_is_iss(l),:,:),l=1,loc_nt_sed),
+ ?   371:  & (dum_sfxsumsed(is_iss(l),:,:),l=1,loc_nt_sed)
+ ?   632:  DO l=1,nt_sed
+ ?  1127: REAL, DIMENSION(nt_sed,n_i,n_j) :: loc_fsed
+ ?  1128: REAL, DIMENSION(nt_sed,n_i,n_j) :: loc_fdis
+ ?  1153: do is = 1, nt_sed
+ ?  1691: integer::loc_l,loc_nt_sed
+ ?  1889: DO l=1,nt_sed
+ ?  1908: DO l=1,nt_sed
+ ?  1948: DO l=1,nt_sed
+ ?  1956: loc_nt_sed = loc_l
+ ?  1976: & (trim(string_sed(loc_is_iss(loc_l))),loc_l=1,loc_nt_sed)
+ ?  1988: & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+ ?  2000: & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+ ?  2012: & (loc_sed_save(loc_is_iss(loc_l),i,j,o),loc_l=1,loc_nt_sed)
+ ?  2086: DO l=1,nt_sed
+ ?  2115: DO l=1,nt_sed
+ ?  2140: DO l=1,nt_sed
+ ?  2165: DO l=1,nt_sed
+ ?  2245: DO l=1,nt_sed
+
+sedgem/sedgem_data_netCDF.f90:
+ ?   117: DO l=1,nt_sed
+ ?   175: DO l=1,nt_sed
+ ?   417: DO l=1,nt_sed
+ ?   533: DO l=1,nt_sed
+ ?   548: DO l=1,nt_sed
+ ?   601: DO l=1,nt_sed
+ ?   620: DO l=1,nt_sed
+ ?   662: DO l=1,nt_sed
+ ?   679: DO l=1,nt_sed
+ ?   724: DO l=1,nt_sed
+ ?   742: DO l=1,nt_sed
+ ?   756: DO l=1,nt_sed
+ ?   916: DO l=1,nt_sed
+ ?   997: DO l=1,nt_sed
+ ?  1252: DO l=1,nt_sed
+ ?  1312: DO l=1,nt_sed
+ ?  1340: DO l=1,nt_sed
+ ?  1368: DO l=1,nt_sed
+
+sedgem/sedgem.f90:
+ ?   221: n_sedcore_tracer = nt_sed
+ ?   288: DO l=1,nt_sed
+ ?   521: DO l=1,nt_sed
+ ?   767: & nt_sed,
+ ?   768: & (is_iss(l),l=1,nt_sed),              &
+ ?   769: & (sed(is_iss(l),:,:,:),l=1,nt_sed),   &
+ ?   770: & (sed_top(is_iss(l),:,:),l=1,nt_sed), &
+ ?   977: DO l=1,nt_sed
+
+sedgem/sedgem_box.f90:
+ ?   117: DO l=1,nt_sed
+ ?   189: DO l=1,nt_sed
+ ?   216: DO l=1,nt_sed
+ ?   233: DO l=1,nt_sed
+ ?   260: DO l=1,nt_sed
+ ?   304: DO l=1,nt_sed
+ ?   325: DO l=1,nt_sed
+ ?   359: DO l=1,nt_sed
+ ?   384: DO l=1,nt_sed
+ ?   573: DO l=1,nt_sed
+ ?   581: DO l=1,nt_sed
+ ?   612: DO l=1,nt_sed
+ ?   758: DO l=1,nt_sed
+ ?   876: DO l=1,nt_sed
+ ?   883: DO l=1,nt_sed
+ ?  1042: DO l=1,nt_sed
+ ?  1050: DO l=1,nt_sed
+ ?  1170: DO l=1,nt_sed
+ ?  1238: DO l=1,nt_sed
+ ?  1265: DO l=1,nt_sed
+ ?  1290: DO l=1,nt_sed
+ ?  1310: DO l=1,nt_sed
+ ?  1329: DO l=1,nt_sed
+ ?  1489: DO l=1,nt_sed
+ ?  1497: DO l=1,nt_sed
+ ?  1528: DO l=1,nt_sed
+ ?  1689: DO l=1,nt_sed
+ ?  1707: DO l=1,nt_sed
+ ?  1830: DO l=1,nt_sed
+ ?  1858: DO l=1,nt_sed
+ ?  1948: REAL,DIMENSION(nt_sed,0:par_n_sed_mix)::loc_sed
+ ?  1949: REAL,DIMENSION(nt_sed)::loc_sed_top
+ ?  1951: REAL,DIMENSION(nt_sed)::loc_exe
+ ?  1952: REAL,DIMENSION(nt_sed,0:par_n_sed_mix)::loc_dsed
+ ?  1953: REAL,DIMENSION(nt_sed)::loc_dsed_top
+ ?  2012: DO l=1,nt_sed
+ ?  2057: DO l=1,nt_sed
+
+sedgem/sedgem_lib.f90:
+ ?   518: DO l=1,nt_sed
+
+biogem/biogem_box.f90:
+ ?  1196: DO l=1,nt_sed
+ ?  1208: DO l=1,nt_sed
+ ?  1247: DO l=1,nt_sed
+ ?  1259: DO l=1,nt_sed
+ ?  1316: DO l=1,nt_sed
+ ?  1542: DO l=3,nt_sed
+ ?  1643: DO l=1,nt_sed
+ ?  1660: DO l=3,nt_sed
+ ?  2301: real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo
+ ?  2390: DO ls=1,nt_sed
+ ?  2441: real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo
+ ?  2446: real,dimension(1:nt_sed,1:n_k)::loc_bio_part_TMP
+ ?  2447: real,dimension(1:nt_sed,1:n_k)::loc_bio_part_OLD
+ ?  2448: real,dimension(1:nt_sed,1:n_k)::loc_bio_part
+ ?  2450: real,dimension(1:nt_sed,1:n_k)::loc_bio_settle
+ ?  2451: real,dimension(1:nt_sed)::loc_bio_part_remin
+ ?  2718: DO l=1,nt_sed
+ ?  2778: DO l=1,nt_sed
+ ?  2786: DO ls=1,nt_sed
+ ?  2843: DO l=1,nt_sed
+ ?  2870: DO l=1,nt_sed
+ ?  3538: DO l=1,nt_sed
+
+biogem/biogem_data_netCDF.f90:
+ ?    98: DO is = 1, nt_sed
+ ?   130: DO is = 1, nt_sed
+ ?  1576: DO is = 1, nt_sed
+ ?  1651: DO is = 1, nt_sed
+ ?  2180: DO is = 1, nt_sed
+ ?  2217: DO is = 1, nt_sed
+ ?  2776: DO is = 1, nt_sed
+ ?  2853: DO is = 1, nt_sed
+ ?  2945: DO is = 1, nt_sed
+
+biogem/biogem.f90:
+ ?   391: allocate(vbio_part(n)%mk(1:nt_sed,1:n_k),STAT=alloc_error)
+ ?   393: allocate(vdbio_part(n)%mk(1:nt_sed,1:n_k),STAT=alloc_error)
+ ?   620: real,dimension(n_l_ocn,nt_sed)::loc_conv_ls_lo                !
+ ?   758: DO l=1,nt_sed
+ ?   864: DO l=1,nt_sed
+ ?   921: DO ls=1,nt_sed
+ ?  1252: DO l=1,nt_sed
+ ?  1753: DO l=1,nt_sed
+ ?  1778: DO l=1,nt_sed
+ ?  1829: DO l=1,nt_sed
+ ?  2028: vbio_part(n)%mk(1:nt_sed,k) = vbio_part(n)%mk(1:nt_sed,k) + vdbio_part(n)%mk(1:nt_sed,k)
+ ?  2029: vbio_part(n)%mk(1:nt_sed,k) = loc_Sratio*vbio_part(n)%mk(1:nt_sed,k)
+ ?  2102: DO l=1,nt_sed
+ ?  2285: DO l=1,nt_sed
+ ?  2329: & nt_sed,
+ ?  2330: & (is_iss(l),l=1,nt_sed),
+ ?  2331: & (bio_part(is_iss(l),:,:,:),l=1,nt_sed)
+ ?  2464: DO l=1,nt_sed
+ ?  2786: DO l=1,nt_sed
+ ?  2841: DO l=1,nt_sed
+ ?  2854: DO l=1,nt_sed
+ ?  2954: DO l=1,nt_sed
+
+biogem/biogem_data_ascii.f90:
+ ?   109: DO l=1,nt_sed
+ ?   198: DO l=1,nt_sed
+ ?   291: DO l=1,nt_sed
+ ?   958: DO l=1,nt_sed
+ ?  1099: DO l=1,nt_sed
+ ?  1199: DO l=1,nt_sed
+ ?  1813: DO l=1,nt_sed
+ ?  2109: DO l=1,nt_sed
+ ?  2141: DO l=1,nt_sed
+
+biogem/biogem_lib.f90:
+ ?  1096: allocate(fun_lib_init_vsed(n)%mk(1:nt_sed,1:n_k))
+ ?  1204: allocate(fun_lib_conv_sedTOvsed(n)%mk(1:nt_sed,1:n_k))
+ ?  1219: DO l=1,nt_sed
+ ?  1279: DO l=1,nt_sed
+
+biogem/biogem_data.f90:
+ ?   447: integer::loc_n_l_ocn,loc_nt_sed
+ ?   512: DO l=1,nt_sed
+ ?   539: & loc_nt_sed,
+ ?   540: & (loc_is_iss(l),l=1,loc_nt_sed),
+ ?   541: & (bio_part(loc_is_iss(l),:,:,:),l=1,loc_nt_sed)
+ ?  1723: DO l=1,nt_sed
+ ?  2027: DO l=1,nt_sed
+ ?  3020: DO l=1,nt_sed
+
+gemlite/gemlite.f90:
+ ?   493:  DO l=1,nt_sed
+
+common/gem_cmn.f90:
+OK   472:  integer::nt_sed
+
+common/initialise_gem.f90:
+ ?    33: ALLOCATE(conv_ls_lo(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    34: ALLOCATE(conv_lD_lP(nt_sed,n_l_ocn),STAT=alloc_error)
+ ?    35: ALLOCATE(conv_lP_lD(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    36: ALLOCATE(conv_lRD_lP(nt_sed,n_l_ocn),STAT=alloc_error)
+ ?    37: ALLOCATE(conv_lP_lRD(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    38: ALLOCATE(conv_ls_lo_N(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    39: ALLOCATE(conv_ls_lo_S(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    40: ALLOCATE(conv_ls_lo_meth(n_l_ocn,nt_sed),STAT=alloc_error)
+ ?    41: ALLOCATE(conv_ls_lo_i(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+ ?    42: ALLOCATE(conv_lD_lP_i(0:nt_sed,0:n_l_ocn),STAT=alloc_error)
+ ?    43: ALLOCATE(conv_lP_lD_i(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+ ?    44: ALLOCATE(conv_lRD_lP_i(0:nt_sed,0:n_l_ocn),STAT=alloc_error)
+ ?    45: ALLOCATE(conv_lP_lRD_i(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+ ?    46: ALLOCATE(conv_ls_lo_i_N(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+ ?    47: ALLOCATE(conv_ls_lo_i_S(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+ ?    48: ALLOCATE(conv_ls_lo_i_meth(0:n_l_ocn,0:nt_sed),STAT=alloc_error)
+
+common/gem_util.f90:
+ ?  1447: real,dimension(n_l_ocn,nt_sed)::fun_conv_sedocn2lslo
+ ?  1452: real,dimension(n_l_ocn,nt_sed)::loc_lslo
+ ?  1487: integer,dimension(0:n_l_ocn,0:nt_sed)::fun_conv_sedocn2lslo_i
+ ?  1492: integer,dimension(0:n_l_ocn,0:nt_sed)::loc_lslo_i
+ ?  1532: real,dimension(nt_sed,n_l_ocn)::fun_conv_ocnsed2lols
+ ?  1537: real,dimension(nt_sed,n_l_ocn)::loc_lols
+ ?  1572: integer,dimension(0:nt_sed,0:n_l_ocn)::fun_conv_ocnsed2lols_i
+ ?  1577: integer,dimension(0:nt_sed,0:n_l_ocn)::loc_lols_i
+ ?  2033: nt_sed = l
+ ?  2034: ALLOCATE(is_iss(nt_sed))
+\end{verbatim}
+\end{small}
+
+\paragraph{1: \texttt{genie\_sfcsed}, etc.}
+
+\begin{verbatim}
+wrappers/genie_global.f90:
+
+OK  362: & genie_sfcsed, &
+OK  363: & genie_sfxsumsed
+OK  365: & genie_sfxsumsed1
+OK  366: & genie_sfcsed1, &
+OK  367: & genie_sfxsed1
+ + 1045: ALLOCATE(genie_sfcsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+ + 1047: ALLOCATE(genie_sfxsumsed(nt_sed_all,ilon1_sed,ilat1_sed),STAT=status)
+ + 1049: ALLOCATE(genie_sfxsumsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+ + 1051: ALLOCATE(genie_sfcsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+ + 1053: ALLOCATE(genie_sfxsed1(nt_sed_all,ilon1_ocn,ilat1_ocn),STAT=status)
+
+
+wrappers/genie_ini_wrappers.f90:
+
+  72: & genie_sfcsed1, genie_sfxsed1)
+        [initialise_biogem]
+
+  84: CALL initialise_sedgem (genie_timestep, genie_sfxsumsed, genie_sfcsumocn, &
+  85: & genie_sfcsed, genie_sfxocn)
+        [initialise_sedgem]
+
+ 109: & genie_sfxsumsed, genie_sfxsumrok1_gem, genie_sfxsumatm1_gem)
+        [initialise_gemlite]
+
+
+wrappers/genie_loop_wrappers.f90:
+
+ 177: & genie_sfxsed1, genie_sfxsumsed)
+        [cpl_flux_ocnsed]
+
+ 191: & ilon1_sed, ilat1_sed, genie_sfxsumsed, genie_sfxsumsed1)
+        [cpl_flux_sedsed1]
+
+ 219: & ilon1_sed, ilat1_sed, genie_sfcsed1, genie_sfcsed)
+        [cpl_comp_sedocn]
+
+ 294: & genie_sfxocn1, genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1)
+        [step_biogem]
+
+ 347: & genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1, &
+ 357: & genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1_gem, &
+        [diag_biogem_timeslice]
+
+ 367: & genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1, &
+ 377: & genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1, &
+ 387: & genie_sfcsed1, genie_sfxsed1, genie_sfxsumrok1_gem, &
+        [diag_biogem_timeseries]
+
+ 468: & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
+ 476: & genie_sfxsumsed, genie_sfcsumocn, genie_sfcsed, genie_sfxocn, &
+        [step_sedgem]
+
+ 484: & genie_sfxsumsed)
+        [sedgem_dsedage]
+
+ 499: CALL step_gemlite(genie_sfcocn1, genie_sfxsumsed1, genie_sfxocn1, &
+        [step_gemlite]
+\end{verbatim}
 
 %----------------------------------------------------------------------
 \section{Ocean tracers}

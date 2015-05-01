@@ -192,7 +192,11 @@ def compare_ascii(f1, f2, logfp):
                           ' but max. rel. diff. = ' + str(max_reldiff) +
                           ' < ' + str(reltol),
                           file=logfp)
-                else: break
+                else:
+                    print('Max abs. diff. = ' + str(max_absdiff) +
+                          ' > ' + str(abstol) +
+                          '  Max rel. diff. = ' + str(max_reldiff))
+                    break
         if l1 == '' and l2 != '' or l1 != '' and l2 == '':
             print('Files ' + f1 + ' and ' + f2 + ' differ in length',
                   file=logfp)

@@ -206,7 +206,7 @@ CONTAINS
     ! total ocean mass
     loc_ocn_tot_M = conv_m3_kg*loc_ocn_tot_V
     ! conversion between partial pressure and molar quantity
-    loc_conv_atm_mol(:,:) = phys_atm_V(:,:)/(conv_Pa_atm*const_R_SI*atm(ias_T,:,:))
+    loc_conv_atm_mol(:,:) = phys_atm_V(:,:)/(conv_Pa_atm*const_R_SI*atm(ia_T,:,:))
 
     ! *** UPDATE OCEAN-ATMOSPHERE ***
 
@@ -347,7 +347,7 @@ CONTAINS
                    loc_tot_fCO2 = loc_tot_fCO2 + &
                         & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*carb(ic_fug_CO2,i,j)
                    loc_tot_pCO2 = loc_tot_pCO2 + &
-                        & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*atm(ias_pCO2,i,j)
+                        & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)*atm(ia_pCO2,i,j)
                    loc_tot_A = loc_tot_A + &
                         & (1.0 - phys_ocnatm_seaice(i,j))*phys_atm_V(i,j)
                 end if
@@ -404,9 +404,11 @@ CONTAINS
                & loc_conv_atm_mol(:,:)
           ! calculate change in atmospheric pCO2 (atm) => update atmosphere
           loc_datm_pCO2(:,:)    = loc_DCO2(:,:)/loc_conv_atm_mol(:,:)
-          datm(ias_pCO2,:,:)     = datm(ias_pCO2,:,:)     + loc_datm_pCO2(:,:)
-          datm_sum(ias_pCO2,:,:) = datm_sum(ias_pCO2,:,:) + loc_datm_pCO2(:,:)
-          atm(ias_pCO2,:,:)      = atm(ias_pCO2,:,:)      + loc_datm_pCO2(:,:)
+          IF (atm_select(ias_pCO2)) THEN
+             datm(ia_pCO2,:,:)     = datm(ia_pCO2,:,:) + loc_datm_pCO2(:,:)
+             datm_sum(ia_pCO2,:,:) = datm_sum(ia_pCO2,:,:) + loc_datm_pCO2(:,:)
+             atm(ia_pCO2,:,:)      = atm(ia_pCO2,:,:)      + loc_datm_pCO2(:,:)
+          END IF
           ! calculate change in ocean DIC (mol kg-1) => update ocean
           loc_docn_DIC           = -sum(loc_DCO2(:,:))/loc_ocn_tot_M
           docn(io_DIC,:,:,:)     = docn(io_DIC,:,:,:)     + loc_docn_DIC
@@ -426,13 +428,13 @@ CONTAINS
                 loc_DCO2_13C(:,:) = carbisor(ici_CO2_r13C,:,:)*loc_DCO2(:,:)
              else
                 ! net CO2 addition to the ocean => use pCO2 isotopic composition
-                loc_DCO2_13C(:,:) = loc_r13C_as(:,:)*atm(ias_pCO2_13C,:,:)/atm(ias_pCO2,:,:)*loc_DCO2(:,:)
+                loc_DCO2_13C(:,:) = loc_r13C_as(:,:)*atm(ia_pCO2_13C,:,:)/atm(ia_pCO2,:,:)*loc_DCO2(:,:)
              endif
              ! calculate change in atmospheric 13pCO2 (atm) => update atmosphere
              loc_datm_pCO2_13C(:,:)    = loc_DCO2_13C(:,:)/loc_conv_atm_mol(:,:)
-             datm(ias_pCO2_13C,:,:)      = datm(ias_pCO2_13C,:,:)     + loc_datm_pCO2_13C(:,:)
-             datm_sum(ias_pCO2_13C,:,:)  = datm_sum(ias_pCO2_13C,:,:) + loc_datm_pCO2_13C(:,:)
-             atm(ias_pCO2_13C,:,:)       = atm(ias_pCO2_13C,:,:)      + loc_datm_pCO2_13C(:,:)
+             datm(ia_pCO2_13C,:,:)     = datm(ia_pCO2_13C,:,:)     + loc_datm_pCO2_13C(:,:)
+             datm_sum(ia_pCO2_13C,:,:) = datm_sum(ia_pCO2_13C,:,:) + loc_datm_pCO2_13C(:,:)
+             atm(ia_pCO2_13C,:,:)      = atm(ia_pCO2_13C,:,:)      + loc_datm_pCO2_13C(:,:)
              ! calculate change in ocean 13DIC (mol kg-1) => update ocean
              loc_docn_DIC_13C           = -sum(loc_DCO2_13C(:,:))/loc_ocn_tot_M
              docn(io_DIC_13C,:,:,:)     = docn(io_DIC_13C,:,:,:)     + loc_docn_DIC_13C

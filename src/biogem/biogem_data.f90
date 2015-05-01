@@ -1860,9 +1860,9 @@ CONTAINS
                      & )
              end if
              if ( &
-                  & (force_flux_atm_select(ia) .AND. (.NOT. force_flux_atm_select(ias_ia(atm_dep(ias))))) &
+                  & (test_force_flux_atm_select(ias) .AND. (.NOT. test_force_flux_atm_select(atm_dep(ias)))) &
                   & .OR. &
-                  & (.NOT. (force_flux_atm_select(ia)) .AND. force_flux_atm_select(ias_ia(atm_dep(ias)))) &
+                  & (.NOT. (test_force_flux_atm_select(ias)) .AND. test_force_flux_atm_select(atm_dep(ias))) &
                   & ) then
                 loc_string1 = string_atm(ias)
                 loc_string2 = string_atm(atm_dep(ias))

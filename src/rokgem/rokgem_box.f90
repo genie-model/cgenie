@@ -476,7 +476,7 @@ CONTAINS
     REAL    :: n, m
 
     REAL    :: loc_force_flux_weather_a(nt_atm)                ! total fluxes (atmosphere variables)
-    REAL    :: loc_force_flux_weather_a_percell(n_ocn)        ! flux per grid cell for even distribution (atmosphere variables)
+    REAL    :: loc_force_flux_weather_a_percell(nt_atm)        ! flux per grid cell for even distribution (atmosphere variables)
     REAL    :: loc_force_flux_weather_a_land(nt_atm,n_i,n_j)   ! fluxes out of atmosphere (atmosphere variables)
 
     REAL    :: loc_force_flux_weather_o(n_ocn)                    ! total fluxes (ocean variables)
