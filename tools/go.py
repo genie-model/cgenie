@@ -343,10 +343,11 @@ def run(cont=None):
     manage(os.path.join('.', exe_name), logfp, run2, cont)
 
 def run2(result, cont):
+    global tstart
     if result == 0:
         d = (dt.datetime.now() - tstart).total_seconds()
         message('Run OK!  [elapsed: %02dh %02dm %02ds]' %
-                (int(d / 3600), int((d % 60) / 60), int(d % 60)))
+                (int(d / 3600), int(d / 60) % 60, int(d % 60)))
     else:
         message('RUN FAILED: see run.log for details')
     if cont: cont()
