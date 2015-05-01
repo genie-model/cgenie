@@ -106,6 +106,18 @@ print('    Fortran compiler:      ' + f90['compiler'])
 print('    NetCDF base directory: ' + netcdf['base'])
 
 
+# Test Git version.
+
+print('\nTesting Git version...')
+
+gitversion = sp.check_output(['git', '--version']).strip().split()[2]
+gitversion = map(int, gitversion.split('.'))
+if gitversion[0] < 2 or gitversion[1] < 3:
+    setup_error('GIT VERSION IS TOO OLD!')
+else:
+    print('  Git version OK')
+
+
 # Test Python setup.
 
 print('\nTesting Python setup...')
