@@ -56,7 +56,6 @@ CONTAINS
     INTEGER :: lenworld
     CHARACTER(LEN=13) :: lin
     CHARACTER :: ans
-    CHARACTER(LEN=1) :: netin, netout, ascout
 
     INTEGER, EXTERNAL :: lnsig1
 
@@ -64,8 +63,7 @@ CONTAINS
     NAMELIST /ini_sic_nml/ igrid, world
     NAMELIST /ini_sic_nml/ npstp, iwstp, itstp, ianav, conserv_per
     NAMELIST /ini_sic_nml/ ans, yearlen, nyear, diffsic, lout
-    NAMELIST /ini_sic_nml/ netin, netout, ascout, filenetin
-    NAMELIST /ini_sic_nml/ dirnetout, lin
+    NAMELIST /ini_sic_nml/ filenetin, dirnetout
     NAMELIST /ini_sic_nml/ dosc,impsic, debug_init, debug_end, debug_loop
     NAMELIST /ini_sic_nml/ par_sica_thresh, par_sich_thresh
 
@@ -343,15 +341,6 @@ CONTAINS
 
     IF (debug_init) PRINT *, 'file extension for output (a3) ?'
     IF (debug_init) PRINT *, lout
-    IF (debug_init) PRINT *, 'netCDF restart input ?'
-    IF (debug_init) PRINT *, netin
-    lnetin = .NOT. (netin == 'n' .OR. netin == 'N')
-    IF (debug_init) PRINT *, 'netCDF restart output ?'
-    IF (debug_init) PRINT *, netout
-    lnetout = .NOT. (netout == 'n' .OR. netout == 'N')
-    IF (debug_init) PRINT *, 'ASCII restart output ?'
-    IF (debug_init) PRINT *, ascout
-    lascout = .NOT. (ascout == 'n' .OR. ascout == 'N')
     IF (debug_init) PRINT *, 'filename for netCDF restart input ?'
     IF (debug_init) PRINT *, filenetin
     IF (debug_init) &
@@ -373,21 +362,7 @@ CONTAINS
        IF (debug_init) PRINT *, 'input file extension for input (a6)'
        IF (debug_init) PRINT *, lin
        IF (debug_init) PRINT *, 'Reading sea-ice restart file'
-       IF (lnetin) THEN
-          CALL inm_netcdf_sic
-       ELSE
-          OPEN(1, FILE=rstdir_name(1:lenrst)//lin)
-          CALL inm_seaice(1)
-          CLOSE(1)
-          ! But set up initial default time and date....
-          iyear_rest = 2000
-          imonth_rest = 1
-          ioffset_rest = 0
-          day_rest = yearlen / REAL(nyear)
-          IF (debug_init) PRINT *, 'day_rest = ', day_rest
-       END IF
-
-       ! Sea-ice
+       CALL inm_netcdf_sic
        varice1 = varice
     END IF
 
@@ -534,7 +509,7 @@ CONTAINS
 
   SUBROUTINE step_seaice(istep, dhght_sic, dfrac_sic, ustar_ocn, vstar_ocn, &
        & hght_sic, frac_sic, temp_sic, albd_sic, sic_FW_ocn, sic_FX0_ocn, &
-       & test_energy_seaice, test_water_seaice, koverall)
+       & test_energy_seaice, test_water_seaice)
 
     ! ======================================================================
     ! Declarations
@@ -547,7 +522,6 @@ CONTAINS
          & sic_FW_ocn(maxi,maxj),sic_FX0_ocn(maxi,maxj)
 
     INTEGER :: istep
-    INTEGER(KIND=8) :: koverall
 
     INTEGER :: i, j, itv, iout, ios
     REAL :: fw_delta(maxi,maxj), fx_delta(maxi,maxj)
@@ -653,24 +627,9 @@ CONTAINS
     ! Sea-ice diagnostics and output
     ! ----------------------------------------------------------------------
 
-    IF (lnetout) CALL outm_netcdf_sic(istep)
+    CALL outm_netcdf_sic(istep)
 
     IF (MOD(istep,iwstp) == 0) THEN
-       ! Write restart file
-       IF (lascout) THEN
-          ext = conv_sic(MOD(iw, 10))
-          IF (debug_loop) &
-               & PRINT *,'Writing sea-ice restart file at time', istep, &
-               & '(koverall', koverall, ')'
-          CALL check_unit(22, __LINE__, __FILE__)
-          OPEN(22, FILE=outdir_name(1:lenout)//lout//'.'//ext, IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          REWIND(22)
-          CALL outm_seaice(22)
-          CLOSE(22, IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-       END IF
-
        iw = iw + 1
        IF (debug_loop) PRINT *
     END IF

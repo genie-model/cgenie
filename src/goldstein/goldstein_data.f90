@@ -6,51 +6,6 @@ MODULE goldstein_data
 
 CONTAINS
 
-  ! Read in data for goldstein
-  SUBROUTINE inm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, k, l, icell
-    REAL :: tmp_val(4)
-
-    READ (unit,*) ((((ts(l,i,j,k), l = 1, 2), (u1(l,i,j,k), l = 1, 2), &
-         & k = 1, maxk), i = 1, maxi), j = 1, maxj)
-
-    ! Write out layer averages for restart checks
-    IF (debug_init) &
-         & WRITE (*,120) 'Layer','Avg T','Avg S','Avg U','Avg V','Cells'
-    DO k = 1, maxk
-       ! Clear temporary variables
-       tmp_val = 0
-       icell = 0
-
-       ! Sum layer state variables and flow field
-       DO j = 1, maxj
-          DO i = 1, maxi
-             IF (k >= k1(i,j)) icell = icell + 1
-             DO l = 1, 2
-                IF (k >= k1(i,j)) tmp_val(l) = tmp_val(l) + ts(l,i,j,k)
-                tmp_val(l+2) = tmp_val(l+2) + u1(l,i,j,k)
-
-                ! Set up u array from read-in u1 array
-                u(l,i,j,k) = u1(l,i,j,k)
-             END DO
-          END DO
-       END DO
-
-       ! Print average values out
-       IF (debug_init) &
-            & WRITE (*,110) k, tmp_val(1) / icell, &
-            & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
-    END DO
-
-110 FORMAT(i5,2f13.9,2e17.9,i4)
-120 FORMAT(a5,2a13,2a17,a6)
-  END SUBROUTINE inm
-
-
   ! Read NetCDF restarts for goldstein
   SUBROUTINE inm_netcdf(lrestart_genie)
     IMPLICIT NONE
@@ -186,68 +141,6 @@ CONTAINS
   END SUBROUTINE inm_netcdf
 
 
-  ! Write out data for goldstein
-  SUBROUTINE outm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, k, l, icell
-    REAL :: tmp_val(4), out_file(4,maxk,maxi,maxj)
-
-    DO j = 1, maxj
-       DO i = 1, maxi
-          DO k = 1, maxk
-             DO l = 1, 2
-                IF (k >= k1(i,j)) THEN
-                   out_file(l,k,i,j) = ts(l,i,j,k)
-                ELSE
-                   out_file(l,k,i,j) = 0.0
-                END IF
-             end do
-             DO l = 1, 2
-                out_file(l+2,k,i,j) = u(l,i,j,k)
-             END DO
-          END DO
-       END DO
-    END DO
-    WRITE (unit,fmt='(e24.15)') out_file
-
-    ! Write out layer averages for restart checks
-    IF (debug_loop) &
-         & WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
-    DO k = 1, maxk
-       ! Clear temporary variables
-       tmp_val = 0
-       icell = 0
-
-       ! Sum layer state variables and flow field
-       DO j = 1, maxj
-          DO i = 1, maxi
-             IF (k >= k1(i,j)) icell = icell + 1
-             DO l = 1, 2
-                IF (k >= k1(i,j)) THEN
-                   tmp_val(l) = tmp_val(l) + ts(l,i,j,k)
-                END IF
-                tmp_val(l+2) = tmp_val(l+2) + u(l,i,j,k)
-             END DO
-          END DO
-       END DO
-
-       ! Prevent divide-by-zero
-       IF (icell == 0) icell = 1
-
-       ! Print average values out
-       IF (debug_loop) &
-            & WRITE (*,110) k, tmp_val(1) / icell, &
-            & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
-    END DO
-
-110 FORMAT(i5,2f13.9,2e17.9,i4)
-120 FORMAT(a5,2a13,2a17,a6)
-  END SUBROUTINE outm
-
-
   ! Write NetCDF restarts for goldstein
   SUBROUTINE outm_netcdf(istep)
     USE netcdf
@@ -280,12 +173,6 @@ CONTAINS
     REAL :: tmp_val(4)
 
     ! Output file format is yyyy_mm_dd
-    ! 30 day months are assumed
-    IF (MOD(yearlen, 30.0) /= 0) THEN
-       PRINT *, 'ERROR: Goldstein NetCDF restarts (outm_netdf):'
-       PRINT *, '   MOD(yearlen,30.0) must be zero'
-       STOP
-    END IF
 
     timestep = yearlen / REAL(nyear)
     iday = NINT(day_rest)

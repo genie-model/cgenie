@@ -6,36 +6,6 @@ MODULE embm_data
 
 CONTAINS
 
-  SUBROUTINE inm_embm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, l
-    REAL :: tmp_val(2), area
-
-    READ (unit,*) (((tq(l,i,j), l = 1, 2), i = 1, maxi), j = 1, maxj)
-
-    IF (debug_init) WRITE (*,220) 'Avg T','Avg Q'
-
-    tmp_val = 0.0
-
-    ! Sum layer state variables and flow field
-    area = 0.0
-    DO j = 1, maxj
-       DO i = 1, maxi
-          area = area + ds(j)
-          tmp_val = tmp_val + tq(:,i,j) * ds(j)
-       END DO
-    END DO
-
-    IF (debug_init) &
-         & WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
-
-210 FORMAT(2f13.9)
-220 FORMAT(2a13)
-  END SUBROUTINE inm_embm
-
-
   ! This module reads netcdf restarts for EMBM
   SUBROUTINE inm_netcdf_embm
     IMPLICIT NONE
@@ -111,33 +81,6 @@ CONTAINS
   END SUBROUTINE inm_netcdf_embm
 
 
-  ! Write EMBM output data
-  SUBROUTINE outm_embm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j
-    REAL :: tmp_val(2), area
-
-    WRITE (unit,FMT='(e24.15)') tq
-    IF (debug_loop) WRITE (*,220) 'Avg T','Avg Q'
-    tmp_val = 0.0
-    area = 0.0
-    DO j = 1, maxj
-       DO i = 1, maxi
-          area = area + ds(j)
-          tmp_val = tmp_val + tq(:,i,j) * ds(j)
-       END DO
-    END DO
-    IF (debug_loop) &
-         & WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
-
-210 FORMAT(2f13.9)
-220 FORMAT(2a13)
-
-  END SUBROUTINE outm_embm
-
-
   ! This module writes netcdf restarts for embm
   SUBROUTINE outm_netcdf_embm(istep)
     USE netcdf
@@ -164,12 +107,6 @@ CONTAINS
     REAL :: tmp_val(2), area
 
     ! output file format is yyyy_mm_dd
-    ! 30 day months are assumed
-    IF (MOD(yearlen, 30.0) /= 0) THEN
-       PRINT *, 'ERROR: Goldstein NetCDF restarts (outm_netdf):'
-       PRINT *, '   mod(yearlen,30.0) must be zero'
-       STOP
-    END IF
     timestep = yearlen / REAL(nyear * ndta)
     iday = NINT(day_rest)
     IF (mod(istep, iwstp * ndta) == 0)THEN

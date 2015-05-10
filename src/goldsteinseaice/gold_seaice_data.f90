@@ -5,47 +5,6 @@ MODULE gold_seaice_data
   IMPLICIT NONE
 
 CONTAINS
-  SUBROUTINE inm_seaice(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-    INTEGER :: i, j, l, icell
-    REAL :: tmp_val(4)
-
-    READ (unit,*) (((varice(l,i,j), l = 1, 2), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((tice(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((albice(i,j), i = 1, maxi), j = 1, maxj)
-
-    IF (debug_init) &
-         & WRITE (*,320) 'Avg height', 'Avg area', 'Avg T', 'Avg albedo'
-
-    tmp_val = 0
-    icell = 0
-
-    ! Sum layer state variables and flow field
-    DO j = 1, maxj
-       DO i = 1, maxi
-          IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
-             icell = icell + 1
-             tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
-             tmp_val(3) = tmp_val(3) + tice(i,j)
-             tmp_val(4) = tmp_val(4) + albice(i,j)
-          END IF
-       END DO
-    END DO
-
-    ! Print average values out
-    IF (icell > 0) THEN
-       IF (debug_init) WRITE (*,310) tmp_val(1) / icell, tmp_val(2) / icell, &
-            & tmp_val(3) / icell, tmp_val(4) / icell
-    ELSE
-       IF (debug_init) WRITE (*,310) 0.0, 0.0, 0.0, 0.0
-    END IF
-
-310 FORMAT(4f13.9)
-320 FORMAT(4a13)
-  END SUBROUTINE inm_seaice
-
-
   ! Read in netCDF restart files for GOLDSTEIN sea-ice
   SUBROUTINE inm_netcdf_sic
     IMPLICIT NONE
@@ -135,42 +94,6 @@ CONTAINS
   END SUBROUTINE inm_netcdf_sic
 
 
-  SUBROUTINE outm_seaice(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-    INTEGER :: i, j, icell
-    REAL :: tmp_val(4)
-
-    WRITE (unit,FMT='(e24.15)') varice
-    WRITE (unit,FMT='(e24.15)') tice
-    WRITE (unit,FMT='(e24.15)') albice
-
-    IF (debug_loop) &
-         & WRITE (*,320) 'Avg height','Avg area', 'Avg T', 'Avg albedo'
-    tmp_val = 0
-    icell = 0
-    DO j = 1, maxj
-       DO i = 1, maxi
-          IF (k1(i,j) <= maxk .AND. varice(2,i,j) > 0.0) THEN
-             icell = icell + 1
-             tmp_val(1:2) = tmp_val(1:2) + varice(:,i,j)
-             tmp_val(3) = tmp_val(3) + tice(i,j)
-             tmp_val(4) = tmp_val(4) + albice(i,j)
-          END IF
-       END DO
-    END DO
-    IF (icell > 0) THEN
-       IF (debug_loop) WRITE (*,310) tmp_val(1) / icell, tmp_val(2) / icell, &
-            & tmp_val(3) / icell, tmp_val(4) / icell
-    ELSE
-       IF (debug_loop) WRITE (*,310) 0.0, 0.0, 0.0, 0.0
-    END IF
-
-310 FORMAT(4f13.9)
-320 FORMAT(4a13)
-  END SUBROUTINE outm_seaice
-
-
   SUBROUTINE outm_netcdf_sic(istep)
     USE netcdf
     IMPLICIT NONE
@@ -199,12 +122,6 @@ CONTAINS
     timestep = yearlen / REAL(nyear)
 
     ! output file format is yyyy_mm_dd
-    ! 30 day months are assumed
-    IF (MOD(yearlen,30.0) /= 0) THEN
-       PRINT *, 'ERROR: Goldstein NetCDF restarts (outm_netdf):'
-       PRINT *, '   mod(yearlen,30.0) must be zero'
-       STOP
-    END IF
 
     iday = NINT(day_rest)
     IF (MOD(istep,iwstp) == 0) THEN

@@ -6,35 +6,6 @@ MODULE ents_data
 
 CONTAINS
 
-  ! Read restarts from ascii file
-  SUBROUTINE in_ents_ascii(unit, land_snow_lnd)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-    REAL, DIMENSION(:,:), INTENT(INOUT) :: land_snow_lnd
-
-    INTEGER :: i, j
-
-    READ (unit,*) ((photo(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((respveg(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((leaf(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((respsoil(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((Cveg(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((Csoil(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((fv(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((tqld(1,i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((tqld(2,i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) ((land_snow_lnd(i,j), i = 1, maxi), j = 1, maxj)
-    READ (unit,*) pco2ld
-
-    ! Initialise water bucket capacity
-    WHERE (ents_k1 > ents_kmax)
-       bcap = MIN(k8, k9 + (k10 * Csoil))
-       ! initial roughness length
-       z0 = MAX(0.001, kz0 * Cveg)
-    END WHERE
-  END SUBROUTINE in_ents_ascii
-
-
   ! Reads restarts from NetCDF
   SUBROUTINE in_ents_netcdf(fname, land_snow_lnd)
     USE netcdf
