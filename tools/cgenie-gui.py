@@ -75,10 +75,56 @@ class Application(tk.Frame):
         self.job_folders.append(f)
         f.scan()
 
+    def new_job(self):
+        print('new_job...')
+
+    def new_folder(self):
+        print('new_folder...')
+
+    def move_rename(self):
+        print('move_rename...')
+
+    def delete_job(self):
+        print('delete_job...')
+
+    def clone_job(self):
+        print('clone_job...')
+
+    def archive_job(self):
+        print('archive_job...')
+
+    def run_job(self):
+        print('run_job...')
+
+    def pause_job(self):
+        print('pause_job...')
+
     def createWidgets(self):
         self.tree = ttk.Treeview(self)
         self.tree.pack()
         self.pack()
+
+        self.toolbar = ttk.Frame(self)
+        tool_info = [['new_job',     'New job',         'new-job.gif'],
+                     ['new_folder',  'New folder',      'new-folder.gif'],
+                     ['move_rename', 'Move/rename job', 'move-rename.gif'],
+                     ['delete_job',  'Delete job',      'delete-job.gif'],
+                     ['clone_job',   'Clone job',       'clone-job.gif'],
+                     ['archive_job', 'Archive job',     'archive-job.gif'],
+                     ['spacer', '', ''],
+                     ['run_job',     'Run job',         'run-job.gif'],
+                     ['pause_job',   'Pause job',       'pause-job.gif']]
+        for t in tool_info:
+            if t[0] == 'spacer':
+                f = ttk.Frame(self.toolbar, height=16)
+                f.pack()
+            else:
+                img = G.file_img(t[2])
+                b = ttk.Button(self.toolbar, image=img,
+                               command=getattr(self, t[0]))
+                b.image = img
+                b.pack()
+                G.ToolTip(b, t[1])
 
         # Set up default notebook panels.
         self.notebook = ttk.Notebook(self)
@@ -97,10 +143,12 @@ class Application(tk.Frame):
         self.winfo_toplevel().columnconfigure(0, weight=1)
         self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
         self.tree.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
-        self.notebook.grid(column=1, row=0, columnspan=3,
+        self.toolbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W)
+        self.notebook.grid(column=2, row=0, columnspan=3,
                            sticky=tk.N+tk.E+tk.S+tk.W)
 
         top = self.winfo_toplevel()
