@@ -17,7 +17,8 @@ def job_split(jfull):
     return (ds, j)
 
 def file_img(f):
-    return tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools', 'images', f))
+    return tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools',
+                                           'images', f + '.gif'))
 
 status_images = { }
 def status_img(s):
@@ -27,8 +28,7 @@ def status_img(s):
         status_images[s] = tk.PhotoImage(file=p)
     return status_images[s]
 
-def job_status(jd, j):
-    jd = os.path.join(jd, j)
+def job_status(jd):
     if not os.path.exists(os.path.join(jd, 'data_genie')):
         return 'UNCONFIGURED'
     if not os.path.exists(os.path.join(jd, 'status')):

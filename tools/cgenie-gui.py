@@ -25,13 +25,14 @@ class JobFolder:
         self.item = None
         self.status = { }
 
-    def scan(self):
+    def scan(self, select):
         self.item = self.tree.insert('', 'end', self.path,
                                      text=self.name, open=True)
         for d, ds, fs in os.walk(self.path):
             if not os.path.exists(os.path.join(d, 'data_genie')): continue
             self.add_job(os.path.relpath(d, self.path))
         self.sort_children(self.item)
+        if select: self.tree.selection_set(self.item)
 
     def add_job(self, jfull):
         ds, j = G.job_split(jfull)
@@ -43,8 +44,9 @@ class JobFolder:
             if not self.tree.exists(p):
                 self.tree.insert(parent, 'end', p, text=f,
                                  image=G.status_img('FOLDER'))
-        self.status[jfull] = G.job_status(self.path, jfull)
-        self.tree.insert(p, 'end', os.path.join(p, j), text=j,
+        jpath = os.path.join(self.path, jfull)
+        self.status[jfull] = G.job_status(jpath)
+        self.tree.insert(p, 'end', jpath, text=j,
                          image=G.status_img(self.status[jfull]))
 
     def sort_children(self, f):
@@ -74,10 +76,10 @@ class Application(tk.Frame):
             if f.item: self.tree.delete(f.item)
         self.job_folders = []
 
-    def addJobFolder(self, path, name):
+    def addJobFolder(self, path, name, select):
         f = JobFolder(path, name, self.tree)
         self.job_folders.append(f)
-        f.scan()
+        f.scan(select)
 
     def new_job(self):
         print('new_job...')
@@ -103,32 +105,65 @@ class Application(tk.Frame):
     def pause_job(self):
         print('pause_job...')
 
+    switchable_buttons = ['move_rename', 'delete_job', 'clone_job',
+                          'archive_job', 'run_job', 'pause_job']
+
+    state_buttons = { 'FOLDER': ['move_rename', 'delete_job'],
+                      'UNCONFIGURED': ['move_rename', 'delete_job',
+                                       'clone_job'],
+                      'RUNNABLE': ['move_rename', 'delete_job',
+                                   'clone_job', 'run_job'],
+                      'RUNNING': ['pause_job'],
+                      'PAUSED': ['move_rename', 'delete_job',
+                                 'clone_job', 'archive_job', 'run_job'],
+                      'COMPLETE': ['move_rename', 'delete_job',
+                                   'clone_job', 'archive_job'],
+                      'ERRORED': ['move_rename', 'delete_job',
+                                  'clone_job'] }
+
+    def item_selected(self, event):
+        sel = self.tree.focus()
+        if len(self.tree.get_children(sel)) != 0:
+            status = 'FOLDER'
+        else:
+            status = G.job_status(sel)
+        on_buttons = self.state_buttons[status]
+        for k, v in self.tool_buttons.iteritems():
+            if k in self.switchable_buttons:
+                if k in on_buttons:
+                    v.state(['!disabled'])
+                else:
+                    v.state(['disabled'])
+
     def createWidgets(self):
         self.tree = ttk.Treeview(self)
+        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.tree.pack()
         self.pack()
 
         self.toolbar = ttk.Frame(self)
-        tool_info = [['new_job',     'New job',         'new-job.gif'],
-                     ['new_folder',  'New folder',      'new-folder.gif'],
-                     ['move_rename', 'Move/rename job', 'move-rename.gif'],
-                     ['delete_job',  'Delete job',      'delete-job.gif'],
-                     ['clone_job',   'Clone job',       'clone-job.gif'],
-                     ['archive_job', 'Archive job',     'archive-job.gif'],
-                     ['spacer', '', ''],
-                     ['run_job',     'Run job',         'run-job.gif'],
-                     ['pause_job',   'Pause job',       'pause-job.gif']]
+        self.tool_buttons = { }
+        tool_info = [['new_job',     'New job'],
+                     ['new_folder',  'New folder'],
+                     ['move_rename', 'Move/rename job or folder'],
+                     ['delete_job',  'Delete job'],
+                     ['clone_job',   'Clone job'],
+                     ['archive_job', 'Archive job'],
+                     ['spacer', ''],
+                     ['run_job',     'Run job'],
+                     ['pause_job',   'Pause job']]
         for t in tool_info:
             if t[0] == 'spacer':
                 f = ttk.Frame(self.toolbar, height=16)
                 f.pack()
             else:
-                img = G.file_img(t[2])
+                img = G.file_img(t[0])
                 b = ttk.Button(self.toolbar, image=img,
                                command=getattr(self, t[0]))
                 b.image = img
                 b.pack()
                 G.ToolTip(b, t[1])
+                self.tool_buttons[t[0]] = b
 
         # Set up default notebook panels.
         self.notebook = ttk.Notebook(self)
@@ -158,10 +193,10 @@ class Application(tk.Frame):
         top = self.winfo_toplevel()
         self.menu = tk.Menu(top)
         top['menu'] = self.menu
-        self.file_menu = tk.Menu(self.menu)
+        self.file_menu = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='File', menu=self.file_menu)
         self.file_menu.add_command(label='Quit', command=self.quit)
-        self.help_menu = tk.Menu(self.menu)
+        self.help_menu = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='Help', menu=self.help_menu)
         self.help_menu.add_command(label='About')
 
@@ -169,5 +204,5 @@ root = tk.Tk()
 app = Application(root)
 app.master.title("cGENIE GUI")
 app.master.geometry("1024x768")
-app.addJobFolder(U.cgenie_jobs, 'My Jobs')
+app.addJobFolder(U.cgenie_jobs, 'My Jobs', True)
 app.mainloop()
