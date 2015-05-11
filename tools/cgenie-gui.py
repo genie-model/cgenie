@@ -23,6 +23,7 @@ class JobFolder:
         self.name = name
         self.tree = tree
         self.item = None
+        self.status = { }
 
     def scan(self):
         self.item = self.tree.insert('', 'end', self.path,
@@ -40,8 +41,11 @@ class JobFolder:
             parent = p
             p = os.path.join(p, f)
             if not self.tree.exists(p):
-                self.tree.insert(parent, 'end', p, text=f)
-        self.tree.insert(p, 'end', os.path.join(p, j), text=j)
+                self.tree.insert(parent, 'end', p, text=f,
+                                 image=G.status_img('FOLDER'))
+        self.status[jfull] = G.job_status(self.path, jfull)
+        self.tree.insert(p, 'end', os.path.join(p, j), text=j,
+                         image=G.status_img(self.status[jfull]))
 
     def sort_children(self, f):
         def chcmp(x, y):

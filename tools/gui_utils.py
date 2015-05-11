@@ -19,6 +19,23 @@ def job_split(jfull):
 def file_img(f):
     return tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools', 'images', f))
 
+status_images = { }
+def status_img(s):
+    if not s in status_images:
+        p = os.path.join(U.cgenie_root, 'tools', 'images',
+                         'status-' + s + '.gif')
+        status_images[s] = tk.PhotoImage(file=p)
+    return status_images[s]
+
+def job_status(jd, j):
+    jd = os.path.join(jd, j)
+    if not os.path.exists(os.path.join(jd, 'data_genie')):
+        return 'UNCONFIGURED'
+    if not os.path.exists(os.path.join(jd, 'status')):
+        return 'RUNNABLE'
+    with open(os.path.join(jd, 'status')) as fp:
+        return fp.readline.strip().split()[0]
+
 
 '''Michael Lange <klappnase (at) freakmail (dot) de>
 
