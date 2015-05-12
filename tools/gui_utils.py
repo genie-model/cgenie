@@ -37,6 +37,9 @@ def walk_jobs(p, basedir=None):
                     yield sube
 
 
+def is_folder(tree, id):
+    return str(tree.item(id, 'image')[0]) == str(status_img('FOLDER'))
+
 status_images = { }
 def status_img(s):
     if not s in status_images:

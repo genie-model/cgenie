@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path
+import os, os.path, shutil
 import Tkinter as tk
 import tkSimpleDialog as tkSD
 import tkMessageBox as tkMB
@@ -65,10 +65,9 @@ class JobFolder:
         if sort: self.sort_children(self.item)
 
     def sort_children(self, f):
-        fimg = str(G.status_img('FOLDER'))
         def chcmp(x, y):
-            fx = str(self.tree.item(x, 'image')[0]) == fimg
-            fy = str(self.tree.item(y, 'image')[0]) == fimg
+            fx = G.is_folder(self.tree, x)
+            fy = G.is_folder(self.tree, y)
             if fx == fy: return cmp(x, y)
             else:
                 if fx: return -1
@@ -101,9 +100,8 @@ class Application(tk.Frame):
 
     def new_job(self):
         # Get folder location for new job.
-        loc = self.tree.focus()
-        fimg = str(G.status_img('FOLDER'))
-        while str(self.tree.item(loc, 'image')[0]) != fimg:
+        loc = self.tree.selection()[0]
+        while not G.is_folder(self.tree, loc):
             loc = self.tree.parent(loc)
 
         # Get new job name and check.
@@ -138,7 +136,7 @@ class Application(tk.Frame):
 
     def new_folder(self):
         # Get folder location for new folder.
-        loc = self.tree.focus()
+        loc = self.tree.selection()[0]
         while len(self.tree.get_children(loc)) == 0:
             loc = self.tree.parent(loc)
 
@@ -167,12 +165,35 @@ class Application(tk.Frame):
         print('move_rename...')
 
     def delete_job(self):
-        print('delete_job...')
         # Determine whether a single job or a folder is selected.
+        p = self.tree.selection()[0]
+        if G.is_folder(self.tree, p):
+            msg = 'Are you sure you want to delete this folder?\n\n'
+            msg += 'This will delete all jobs beneath the folder!\n\n'
+            msg += 'This action is IRREVERSIBLE!'
+        else:
+            msg = 'Are you sure you want to delete this job?\n\n'
+            msg += 'This action is IRREVERSIBLE!'
+
         # Confirmation dialog -- single job or folder.
+        chk = tkMB.askokcancel('Confirm deletion', msg)
+
         # Find adjacent item ID for post-delete selection.
+        post = self.tree.next(p)
+        if not post: post = self.tree.prev(p)
+        print('post:', post)
+
         # Recursively delete.
-        # Rescan and select.
+        try:
+            shutil.rmtree(p)
+        except Exception as e:
+            tkMB.showerror('Error', "Couldn't delete directory: " + p)
+            return
+
+        # Delete from tree and select.
+        self.tree.selection_set(post)
+        self.tree.delete(p)
+
 
     def clone_job(self):
         print('clone_job...')
@@ -202,7 +223,7 @@ class Application(tk.Frame):
                                   'clone_job'] }
 
     def item_selected(self, event):
-        sel = self.tree.focus()
+        sel = self.tree.selection()[0]
         if len(self.tree.get_children(sel)) != 0:
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
@@ -221,7 +242,7 @@ class Application(tk.Frame):
                         v.state(['disabled'])
 
     def createWidgets(self):
-        self.tree = ttk.Treeview(self)
+        self.tree = ttk.Treeview(self, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.tree.pack()
         self.pack()
