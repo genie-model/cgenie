@@ -20,6 +20,23 @@ def file_img(f):
     return tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools',
                                            'images', f + '.gif'))
 
+def walk_jobs(p, basedir=None):
+    if not basedir: basedir = p
+    model_dir = os.path.join(basedir, 'MODELS')
+    es = os.listdir(p)
+    for e in os.listdir(p):
+        f = os.path.join(p, e)
+        if f.startswith(model_dir): continue
+        if os.path.exists(os.path.join(f, 'config', 'config')):
+            yield (f, 'JOB')
+        elif os.path.isdir(f):
+            if not os.listdir(f):
+                yield (f, 'FOLDER')
+            else:
+                for sube in walk_jobs(f, basedir):
+                    yield sube
+
+
 status_images = { }
 def status_img(s):
     if not s in status_images:
