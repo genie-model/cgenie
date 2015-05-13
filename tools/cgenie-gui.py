@@ -81,16 +81,18 @@ class JobFolder:
 class Application(tk.Frame):
     def __init__(self, master=None):
         self.root = root
-        tk.Frame.__init__(self, master)
-        self.grid(column=0, row=0)
-        self.create_widgets()
-        self.job_folders = []
+        self.bold_font = tkFont.Font(family='Helvetica', weight='bold')
+        self.big_font = tkFont.Font(family='Helvetica', size=16, weight='bold')
         self.selected_jobid = None
         self.job_dir = None
         self.job_status = None
         self.job_modules = None
         self.job_runlen = None
         self.job_t100 = None
+        tk.Frame.__init__(self, master)
+        self.grid(column=0, row=0)
+        self.create_widgets()
+        self.job_folders = []
 
     # Multiple job folders not yet used.
     def clear_job_folders(self):
@@ -231,7 +233,7 @@ class Application(tk.Frame):
     def item_selected(self, event):
         sel = self.tree.selection()[0]
         if len(self.tree.get_children(sel)) != 0:
-            self.select_job(sel)
+            self.select_job(None)
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     if ((k == 'move_rename' or k == 'delete_job')
@@ -240,7 +242,7 @@ class Application(tk.Frame):
                     else:
                         v.state(['disabled'])
         else:
-            self.select_job(None)
+            self.select_job(sel)
             on_buttons = self.state_buttons[G.job_status(sel)]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
@@ -261,9 +263,11 @@ class Application(tk.Frame):
             self.job_id = jobid
             self.job_dir = os.path.join(self.job_folders[0], self.job_id)
             self.job_status = G.job_status(self.job_id)
+            ### ===> [ TODO
             self.job_modules = None
             self.job_runlen = None
             self.job_t100 = None
+            ### ===> ]
         self.update_panels()
 
     def update_panels(self):
@@ -338,32 +342,60 @@ class Application(tk.Frame):
         self.help_menu.add_command(label='About')
 
     def create_status_panel(self, panel):
-        print('create_status_panel...')
-        ttk.Label(panel, text='View: status').grid(column=0, row=0)
+        lab = ttk.Label(panel, text='Job path:', font=self.bold_font)
+        lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
+        self.status_job_path = ttk.Label(panel, font=self.bold_font)
+        self.status_job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(panel, text='Job status:')
+        lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
+        self.status_job_status = ttk.Label(panel)
+        self.status_job_status.grid(column=1, row=1, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(panel, text='Run length:')
+        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
+        self.status_runlen = ttk.Label(panel)
+        self.status_runlen.grid(column=1, row=2, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(panel, text='T100:')
+        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
+        self.status_t100 = ttk.Label(panel)
+        self.status_t100.grid(column=1, row=3, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(panel, text='Modules:')
+        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
+        self.status_modules = ttk.Label(panel)
+        self.status_modules.grid(column=1, row=4, pady=5, sticky=tk.W)
+
+        self.update_status_panel()
 
     def update_status_panel(self):
-        print('update_status_panel...')
+        jd = self.job_dir if self.job_dir else 'n/a'
+        self.status_job_path.configure(text=jd)
+        js = self.job_status if self.job_status else 'n/a'
+        self.status_job_status.configure(text=js)
+        jl = str(self.job_runlen) if self.job_runlen else 'n/a'
+        self.status_runlen.configure(text=jl)
+        j100 = str(self.job_t100) if self.job_t100 != None else 'n/a'
+        self.status_t100.configure(text=j100)
 
     def create_config_panel(self, panel):
-        print('create_config_panel...')
         ttk.Label(panel, text='View: config').grid(column=0, row=0)
 
     def update_config_panel(self):
-        print('update_config_panel...')
+        pass
 
     def create_output_panel(self, panel):
-        print('create_output_panel...')
         ttk.Label(panel, text='View: output').grid(column=0, row=0)
 
     def update_output_panel(self):
-        print('update_output_panel...')
+        pass
 
     def create_plot_panel(self, panel):
-        print('create_plot_panel...')
         ttk.Label(panel, text='View: plot').grid(column=0, row=0)
 
     def update_plot_panels(self):
-        print('update_plot_panels...')
+        pass
 
 
 root = tk.Tk()
