@@ -92,21 +92,13 @@ class Application(tk.Frame):
         tk.Frame.__init__(self, master)
         self.grid(column=0, row=0)
         self.create_widgets()
-        self.job_folders = []
-
-    # Multiple job folders not yet used.
-    def clear_job_folders(self):
-        for f in self.job_folders:
-            if f.item: self.tree.delete(f.item)
-        self.job_folders = []
-
-    def add_job_folder(self, path, name, select):
-        f = JobFolder(path, name, self.tree)
-        self.job_folders.append(f)
-        f.scan(select)
+        self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree)
+        self.job_folder.scan(True)
 
 
     def new_job(self):
+        """Callback for new job button press"""
+
         # Get folder location for new job.
         loc = self.tree.selection()[0]
         while not G.is_folder(self.tree, loc):
@@ -116,7 +108,7 @@ class Application(tk.Frame):
         job_name = tkSD.askstring("New job", "Name for new job")
         if not job_name: return
         jobdir = os.path.join(loc, job_name)
-        jobid = os.path.relpath(jobdir, self.job_folders[0].path)
+        jobid = os.path.relpath(jobdir, self.job_folder.path)
         if os.path.exists(jobdir):
             tkMB.showerror('Error', job_name + ' already exists!')
             return
@@ -137,12 +129,14 @@ class Application(tk.Frame):
             print('t100: ?', file=fp)
 
         # Add job entry to tree and select.
-        self.job_folders[0].add_job(jobid, True)
+        self.job_folder.add_job(jobid, True)
         self.tree.see(jobdir)
         self.tree.selection_set(jobdir)
 
 
     def new_folder(self):
+        """Callback for new folder button press"""
+
         # Get folder location for new folder.
         loc = self.tree.selection()[0]
         while len(self.tree.get_children(loc)) == 0:
@@ -165,14 +159,17 @@ class Application(tk.Frame):
             return
 
         # Add folder entry to tree and select.
-        self.job_folders[0].add_folder(folder, True)
+        self.job_folder.add_folder(folder, True)
         self.tree.selection_set(p)
 
 
     def move_rename(self):
         print('move_rename...')
 
+
     def delete_job(self):
+        """Delete a job or a folder from tree (and on disk)"""
+
         # Determine whether a single job or a folder is selected.
         p = self.tree.selection()[0]
         if G.is_folder(self.tree, p):
@@ -215,9 +212,13 @@ class Application(tk.Frame):
     def pause_job(self):
         print('pause_job...')
 
+
+    # Buttons that change state depending on the state of the
+    # currently selected job.
     switchable_buttons = ['move_rename', 'delete_job', 'clone_job',
                           'archive_job', 'run_job', 'pause_job']
 
+    # Enabled buttons for different states of selected job.
     state_buttons = { 'UNCONFIGURED': ['move_rename', 'delete_job',
                                        'clone_job'],
                       'RUNNABLE': ['move_rename', 'delete_job',
@@ -230,7 +231,10 @@ class Application(tk.Frame):
                       'ERRORED': ['move_rename', 'delete_job',
                                   'clone_job'] }
 
+
     def item_selected(self, event):
+        """Callback for item selection in job tree"""
+
         sel = self.tree.selection()[0]
         if len(self.tree.get_children(sel)) != 0:
             self.select_job(None)
@@ -251,7 +255,10 @@ class Application(tk.Frame):
                     else:
                         v.state(['disabled'])
 
+
     def select_job(self, jobid):
+        """Select a job and set up information tracking"""
+
         if not jobid:
             self.selected_jobid = None
             self.job_dir = None
@@ -261,22 +268,31 @@ class Application(tk.Frame):
             self.job_t100 = None
         else:
             self.job_id = jobid
-            self.job_dir = os.path.join(self.job_folders[0], self.job_id)
+            self.job_dir = os.path.join(self.job_folder, self.job_id)
             self.job_status = G.job_status(self.job_id)
             ### ===> [ TODO
             self.job_modules = None
             self.job_runlen = None
             self.job_t100 = None
             ### ===> ]
+            ### ALSO: need to track model output if it's running to
+            ### add to output panel (using same threading approach as
+            ### in go.py).
         self.update_panels()
 
+
     def update_panels(self):
+        """Update all job information panels"""
+
         self.update_status_panel()
         self.update_config_panel()
         self.update_output_panel()
         self.update_plot_panels()
 
+
     def create_widgets(self):
+        """UI layout"""
+
         self.tree = ttk.Treeview(self, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.tree.pack()
@@ -341,7 +357,10 @@ class Application(tk.Frame):
         self.menu.add_cascade(label='Help', menu=self.help_menu)
         self.help_menu.add_command(label='About')
 
+
     def create_status_panel(self, panel):
+        """Initial creation of status panel"""
+
         lab = ttk.Label(panel, text='Job path:', font=self.bold_font)
         lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
         self.status_job_path = ttk.Label(panel, font=self.bold_font)
@@ -369,7 +388,10 @@ class Application(tk.Frame):
 
         self.update_status_panel()
 
+
     def update_status_panel(self):
+        """Setting status panel fields"""
+
         jd = self.job_dir if self.job_dir else 'n/a'
         self.status_job_path.configure(text=jd)
         js = self.job_status if self.job_status else 'n/a'
@@ -378,6 +400,7 @@ class Application(tk.Frame):
         self.status_runlen.configure(text=jl)
         j100 = str(self.job_t100) if self.job_t100 != None else 'n/a'
         self.status_t100.configure(text=j100)
+
 
     def create_config_panel(self, panel):
         ttk.Label(panel, text='View: config').grid(column=0, row=0)
@@ -402,5 +425,4 @@ root = tk.Tk()
 app = Application(root)
 app.master.title("cGENIE GUI")
 app.master.geometry("1024x768")
-app.add_job_folder(U.cgenie_jobs, 'My Jobs', True)
 app.mainloop()
