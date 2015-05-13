@@ -83,8 +83,14 @@ class Application(tk.Frame):
         self.root = root
         tk.Frame.__init__(self, master)
         self.grid(column=0, row=0)
-        self.createWidgets()
+        self.create_widgets()
         self.job_folders = []
+        self.selected_jobid = None
+        self.job_dir = None
+        self.job_status = None
+        self.job_modules = None
+        self.job_runlen = None
+        self.job_t100 = None
 
     # Multiple job folders not yet used.
     def clear_job_folders(self):
@@ -225,6 +231,7 @@ class Application(tk.Frame):
     def item_selected(self, event):
         sel = self.tree.selection()[0]
         if len(self.tree.get_children(sel)) != 0:
+            self.select_job(sel)
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     if ((k == 'move_rename' or k == 'delete_job')
@@ -233,6 +240,7 @@ class Application(tk.Frame):
                     else:
                         v.state(['disabled'])
         else:
+            self.select_job(None)
             on_buttons = self.state_buttons[G.job_status(sel)]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
@@ -241,7 +249,30 @@ class Application(tk.Frame):
                     else:
                         v.state(['disabled'])
 
-    def createWidgets(self):
+    def select_job(self, jobid):
+        if not jobid:
+            self.selected_jobid = None
+            self.job_dir = None
+            self.job_status = None
+            self.job_modules = None
+            self.job_runlen = None
+            self.job_t100 = None
+        else:
+            self.job_id = jobid
+            self.job_dir = os.path.join(self.job_folders[0], self.job_id)
+            self.job_status = G.job_status(self.job_id)
+            self.job_modules = None
+            self.job_runlen = None
+            self.job_t100 = None
+        self.update_panels()
+
+    def update_panels(self):
+        self.update_status_panel()
+        self.update_config_panel()
+        self.update_output_panel()
+        self.update_plot_panels()
+
+    def create_widgets(self):
         self.tree = ttk.Treeview(self, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.tree.pack()
@@ -273,15 +304,15 @@ class Application(tk.Frame):
 
         # Set up default notebook panels.
         self.notebook = ttk.Notebook(self)
-        view_info = [['status', 'Status'],
-                     ['config', 'Configuration'],
-                     ['output', 'Output'],
-                     ['add_plot', '+']]
+        view_info = [['status',   'Status',        self.create_status_panel],
+                     ['config',   'Configuration', self.create_config_panel],
+                     ['output',   'Output',        self.create_output_panel],
+                     ['add_plot', '+',             self.create_plot_panel]]
         for v in view_info:
-            tmp = ttk.Frame(self.notebook)
-            tmp.view_type = v[0]
-            ttk.Label(tmp, text='View: ' + v[0]).grid(column=0, row=0)
-            self.notebook.add(tmp, text=v[1])
+            panel = ttk.Frame(self.notebook)
+            panel.view_type = v[0]
+            (v[2])(panel)
+            self.notebook.add(panel, text=v[1])
 
         # Enable window resizing and place widgets.
         self.winfo_toplevel().rowconfigure(0, weight=1)
@@ -305,6 +336,35 @@ class Application(tk.Frame):
         self.help_menu = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='Help', menu=self.help_menu)
         self.help_menu.add_command(label='About')
+
+    def create_status_panel(self, panel):
+        print('create_status_panel...')
+        ttk.Label(panel, text='View: status').grid(column=0, row=0)
+
+    def update_status_panel(self):
+        print('update_status_panel...')
+
+    def create_config_panel(self, panel):
+        print('create_config_panel...')
+        ttk.Label(panel, text='View: config').grid(column=0, row=0)
+
+    def update_config_panel(self):
+        print('update_config_panel...')
+
+    def create_output_panel(self, panel):
+        print('create_output_panel...')
+        ttk.Label(panel, text='View: output').grid(column=0, row=0)
+
+    def update_output_panel(self):
+        print('update_output_panel...')
+
+    def create_plot_panel(self, panel):
+        print('create_plot_panel...')
+        ttk.Label(panel, text='View: plot').grid(column=0, row=0)
+
+    def update_plot_panels(self):
+        print('update_plot_panels...')
+
 
 root = tk.Tk()
 app = Application(root)
