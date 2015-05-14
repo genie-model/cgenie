@@ -192,11 +192,15 @@ class SetupPanel(Panel):
         lab = ttk.Label(self, text='Base config:')
         lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
         self.base_config = ttk.Combobox(self, values=app.base_configs, width=80)
+        self.base_config.bind('<<ComboboxSelected>>', self.state_change)
+        self.base_config.state(['readonly'])
         self.base_config.grid(column=1, row=1, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='User config:')
         lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
         self.user_config = ttk.Combobox(self, values=app.user_configs, width=80)
+        self.user_config.bind('<<ComboboxSelected>>', self.state_change)
+        self.user_config.state(['readonly'])
         self.user_config.grid(column=1, row=2, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='Modifications:')
@@ -205,6 +209,7 @@ class SetupPanel(Panel):
         self.mods_frame.grid(column=1, row=3, pady=5, sticky=tk.W)
         self.mods = tk.Text(self.mods_frame, width=80, height=20,
                             font=app.normal_font)
+        self.mods.bind('<<Modified>>', self.state_change)
         self.mods_scroll = ttk.Scrollbar(self.mods_frame,
                                          command=self.mods.yview)
         self.mods['yscrollcommand'] = self.mods_scroll.set
@@ -213,17 +218,67 @@ class SetupPanel(Panel):
 
         self.but_frame = ttk.Frame(self)
         self.but_frame.grid(column=1, row=4, pady=5, sticky=tk.W)
-        self.save_button = ttk.Button(self.but_frame, text="Save changes")
-        self.revert_button = ttk.Button(self.but_frame, text="Revert changes")
+        self.save_button = ttk.Button(self.but_frame, text="Save changes",
+                                      command=self.save_changes)
+        self.revert_button = ttk.Button(self.but_frame, text="Revert changes",
+                                        command=self.revert_changes)
         self.save_button.grid(column=0, row=0)
         self.revert_button.grid(column=1, row=0, padx=5)
 
+        self.edited = False
+        self.complete = False
+
         self.update()
+
+    def set_button_state(self):
+        if self.edited and self.complete:
+            self.save_button.state(['!disabled'])
+        else:
+            self.save_button.state(['disabled'])
+        if self.edited:
+            self.revert_button.state(['!disabled'])
+        else:
+            self.revert_button.state(['disabled'])
+
+    def set_state(self):
+        if not self.job:
+            self.complete = False
+            self.edited = False
+        else:
+            self.complete = self.base_config.get() and self.user_config.get()
+            self.edited = False
+            if (self.base_config.get() and
+                self.base_config.get() != self.job.base_config):
+                self.edited = True
+            if (self.user_config.get() and
+                self.user_config.get() != self.job.user_config):
+                self.edited = True
+            mods_tmp = self.mods.get('1.0', 'end').rstrip()
+            if (mods_tmp and mods_tmp != self.job.mods):
+                self.edited = True
+
+    def state_change(self, event):
+        self.set_state()
+        self.set_button_state()
+
+    def save_changes(self):
+        pass
+
+    def revert_changes(self):
+        self.base_config.set(self.job.base_config if self.job.base_config
+                             else '')
+        self.user_config.set(self.job.user_config if self.job.user_config
+                             else '')
+        self.mods.delete('1.0', 'end')
+        if self.job.mods: self.mods.insert('end', self.job.mods)
+        self.state_change(None)
 
     def update(self):
         """Setting setup panel fields"""
 
-        if not self.job: return
+        if not self.job:
+            self.set_button_state()
+            return
         self.job_path.configure(text=self.job.dir_str())
         if self.job.base_config:
             self.base_config.set(self.job.base_config)
@@ -233,6 +288,8 @@ class SetupPanel(Panel):
             self.user_config.set(self.job.user_config)
         else:
             self.user_config.set('')
+        self.set_state()
+        self.set_button_state()
 
 
 class NamelistPanel(Panel):
