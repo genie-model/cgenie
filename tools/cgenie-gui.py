@@ -78,22 +78,158 @@ class JobFolder:
         for c in cs: self.sort_children(c)
 
 
+class Job:
+    def __init__(self, jobid=None, folder=None):
+        self.jobid = jobid
+        if not jobid:
+            self.dir = None
+            self.status = None
+            self.modules = None
+            self.runlen = None
+            self.t100 = None
+            self.base_config = None
+            self.user_config = None
+            self.mods = None
+        else:
+            self.dir = os.path.join(folder, self.jobid)
+            self.status = G.job_status(self.jobid)
+            ### ===> [ TODO
+            self.modules = None
+            self.runlen = None
+            self.t100 = None
+            self.base_config = None
+            self.user_config = None
+            self.mods = None
+            ### ===> ]
+
+    def dir_str(self): return self.dir if self.dir else 'n/a'
+    def status_str(self): return self.status if self.status else 'n/a'
+    def runlen_str(self): return str(self.runlen) if self.runlen else 'n/a'
+    def t100_str(self): return str(self.t100) if self.t100 != None else 'n/a'
+
+
+class Panel(tk.Frame):
+    def __init__(self, notebook, type, title):
+        tk.Frame.__init__(self, notebook)
+        self.view_type = type
+        self.job = None
+        notebook.add(self, text=title)
+
+    def set_job(self, job):
+        self.job = job
+        self.update()
+
+
+class StatusPanel(Panel):
+    def __init__(self, notebook, app):
+        """Initial creation of status panel"""
+
+        Panel.__init__(self, notebook, 'status', 'Status')
+
+        lab = ttk.Label(self, text='Job path:', font=app.bold_font)
+        lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
+        self.job_path = ttk.Label(self, font=app.bold_font)
+        self.job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='Job status:')
+        lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
+        self.job_status = ttk.Label(self)
+        self.job_status.grid(column=1, row=1, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='Run length:')
+        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
+        self.runlen = ttk.Label(self)
+        self.runlen.grid(column=1, row=2, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='T100:')
+        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
+        self.t100 = ttk.Label(self)
+        self.t100.grid(column=1, row=3, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='Modules:')
+        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
+        self.modules = ttk.Label(self)
+        self.modules.grid(column=1, row=4, pady=5, sticky=tk.W)
+
+        self.update()
+
+    def update(self):
+        """Setting status panel fields"""
+
+        if not self.job: return
+        self.job_path.configure(text=self.job.dir_str())
+        self.job_status.configure(text=self.job.status_str())
+        self.runlen.configure(text=self.job.runlen_str())
+        self.t100.configure(text=self.job.t100_str())
+
+
+class ConfigPanel(Panel):
+    def __init__(self, notebook, app):
+        """Initial creation of configuration panel"""
+
+        Panel.__init__(self, notebook, 'config', 'Configuration')
+
+        lab = ttk.Label(self, text='Job path:', font=app.bold_font)
+        lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
+        self.job_path = ttk.Label(self, font=app.bold_font)
+        self.job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='Base config:')
+        lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
+#        self.status_job_status = ttk.Label(self)
+#        self.status_job_status.grid(column=1, row=1, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='User config:')
+        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
+#        self.status_runlen = ttk.Label(self)
+#        self.status_runlen.grid(column=1, row=2, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='Modifications:')
+        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
+#        self.status_t100 = ttk.Label(self)
+#        self.status_t100.grid(column=1, row=3, pady=5, sticky=tk.W)
+
+        self.update()
+
+    def update(self):
+        """Setting configuration panel fields"""
+
+        if not self.job: return
+        self.job_path.configure(text=self.job.dir_str())
+
+
+class OutputPanel(Panel):
+    def __init__(self, notebook, app):
+        Panel.__init__(self, notebook, 'output', 'Output')
+        ttk.Label(self, text='View: output').grid(column=0, row=0)
+
+    def update(self):
+        pass
+
+
+class PlotPanel(Panel):
+    def __init__(self, notebook, app):
+        Panel.__init__(self, notebook, 'plot1', '+')
+        ttk.Label(self, text='View: plot').grid(column=0, row=0)
+
+    def update(self):
+        pass
+
+
+
 class Application(tk.Frame):
     def __init__(self, master=None):
         self.root = root
         self.bold_font = tkFont.Font(family='Helvetica', weight='bold')
         self.big_font = tkFont.Font(family='Helvetica', size=16, weight='bold')
-        self.selected_jobid = None
-        self.job_dir = None
-        self.job_status = None
-        self.job_modules = None
-        self.job_runlen = None
-        self.job_t100 = None
+        self.jobid = None
+        self.job = Job()
         tk.Frame.__init__(self, master)
         self.grid(column=0, row=0)
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree)
         self.job_folder.scan(True)
+        self.find_configs()
 
 
     def new_job(self):
@@ -259,35 +395,11 @@ class Application(tk.Frame):
     def select_job(self, jobid):
         """Select a job and set up information tracking"""
 
-        if not jobid:
-            self.selected_jobid = None
-            self.job_dir = None
-            self.job_status = None
-            self.job_modules = None
-            self.job_runlen = None
-            self.job_t100 = None
-        else:
-            self.job_id = jobid
-            self.job_dir = os.path.join(self.job_folder, self.job_id)
-            self.job_status = G.job_status(self.job_id)
-            ### ===> [ TODO
-            self.job_modules = None
-            self.job_runlen = None
-            self.job_t100 = None
-            ### ===> ]
-            ### ALSO: need to track model output if it's running to
-            ### add to output panel (using same threading approach as
-            ### in go.py).
-        self.update_panels()
-
-
-    def update_panels(self):
-        """Update all job information panels"""
-
-        self.update_status_panel()
-        self.update_config_panel()
-        self.update_output_panel()
-        self.update_plot_panels()
+        self.job = Job(jobid, self.job_folder)
+        ### ===> TODO: need to track model output if it's running to
+        ###      add to output panel (using same threading approach as
+        ###      in go.py).
+        for p in self.panels.itervalues(): p.set_job(self.job)
 
 
     def create_widgets(self):
@@ -324,15 +436,11 @@ class Application(tk.Frame):
 
         # Set up default notebook panels.
         self.notebook = ttk.Notebook(self)
-        view_info = [['status',   'Status',        self.create_status_panel],
-                     ['config',   'Configuration', self.create_config_panel],
-                     ['output',   'Output',        self.create_output_panel],
-                     ['add_plot', '+',             self.create_plot_panel]]
-        for v in view_info:
-            panel = ttk.Frame(self.notebook)
-            panel.view_type = v[0]
-            (v[2])(panel)
-            self.notebook.add(panel, text=v[1])
+        self.panels = { }
+        self.panels['status'] = StatusPanel(self.notebook, self)
+        self.panels['config'] = ConfigPanel(self.notebook, self)
+        self.panels['output'] = OutputPanel(self.notebook, self)
+        self.panels['plot1'] = PlotPanel(self.notebook, self)
 
         # Enable window resizing and place widgets.
         self.winfo_toplevel().rowconfigure(0, weight=1)
@@ -358,67 +466,20 @@ class Application(tk.Frame):
         self.help_menu.add_command(label='About')
 
 
-    def create_status_panel(self, panel):
-        """Initial creation of status panel"""
+    def find_configs(self):
+        """Find all base and user configuration files"""
 
-        lab = ttk.Label(panel, text='Job path:', font=self.bold_font)
-        lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
-        self.status_job_path = ttk.Label(panel, font=self.bold_font)
-        self.status_job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
-
-        lab = ttk.Label(panel, text='Job status:')
-        lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
-        self.status_job_status = ttk.Label(panel)
-        self.status_job_status.grid(column=1, row=1, pady=5, sticky=tk.W)
-
-        lab = ttk.Label(panel, text='Run length:')
-        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
-        self.status_runlen = ttk.Label(panel)
-        self.status_runlen.grid(column=1, row=2, pady=5, sticky=tk.W)
-
-        lab = ttk.Label(panel, text='T100:')
-        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
-        self.status_t100 = ttk.Label(panel)
-        self.status_t100.grid(column=1, row=3, pady=5, sticky=tk.W)
-
-        lab = ttk.Label(panel, text='Modules:')
-        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
-        self.status_modules = ttk.Label(panel)
-        self.status_modules.grid(column=1, row=4, pady=5, sticky=tk.W)
-
-        self.update_status_panel()
-
-
-    def update_status_panel(self):
-        """Setting status panel fields"""
-
-        jd = self.job_dir if self.job_dir else 'n/a'
-        self.status_job_path.configure(text=jd)
-        js = self.job_status if self.job_status else 'n/a'
-        self.status_job_status.configure(text=js)
-        jl = str(self.job_runlen) if self.job_runlen else 'n/a'
-        self.status_runlen.configure(text=jl)
-        j100 = str(self.job_t100) if self.job_t100 != None else 'n/a'
-        self.status_t100.configure(text=j100)
-
-
-    def create_config_panel(self, panel):
-        ttk.Label(panel, text='View: config').grid(column=0, row=0)
-
-    def update_config_panel(self):
-        pass
-
-    def create_output_panel(self, panel):
-        ttk.Label(panel, text='View: output').grid(column=0, row=0)
-
-    def update_output_panel(self):
-        pass
-
-    def create_plot_panel(self, panel):
-        ttk.Label(panel, text='View: plot').grid(column=0, row=0)
-
-    def update_plot_panels(self):
-        pass
+        bs = os.listdir(os.path.join(U.cgenie_data, 'base-configs'))
+        bs = filter(lambda s: s.endswith('.config'), bs)
+        self.base_configs = map(lambda s: s.rpartition('.')[0], bs)
+        self.base_configs.sort()
+        us = []
+        udir = os.path.join(U.cgenie_data, 'user-configs')
+        for d, ds, fs in os.walk(udir):
+            for f in fs:
+                us.append(os.path.relpath(os.path.join(d, f), udir))
+        self.user_configs = us
+        self.user_configs.sort()
 
 
 root = tk.Tk()
