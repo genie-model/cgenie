@@ -121,7 +121,7 @@ class Panel(ttk.Frame):
     def __init__(self, notebook, type, title):
         self.stmp = ttk.Style()
         self.stmp.configure('Tmp.TFrame', background='red')
-        ttk.Frame.__init__(self, notebook, style='Tmp.TFrame')
+        ttk.Frame.__init__(self, notebook)
         self.view_type = type
         self.job = None
         self.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N+tk.S+tk.E+tk.W)
@@ -238,9 +238,45 @@ class SetupPanel(Panel):
 class NamelistPanel(Panel):
     def __init__(self, notebook, app):
         Panel.__init__(self, notebook, 'namelists', 'Namelists')
-        ttk.Label(self, text='View: namelists').grid(column=0, row=0)
+
+        self.sel_frame = ttk.Frame(self)
+        lab = ttk.Label(self.sel_frame, text='Namelist:')
+        # ===> TODO: should set this from the keys of
+        #      self.job.namelists
+        nls = ('genie', 'GEM', 'BIOGEM')
+        self.nl_var = tk.StringVar()
+        self.nl_sel = ttk.OptionMenu(self.sel_frame, self.nl_var, None, *nls,
+                                     command=self.selection_changed)
+        self.nl_var.set(nls[0])
+
+        self.out = tk.Text(self, font=app.normal_font,
+                           state=tk.DISABLED, wrap=tk.NONE)
+        self.out_scroll = ttk.Scrollbar(self, command=self.out.yview)
+        self.out['yscrollcommand'] = self.out_scroll.set
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure(1, weight=1)
+        self.sel_frame.grid(column=0, row=0, sticky=tk.W, pady=5)
+        lab.grid(column=0, row=0, padx=5, pady=5, sticky=tk.W)
+        self.nl_sel.grid(column=1, row=0, stick=tk.W)
+        self.out.grid(column=0, row=1, sticky=tk.E+tk.W+tk.N+tk.S)
+        self.out_scroll.grid(column=1, row=1, sticky=tk.N+tk.S)
+
+    def selection_changed(self, event):
+        print(self.nl_var.get())
+        self.set_namelist_text()
+
+    def set_namelist_text(self):
+        self.out['state'] = tk.DISABLED
+        # ===> TODO: set text here from
+        #      self.job.namelists[self.nl_var.get()]
+        self.out['state'] = tk.NORMAL
+        pass
 
     def update(self):
+        # ===> TODO: update the list of possible namelists here from
+        #            the keys of self.job.namelists
         pass
 
 
