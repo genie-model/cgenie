@@ -80,39 +80,51 @@ class JobFolder:
 
 class Job:
     def __init__(self, jobid=None, folder=None):
-        self.jobid = jobid
+        self.runlen = None
+        self.t100 = None
+        self.base_config = None
+        self.user_config = None
+        self.full_config = None
+        self.mods = None
+        self.modules = None
         if not jobid:
+            self.jobid = None
             self.dir = None
             self.status = None
-            self.modules = None
-            self.runlen = None
-            self.t100 = None
-            self.base_config = None
-            self.user_config = None
-            self.mods = None
         else:
-            self.dir = os.path.join(folder, self.jobid)
-            self.status = G.job_status(self.jobid)
-            ### ===> [ TODO
-            self.modules = None
-            self.runlen = None
-            self.t100 = None
-            self.base_config = None
-            self.user_config = None
-            self.mods = None
-            ### ===> ]
+            self.jobid = os.path.relpath(jobid, folder.path)
+            self.dir = jobid
+            self.status = G.job_status(self.dir)
+            try:
+                with open(os.path.join(self.dir, 'config', 'config')) as fp:
+                    for line in fp:
+                        k, v = map(lambda s: s.strip(), line.strip().split(':'))
+                        if k == 't100':
+                            self.t100 = True if v == 'True' else False
+                        elif k == 'run_length':
+                            self.runlen = None if v == '?' else int(v)
+                        elif k == 'full_config': self.full_config = v
+                        elif k == 'base_config': self.base_config = v
+                        elif k == 'user_config': self.user_config = v
+            except Exception as e:
+                ### ===> TODO: better exception handling
+                print('Exception:', e)
 
     def dir_str(self): return self.dir if self.dir else 'n/a'
     def status_str(self): return self.status if self.status else 'n/a'
     def runlen_str(self): return str(self.runlen) if self.runlen else 'n/a'
     def t100_str(self): return str(self.t100) if self.t100 != None else 'n/a'
+    def config_type(self): return 'full' if self.full_config else 'base+user'
 
 
-class Panel(tk.Frame):
+class Panel(ttk.Frame):
     def __init__(self, notebook, type, title):
-        tk.Frame.__init__(self, notebook)
+        self.stmp = ttk.Style()
+        self.stmp.configure('Tmp.TFrame', background='red')
+        ttk.Frame.__init__(self, notebook, style='Tmp.TFrame')
         self.view_type = type
         self.job = None
+        self.grid(column=0, row=0, padx=5, pady=5, sticky=tk.N+tk.S+tk.E+tk.W)
         notebook.add(self, text=title)
 
     def set_job(self, job):
@@ -163,11 +175,14 @@ class StatusPanel(Panel):
         self.t100.configure(text=self.job.t100_str())
 
 
-class ConfigPanel(Panel):
+### ===> TODO: also need to handle "full config" cases.
+### ===> TODO: need to sort out job config/config contents conventions
+###      for consistency between GUI jobs, new-job jobs and test jobs.
+class SetupPanel(Panel):
     def __init__(self, notebook, app):
-        """Initial creation of configuration panel"""
+        """Initial creation of setup panel"""
 
-        Panel.__init__(self, notebook, 'config', 'Configuration')
+        Panel.__init__(self, notebook, 'setup', 'Setup')
 
         lab = ttk.Label(self, text='Job path:', font=app.bold_font)
         lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
@@ -176,32 +191,70 @@ class ConfigPanel(Panel):
 
         lab = ttk.Label(self, text='Base config:')
         lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
-#        self.status_job_status = ttk.Label(self)
-#        self.status_job_status.grid(column=1, row=1, pady=5, sticky=tk.W)
+        self.base_config = ttk.Combobox(self, values=app.base_configs, width=80)
+        self.base_config.grid(column=1, row=1, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='User config:')
         lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
-#        self.status_runlen = ttk.Label(self)
-#        self.status_runlen.grid(column=1, row=2, pady=5, sticky=tk.W)
+        self.user_config = ttk.Combobox(self, values=app.user_configs, width=80)
+        self.user_config.grid(column=1, row=2, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='Modifications:')
-        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
-#        self.status_t100 = ttk.Label(self)
-#        self.status_t100.grid(column=1, row=3, pady=5, sticky=tk.W)
+        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W+tk.N)
+        self.mods_frame = ttk.Frame(self)
+        self.mods_frame.grid(column=1, row=3, pady=5, sticky=tk.W)
+        self.mods = tk.Text(self.mods_frame, width=80, height=20,
+                            font=app.normal_font)
+        self.mods_scroll = ttk.Scrollbar(self.mods_frame,
+                                         command=self.mods.yview)
+        self.mods['yscrollcommand'] = self.mods_scroll.set
+        self.mods.grid(column=0, row=0, sticky=tk.W)
+        self.mods_scroll.grid(column=1, row=0, sticky=tk.N+tk.S)
+
+        self.but_frame = ttk.Frame(self)
+        self.but_frame.grid(column=1, row=4, pady=5, sticky=tk.W)
+        self.save_button = ttk.Button(self.but_frame, text="Save changes")
+        self.revert_button = ttk.Button(self.but_frame, text="Revert changes")
+        self.save_button.grid(column=0, row=0)
+        self.revert_button.grid(column=1, row=0, padx=5)
 
         self.update()
 
     def update(self):
-        """Setting configuration panel fields"""
+        """Setting setup panel fields"""
 
         if not self.job: return
         self.job_path.configure(text=self.job.dir_str())
+        if self.job.base_config:
+            self.base_config.set(self.job.base_config)
+        else:
+            self.base_config.set('')
+        if self.job.user_config:
+            self.user_config.set(self.job.user_config)
+        else:
+            self.user_config.set('')
+
+
+class NamelistPanel(Panel):
+    def __init__(self, notebook, app):
+        Panel.__init__(self, notebook, 'namelists', 'Namelists')
+        ttk.Label(self, text='View: namelists').grid(column=0, row=0)
+
+    def update(self):
+        pass
 
 
 class OutputPanel(Panel):
     def __init__(self, notebook, app):
         Panel.__init__(self, notebook, 'output', 'Output')
-        ttk.Label(self, text='View: output').grid(column=0, row=0)
+
+        self.out = tk.Text(self, font=app.normal_font)
+        self.out_scroll = ttk.Scrollbar(self, command=self.out.yview)
+        self.out['yscrollcommand'] = self.out_scroll.set
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.out.grid(column=0, row=0, sticky=tk.E+tk.W+tk.N+tk.S)
+        self.out_scroll.grid(column=1, row=0, sticky=tk.N+tk.S)
 
     def update(self):
         pass
@@ -217,19 +270,20 @@ class PlotPanel(Panel):
 
 
 
-class Application(tk.Frame):
+class Application(ttk.Frame):
     def __init__(self, master=None):
         self.root = root
+        self.normal_font = ttk.Style().lookup('TEntry', 'font')
         self.bold_font = tkFont.Font(family='Helvetica', weight='bold')
         self.big_font = tkFont.Font(family='Helvetica', size=16, weight='bold')
         self.jobid = None
         self.job = Job()
-        tk.Frame.__init__(self, master)
-        self.grid(column=0, row=0)
+        ttk.Frame.__init__(self, master)
+        self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
+        self.find_configs()
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree)
         self.job_folder.scan(True)
-        self.find_configs()
 
 
     def new_job(self):
@@ -407,8 +461,6 @@ class Application(tk.Frame):
 
         self.tree = ttk.Treeview(self, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
-        self.tree.pack()
-        self.pack()
 
         self.toolbar = ttk.Frame(self)
         self.tool_buttons = { }
@@ -438,24 +490,23 @@ class Application(tk.Frame):
         self.notebook = ttk.Notebook(self)
         self.panels = { }
         self.panels['status'] = StatusPanel(self.notebook, self)
-        self.panels['config'] = ConfigPanel(self.notebook, self)
+        self.panels['setup'] = SetupPanel(self.notebook, self)
+        self.panels['namelists'] = NamelistPanel(self.notebook, self)
         self.panels['output'] = OutputPanel(self.notebook, self)
         self.panels['plot1'] = PlotPanel(self.notebook, self)
 
         # Enable window resizing and place widgets.
-        self.winfo_toplevel().rowconfigure(0, weight=1)
-        self.winfo_toplevel().columnconfigure(0, weight=1)
-        self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
+        top = self.winfo_toplevel()
+        top.rowconfigure(0, weight=1)
+        top.columnconfigure(0, weight=1)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=0)
         self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
-        self.tree.grid(column=0, row=0, sticky=tk.N+tk.S+tk.W)
-        self.toolbar.grid(column=1, row=0, sticky=tk.N+tk.S+tk.W)
-        self.notebook.grid(column=2, row=0, columnspan=3,
-                           sticky=tk.N+tk.E+tk.S+tk.W)
+        self.tree.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.toolbar.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.notebook.grid(column=2, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
-        top = self.winfo_toplevel()
         self.menu = tk.Menu(top)
         top['menu'] = self.menu
         self.file_menu = tk.Menu(self.menu, tearoff=0)
