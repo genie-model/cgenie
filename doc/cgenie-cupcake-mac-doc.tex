@@ -1,0 +1,289 @@
+%
+% litreview.tex
+%
+% Developed by Gregory J. L. Tourte <g.j.l.tourte@bristol.ac.uk>
+% Copyright (c) 2015 School of Geographical Sciences - The University of Bristol
+% Licensed under the terms of GNU General Public License.
+% All rights reserved.
+%
+% Changelog:
+% 2015-03-23 - created
+%
+% arara: lualatex: {shell: true, draft: true}
+%% arara: biber
+%% arara: lualatex: {shell: true, draft: true}
+% arara: lualatex: {shell: true}
+%% arara: clean: {extensions: [aux, toc, bbl, run.xml, bcf, blg, out]}
+%
+% $Platon$
+\RequirePackage[l2tabu,orthodox]{nag}
+\pdfpageattr {/Group << /S /Transparency /I true /CS /DeviceRGB>>}
+\RequirePackage[2015/01/01]{latexrelease}
+
+\documentclass{scrartcl}
+
+\usepackage{scrhack}
+\usepackage{scrpage2}
+\usepackage{mathtools}
+\AfterPackage!{hyperref}{\usepackage[nameinlink]{cleveref}}
+\usepackage {fontspec,microtype}
+\usepackage {typearea,geometry}
+\usepackage {needspace}
+\usepackage {graphicx}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\usepackage {xcolor}
+\usepackage {luatextra}
+\usepackage {booktabs}
+\usepackage {quoting}
+\usepackage {tabu}
+\PassOptionsToPackage{hyphens,obeyspaces,spaces}{url}
+\usepackage {polyglossia}
+\setdefaultlanguage[variant=british]{english}
+\usepackage {minted}
+\usepackage {siunitx,numprint}
+\ExplSyntaxOn
+\cs_new_eq:NN \siunitx_table_collect_begin:Nn \__siunitx_table_collect_begin:Nn
+\ExplSyntaxOff
+\usepackage {enumitem}
+\setlist{nosep}
+\usepackage [english]{selnolig}
+\usepackage [british,calc]{datetime2}
+\DTMlangsetup[en-GB]{ord=raise}
+\usepackage [autostyle,english=british]{csquotes}
+\usepackage {hyperxmp}
+\usepackage {hyperref}
+\usepackage [os=mac]{menukeys}
+
+
+
+% Font definitions
+\defaultfontfeatures{Ligatures = {TeX}, Scale = {MatchLowercase}}
+%\setmainfont [Numbers = {Proportional,OldStyle}]{Linux Libertine O}
+\setmainfont [Numbers = {Proportional,OldStyle}]{Minion Pro}
+\setsansfont [Numbers = {Proportional,OldStyle}]{Linux Biolinum O}
+\setmonofont[ItalicFont = *, ItalicFeatures = FakeSlant, RawFeature = -tlig;-trep, StylisticSet={1,3}]{Inconsolata zi4}
+%\newfontfamily\liningroman[Numbers={Lining}]{Linux Libertine O}
+
+\usepackage[math-style=TeX]{unicode-math}
+\setmathfont{Tex Gyre Pagella Math}
+
+
+\KOMAoptions{
+    fontsize	= 11pt,
+    numbers		= noendperiod,
+    parskip		= half-,
+%	twocolumn,
+%	twoside,
+	%draft,
+	captions	= tableheading,
+%	toc		= listofnumbered,
+	listof		= leveldown,
+%	chapterprefix	= true,
+	DIV		= 9,
+%	BCOR		= 7mm,
+}
+\recalctypearea
+\pagestyle{scrheadings}
+
+% Add accessibility functions with pdf (>v1.5)
+\usepackage {accsupp}
+% declare function to hide text from selection in pdf, used for the draft
+% watermark and linenos in listing
+\DeclareRobustCommand\squelch[1]{%
+  \BeginAccSupp{method=plain,ActualText={}}#1\EndAccSupp{}%
+}
+
+%\BeforeBeginEnvironment{minted}{\begin{singlespace}}
+%\AfterEndEnvironment{minted}{\end{singlespace}}
+\renewcommand{\theFancyVerbLine}{
+  \fontspec[Numbers = {Lining,Monospaced}]{Minion Pro}\color[rgb]{0.5,0.5,0.5}\scriptsize\squelch{\arabic{FancyVerbLine}}}
+
+\usemintedstyle{bw}
+
+\setminted{%frame = lines,
+%	framesep=2mm,
+%	linenos=true,
+	numbersep = 5pt,
+	%gobble = 2,
+%	fontsize = \footnotesize,
+%	xleftmargin=20pt,
+%	xrightmargin=20pt,
+	tabsize=3,
+	breaklines = true,
+	breaksymbolleft = \squelch{\tiny\ensuremath{\hookrightarrow}},
+}
+
+\title{cGENIE (Cupcake)\\
+Mac OS X Instructions}
+\author{Gregory J. L. Tourte}
+
+\pdfoptionpdfminorversion 7
+
+%\DTMsetstyle{pdf}
+\makeatletter
+\hypersetup {
+	hidelinks,
+	breaklinks,
+	linktocpage             = true,
+	unicode                 = true,
+	%hyperfootnotes          = true,
+	bookmarksnumbered       = true,
+	bookmarksopen           = true,
+	pdfdisplaydoctitle      = true,
+	%pdfpagelabels           = false,
+	plainpages              = false,
+	pdfauthor               = {\@author},
+	pdftitle                = {\@title},
+	pdfcontactemail		= {g.j.l.tourte@bristol.ac.uk},
+	pdfcontactcity		= {Bristol},
+	pdfcontactpostcode	= {BS8 1SS},
+	pdfcontactcountry	= {United Kingdom},
+	pdfcontacturl		= {http://www.bridge.bris.ac.uk/},
+	pdfsubject              = {},
+	pdfkeywords             = {},
+	pdfcopyright		= {Copyright © 2015, Gregory J. L. Tourte},
+	pdflicenseurl		= {http://creativecommons.org/licenses/by-nc-sa/4.0/},
+	pdflang                 = en-GB,
+	pdfencoding             = auto,
+	pdfduplex               = DuplexFlipLongEdge,
+	pdfprintscaling         = None,
+	pdfinfo					= {
+		CreationDate={D:20150323103000Z},
+%		ModDate={\DTMnow},
+	},
+	%draft,
+}
+\makeatother
+
+\begin{document}
+
+\maketitle
+
+These instructions have been tested on Mac OS X Yosemite (10.10) but should
+work on Mavericks (10.9) as well. However we recommend that you use the latest
+version of the OS available as we may not be able to reproduce errors and bugs
+you may report.
+
+The following instructions will require you to use the Mac OS X Terminal
+application. This can be opened by using the \keys{\cmd+\SPACE} key combination
+and searching for `\textit{Terminal}', alternatively it can be found in the
+\directory{Macintosh HD/Applications/Utilities} directory. We suggest you pin
+the application to your Dock for easy access if you haven't done so already.
+
+\section{System Requirements}
+
+To install and run cGENIE on Mac OS X you will need the following packages
+installed:
+
+\begin{itemize} \item Apple Xcode \item Xcode Command line Tools \item the
+		MacPorts environment \item the HomeBrew packaging system \item gfortran
+		compiler \item NetCDF libraries \end{itemize}
+
+\subsection{Apple Xcode}
+
+Apple Xcode can be downloaded for free from the Apple App Store. More details
+can be found at \url{https://developer.apple.com/xcode/downloads/}. XCode
+contains the GNU C Compiler (\texttt{gcc}) and most of the other libraries and
+tools to allow the compilation of the model.
+
+In addition to Xcode, you will need to install the Xcode Command Line Tools.
+These used to be installed by default on older versions of Xcode but are now
+distributed separately. Once Xcode is installed, you will need to run the
+following command in the terminal:
+%You can find instructions on installing this at
+%\url{http://railsapps.github.io/xcode-command-line-tools.html}\,\footnote{Future
+%versions of this document will reproduce these instructions in case the link
+%disapear}.
+
+\begin{minted}{bash}
+xcode-select --install
+\end{minted} 
+
+You can check if Xcode is properly installed using the command:
+
+\mint{bash}|xcode-select -p|
+which should contain the following line in the response:
+\begin{minted}{bash}
+/Applications/Xcode.app/Contents/Developer
+\end{minted}
+
+While we are checking the environment, you can check that \texttt{gcc} is installed properly:
+
+\begin{minted}{bash}
+gcc --version
+Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
+Apple LLVM version 6.1.0 (clang-602.0.49) (based on LLVM 3.6.0svn)
+Target: x86_64-apple-darwin14.3.0
+Thread model: posix
+\end{minted}
+
+\subsection{Homebrew \& MacPorts}
+
+Homebrew is a package manager for OS X which allows users to download and
+installed packages found in other UNIX style environment such as Linux and keep
+them up to date in a managed way in the sense that one can update packages and
+manage dependencies. MacPort has a similar aim but with a slightly different
+philosophy. We will not compare these two here as it goes beyond the scope of
+this document but we have used both to install software required to run cGENIE
+on the Mac.
+
+Homebrew and information about it can be found at \url{http://brew.sh/}. To
+install the environment, simply type the following line in the Terminal:
+
+\mint{bash}|ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"|
+
+MacPort and information about it can be found at
+\url{https://www.macports.org/} and instructions on how to install it are found
+at \url{https://www.macports.org/install.php}. Following the installation, you
+should make sure your installation is fully up to date by running:
+
+\mint{bash}|sudo port -v selfupdate|
+
+\subsection{Fortran Compiler (\texttt{gfortran})}
+
+We will get gfortran from homebrew. This is simply done by using the command:
+
+\mint{bash}|brew install gfortran|
+
+it will download and install all the dependencies as well as the request
+software itself. At the time of writing, the version of \texttt{gfortran}
+available on the brew servers is 4.9.2.  
+
+You can check that \texttt{gfortran} is properly installed by issuing the command:
+
+\begin{minted}{bash}
+gfortran --version
+GNU Fortran (Homebrew gcc 4.9.2_1) 4.9.2
+Copyright (C) 2014 Free Software Foundation, Inc.
+
+GNU Fortran comes with NO WARRANTY, to the extent permitted by law.
+You may redistribute copies of GNU Fortran
+under the terms of the GNU General Public License.
+For more information about these matters, see the file named COPYING
+\end{minted}
+
+\subsection{NetCDF Libraries}
+
+For NetCDF we will use the version available from MacPorts (we have tried using
+homebrew for this in order to minimise the requirements and not mix the
+packaging environment but unfortunately, the NetCDF brew package could not be
+installed on our test machine. If this changes, we will reevaluate our
+instructions.
+
+Although previous versions of cGENIE required the C, C++ and fortran versions
+of the library, this is no longer the case and the C++ layer is not a
+requirement anymore. The following commands  will install the necessary NetCDF
+libraries:
+
+\begin{minted}{bash}
+sudo port install netcdf
+sudo port install netcdf-fortran
+\end{minted}
+
+\section{Installing cGENIE (cupcake)}
+
+
+\end{document}
+
+% vim: ts=4
+% vim600: fdl=0 fdm=marker fdc=3 spl=en_gb spell
