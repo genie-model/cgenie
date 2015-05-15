@@ -1,5 +1,5 @@
 %
-% litreview.tex
+% cgenie-cupcake-mac-doc.tex
 %
 % Developed by Gregory J. L. Tourte <g.j.l.tourte@bristol.ac.uk>
 % Copyright (c) 2015 School of Geographical Sciences - The University of Bristol
@@ -7,7 +7,7 @@
 % All rights reserved.
 %
 % Changelog:
-% 2015-03-23 - created
+% 2015-04-15 - created
 %
 % arara: lualatex: {shell: true, draft: true}
 %% arara: biber
@@ -15,7 +15,6 @@
 % arara: lualatex: {shell: true}
 %% arara: clean: {extensions: [aux, toc, bbl, run.xml, bcf, blg, out]}
 %
-% $Platon$
 \RequirePackage[l2tabu,orthodox]{nag}
 \pdfpageattr {/Group << /S /Transparency /I true /CS /DeviceRGB>>}
 \RequirePackage[2015/01/01]{latexrelease}
@@ -98,7 +97,7 @@
 \renewcommand{\theFancyVerbLine}{
   \fontspec[Numbers = {Lining,Monospaced}]{Minion Pro}\color[rgb]{0.5,0.5,0.5}\scriptsize\squelch{\arabic{FancyVerbLine}}}
 
-\usemintedstyle{bw}
+\usemintedstyle{autumn}
 
 \setminted{%frame = lines,
 %	framesep=2mm,
@@ -117,7 +116,7 @@
 Mac OS X Instructions}
 \author{Gregory J. L. Tourte}
 
-\pdfoptionpdfminorversion 7
+\pdfminorversion=7
 
 %\DTMsetstyle{pdf}
 \makeatletter
@@ -195,22 +194,22 @@ following command in the terminal:
 %versions of this document will reproduce these instructions in case the link
 %disapear}.
 
-\begin{minted}{bash}
-xcode-select --install
+\begin{minted}{console}
+$ xcode-select --install
 \end{minted} 
 
 You can check if Xcode is properly installed using the command:
 
-\mint{bash}|xcode-select -p|
+\mint{console}|$ xcode-select -p|
 which should contain the following line in the response:
-\begin{minted}{bash}
+\begin{minted}{console}
 /Applications/Xcode.app/Contents/Developer
 \end{minted}
 
 While we are checking the environment, you can check that \texttt{gcc} is installed properly:
 
-\begin{minted}{bash}
-gcc --version
+\begin{minted}{console}
+$ gcc --version
 Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
 Apple LLVM version 6.1.0 (clang-602.0.49) (based on LLVM 3.6.0svn)
 Target: x86_64-apple-darwin14.3.0
@@ -220,7 +219,7 @@ Thread model: posix
 \subsection{Homebrew \& MacPorts}
 
 Homebrew is a package manager for OS X which allows users to download and
-installed packages found in other UNIX style environment such as Linux and keep
+install packages found in other UNIX style environment such as Linux and keep
 them up to date in a managed way in the sense that one can update packages and
 manage dependencies. MacPort has a similar aim but with a slightly different
 philosophy. We will not compare these two here as it goes beyond the scope of
@@ -230,20 +229,20 @@ on the Mac.
 Homebrew and information about it can be found at \url{http://brew.sh/}. To
 install the environment, simply type the following line in the Terminal:
 
-\mint{bash}|ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"|
+\mint{console}|$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"|
 
 MacPort and information about it can be found at
 \url{https://www.macports.org/} and instructions on how to install it are found
 at \url{https://www.macports.org/install.php}. Following the installation, you
 should make sure your installation is fully up to date by running:
 
-\mint{bash}|sudo port -v selfupdate|
+\mint{console}|$ sudo port -v selfupdate|
 
 \subsection{Fortran Compiler (\texttt{gfortran})}
 
 We will get gfortran from homebrew. This is simply done by using the command:
 
-\mint{bash}|brew install gfortran|
+\mint{console}|$ brew install gfortran|
 
 it will download and install all the dependencies as well as the request
 software itself. At the time of writing, the version of \texttt{gfortran}
@@ -251,8 +250,8 @@ available on the brew servers is 4.9.2.
 
 You can check that \texttt{gfortran} is properly installed by issuing the command:
 
-\begin{minted}{bash}
-gfortran --version
+\begin{minted}{console}
+$ gfortran --version
 GNU Fortran (Homebrew gcc 4.9.2_1) 4.9.2
 Copyright (C) 2014 Free Software Foundation, Inc.
 
@@ -275,9 +274,9 @@ of the library, this is no longer the case and the C++ layer is not a
 requirement anymore. The following commands  will install the necessary NetCDF
 libraries:
 
-\begin{minted}{bash}
-sudo port install netcdf
-sudo port install netcdf-fortran
+\begin{minted}{console}
+$ sudo port install netcdf
+$ sudo port install netcdf-fortran
 \end{minted}
 
 \section{Installing cGENIE (cupcake)}
