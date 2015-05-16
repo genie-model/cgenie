@@ -253,7 +253,7 @@ for m in modules + ['main', 'gem']:
     nmlout = os.path.join(job_dir, 'data_' + minfo['nml_file'])
     with open(nmlin) as fp:
         nml = C.Namelist(fp)
-        nml.merge(minfo['prefix'], minfo['exceptions'], configs)
+        nml.merge(minfo['prefix'], configs)
         with open(nmlout, 'w') as ofp: nml.write(ofp)
         C.copy_data_files(m, nml, os.path.join(job_dir, 'input', m),
                           extra_data_files.get(m))

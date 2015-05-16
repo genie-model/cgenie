@@ -69,14 +69,6 @@ def load_module_info():
                 module_info[row[0]] = { 'flag_name': flag, 'prefix': row[2],
                                         'nml_file': row[3], 'nml_name': row[4] }
                 flagname_to_mod[flag] = row[0]
-        for k, v in module_info.iteritems():
-            excs = { }
-            try:
-                with open(os.path.join(srcdir, k, k + '-exceptions.csv')) as fp:
-                    for row in csv.reader(fp): excs[row[0]] = row[1]
-            except IOError as e:
-                if e.errno != errno.ENOENT: raise
-            module_info[k]['exceptions'] = excs
     except:
         if not srcdir:
             sys.exit("Internal error: source directory not set!")
@@ -154,19 +146,19 @@ def timestepping_options(runlen, coords, t100):
     # Overall GENIE run length.
     for k in ['ma_koverall_total', 'ma_dt_write']: res[k] = runlen * 5 * nsteps
 
-    # 3: 'Health check' frequency (*)
-    # 4: Climate model component restart frequency.
-    # 5: 'Time series' frequency (*)
-    # 6: 'Average' frequency (*)
-    # 9: Climate components time-steps per year.
+    # npstp: 'Health check' frequency (*)
+    # iwstp: Climate model component restart frequency.
+    # itstp: 'Time series' frequency (*)
+    # ianav: 'Average' frequency (*)
+    # nyear: Climate components time-steps per year.
     #     (*) A '+1' in effect disables this feature
     ###===> WHAT DOES "a '+1' in effect disables this feature" MEAN?
     ps = ['ea', 'go', 'gs', 'ents']
-    for p in ps: res[p + '_3'] = runlen * nsteps
-    for p in ps: res[p + '_4'] = runlen * nsteps
-    for p in ps: res[p + '_5'] = runlen * nsteps + 1
-    for p in ps: res[p + '_6'] = runlen * nsteps + 1
-    for k in ['ea_9', 'go_9', 'gs_9']: res[k] = nsteps
+    for p in ps: res[p + '_npstp'] = runlen * nsteps
+    for p in ps: res[p + '_iwstp'] = runlen * nsteps
+    for p in ps: res[p + '_itstp'] = runlen * nsteps + 1
+    for p in ps: res[p + '_ianav'] = runlen * nsteps + 1
+    for k in ['ea_nyear', 'go_nyear', 'gs_nyear']: res[k] = nsteps
 
     return res
 
@@ -178,12 +170,12 @@ def restart_options(restart):
 
     # Set default flags.
     # Set NetCDF restart saving flag.
-    for k in ['ea_31', 'go_19', 'gs_14']: res[k] = 'n'
+    for k in ['ea_netout', 'go_netout', 'gs_netout']: res[k] = 'n'
     # Set ASCII restart output flag.
-    for k in ['ea_32', 'go_20', 'gs_15']: res[k] = 'y'
+    for k in ['ea_ascout', 'go_ascout', 'gs_ascout']: res[k] = 'y'
     # Set ASCII restart number (i.e., output file string).
-    for k in ['ea_29', 'go_17', 'gs_12', 'ents_17']: res[k] = 'rst'
-    res['ents_24'] = 'rst.sland'
+    for k in ['ea_lout', 'go_lout', 'gs_lout', 'ents_out_name']: res[k] = 'rst'
+    res['ents_restart_file'] = 'rst.sland'
 
     # Configure use of restart.
     # -----------------------------
@@ -193,23 +185,24 @@ def restart_options(restart):
     # => set restart input number
     # => copy restart files to data directory
     if restart:
-        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'c'
+        for p in ['ea', 'go', 'gs', 'ents']:
+            res[p + '_ans'] = 'c'
+            res[p + '_netin'] = 'n'
         for p in ['ac', 'bg', 'sg', 'rg']:
             res[p + '_ctrl_continuing'] = '.TRUE.'
-        for k in ['ea_30', 'go_18', 'gs_13', 'ents_18']: res[k] = 'n'
-        for k in ['ea_35', 'go_23', 'gs_18']: res[k] = 'rst.1'
+        for k in ['ea_lin', 'go_lin', 'gs_lin']: res[k] = 'rst.1'
         res['ea_rstdir_name'] = 'restart/embm'
         res['go_rstdir_name'] = 'restart/goldstein'
         res['gs_rstdir_name'] = 'restart/goldsteinseaice'
-        res['ents_2'] = 'output/ents'
-        res['ents_22'] = 'restart/ents'
+        res['ents_outdir_name'] = 'output/ents'
+        res['ents_dirnetout'] = 'restart/ents'
         res['ents_rstdir_name'] = 'restart/ents'
         res['ac_par_rstdir_name'] = 'restart/atchem'
         res['bg_par_rstdir_name'] = 'restart/biogem'
         res['sg_par_rstdir_name'] = 'restart/sedgem'
         res['rg_par_rstdir_name'] = 'restart/rokgem'
     else:
-        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_7'] = 'n'
+        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_ans'] = 'n'
         for p in ['ac', 'bg', 'sg', 'rg']:
             res[p + '_ctrl_continuing'] = '.FALSE.'
 
@@ -258,21 +251,16 @@ class Namelist:
             print(' ' + k + '=' + self.formatValue(str(v)) + ',', file=fp)
         print('&END', file=fp)
 
-    def merge(self, prefix, excs, maps):
+    def merge(self, prefix, maps):
         """Merge configuration data into default namelist.  Deals with
-           stripping model-dependent prefix, exceptions to common naming
-           conventions and parameter arrays."""
+           stripping model-dependent prefix and parameter arrays."""
         plen = len(prefix)
         for m in maps:
             for k in m.keys():
                 if k[0:plen] != prefix: continue
                 rk = k[plen+1:]
-                if (k in excs):
-                    rk = excs[k]
-                else:
-                    s = re.search('_(\d+)$', rk)
-                    if s:
-                        rk = rk.rstrip('_0123456789') + '(' + s.group(1) + ')'
+                s = re.search('_(\d+)$', rk)
+                if s: rk = rk.rstrip('_0123456789') + '(' + s.group(1) + ')'
                 if (rk in self.entries):
                     current = self.entries[rk]
                     new = m[k]

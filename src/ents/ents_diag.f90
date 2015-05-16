@@ -41,9 +41,9 @@ CONTAINS
     REAL :: var_data1
 
     IF (dosc) THEN
-       filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.slavgt'
+       filename = TRIM(outdir_name) // TRIM(out_name) // '.slavgt'
        OPEN(46,FILE=TRIM(filename),POSITION='APPEND')
-       filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.pslavgt'
+       filename = TRIM(outdir_name) // TRIM(out_name) // '.pslavgt'
        OPEN(47,FILE=TRIM(filename),POSITION='APPEND')
 
        ! Sum up quantities since last .avg calculation
@@ -82,7 +82,7 @@ CONTAINS
           END DO
        END DO
 
-       rnyear = 1.0 / ents_nyear
+       rnyear = 1.0 / nyear
        IF (iout == 1) THEN
           pco2ld_tot = pco2ld_tot + pco2ld
           sumavg = 0.0
@@ -149,7 +149,7 @@ CONTAINS
              END DO
           END DO
 
-          yearosc = istep / ents_nyear
+          yearosc = istep / nyear
 
           ! Convert to GtC
           ! land
@@ -167,8 +167,8 @@ CONTAINS
                & avgsl(8), Gtatm
 
           ! Days since the beginning of the run
-          myday = INT(ents_yearlen * yearosc)
-          fname = TRIM(outdir_name) // TRIM(ents_out_name) // '_TSannual.nc'
+          myday = INT(yearlen * yearosc)
+          fname = TRIM(outdir_name) // TRIM(out_name) // '_TSannual.nc'
 
           DO kk = 1, 8
              label = avlabels(kk)
@@ -195,7 +195,7 @@ CONTAINS
           END DO
 
           ! Spatial average file
-          filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.sland.avg'
+          filename = TRIM(outdir_name) // TRIM(out_name) // '.sland.avg'
           OPEN(1,FILE=TRIM(filename))
 
           ! Write to file
@@ -210,9 +210,9 @@ CONTAINS
 10        FORMAT(e14.4e3)
           CLOSE(1)
 
-          IF (MOD(istep, ents_ianav) == 0 .AND. istep >= ents_ianav) THEN
+          IF (MOD(istep, ianav) == 0 .AND. istep >= ianav) THEN
              myyear = INT(yearosc)
-             refname = TRIM(outdir_name) // TRIM(ents_out_name) // &
+             refname = TRIM(outdir_name) // TRIM(out_name) // &
                   & '_restartav_' // TRIM(ConvertFunc(myyear, 10)) // '.nc'
              INQUIRE(FILE=refname,EXIST=fexist)
              IF (fexist) THEN
@@ -297,10 +297,10 @@ CONTAINS
     LOGICAL :: fexist
 
     ! Open slandt file for diagnostics
-    filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.slandt'
+    filename = TRIM(outdir_name) // TRIM(out_name) // '.slandt'
     OPEN(43,FILE=TRIM(filename),POSITION='APPEND')
 
-    diagtime = REAL(istep) / REAL(ents_nyear)
+    diagtime = REAL(istep) / REAL(nyear)
 
     sumveg = 0.0 ; sumsoil = 0.0 ; sumfv = 0.0
     sumphoto = 0.0 ; sumrveg = 0.0 ; sumrsoil = 0.0 ; sumleaf = 0.0
@@ -339,9 +339,9 @@ CONTAINS
          & Gtphoto, Gtrveg, Gtleaf, Gtrsoil
     CLOSE (43)
 
-    myday = INT(360 * istep / ents_nyear)
-    fname = TRIM(outdir_name) // TRIM(ents_out_name) // '_TS.nc'
-    IF (istep == ents_itstp) THEN
+    myday = INT(360 * istep / nyear)
+    fname = TRIM(outdir_name) // TRIM(out_name) // '_TS.nc'
+    IF (istep == itstp) THEN
        INQUIRE(FILE=fname,EXIST=fexist)
        IF (fexist) THEN
           OPEN(8,FILE=fname,STATUS='old')
@@ -398,10 +398,10 @@ CONTAINS
     INTEGER :: kk, myday
 
     ! Open physt_diags file for disgnostics
-    filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.pslandt'
+    filename = TRIM(outdir_name) // TRIM(out_name) // '.pslandt'
     OPEN(48,FILE=TRIM(filename),POSITION='APPEND')
 
-    diagtime = REAL(istep) / REAL(ents_nyear)
+    diagtime = REAL(istep) / REAL(nyear)
     sumavg2 = 0.0
     DO i = 1, maxi
        DO j = 1, maxj
@@ -433,8 +433,8 @@ CONTAINS
          & avgsl2(13)
     CLOSE(48)
 
-    myday = INT(360 * istep / ents_nyear)
-    fname = TRIM(outdir_name) // TRIM(ents_out_name) // '_TS.nc'
+    myday = INT(360 * istep / nyear)
+    fname = TRIM(outdir_name) // TRIM(out_name) // '_TS.nc'
 
     DO kk = 1, 13
        label = labels(kk)
@@ -557,17 +557,17 @@ CONTAINS
        bcapavg = bcapavg + bcap * rnyear
        z0avg = z0avg + z0 * rnyear
 
-       IF (iout == 1 .AND. MOD(istep, ents_ianav) == 0 &
-            & .AND. istep >= ents_ianav) THEN
+       IF (iout == 1 .AND. MOD(istep, ianav) == 0 &
+            & .AND. istep >= ianav) THEN
           PRINT *, 'writing averaged data at istep ', istep
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.ltavg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.ltavg')
 
-          myyear = INT(istep / ents_nyear)
-          mymonth = INT(12 * MOD(istep, ents_nyear) / ents_nyear)
-          myday = INT(360 * istep / ents_nyear - &
+          myyear = INT(istep / nyear)
+          mymonth = INT(12 * MOD(istep, nyear) / nyear)
+          myday = INT(360 * istep / nyear - &
                & mymonth * 30 - (myyear - 1) * 360)
 
-          fname = TRIM(outdir_name) // TRIM(ents_out_name) // &
+          fname = TRIM(outdir_name) // TRIM(out_name) // &
                & '_yearav_' // TRIM(ConvertFunc(myyear, 10)) // '.nc'
 
           INQUIRE(FILE=fname,EXIST=fexist)
@@ -588,7 +588,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.lqavg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.lqavg')
           ALLOCATE(var_data(1,maxj,maxi))
           DO j = 1, maxj
              DO i = 1, maxi
@@ -601,7 +601,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.snowavg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.snowavg')
           ALLOCATE(var_data(1,maxj,maxi))
           DO j = 1, maxj
              DO i = 1, maxi
@@ -614,7 +614,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.z0avg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.z0avg')
           ALLOCATE(var_data(1,maxj,maxi))
           DO j = 1, maxj
              DO i = 1, maxi
@@ -627,7 +627,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.albsavg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.albsavg')
           ALLOCATE(var_data(1,maxj,maxi))
           DO j = 1, maxj
              DO i = 1, maxi
@@ -640,7 +640,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(15,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.bcapavg')
+          OPEN(15,FILE=TRIM(outdir_name) // TRIM(out_name) // '.bcapavg')
           ALLOCATE(var_data(1,maxj,maxi))
           DO j = 1, maxj
              DO i = 1, maxi
@@ -653,7 +653,7 @@ CONTAINS
           CALL netcdf_ents(fname, var_data, label, myday)
           DEALLOCATE(var_data)
 
-          OPEN(45,FILE=TRIM(outdir_name) // TRIM(ents_out_name) // '.gmairt')
+          OPEN(45,FILE=TRIM(outdir_name) // TRIM(out_name) // '.gmairt')
           WRITE (45,'(2e18.7)') REAL(istep / nyear) - 0.5, &
                & gmairttot / (REAL(maxi * maxj))
 

@@ -52,15 +52,10 @@ CONTAINS
 
     ! Namelist declaration for ENTS goin variables
     NAMELIST /ents_control/ indir_name, outdir_name, condir_name
-    NAMELIST /ents_control/ ents_igrid
-    NAMELIST /ents_control/ ents_npstp, ents_iwstp
-    NAMELIST /ents_control/ ents_itstp, ents_ianav
-    NAMELIST /ents_control/ ents_restart, ents_yearlen
-    NAMELIST /ents_control/ ents_out_name, ents_netin
-    NAMELIST /ents_control/ ents_netout, ents_ascout, ents_filenetin
-    NAMELIST /ents_control/ ents_dirnetout, rstdir_name
-    NAMELIST /ents_control/ ents_restart_file
-    NAMELIST /ents_control/ dosc
+    NAMELIST /ents_control/ igrid, npstp, iwstp, itstp, ianav
+    NAMELIST /ents_control/ restart, yearlen, out_name, netin
+    NAMELIST /ents_control/ netout, ascout, filenetin, dirnetout, rstdir_name
+    NAMELIST /ents_control/ restart_file, dosc
     NAMELIST /ents_control/ topt, copt, k7, k8, k9, k10, k11, k11a, k12
     NAMELIST /ents_control/ k13, k14, k16, k17, k18, k20, k24, k26
     NAMELIST /ents_control/ k29, k31, k32, kz0
@@ -214,18 +209,18 @@ CONTAINS
     END IF
     PRINT *, 'Config dir. name ', condir_name(1:lencon)
 
-    PRINT *, 'npstp ', ents_npstp
-    PRINT *, 'ents_out_name = ', TRIM(ents_out_name)
-    PRINT *, 'ents_restart_file = ', TRIM(ents_restart_file)
+    PRINT *, 'npstp ', npstp
+    PRINT *, 'out_name = ', TRIM(out_name)
+    PRINT *, 'restart_file = ', TRIM(restart_file)
 
     PRINT *,  'lin = ', dum_lin
-    PRINT *, dum_rsc, dum_syr, ents_nyear
+    PRINT *, dum_rsc, dum_syr, nyear
     PRINT *, 'rmax dphi ', dum_rmax, dum_dphi
     PRINT *,  'Seasonality enabled: ', dosc
 
     ! Transfer variables to common variables within ENTS
     ents_kmax = dum_kmax
-    ents_nyear = dum_nyear
+    nyear = dum_nyear
     ents_lat=dum_lat
 
     ! Convert tstar_atm & qstar_atm arrays into one tq array
@@ -305,7 +300,7 @@ CONTAINS
     PRINT *,  'rmax'
     PRINT *, dum_rmax
     PRINT *, 'daysperyear ', gn_daysperyear
-    PRINT *, 'ents_nyear ', REAL(ents_nyear)
+    PRINT *, 'nyear ', REAL(nyear)
 
     ! Open goin file and read in restart if required
     OPEN(66, FILE=condir_name(1:lencon)//'ents_config.par')
@@ -313,7 +308,7 @@ CONTAINS
     ! Calculate length of timestep (yrs)
     READ (66,*) msimpleland
     PRINT *, 'ENTS called every', msimpleland, 'ocean timesteps'
-    dtland = (REAL(msimpleland) / ents_nyear)
+    dtland = (REAL(msimpleland) / nyear)
     PRINT *, 'dtland =', dtland, 'yr'
 
     ! Print out initial sizes of global carbon reservoirs
@@ -426,11 +421,11 @@ CONTAINS
     PRINT *, include_emissions
 
     ! Continue run
-    IF (ents_restart == 'c' .OR. ents_restart == 'C') THEN
-       IF (ents_netin == 'y' .OR. ents_netin == 'Y') THEN
-          CALL in_ents_netcdf(ents_filenetin, land_snow_lnd)
+    IF (restart == 'c' .OR. restart == 'C') THEN
+       IF (netin == 'y' .OR. netin == 'Y') THEN
+          CALL in_ents_netcdf(filenetin, land_snow_lnd)
        ELSE
-          filename = indir_name(1:lenin) // TRIM(ents_restart_file)
+          filename = indir_name(1:lenin) // TRIM(restart_file)
           OPEN(1,FILE=TRIM(filename))
           CALL in_ents_ascii(1, land_snow_lnd)
 
@@ -535,7 +530,7 @@ CONTAINS
     tqld(1,:,:) = REAL(land_temp_lnd, KIND(tqld))
     tqld(2,:,:) = REAL(land_moisture_lnd, KIND(tqld))
 
-    itv = MOD(istep + nyear - 1, ents_ianav)
+    itv = MOD(istep + nyear - 1, ianav)
     IF (itv < nyear) THEN
        IF (istep >= nyear .AND. itv == nyear-1) THEN
           iout = 1
@@ -547,7 +542,7 @@ CONTAINS
             & dum_evap, dum_pptn, dum_relh, albs_lnd, land_snow_lnd)
     END IF
 
-    IF (MOD(istep, ents_npstp) < 1) CALL screen_diags
+    IF (MOD(istep, npstp) < 1) CALL screen_diags
 
     IF (MOD(istep + istot, msimpleland) == 0) THEN
        ! Note, the index for the atmospheric pCO2 tracer is 3
@@ -562,36 +557,36 @@ CONTAINS
     END IF
 
     ! Write ENTS restarts
-    IF (MOD(istep, ents_iwstp) == 0) THEN
-       IF (ents_ascout == 'y' .OR. ents_ascout == 'Y') THEN
+    IF (MOD(istep, iwstp) == 0) THEN
+       IF (ascout == 'y' .OR. ascout == 'Y') THEN
           PRINT *, 'Writing ENTS restart file'
-          filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.sland'
+          filename = TRIM(outdir_name) // TRIM(out_name) // '.sland'
           OPEN(3,FILE=TRIM(filename))
           REWIND(3)
           CALL out_ents(3, land_snow_lnd)
           CLOSE(3)
        END IF
 
-       IF (ents_netout == 'y' .OR. ents_netout == 'Y') THEN
-          IF (ents_netin == 'y' .OR. ents_netin == 'Y') THEN
-             inistep = INT(ents_nyear * iniday / ents_yearlen) + istep
-             myyear = INT(inistep / ents_nyear)
-             mymonth = INT(12 * MOD(inistep, ents_nyear) / ents_nyear)
-             myday = INT(ents_yearlen * inistep / ents_nyear - &
-                  & mymonth * (ents_yearlen / 12) - myyear * ents_yearlen)
+       IF (netout == 'y' .OR. netout == 'Y') THEN
+          IF (netin == 'y' .OR. netin == 'Y') THEN
+             inistep = INT(nyear * iniday / yearlen) + istep
+             myyear = INT(inistep / nyear)
+             mymonth = INT(12 * MOD(inistep, nyear) / nyear)
+             myday = INT(yearlen * inistep / nyear - &
+                  & mymonth * (yearlen / 12) - myyear * yearlen)
           ELSE
-             myyear = INT(istep / ents_nyear)
-             mymonth = INT(12 * MOD(istep, ents_nyear) / ents_nyear)
-             myday = INT(ents_yearlen * istep / ents_nyear - &
-                  & mymonth * (ents_yearlen / 12) - myyear * ents_yearlen)
+             myyear = INT(istep / nyear)
+             mymonth = INT(12 * MOD(istep, nyear) / nyear)
+             myday = INT(yearlen * istep / nyear - &
+                  & mymonth * (yearlen / 12) - myyear * yearlen)
           END IF
 
-          IF (MOD(ents_iwstp, ents_nyear) == 0) THEN
-             fname = TRIM(outdir_name) // TRIM(ents_out_name) // &
+          IF (MOD(iwstp, nyear) == 0) THEN
+             fname = TRIM(outdir_name) // TRIM(out_name) // &
                   & '_restart_' // TRIM(ConvertFunc(myyear - 1, 10)) // &
                   & '_12_30.nc'
           ELSE
-             fname = TRIM(outdir_name) // TRIM(ents_out_name) // &
+             fname = TRIM(outdir_name) // TRIM(out_name) // &
                   & '_restart_' // &
                   & TRIM(ConvertFunc(myyear, 10)) // '_' // &
                   & TRIM(ConvertFunc(mymonth, 2)) // '_' // &
@@ -650,7 +645,7 @@ CONTAINS
        END IF
     END IF
 
-    IF (MOD(istep, ents_itstp) == 0) THEN
+    IF (MOD(istep, itstp) == 0) THEN
        CALL carbt_diags(istep)
        CALL sealevel(istep, dum_rh0sc, dum_rhosc, dum_rsc, dum_ds, &
             & dum_dphi, dum_dsc, dum_saln0, dum_dz, dum_ec, dum_rho)
@@ -706,13 +701,13 @@ CONTAINS
     CHARACTER(LEN=6), DIMENSION(2) :: labels = (/ 'deltah', 'avrho ' /)
     INTEGER :: kk, myday
 
-    diagtime = REAL(istep) / REAL(ents_nyear)
+    diagtime = REAL(istep) / REAL(nyear)
     vol = 0.0
     sumrho = 0.0
     pts = 0
 
     ! Open sealevel file for diagnostics
-    filename = TRIM(outdir_name) // TRIM(ents_out_name) // '.sealevel'
+    filename = TRIM(outdir_name) // TRIM(out_name) // '.sealevel'
     OPEN(44,FILE=TRIM(filename),POSITION='APPEND')
 
     ! Sealevel rise due to thermal expansion
@@ -740,8 +735,8 @@ CONTAINS
     WRITE (44,'(3e24.16)') diagtime, deltah, avrho
     CLOSE (44)
 
-    myday = INT(360 * istep / ents_nyear)
-    fname = TRIM(outdir_name) // TRIM(ents_out_name) // '_TS.nc'
+    myday = INT(360 * istep / nyear)
+    fname = TRIM(outdir_name) // TRIM(out_name) // '_TS.nc'
     DO kk = 1, 2
        label = labels(kk)
        SELECT CASE (kk)

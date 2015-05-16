@@ -5,7 +5,7 @@ MODULE ents_lib
 
   INTEGER :: maxi, maxj
   INTEGER, DIMENSION(:,:), ALLOCATABLE :: ents_k1
-  INTEGER :: ents_kmax, ents_nyear
+  INTEGER :: ents_kmax, nyear
   REAL, DIMENSION(:), ALLOCATABLE :: ents_lat
 
   ! The par_output_years_0d and _2d, rstdir_name, start_year,
@@ -16,15 +16,15 @@ MODULE ents_lib
   ! genie-main/src/xml-config/xml/definition.xml
   CHARACTER(LEN=3) :: lout
   CHARACTER(LEN=200) :: indir_name, outdir_name, condir_name, &
-       & ents_out_name, ents_restart_file, ents_filenetin, ents_dirnetout
-  CHARACTER(LEN=1) :: ents_netin, ents_netout, ents_ascout
+       & out_name, restart_file, filenetin, dirnetout
+  CHARACTER(LEN=1) :: netin, netout, ascout
   CHARACTER(LEN=255) :: rstdir_name
   CHARACTER(LEN=127) :: par_output_years_file_0d, par_output_years_file_2d
 
-  INTEGER :: lenin, lenout, lencon, iav, ents_npstp
-  INTEGER :: ents_igrid, ents_iwstp, ents_itstp, ents_ianav
-  REAL :: ents_yearlen, start_year
-  CHARACTER(LEN=1) :: ents_restart
+  INTEGER :: lenin, lenout, lencon, iav, npstp
+  INTEGER :: igrid, iwstp, itstp, ianav
+  REAL :: yearlen, start_year
+  CHARACTER(LEN=1) :: restart
 
   INTEGER :: iniday
 
