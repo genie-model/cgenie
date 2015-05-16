@@ -1,0 +1,75 @@
+# Fortran 90 platform definitions.
+
+f90 = {
+    # Compiler name.
+    'compiler': 'gfortran',
+
+    # Default flags.
+    'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
+                  '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
+                  '-msse', '-Wall' ],
+
+    # Debug flags.
+    'debug': ['-g', '-ffpe-trap=invalid,overflow'],
+
+    # Optimisation flags.
+    'ship': ['-O3', '-funroll-loops'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-O3', '-pg'],
+    'profile_link': ['-pg'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-fbounds-check'],
+
+    # Test coverage analysis.
+    'coverage': ['-O0', '--coverage'],
+    'coverage_link': ['--coverage'],
+
+    # Miscellaneous flags.
+    'include': '-I',         # Include files.
+    'module_dir': '-J',      # Module file output directory.
+    'define': '-D'           # Preprocessor definitions.
+}
+
+
+# Platform runtime environment variables.
+
+runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
+
+
+# NetCDF platform definitions.
+
+poss_netcdf = ['/usr', '/usr/local', '/opt', '/opt/local']
+netcdf_base = None
+for poss in poss_netcdf:
+    if (os.path.exists(os.path.join(poss, 'include', 'netcdf.mod')) and
+        glob.glob(os.path.join(poss, 'lib', 'libnetcdf.*'))):
+        netcdf_base = poss
+        break
+if not netcdf_base:
+    for poss in poss_netcdf:
+        for cand in glob.iglob(os.path.join(poss, 'netcdf*')):
+            if (os.path.exists(os.path.join(cand, 'include')) and
+                os.path.exists(os.path.join(cand, 'lib'))):
+                netcdf_base = cand
+                break
+        if netcdf_base: break
+
+if not netcdf_base:
+    sys.exit('Could not find a valid NetCDF installation')
+
+if (glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdff*')) and
+    glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdf*'))):
+    netcdf_libs = ['netcdf', 'netcdff']
+else:
+    netcdf_libs = ['netcdf']
+
+netcdf = {
+    # NetCDF base directory.
+    'base': netcdf_base,
+
+    # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
+    # 'netcdff' if the F90 library is split).
+    'libs': netcdf_libs
+}

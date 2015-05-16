@@ -40,8 +40,10 @@ def discover_platform():
     def discover():
         host = platform.node()
         os = platform.system().upper()
+        plat = platform.platform().split('-')[0].upper()
         if exists(host): return host
         if exists(os): return os
+        if exists(plat): return plat
         sys.exit('Cannot find suitable build platform!')
 
     pfile = os.path.join('config', 'platform-name')
