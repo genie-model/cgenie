@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, shutil
+import os, os.path, shutil, re
 import Tkinter as tk
 import tkSimpleDialog as tkSD
 import tkMessageBox as tkMB
@@ -175,6 +175,15 @@ class StatusPanel(Panel):
         self.t100.configure(text=self.job.t100_str())
 
 
+def check_runlen(s):
+    try:
+        v = s.strip()
+        if not v: return True
+        return int(v) > 0
+    except:
+        return False
+
+
 ### ===> TODO: also need to handle "full config" cases.
 ### ===> TODO: need to sort out job config/config contents conventions
 ###      for consistency between GUI jobs, new-job jobs and test jobs.
@@ -216,14 +225,29 @@ class SetupPanel(Panel):
         self.mods.grid(column=0, row=0, sticky=tk.W)
         self.mods_scroll.grid(column=1, row=0, sticky=tk.N+tk.S)
 
+        lab = ttk.Label(self, text='Run length:')
+        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
+        self.check = self.register(check_runlen)
+        self.run_length = ttk.Entry(self, width=20, validate='all',
+                                    validatecommand=(self.check, '%P'))
+        self.run_length.grid(column=1, row=4, pady=5, sticky=tk.W)
+
+        lab = ttk.Label(self, text='T100:')
+        lab.grid(column=0, row=5, pady=5, padx=5, sticky=tk.W)
+        self.t100_var = tk.IntVar()
+        self.t100 = ttk.Checkbutton(self, variable=self.t100_var)
+        self.t100.grid(column=1, row=5, pady=5, sticky=tk.W)
+
         self.but_frame = ttk.Frame(self)
-        self.but_frame.grid(column=1, row=4, pady=5, sticky=tk.W)
+        self.but_frame.grid(column=1, row=6, pady=5, sticky=tk.W)
         self.save_button = ttk.Button(self.but_frame, text="Save changes",
                                       command=self.save_changes)
         self.revert_button = ttk.Button(self.but_frame, text="Revert changes",
                                         command=self.revert_changes)
         self.save_button.grid(column=0, row=0)
         self.revert_button.grid(column=1, row=0, padx=5)
+
+        # ===> TODO: add warning for changes to configuration files
 
         self.edited = False
         self.complete = False
@@ -262,7 +286,13 @@ class SetupPanel(Panel):
         self.set_button_state()
 
     def save_changes(self):
-        pass
+        # ===> TODO: Rewrite config/config file and trigger namelist
+        #      generation
+        self.job.base_config = self.base_config.get()
+        self.job.user_config = self.user_config.get()
+        self.job.mods = self.mods.get('1.0', 'end').rstrip()
+        self.job.runlen = int(self.run_length.get())
+        self.job.t100 = True if self.t100_var.get() else False
 
     def revert_changes(self):
         self.base_config.set(self.job.base_config if self.job.base_config
