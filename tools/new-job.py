@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, sys, errno, shutil
+import os, os.path, sys, errno, shutil, datetime
 import optparse
 import subprocess as sp
 
@@ -29,21 +29,26 @@ parser.add_option('--old-restart',         help='Restart from old cGENIE job',
                   action='store_true')
 parser.add_option('--t100',                help='Use "T100" timestepping',
                   action='store_true')
+parser.add_option('-t', '--test-job',      help='Set up from test')
 parser.add_option('-j', '--job-dir',       help='Alternative job directory',
                   default=U.cgenie_jobs)
 parser.add_option('-v', '--model-version', help='Model version to use',
                   default = U.cgenie_version)
 opts, args = parser.parse_args()
-if len(args) != 2:
+if not opts.test_job and len(args) != 2 or opts.test_job and len(args) != 0:
     parser.print_help()
     sys.exit()
-job_name = args[0]
-run_length = int(args[1])
+if len(args) == 2:
+    job_name = args[0]
+    run_length = int(args[1])
+else:
+    job_name = opts.test_job
 overwrite = opts.overwrite
 base_config = opts.base_config
 user_config = opts.user_config
 full_config = opts.config
 restart = opts.restart
+test_job = opts.test_job
 old_restart = True if opts.old_restart else False
 t100 = True if opts.t100 else False
 job_dir_base = opts.job_dir
@@ -67,27 +72,33 @@ if model_version != repo_version:
              [os.path.join(os.curdir, 'tools', 'new-job.py')] + sys.argv)
 
 
-# All set up.  Off we go...
-
-print("   Job name: ", job_name)
-print("Base config: ", base_config)
-print("User config: ", user_config)
-print("Full config: ", full_config)
-print(" Run length: ", run_length)
-print("  Overwrite: ", overwrite)
-print("      Model: ", model_version)
-
-
 # Check configuration file options.
 
 base_and_user_config = base_config and user_config
-if not base_and_user_config and not full_config:
-    sys.exit("Either base and user or full configuration must be specified")
-if base_and_user_config and full_config:
-    sys.exit("Only one of base and user or full configuration may be specified")
+if not base_and_user_config and not full_config and not test_job:
+    sys.exit('Either base and user, full configuration ' +
+             'or test must be specified')
+nset = 0
+if base_and_user_config: nset += 1
+if full_config:          nset += 1
+if test_job:             nset += 1
+if nset > 1:
+    sys.exit('Only one of base and user, full configuration ' +
+             'or test may be specified')
 
 
 # Check for existence of any restart job.
+
+if test_job:
+    test_dir = os.path.join(U.cgenie_test, test_job)
+    with open(os.path.join(test_dir, 'test_info')) as fp:
+        for line in fp:
+            ss = line.split(':')
+            k = ss[0].strip()
+            v = ':'.join(ss[1:]).strip()
+            if k == 'restart_from': restart = v
+            elif k == 'run_length': run_length = int(v)
+            elif k == 't100': t100 = True if v == 'True' else False
 
 if restart:
     if old_restart:
@@ -104,23 +115,60 @@ if restart:
             sys.exit('Restart job "' + restart + '" does not exist')
 
 
+# All set up.  Off we go...
+
+print('   Job name:', job_name + (' [TEST]' if test_job else ''))
+if base_and_user_config:
+    print('Base config:', base_config)
+    print('User config:', user_config)
+if full_config: print('Full config:', full_config)
+if not test_job: print(' Run length:', run_length)
+print('  Overwrite:', overwrite)
+print('      Model:', model_version)
+
+
 # Read and parse configuration files.
 
 if (base_and_user_config):
     if not os.path.exists(base_config):
-        base_config = os.path.join(U.cgenie_data, 'base-configs',
-                                   base_config + '.config')
-    base = C.read_config(base_config, 'Base configuration')
+        base_config_dir = os.path.join(U.cgenie_data, 'base-configs')
+        base_config_path = os.path.join(base_config_dir,
+                                        base_config + '.config')
+    else:
+        base_config_dir = os.getcwd()
+        base_config_path = base_config
+    base = C.read_config(base_config_path, 'Base configuration')
     if not os.path.exists(user_config):
-        user_config = os.path.join(U.cgenie_data, 'user-configs', user_config)
-    user = C.read_config(user_config, 'User configuration')
+        user_config_dir = os.path.join(U.cgenie_data, 'user-configs')
+        user_config_path = os.path.join(user_config_dir, user_config)
+    else:
+        user_config_dir = os.getcwd()
+        user_config_path = user_config
+    user = C.read_config(user_config_path, 'User configuration')
     configs = [base, user]
-else:
+elif full_config:
     if not os.path.exists(full_config):
-        full_config = os.path.join(U.cgenie_data, 'full-configs',
-                                   full_config + '.config')
-    full = C.read_config(full_config, 'Full configuration')
+        full_config_dir = os.path.join(U.cgenie_data, 'full-configs')
+        full_config_path = os.path.join(full_configs_dir,
+                                        full_config + '.config')
+    else:
+        full_config_dir = os.getcwd()
+        full_config_path = full_config
+    full = C.read_config(full_config_path, 'Full configuration')
     configs = [full]
+else:
+    # Test job -- read base_config, user_config and full_config files
+    # as they exist.
+    if os.path.exists(os.path.join(test_dir, 'full_config')):
+        full = C.read_config(os.path.join(test_dir, 'full_config'),
+                             'Full configuration')
+        configs = [full]
+    else:
+        base = C.read_config(os.path.join(test_dir, 'base_config'),
+                             'Base configuration')
+        user = C.read_config(os.path.join(test_dir, 'user_config'),
+                             'User configuration')
+        configs = [base, user]
 
 
 # Set up source and per-module input data directories.
@@ -160,20 +208,40 @@ if restart: os.makedirs(os.path.join(job_dir, 'restart', 'main'))
 
 # Write configuration information to job directory.
 
-job_cfg_dir = os.path.join(job_dir, 'config')
-os.mkdir(job_cfg_dir)
-with open(os.path.join(job_cfg_dir, 'config'), 'w') as fp:
-    if base_config:
-        shutil.copyfile(base_config, os.path.join(job_cfg_dir, 'base_config'))
-        print('base_config: ' + base_config, file=fp)
-    if user_config:
-        shutil.copyfile(user_config, os.path.join(job_cfg_dir, 'user_config'))
-        print('user_config: ' + user_config, file=fp)
-    if full_config:
-        shutil.copyfile(full_config, os.path.join(job_cfg_dir, 'full_config'))
-        print('full_config: ' + full_config, file=fp)
-    print('run_length:', run_length, file=fp)
-    print('t100:', t100, file=fp)
+cfg_dir = os.path.join(job_dir, 'config')
+os.mkdir(cfg_dir)
+if test_job:
+    shutil.copyfile(os.path.join(test_dir, 'test_info'),
+                    os.path.join(cfg_dir, 'config'))
+    if os.path.exists(os.path.join(test_dir, 'base_config')):
+        shutil.copyfile(os.path.join(test_dir, 'base_config'),
+                        os.path.join(cfg_dir, 'base_config'))
+    if os.path.exists(os.path.join(test_dir, 'user_config')):
+        shutil.copyfile(os.path.join(test_dir, 'user_config'),
+                        os.path.join(cfg_dir, 'user_config'))
+    if os.path.exists(os.path.join(test_dir, 'full_config')):
+        shutil.copyfile(os.path.join(test_dir, 'full_config'),
+                        os.path.join(cfg_dir, 'full_config'))
+else:
+    with open(os.path.join(cfg_dir, 'config'), 'w') as fp:
+        if base_config:
+            shutil.copyfile(base_config_path,
+                            os.path.join(cfg_dir, 'base_config'))
+            print('base_config_dir:', base_config_dir, file=fp)
+            print('base_config:', base_config, file=fp)
+        if user_config:
+            shutil.copyfile(user_config_path,
+                            os.path.join(cfg_dir, 'user_config'))
+            print('user_config_dir:', user_config_dir, file=fp)
+            print('user_config:', user_config, file=fp)
+        if full_config:
+            shutil.copyfile(full_config_path,
+                            os.path.join(cfg_dir, 'full_config'))
+            print('full_config_dir:', full_config_dir, file=fp)
+            print('full_config:', full_config, file=fp)
+        print('config_date:', str(datetime.datetime.today()), file=fp)
+        print('run_length:', run_length, file=fp)
+        print('t100:', t100, file=fp)
 
 
 # Extract coordinate definitions from configuration.
@@ -194,7 +262,7 @@ deflines[-1] += ' }'
 # have a base+user configuration (i.e. the normal case); some test
 # configurations already include timestepping options.
 
-if not full_config:
+if len(configs) > 1:
     tsopts = C.timestepping_options(run_length, defines, t100=t100)
     rstopts = C.restart_options(restart)
     configs = [base, tsopts, rstopts, user]
@@ -202,7 +270,7 @@ if not full_config:
 
 # Create model version file for build.
 
-with open(os.path.join(job_cfg_dir, 'model-version'), 'w') as fp:
+with open(os.path.join(cfg_dir, 'model-version'), 'w') as fp:
     if model_version == 'DEVELOPMENT':
         try:
             with open(os.devnull, 'w') as sink:

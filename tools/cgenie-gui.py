@@ -98,7 +98,9 @@ class Job:
             try:
                 with open(os.path.join(self.dir, 'config', 'config')) as fp:
                     for line in fp:
-                        k, v = map(lambda s: s.strip(), line.strip().split(':'))
+                        ss = line.split(':')
+                        k = ss[0].strip()
+                        v = ':'.join(ss[1:]).strip()
                         if k == 't100':
                             self.t100 = True if v == 'True' else False
                         elif k == 'run_length':
