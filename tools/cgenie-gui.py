@@ -1,7 +1,9 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, shutil, re
+import os, os.path, shutil, re, datetime
+import subprocess as sp
+import platform as plat
 import Tkinter as tk
 import tkSimpleDialog as tkSD
 import tkMessageBox as tkMB
@@ -89,9 +91,11 @@ class Job:
         self.modules = None
         if not jobid:
             self.jobid = None
+            self.jobdir = None
             self.dir = None
             self.status = None
         else:
+            self.jobdir = folder.path
             self.jobid = os.path.relpath(jobid, folder.path)
             self.dir = jobid
             self.status = G.job_status(self.dir)
@@ -135,16 +139,41 @@ class Job:
         try:
             with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
+                    print('base_config_dir:',
+                          os.path.join(U.cgenie_data, 'base-configs'), file=fp)
                     print('base_config:', self.base_config, file=fp)
                 if self.user_config:
+                    print('user_config_dir:',
+                          os.path.join(U.cgenie_data, 'user-configs'), file=fp)
                     print('user_config:', self.user_config, file=fp)
                 if self.full_config:
+                    print('full_config_dir:',
+                          os.path.join(U.cgenie_data, 'full-configs'), file=fp)
                     print('full_config:', self.full_config, file=fp)
+                print('config_date:', str(datetime.datetime.today()), file=fp)
                 print('run_length:', self.runlen, file=fp)
                 print('t100:', self.t100, file=fp)
         except Exception as e:
             ### ===> TODO: better exception handling
             print('Exception:', e)
+
+    def gen_namelists(self):
+        new_job = os.path.join(U.cgenie_root, 'tools', 'new-job.py')
+        cmd = [new_job, '--gui']
+        if self.base_config: cmd += ['-b', self.base_config]
+        if self.user_config: cmd += ['-u', self.user_config]
+        if self.full_config: cmd += ['-c', self.full_config]
+        cmd += ['-j', self.jobdir]
+        if self.t100: cmd += ['--t100']
+        cmd += [self.jobid, str(self.runlen)]
+        if plat.system() == 'Windows': cmd = ['python'] + cmd
+        try:
+            with open(os.devnull, 'w') as sink:
+                res = sp.check_output(cmd, stderr=sink).strip()
+        except Exception as e:
+            print(e)
+            res = 'ERR:Failed to run new-job script'
+        if res != 'OK': tkMB.showerror('Error', res[4:])
 
 
 class Panel(ttk.Frame):
@@ -215,6 +244,7 @@ def check_runlen(s):
 
 
 ### ===> TODO: also need to handle "full config" cases.
+### ===> TODO: also need to handle restart setup.
 class SetupPanel(Panel):
     def __init__(self, notebook, app):
         """Initial creation of setup panel"""
@@ -312,6 +342,7 @@ class SetupPanel(Panel):
             mods_tmp = self.mods.get('1.0', 'end').rstrip()
             if (mods_tmp and mods_tmp != self.job.mods):
                 self.edited = True
+            ### ===> TODO: fix this
             if (self.runlen.get() and
                 int(self.runlen.get()) != self.job.runlen):
                 self.edited = True
@@ -323,13 +354,18 @@ class SetupPanel(Panel):
         self.set_button_state()
 
     def save_changes(self):
-        # ===> TODO: Trigger namelist generation
         self.job.base_config = self.base_config.get()
         self.job.user_config = self.user_config.get()
         self.job.mods = self.mods.get('1.0', 'end').rstrip()
         self.job.runlen = int(self.runlen_var.get())
         self.job.t100 = True if self.t100_var.get() else False
         self.job.write_config()
+        self.job.gen_namelists()
+        self.job.status = G.job_status(self.job.dir)
+        print(self.job.dir, self.job.status)
+        app.tree.item(self.job.dir, image=G.status_img(self.job.status))
+        for p in app.panels.itervalues():
+            if p != self: p.update()
         self.set_state()
         self.set_button_state()
 

@@ -102,7 +102,7 @@ def make_coordinates(defs):
     return res
 
 
-def timestepping_options(runlen, coords, t100):
+def timestepping_options(runlen, coords, t100, quiet=False):
     lons = coords['GOLDSTEINNLONS']
     lats = coords['GOLDSTEINNLATS']
     levs = coords['GOLDSTEINNLEVS']
@@ -124,8 +124,9 @@ def timestepping_options(runlen, coords, t100):
         if lons == chk[0] and levs == chk[1]:
             nsteps = chk[4] if t100 else chk[2]
             dbio = chk[5] if t100 else chk[3]
-    print("Setting time-stepping [GOLDSTEIN, BIOGEM:GOLDSTEIN]: ",
-          nsteps, dbio)
+    if not quiet:
+        print("Setting time-stepping [GOLDSTEIN, BIOGEM:GOLDSTEIN]: ",
+              nsteps, dbio)
 
     # Define primary model time step.
     dstp = 3600.0 * 24.0 * 365.25 / 5.0 / nsteps

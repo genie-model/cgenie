@@ -34,6 +34,8 @@ parser.add_option('-j', '--job-dir',       help='Alternative job directory',
                   default=U.cgenie_jobs)
 parser.add_option('-v', '--model-version', help='Model version to use',
                   default = U.cgenie_version)
+parser.add_option('-g', '--gui', action='store_true',
+                  help=optparse.SUPPRESS_HELP)
 opts, args = parser.parse_args()
 if not opts.test_job and len(args) != 2 or opts.test_job and len(args) != 0:
     parser.print_help()
@@ -43,6 +45,7 @@ if len(args) == 2:
     run_length = int(args[1])
 else:
     job_name = opts.test_job
+running_from_gui = opts.gui
 overwrite = opts.overwrite
 base_config = opts.base_config
 user_config = opts.user_config
@@ -56,6 +59,12 @@ model_version = opts.model_version
 if model_version not in U.available_versions():
     sys.exit('Model version "' + model_version + '" does not exist')
 
+
+def error_exit(msg):
+    if running_from_gui:
+        sys.exit('ERR:' + msg)
+    else:
+        sys.exit(msg)
 
 # If a specific model version is requested, set up a repository clone
 # on the appropriate branch and run the configuration script at that
@@ -76,15 +85,15 @@ if model_version != repo_version:
 
 base_and_user_config = base_config and user_config
 if not base_and_user_config and not full_config and not test_job:
-    sys.exit('Either base and user, full configuration ' +
-             'or test must be specified')
+    error_exit('Either base and user, full configuration ' +
+               'or test must be specified')
 nset = 0
 if base_and_user_config: nset += 1
 if full_config:          nset += 1
 if test_job:             nset += 1
 if nset > 1:
-    sys.exit('Only one of base and user, full configuration ' +
-             'or test may be specified')
+    error_exit('Only one of base and user, full configuration ' +
+               'or test may be specified')
 
 
 # Check for existence of any restart job.
@@ -110,21 +119,23 @@ if restart:
         restart_path = os.path.join(job_dir_base, restart, 'output')
     if not os.path.exists(restart_path):
         if old_restart:
-            sys.exit('Old cGENIE restart job "' + restart + '" does not exist')
+            error_exit('Old cGENIE restart job "' + restart +
+                       '" does not exist')
         else:
-            sys.exit('Restart job "' + restart + '" does not exist')
+            error_exit('Restart job "' + restart + '" does not exist')
 
 
 # All set up.  Off we go...
 
-print('   Job name:', job_name + (' [TEST]' if test_job else ''))
-if base_and_user_config:
-    print('Base config:', base_config)
-    print('User config:', user_config)
-if full_config: print('Full config:', full_config)
-if not test_job: print(' Run length:', run_length)
-print('  Overwrite:', overwrite)
-print('      Model:', model_version)
+if not running_from_gui:
+    print('   Job name:', job_name + (' [TEST]' if test_job else ''))
+    if base_and_user_config:
+        print('Base config:', base_config)
+        print('User config:', user_config)
+    if full_config: print('Full config:', full_config)
+    if not test_job: print(' Run length:', run_length)
+    print('  Overwrite:', overwrite)
+    print('      Model:', model_version)
 
 
 # Read and parse configuration files.
@@ -194,9 +205,17 @@ modules = map(C.module_from_flagname, mod_flags)
 # Set up job directory and per-module sub-directories.
 
 job_dir = os.path.join(job_dir_base, job_name)
-if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
-try: os.makedirs(job_dir)
-except OSError as e: sys.exit("Can't create job directory: " + job_dir)
+if running_from_gui:
+    if os.path.exists(os.path.join(job_dir, 'input')):
+        shutil.rmtree(os.path.join(job_dir, 'input'))
+    if os.path.exists(os.path.join(job_dir, 'output')):
+        shutil.rmtree(os.path.join(job_dir, 'output'))
+    if os.path.exists(os.path.join(job_dir, 'restart')):
+        shutil.rmtree(os.path.join(job_dir, 'restart'))
+else:
+    if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
+    try: os.makedirs(job_dir)
+    except OSError as e: error_exit("Can't create job directory: " + job_dir)
 for m in modules:
     os.makedirs(os.path.join(job_dir, 'input', m))
     os.makedirs(os.path.join(job_dir, 'output', m))
@@ -209,39 +228,40 @@ if restart: os.makedirs(os.path.join(job_dir, 'restart', 'main'))
 # Write configuration information to job directory.
 
 cfg_dir = os.path.join(job_dir, 'config')
-os.mkdir(cfg_dir)
-if test_job:
-    shutil.copyfile(os.path.join(test_dir, 'test_info'),
-                    os.path.join(cfg_dir, 'config'))
-    if os.path.exists(os.path.join(test_dir, 'base_config')):
-        shutil.copyfile(os.path.join(test_dir, 'base_config'),
-                        os.path.join(cfg_dir, 'base_config'))
-    if os.path.exists(os.path.join(test_dir, 'user_config')):
-        shutil.copyfile(os.path.join(test_dir, 'user_config'),
-                        os.path.join(cfg_dir, 'user_config'))
-    if os.path.exists(os.path.join(test_dir, 'full_config')):
-        shutil.copyfile(os.path.join(test_dir, 'full_config'),
-                        os.path.join(cfg_dir, 'full_config'))
-else:
-    with open(os.path.join(cfg_dir, 'config'), 'w') as fp:
-        if base_config:
-            shutil.copyfile(base_config_path,
+if not running_from_gui:
+    os.mkdir(cfg_dir)
+    if test_job:
+        shutil.copyfile(os.path.join(test_dir, 'test_info'),
+                        os.path.join(cfg_dir, 'config'))
+        if os.path.exists(os.path.join(test_dir, 'base_config')):
+            shutil.copyfile(os.path.join(test_dir, 'base_config'),
                             os.path.join(cfg_dir, 'base_config'))
-            print('base_config_dir:', base_config_dir, file=fp)
-            print('base_config:', base_config, file=fp)
-        if user_config:
-            shutil.copyfile(user_config_path,
+        if os.path.exists(os.path.join(test_dir, 'user_config')):
+            shutil.copyfile(os.path.join(test_dir, 'user_config'),
                             os.path.join(cfg_dir, 'user_config'))
-            print('user_config_dir:', user_config_dir, file=fp)
-            print('user_config:', user_config, file=fp)
-        if full_config:
-            shutil.copyfile(full_config_path,
+        if os.path.exists(os.path.join(test_dir, 'full_config')):
+            shutil.copyfile(os.path.join(test_dir, 'full_config'),
                             os.path.join(cfg_dir, 'full_config'))
-            print('full_config_dir:', full_config_dir, file=fp)
-            print('full_config:', full_config, file=fp)
-        print('config_date:', str(datetime.datetime.today()), file=fp)
-        print('run_length:', run_length, file=fp)
-        print('t100:', t100, file=fp)
+    else:
+        with open(os.path.join(cfg_dir, 'config'), 'w') as fp:
+            if base_config:
+                shutil.copyfile(base_config_path,
+                                os.path.join(cfg_dir, 'base_config'))
+                print('base_config_dir:', base_config_dir, file=fp)
+                print('base_config:', base_config, file=fp)
+            if user_config:
+                shutil.copyfile(user_config_path,
+                                os.path.join(cfg_dir, 'user_config'))
+                print('user_config_dir:', user_config_dir, file=fp)
+                print('user_config:', user_config, file=fp)
+            if full_config:
+                shutil.copyfile(full_config_path,
+                                os.path.join(cfg_dir, 'full_config'))
+                print('full_config_dir:', full_config_dir, file=fp)
+                print('full_config:', full_config, file=fp)
+            print('config_date:', str(datetime.datetime.today()), file=fp)
+            print('run_length:', run_length, file=fp)
+            print('t100:', t100, file=fp)
 
 
 # Extract coordinate definitions from configuration.
@@ -263,7 +283,8 @@ deflines[-1] += ' }'
 # configurations already include timestepping options.
 
 if len(configs) > 1:
-    tsopts = C.timestepping_options(run_length, defines, t100=t100)
+    tsopts = C.timestepping_options(run_length, defines, t100=t100,
+                                    quiet=running_from_gui)
     rstopts = C.restart_options(restart)
     configs = [base, tsopts, rstopts, user]
 
@@ -338,3 +359,5 @@ srcmaindatadir = os.path.join(U.cgenie_root, 'data', 'main')
 for s in ['atm', 'ocn', 'sed']:
     shutil.copy(os.path.join(srcmaindatadir, 'tracer_define.' + s),
                 jobmaindatadir)
+
+if running_from_gui: print('OK')
