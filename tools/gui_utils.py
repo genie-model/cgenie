@@ -38,6 +38,7 @@ def walk_jobs(p, basedir=None):
 
 
 def is_folder(tree, id):
+    if id == U.cgenie_jobs: return True
     return str(tree.item(id, 'image')[0]) == str(status_img('FOLDER'))
 
 status_images = { }

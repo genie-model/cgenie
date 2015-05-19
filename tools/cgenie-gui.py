@@ -118,6 +118,34 @@ class Job:
     def t100_str(self): return str(self.t100) if self.t100 != None else 'n/a'
     def config_type(self): return 'full' if self.full_config else 'base+user'
 
+    def __str__(self):
+        res = '{ '
+        res += 'base_config:' + str(self.base_config) + ' '
+        res += 'user_config:' + str(self.user_config) + ' '
+        res += 'full_config:' + str(self.full_config) + ' '
+        res += 'mods:' + str(self.mods) + ' '
+        res += 'modules:' + str(self.modules) + ' '
+        res += 'runlen:' + str(self.runlen) + ' '
+        res += 't100:' + str(self.t100) + ' '
+        res += 'status:' + str(self.status) + ' '
+        res += '}'
+        return res
+
+    def write_config(self):
+        try:
+            with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
+                if self.base_config:
+                    print('base_config:', self.base_config, file=fp)
+                if self.user_config:
+                    print('user_config:', self.user_config, file=fp)
+                if self.full_config:
+                    print('full_config:', self.full_config, file=fp)
+                print('run_length:', self.runlen, file=fp)
+                print('t100:', self.t100, file=fp)
+        except Exception as e:
+            ### ===> TODO: better exception handling
+            print('Exception:', e)
+
 
 class Panel(ttk.Frame):
     def __init__(self, notebook, type, title):
@@ -187,8 +215,6 @@ def check_runlen(s):
 
 
 ### ===> TODO: also need to handle "full config" cases.
-### ===> TODO: need to sort out job config/config contents conventions
-###      for consistency between GUI jobs, new-job jobs and test jobs.
 class SetupPanel(Panel):
     def __init__(self, notebook, app):
         """Initial creation of setup panel"""
@@ -230,14 +256,18 @@ class SetupPanel(Panel):
         lab = ttk.Label(self, text='Run length:')
         lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
         self.check = self.register(check_runlen)
-        self.run_length = ttk.Entry(self, width=20, validate='all',
-                                    validatecommand=(self.check, '%P'))
-        self.run_length.grid(column=1, row=4, pady=5, sticky=tk.W)
+        self.runlen_var = tk.StringVar()
+        self.runlen = ttk.Entry(self, width=20, validate='all',
+                                textvariable=self.runlen_var,
+                                validatecommand=(self.check, '%P'))
+        self.runlen.grid(column=1, row=4, pady=5, sticky=tk.W)
+        self.runlen_var.trace('w', self.state_change)
 
         lab = ttk.Label(self, text='T100:')
         lab.grid(column=0, row=5, pady=5, padx=5, sticky=tk.W)
         self.t100_var = tk.IntVar()
-        self.t100 = ttk.Checkbutton(self, variable=self.t100_var)
+        self.t100 = ttk.Checkbutton(self, variable=self.t100_var,
+                                    command=self.state_change)
         self.t100.grid(column=1, row=5, pady=5, sticky=tk.W)
 
         self.but_frame = ttk.Frame(self)
@@ -282,19 +312,26 @@ class SetupPanel(Panel):
             mods_tmp = self.mods.get('1.0', 'end').rstrip()
             if (mods_tmp and mods_tmp != self.job.mods):
                 self.edited = True
+            if (self.runlen.get() and
+                int(self.runlen.get()) != self.job.runlen):
+                self.edited = True
+            if (self.t100_var.get() != self.job.t100):
+                self.edited = True
 
-    def state_change(self, event):
+    def state_change(self, event=None, dummy1=None, dummy2=None):
         self.set_state()
         self.set_button_state()
 
     def save_changes(self):
-        # ===> TODO: Rewrite config/config file and trigger namelist
-        #      generation
+        # ===> TODO: Trigger namelist generation
         self.job.base_config = self.base_config.get()
         self.job.user_config = self.user_config.get()
         self.job.mods = self.mods.get('1.0', 'end').rstrip()
-        self.job.runlen = int(self.run_length.get())
+        self.job.runlen = int(self.runlen_var.get())
         self.job.t100 = True if self.t100_var.get() else False
+        self.job.write_config()
+        self.set_state()
+        self.set_button_state()
 
     def revert_changes(self):
         self.base_config.set(self.job.base_config if self.job.base_config
@@ -303,6 +340,10 @@ class SetupPanel(Panel):
                              else '')
         self.mods.delete('1.0', 'end')
         if self.job.mods: self.mods.insert('end', self.job.mods)
+        self.runlen.delete(0, 'end')
+        if self.job.runlen != None:
+            self.runlen.insert('end', str(self.job.runlen))
+        self.t100_var.set(bool(self.job.t100))
         self.state_change(None)
 
     def update(self):
@@ -313,13 +354,21 @@ class SetupPanel(Panel):
             return
         self.job_path.configure(text=self.job.dir_str())
         if self.job.base_config:
-            self.base_config.set(self.job.base_config)
+            self.base_config.set(self.job.base_config
+                                 if self.job.base_config != '?' else '')
         else:
             self.base_config.set('')
         if self.job.user_config:
-            self.user_config.set(self.job.user_config)
+            self.user_config.set(self.job.user_config
+                                 if self.job.user_config != '?' else '')
         else:
             self.user_config.set('')
+        self.mods.delete('1.0', 'end')
+        if self.job.mods: self.mods.insert('end', self.job.mods)
+        self.runlen.delete(0, 'end')
+        if self.job.runlen != None:
+            self.runlen.insert('end', str(self.job.runlen))
+        self.t100_var.set(bool(self.job.t100))
         self.set_state()
         self.set_button_state()
 
