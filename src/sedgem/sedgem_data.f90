@@ -30,6 +30,8 @@ CONTAINS
   ! LOAD SEDGEM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_sedgem()
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::ios
     ! read data_SEDGEM file
@@ -37,13 +39,13 @@ CONTAINS
     open(unit=in,file='data_SEDGEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open SEDGEM initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_SEDGEM file
     read(UNIT=in,NML=ini_sedgem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read SEDGEM namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in)
     end if

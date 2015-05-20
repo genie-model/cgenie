@@ -8,6 +8,7 @@ CONTAINS
 
   ! This module reads netcdf restarts for EMBM
   SUBROUTINE inm_netcdf_embm
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
 
     REAL, DIMENSION(maxi,maxj) :: temp_read, shum_read
@@ -28,7 +29,7 @@ CONTAINS
     END IF
     IF (ifail /= 0) THEN
        PRINT *, ' Correct error and try again '
-       STOP 1
+       CALL write_status('ERRORED')
     END IF
 
     PRINT *, ' embm: Opening restart file for read: ', &

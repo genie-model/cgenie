@@ -8,6 +8,7 @@ CONTAINS
 
   ! Read NetCDF restarts for goldstein
   SUBROUTINE inm_netcdf(lrestart_genie)
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     LOGICAL, INTENT(IN) :: lrestart_genie
 
@@ -39,7 +40,7 @@ CONTAINS
     END IF
     IF (ifail /= 0) THEN
        PRINT *, ' Correct error and try again '
-       STOP 1
+       CALL write_status('ERRORED')
     END IF
 
     PRINT *, 'GOLDSTEIN: Opening restart file for read: ', TRIM(filenetin)

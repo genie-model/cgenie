@@ -1,6 +1,7 @@
 ! Integer version of above code. Any changes in above should also be
 ! reflected here
 SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
+  USE genie_global, ONLY: write_status
   USE NETCDF
   IMPLICIT NONE
   INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
@@ -24,7 +25,7 @@ SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
   status = NF90_INQUIRE_VARIABLE(ncid, varid, ndims=ndims)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: could not find dims. of variable'
-     STOP
+     CALL write_status('ERRORED')
   END IF
   IF (ndims /= 1) THEN
      WRITE (6, *) 'ERROR: variable has ', ndims, &
@@ -33,7 +34,7 @@ SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
   status = NF90_INQUIRE_VARIABLE(ncid, varid, dimids=dimid)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: could not find dimension ID'
-     STOP
+     CALL write_status('ERRORED')
   END IF
 
   ! check that dimensions match
@@ -41,20 +42,20 @@ SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: Could not get 1st dimension from ' &
           & //'netcdf file'
-     STOP
+     CALL write_status('ERRORED')
   END IF
   IF (dim1nc /= dim1) THEN
      WRITE (6, *) 'ERROR: 1st dimension of variable in model ' &
           & //'and netcdf file do not match'
      WRITE (6, *) 'model and netcdf dims are ', dim1, ' and ' &
           & , dim1nc
-     STOP
+     CALL write_status('ERRORED')
   END IF
 
   ! get variable
   status = NF90_GET_VAR(ncid, varid, arrayout)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: getting variable'
-     STOP
+     CALL write_status('ERRORED')
   END IF
 END SUBROUTINE get1di_data_nc

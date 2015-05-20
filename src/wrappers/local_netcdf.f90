@@ -8,6 +8,7 @@
 MODULE local_netcdf
 
   USE netcdf
+  USE genie_global, ONLY: write_status
 
   ! lookup information about variables by using its name
   INTERFACE lookupVars
@@ -231,7 +232,7 @@ contains
     CHARACTER(LEN=*), INTENT(IN) :: message
 
     WRITE (*,*) TRIM(message)
-    STOP "Stopped"
+    CALL write_status('ERRORED')
   END SUBROUTINE handle_err
 
   !----------------------------------------------------------------------
@@ -248,7 +249,7 @@ contains
 
     IF (status /= nf90_noerr) THEN
        WRITE (*,*) TRIM(NF90_STRERROR(status))
-       STOP "Stopped"
+       CALL write_status('ERRORED')
     END IF
   END SUBROUTINE handle_nc_err
 

@@ -19,6 +19,8 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! LOAD AtCheM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_atchem()
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::l,ia                                                ! tracer counter
     integer::ios                                                 !
@@ -26,13 +28,13 @@ CONTAINS
     open(unit=in,file='data_ATCHEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open ATCHEM initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_ATCHEM file
     read(UNIT=in,NML=ini_atchem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read ATCHEM namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in)
     end if

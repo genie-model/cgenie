@@ -475,6 +475,8 @@ CONTAINS
   end subroutine sub_enddef
 
   subroutine sub_checkerror(dum_ind, dum_trace)
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     !=======================================================================
     !     check for any netcdf errors
 
@@ -491,7 +493,7 @@ CONTAINS
     if (dum_ind .ne. nf90_noerr) then
        print*, 'netcdf error: ', nf90_strerror(dum_ind)
        print*, 'trace string: ', dum_trace
-       stop
+       CALL write_status('ERRORED')
     endif
 
   end subroutine sub_checkerror
@@ -873,6 +875,8 @@ CONTAINS
 
 
   subroutine edge_maker (dum_it, dum_edges, dum_xt, dum_xu, dum_dxt, dum_imt)
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     !=======================================================================
     !     make edges for grid cells
 
@@ -903,7 +907,7 @@ CONTAINS
        dum_edges(dum_imt)=dum_xt(dum_imt)+dum_dxt(dum_imt)
     else
        write (*,*) 'Error:  dum_it = ',dum_it, ' in edge_maker'
-       stop
+       CALL write_status('ERRORED')
     endif
 
   end subroutine edge_maker

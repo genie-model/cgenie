@@ -6,31 +6,33 @@
 
 MODULE gem_data
 
-  
+
   USE gem_cmn
   IMPLICIT NONE
   SAVE
-  
-  
+
+
 CONTAINS
-  
-  
+
+
   ! ****************************************************************************************************************************** !
   ! LOAD SEDGEM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_gem()
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::ios                                                 !
     ! read data_GEM file
     open(unit=in,file='data_GEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open GEM initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_GEM file
     read(UNIT=in,NML=ini_gem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read GEM namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in)
     end if

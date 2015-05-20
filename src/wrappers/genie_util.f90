@@ -13,6 +13,7 @@ CONTAINS
   ! print a message and abort the program
   ! optional references to the line number and file of the error
   SUBROUTINE die(msg, line, file)
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     CHARACTER(LEN=*), INTENT(IN)           :: msg
     INTEGER,          INTENT(IN), OPTIONAL :: line
@@ -27,7 +28,7 @@ CONTAINS
     END IF
     WRITE (6,*) 'stopping'
     CALL flush(6)
-    STOP
+    CALL write_status('ERRORED')
   END SUBROUTINE die
 
   ! Test whether a file unit is already in use

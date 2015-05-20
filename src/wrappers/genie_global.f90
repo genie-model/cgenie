@@ -431,8 +431,30 @@ CONTAINS
     END IF
     WRITE (6,*) 'stopping'
     CALL flush(6)
-    STOP
+    CALL write_status('ERRORED')
   END SUBROUTINE alloc_die
+
+  SUBROUTINE write_status(status, pct)
+    !!! Needed for Intel Fortran: need some sort of preprocessor code
+    !!! here...
+    !!! USE ifport
+    USE gem_cmn, ONLY: out
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: status
+    REAL, INTENT(IN), OPTIONAL :: pct
+
+    INTEGER :: ios
+
+    OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
+    IF (PRESENT(pct)) THEN
+       WRITE(UNIT=out,FMT=*) status, pct
+    ELSE
+       WRITE(UNIT=out,FMT=*) status
+    END IF
+    CLOSE(UNIT=out)
+    ios = RENAME('status_tmp', 'status')
+    IF (status == 'ERRORED') STOP
+  END SUBROUTINE write_status
 
   SUBROUTINE allocate_genie_global()
     IMPLICIT NONE

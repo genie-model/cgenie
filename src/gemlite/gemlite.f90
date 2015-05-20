@@ -139,6 +139,7 @@ CONTAINS
     use gem_util
     use gem_carbchem
     USE gemlite_lib
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     ! DUMMY ARGUMENTS
     real,dimension(:,:,:),intent(out)::dum_sfcocn1                ! sediment-interface ocean tracer composition; ocn grid
@@ -363,7 +364,7 @@ CONTAINS
              ! NOTE: ideally would be done with a generic error handling call (future TO-DO!)
              print*,'!!! IMPOSSIBLE ERROR !!!'
              print*,'gemlite.f90 / gemlie'
-             stop
+             CALL write_status('ERRORED')
           endif
           ! set cycle and local loop start CO2 values
           ! NOTE: the assumption is being made that ocn-atm start the cycle in equilibrium, i.e,
@@ -461,7 +462,7 @@ CONTAINS
              print*,loc_mean_DpCO2_OLD,loc_mean_DpCO2_NEW
              print*,loc_count,ABS(loc_mean_DpCO2_NEW - loc_mean_DpCO2_OLD),par_DpCO2_thresh
              print*,'--- END ---'
-             stop !!!exit
+             CALL write_status('ERRORED') !!!exit
           endif
        end Do
     else

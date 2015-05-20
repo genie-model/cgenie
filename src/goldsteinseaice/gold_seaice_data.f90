@@ -7,6 +7,7 @@ MODULE gold_seaice_data
 CONTAINS
   ! Read in netCDF restart files for GOLDSTEIN sea-ice
   SUBROUTINE inm_netcdf_sic
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
 
     REAL, DIMENSION(maxi,maxj) :: hght_read, frac_read, temp_read, albd_read
@@ -25,7 +26,7 @@ CONTAINS
     IF (.NOT. lexist) THEN
        PRINT *, ' Missing file ', TRIM(fnamein)
        PRINT *, ' Correct error and try again '
-       STOP 1
+       CALL write_status('ERRORED')
     END IF
 
     PRINT *, ' goldstein sea-ice: Opening restart file for read: ', &

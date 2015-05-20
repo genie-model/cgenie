@@ -48,6 +48,7 @@ CONTAINS
        & dum_D,              &
        & dum_sfcsumocn       &
        & )
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     ! dummy arguments
     REAL,INTENT(in)::dum_dtyr                                  ! time-step
@@ -663,7 +664,7 @@ CONTAINS
           print*,'loc_new_sed(:); ',loc_new_sed(:)
           print*,'loc_dis_sed(:); ',loc_dis_sed(:)
           PRINT*,'======='
-          STOP
+          CALL write_status('ERRORED')
        ENDIF
     endif
     ! Ooo - alright then, more debug it is ...

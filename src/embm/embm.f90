@@ -206,6 +206,7 @@ CONTAINS
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
     USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
     REAL, DIMENSION(:), INTENT(OUT) :: alat1, alat2, alat3
@@ -353,20 +354,20 @@ CONTAINS
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open EMBM namelist file'
        PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-       STOP
+       CALL write_status('ERRORED')
     END IF
 
     READ(UNIT=56,NML=ini_embm_nml,IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not read EMBM namelist'
        PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-       STOP
+       CALL write_status('ERRORED')
     ELSE
        CLOSE(56,IOSTAT=ios)
        IF (ios /= 0) THEN
           PRINT *, 'ERROR: could not close EMBM namelist file'
           PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-          STOP
+          CALL write_status('ERRORED')
        END IF
     END IF
 
@@ -1691,7 +1692,7 @@ CONTAINS
     IF (t_orog == 1) THEN
        IF (t_d18o == 1) THEN
           PRINT *, 'ERROR: Both transient orography switches are on'
-          STOP
+          CALL write_status('ERRORED')
        END IF
        OPEN(77,FILE=TRIM(filenameorog))
        ALLOCATE(orog_vect(maxi,maxj,norog),STAT=alloc_error)
@@ -1792,7 +1793,7 @@ CONTAINS
     IF (t_lice == 1) THEN
        IF (t_d18o == 1) THEN
           PRINT *, 'ERROR: Both transient icemask switches are on'
-          STOP
+          CALL write_status('ERRORED')
        END IF
        OPEN(77,FILE=TRIM(filenamelice))
        ALLOCATE(lice_vect(maxi,maxj,nlice),STAT=alloc_error) ; lice_vect = 0.0
@@ -2557,6 +2558,7 @@ CONTAINS
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, flag_ents, lowestlu2_atm, lowestlv3_atm)
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
     REAL, DIMENSION(:,:), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
@@ -3160,7 +3162,7 @@ CONTAINS
                      & 'qsatsic ', qsatsic, 'evapsic ', evapsic(i,j), &
                      & 'tieqn ', tieqn, 'dtieq ', dtieq
                 PRINT *, 'sich ', sich(i,j), 'sica ', sica(i,j)
-                IF (debug_loop) STOP
+                IF (debug_loop) CALL write_status('ERRORED')
 10              tice(i,j) = MIN(REAL(tfreez), tice(i,j))
 
                 ! recalc everything in case of resetting of tice
@@ -3783,7 +3785,8 @@ CONTAINS
   ! matrix (iroff(i,j),jroff(i,j))
   ! which defines where to put the runoff from point (i,j)
   subroutine readroff
-    implicit none
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
 
     integer i, j, loop, iroe, iros, irow, iron
 
@@ -3822,7 +3825,8 @@ CONTAINS
                 PRINT *, 'jroff(i,j) = ',jroff(i,j)
                 PRINT *, 'k1(iroff(i,j),jroff(i,j)) = ', &
                      & k1(iroff(i,j),jroff(i,j)),' (maxk = ',maxk,')'
-                stop 'problem calculating runoff'
+                PRINT *, 'problem calculating runoff'
+                CALL write_status('ERRORED')
              END IF
           END DO
        END DO

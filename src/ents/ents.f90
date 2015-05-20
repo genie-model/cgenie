@@ -22,6 +22,7 @@ CONTAINS
        & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
     USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     CHARACTER(LEN=13), INTENT(IN) :: dum_lin
     REAL, INTENT(IN) :: dum_rsc, dum_syr
@@ -82,13 +83,13 @@ CONTAINS
     OPEN(UNIT=59, FILE='data_ENTS', STATUS='old', IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open ENTS namelist file'
-       STOP
+       CALL write_status('ERRORED')
     END IF
 
     READ(UNIT=59, NML=ENTS_CONTROL, IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not read ENTS namelist'
-       STOP
+       CALL write_status('ERRORED')
     ELSE
        CLOSE(59)
     END IF

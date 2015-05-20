@@ -26,7 +26,9 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! LOAD BioGeM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_biogem()
-    USE genie_util, ONLY: check_unit,check_iostat
+    USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::l,io,ia                                                    ! tracer counter
     integer::ios                                                        !
@@ -35,13 +37,13 @@ CONTAINS
     open(unit=in,file='data_BIOGEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open BIOGEM initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_BIOGEM file
     read(UNIT=in,NML=ini_biogem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read BIOGEM namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)

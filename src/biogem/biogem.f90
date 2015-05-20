@@ -530,6 +530,7 @@ CONTAINS
     USE biogem_box
     USE biogem_data
     USE biogem_data_ascii
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts                                ! biogem time-step length (seconds)
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock             ! genie clock (ms since start) NOTE: 8-byte integer
@@ -1823,7 +1824,7 @@ CONTAINS
             & .true.               &
             & )
        CALL end_biogem()
-       STOP
+       CALL write_status('ERRORED')
     END IF
   END SUBROUTINE step_biogem
 

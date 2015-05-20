@@ -3682,6 +3682,7 @@ CONTAINS
   ! separated from stream.f 9/2/1
   ! updated for generalised grid (RMA, 10/5/05)
   SUBROUTINE wind
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
 
     INTEGER :: i, j, k, n, ip1
@@ -3695,8 +3696,10 @@ CONTAINS
           ip1 = MOD(i, maxi) + 1
           k = i + j * n
           IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= maxk) THEN
-             IF (j == maxj .OR. j == 0) &
-                  & STOP 'wind stress not defined outside domain'
+             IF (j == maxj .OR. j == 0) THEN
+                WRITE (*, *) 'wind stress not defined outside domain'
+                CALL write_status('ERRORED')
+             END IF
              gb(k) = (tau(2,ip1,j) * rh(2,i+1,j) - &
                   &   tau(2,i,j) * rh(2,i,j)) * rdphi * rcv(j) - &
                   &  (tau(1,i,j+1) * c(j+1) * rh(1,i,j+1) - &

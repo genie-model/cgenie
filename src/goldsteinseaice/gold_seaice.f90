@@ -19,6 +19,7 @@ CONTAINS
        & iboxedge3_lon, iboxedge3_lat, ilandmask1, ilandmask2, ilandmask3, &
        & totsteps, hght_sic, frac_sic, temp_sic, albd_sic, test_energy_seaice)
     USE genie_util, ONLY: die
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     ! ======================================================================
     ! Declarations
@@ -155,12 +156,12 @@ CONTAINS
     OPEN(UNIT=56, FILE='data_goldSIC', STATUS='old', IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open SIC namelist file'
-       STOP
+       CALL write_status('ERRORED')
     END IF
     READ(UNIT=56, NML=ini_sic_nml, IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not read SIC namelist'
-       STOP
+       CALL write_status('ERRORED')
     ELSE
        CLOSE(56, IOSTAT=ios)
        CALL check_iostat(ios, __LINE__, __FILE__)

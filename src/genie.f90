@@ -4,7 +4,7 @@
 
 PROGRAM GENIE
 
-  USE genie_util, ONLY : die
+  USE genie_util, ONLY: die
   USE genie_control
   USE genie_global
   USE genie_ini_wrappers
@@ -67,6 +67,8 @@ PROGRAM GENIE
 
   ! NOTE: koverall is in hours
   DO koverall = 1, koverall_total
+     CALL write_status('RUNNING', 100 * REAL(koverall) / REAL(koverall_total))
+
      ! Increment the clock which accumulates total time
      CALL increment_genie_clock
 
@@ -596,5 +598,6 @@ PROGRAM GENIE
   PRINT *, ' *** Shutdown complete; home time'
   PRINT *, '*******************************************************'
   PRINT *
+  CALL write_status('COMPLETE')
 
 END PROGRAM GENIE
