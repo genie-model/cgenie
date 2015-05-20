@@ -483,16 +483,48 @@ class OutputPanel(Panel):
     def __init__(self, notebook, app):
         Panel.__init__(self, notebook, 'output', 'Output')
 
-        self.out = tk.Text(self, font=app.normal_font)
+        self.app = app
+        self.tailer = None
+        self.tailer_job = None
+        self.output_text = ''
+
+        self.out = tk.Text(self, font=app.mono_font, state=tk.DISABLED)
         self.out_scroll = ttk.Scrollbar(self, command=self.out.yview)
         self.out['yscrollcommand'] = self.out_scroll.set
+
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.out.grid(column=0, row=0, sticky=tk.E+tk.W+tk.N+tk.S)
         self.out_scroll.grid(column=1, row=0, sticky=tk.N+tk.S)
 
+    def set_output_text(self):
+        self.out['state'] = tk.NORMAL
+        self.out.delete('1.0', 'end')
+        self.out.insert('end', self.output_text)
+        self.out['state'] = tk.DISABLED
+
+    def add_output_text(self, t):
+        self.output_text += t
+        atend = self.out_scroll.get()[1] == 1.0
+        self.out['state'] = tk.NORMAL
+        self.out.insert('end', t)
+        self.out['state'] = tk.DISABLED
+        if atend: self.out.see('end')
+
     def update(self):
-        pass
+        if self.tailer and self.tailer_job != self.job:
+            self.tailer.stop()
+            self.output_text = ''
+            self.set_output_text()
+        if self.job != self.tailer_job:
+            if self.job:
+                self.tailer_job = self.job
+                self.tailer = G.Tailer(app,
+                                       os.path.join(self.job.dir, 'run.log'))
+                self.tailer.start(self.add_output_text)
+            else:
+                self.tailer_job = None
+                self.tailer = None
 
 
 class PlotPanel(Panel):
