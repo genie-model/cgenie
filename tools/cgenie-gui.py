@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
-import os, os.path, shutil, re, datetime
+import os, os.path, shutil, re, datetime, glob
 import subprocess as sp
 import platform as plat
 import Tkinter as tk
@@ -18,6 +18,15 @@ import gui_utils as G
 
 if not U.read_cgenie_config():
     sys.exit('GENIE not set up: run the setup-cgenie script!')
+
+
+# Platform setup, including any runtime environment variables needed
+# to control model output buffering.
+
+platform = U.discover_platform()
+execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+if 'runtime_env' in locals():
+    for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
 
 
 class JobFolder:
@@ -124,6 +133,9 @@ class Job:
 
     def __str__(self):
         res = '{ '
+        res += 'jobid:' + str(self.jobid) + ' '
+        res += 'jobdir:' + str(self.jobdir) + ' '
+        res += 'dir:' + str(self.dir) + ' '
         res += 'base_config:' + str(self.base_config) + ' '
         res += 'user_config:' + str(self.user_config) + ' '
         res += 'full_config:' + str(self.full_config) + ' '
@@ -415,15 +427,15 @@ class NamelistPanel(Panel):
 
         self.sel_frame = ttk.Frame(self)
         lab = ttk.Label(self.sel_frame, text='Namelist:')
-        # ===> TODO: should set this from the keys of
-        #      self.job.namelists
-        nls = ('genie', 'GEM', 'BIOGEM')
+
+        nls = ()
+        self.namelists = { }
         self.nl_var = tk.StringVar()
         self.nl_sel = ttk.OptionMenu(self.sel_frame, self.nl_var, None, *nls,
                                      command=self.selection_changed)
-        self.nl_var.set(nls[0])
+        if self.job: self.nl_var.set(nls[0])
 
-        self.out = tk.Text(self, font=app.normal_font,
+        self.out = tk.Text(self, font=app.mono_font,
                            state=tk.DISABLED, wrap=tk.NONE)
         self.out_scroll = ttk.Scrollbar(self, command=self.out.yview)
         self.out['yscrollcommand'] = self.out_scroll.set
@@ -438,20 +450,29 @@ class NamelistPanel(Panel):
         self.out_scroll.grid(column=1, row=1, sticky=tk.N+tk.S)
 
     def selection_changed(self, event):
-        print(self.nl_var.get())
         self.set_namelist_text()
 
     def set_namelist_text(self):
-        self.out['state'] = tk.DISABLED
-        # ===> TODO: set text here from
-        #      self.job.namelists[self.nl_var.get()]
         self.out['state'] = tk.NORMAL
-        pass
+        self.out.delete('1.0', 'end')
+        self.out.insert('end', self.namelists[self.nl_var.get()])
+        self.out['state'] = tk.DISABLED
 
     def update(self):
-        # ===> TODO: update the list of possible namelists here from
-        #            the keys of self.job.namelists
-        pass
+        nls = ()
+        self.namelists = { }
+        if self.job:
+            nls = []
+            for nl in glob.iglob(os.path.join(self.job.dir, 'data_*')):
+                nlname = os.path.basename(nl)[5:]
+                nls.append(nlname)
+                with open(nl) as fp: self.namelists[nlname] = fp.read()
+            nls.sort()
+            nls = tuple(nls)
+            self.nl_sel.set_menu(nls[0], *nls)
+            self.set_namelist_text()
+        else:
+            self.nl_sel.set_menu(None, *nls)
 
 
 class OutputPanel(Panel):
@@ -484,6 +505,7 @@ class Application(ttk.Frame):
     def __init__(self, master=None):
         self.root = root
         self.normal_font = ttk.Style().lookup('TEntry', 'font')
+        self.mono_font = tkFont.Font(family='DejaVu Sans Mono', size=10)
         self.bold_font = tkFont.Font(family='Helvetica', weight='bold')
         self.big_font = tkFont.Font(family='Helvetica', size=16, weight='bold')
         self.jobid = None
@@ -607,7 +629,23 @@ class Application(ttk.Frame):
         print('archive_job...')
 
     def run_job(self):
-        print('run_job...')
+        # Check for existence of genie-ship.exe executable.
+        exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
+                           platform, 'ship', 'genie.exe')
+        runexe = os.path.join(self.job.dir, 'genie-ship.exe')
+        if not os.path.exists(exe):
+            tkMB.showerror('Error', 'GENIE executable missing!')
+            return
+        shutil.copy(exe, runexe)
+
+        # Start executable with stdout and stderr directed to run.log
+        # in job directory.
+        with open(os.path.join(self.job.dir, 'run.log'), 'w') as fp:
+            try:
+                sp.Popen(runexe, cwd=self.job.dir, stdout=fp, stderr=sp.STDOUT)
+            except Exception as e:
+                tkMB.showerror('Error', 'Failed to start GENIE executable!')
+
 
     def pause_job(self):
         print('pause_job...')
@@ -659,7 +697,10 @@ class Application(ttk.Frame):
     def select_job(self, jobid):
         """Select a job and set up information tracking"""
 
-        self.job = Job(jobid, self.job_folder)
+        if jobid:
+            self.job = Job(jobid, self.job_folder)
+        else:
+            self.job = None
         ### ===> TODO: need to track model output if it's running to
         ###      add to output panel (using same threading approach as
         ###      in go.py).
