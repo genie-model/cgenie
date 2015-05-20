@@ -241,9 +241,13 @@ class StatusPanel(Panel):
 
         if not self.job: return
         self.job_path.configure(text=self.job.dir_str())
-        self.job_status.configure(text=self.job.status_str())
+        s = self.job.status_str()
+        if s == 'RUNNING':
+            s += ' (' + format(G.job_pct(self.job.dir), '.2f') + '%)'
+        self.job_status.configure(text=s)
         self.runlen.configure(text=self.job.runlen_str())
         self.t100.configure(text=self.job.t100_str())
+        ### ===> TODO: get and display list of modules
 
 
 def check_runlen(s):
@@ -706,6 +710,17 @@ class Application(ttk.Frame):
         ###      in go.py).
         for p in self.panels.itervalues(): p.set_job(self.job)
 
+    def update_job_data(self):
+        s = None
+        if self.job and self.job.dir:
+            s = self.job.status
+            self.job.status = G.job_status(self.job.dir)
+        self.panels['status'].update()
+        self.panels['output'].update()
+        ### ===> TODO: update plot panels
+        if self.job and self.job.dir and s != self.job.status:
+            self.tree.item(self.job.dir, image=G.status_img(self.job.status))
+        self.after(500, self.update_job_data)
 
     def create_widgets(self):
         """UI layout"""
@@ -767,6 +782,7 @@ class Application(ttk.Frame):
         self.menu.add_cascade(label='Help', menu=self.help_menu)
         self.help_menu.add_command(label='About')
 
+        self.after(500, self.update_job_data)
 
     def find_configs(self):
         """Find all base and user configuration files"""

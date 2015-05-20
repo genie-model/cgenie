@@ -55,7 +55,15 @@ def job_status(jd):
     if not os.path.exists(os.path.join(jd, 'status')):
         return 'RUNNABLE'
     with open(os.path.join(jd, 'status')) as fp:
-        return fp.readline.strip().split()[0]
+        return fp.readline().strip().split()[0]
+
+def job_pct(jd):
+    if not os.path.exists(os.path.join(jd, 'status')):
+        return None
+    with open(os.path.join(jd, 'status')) as fp:
+        ss = fp.readline().strip().split()
+        if ss[0] != 'RUNNING': return None
+        return float(ss[1])
 
 
 '''Michael Lange <klappnase (at) freakmail (dot) de>
