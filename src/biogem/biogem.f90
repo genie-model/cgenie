@@ -2231,6 +2231,7 @@ CONTAINS
   ! RESTART BioGeM (save data)
   SUBROUTINE biogem_save_restart(dum_genie_clock)
     USE biogem_data_netCDF
+    USE genie_global, ONLY: writing_gui_restarts
     USE genie_util, ONLY:check_unit,check_iostat
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock               ! genie clock (milliseconds since start) NOTE: 8-byte integer
@@ -2275,11 +2276,15 @@ CONTAINS
     ! ---------------------------------------------------------- ! calculate local time (years)
     loc_yr = real(dum_genie_clock)/(1000.0*conv_yr_s)
     ! ---------------------------------------------------------- ! test for restart format
-    IF (ctrl_ncrst) THEN
+    IF (ctrl_ncrst .OR. writing_gui_restarts) THEN
        ! ------------------------------------------------------- !
        ! SAVE RESTART DATA: NETCDF FORMAT
        ! ------------------------------------------------------- !
-       string_ncrst = TRIM(par_outdir_name)//trim(par_ncrst_name)
+       IF (writing_gui_restarts) THEN
+          string_ncrst = 'gui_restart_biogem.nc'
+       ELSE
+          string_ncrst = TRIM(par_outdir_name)//TRIM(par_ncrst_name)
+       END IF
        ncrst_ntrec = 0
        call sub_data_netCDF_ncrstsave(trim(string_ncrst),loc_yr,loc_iou)
     else

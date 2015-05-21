@@ -85,6 +85,7 @@ CONTAINS
   ! This module writes netcdf restarts for embm
   SUBROUTINE outm_netcdf_embm(istep)
     USE netcdf
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
 
@@ -110,7 +111,7 @@ CONTAINS
     ! output file format is yyyy_mm_dd
     timestep = yearlen / REAL(nyear * ndta)
     iday = NINT(day_rest)
-    IF (mod(istep, iwstp * ndta) == 0)THEN
+    IF (MOD(istep, iwstp * ndta) == 0 .OR. writing_gui_restarts) THEN
        ! WRITE A RESTART.....
        lons1 = nclon1
        lats1 = nclat1
@@ -122,9 +123,13 @@ CONTAINS
        WRITE (monthstring,'(i2.2)') imonth_rest
        WRITE (daystring,'(i2.2)') iday
 
-       fname = TRIM(dirnetout) // '/embm_restart_' // &
-            & TRIM(ADJUSTL(yearstring)) // '_' // &
-            & monthstring // '_' // daystring // '.nc'
+       IF (writing_gui_restarts) THEN
+          fname = 'gui_restart_embm.nc'
+       ELSE
+          fname = TRIM(dirnetout) // '/embm_restart_' // &
+               & TRIM(ADJUSTL(yearstring)) // '_' // &
+               & monthstring // '_' // daystring // '.nc'
+       END IF
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))

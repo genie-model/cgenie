@@ -145,6 +145,7 @@ CONTAINS
   ! Write NetCDF restarts for goldstein
   SUBROUTINE outm_netcdf(istep)
     USE netcdf
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
     INTEGER, INTENT(in) :: istep
 
@@ -178,7 +179,7 @@ CONTAINS
     timestep = yearlen / REAL(nyear)
     iday = NINT(day_rest)
 
-    IF (MOD(istep, iwstp) == 0) THEN
+    IF (MOD(istep, iwstp) == 0 .OR. writing_gui_restarts) THEN
        ! WRITE A RESTART.....
 
        ! This bit modified from initialise_ocean.F
@@ -214,9 +215,13 @@ CONTAINS
        !-------------------------------------------------------
        ! create a netcdf file
        !-------------------------------------------------------
-       fname = TRIM(dirnetout) // '/goldstein_restart_' // &
-            & TRIM(adjustl(yearstring)) // '_' // monthstring // &
-            & '_'//daystring//'.nc'
+       IF (writing_gui_restarts) THEN
+          fname = 'gui_restart_goldstein.nc'
+       ELSE
+          fname = TRIM(dirnetout) // '/goldstein_restart_' // &
+               & TRIM(adjustl(yearstring)) // '_' // monthstring // &
+               & '_'//daystring//'.nc'
+       END IF
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))

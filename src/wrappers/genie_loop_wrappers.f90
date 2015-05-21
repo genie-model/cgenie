@@ -85,6 +85,12 @@ CONTAINS
          & flag_ents, atmos_lowestlu2_atm, atmos_lowestlv3_atm)
   END SUBROUTINE embm_wrapper
 
+  SUBROUTINE embm_save_restart_wrapper
+    USE embm_data
+    IMPLICIT NONE
+    CALL outm_netcdf_embm(istep_atm)
+  END SUBROUTINE embm_save_restart_wrapper
+
   SUBROUTINE gold_seaice_wrapper
     USE gold_seaice
     IMPLICIT NONE
@@ -105,6 +111,13 @@ CONTAINS
          & hght_sic, frac_sic, temp_sic, albd_sic, waterflux_ocn, &
          & conductflux_ocn, test_energy_seaice, test_water_seaice)
   END SUBROUTINE gold_seaice_wrapper
+
+  SUBROUTINE gold_seaice_save_restart_wrapper
+    USE gold_seaice_data
+    IMPLICIT NONE
+    CALL outm_netcdf_sic(istep_sic)
+  END SUBROUTINE gold_seaice_save_restart_wrapper
+
 
   SUBROUTINE goldstein_wrapper
     USE goldstein
@@ -137,6 +150,12 @@ CONTAINS
          & go_ts, go_ts1, go_cost, go_uvw, go_tau, go_psi, go_mldta, go_rho)
   END SUBROUTINE goldstein_wrapper
 
+  SUBROUTINE goldstein_save_restart_wrapper
+    USE goldstein_data
+    IMPLICIT NONE
+    CALL outm_netcdf(istep_ocn)
+  END SUBROUTINE goldstein_save_restart_wrapper
+
   SUBROUTINE ents_wrapper
     USE ents
     IMPLICIT NONE
@@ -149,6 +168,12 @@ CONTAINS
          & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd, &
          & genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE ents_wrapper
+
+  SUBROUTINE ents_save_restart_wrapper
+    USE ents_data
+    IMPLICIT NONE
+    CALL out_ents_netcdf(istep_ocn)
+  END SUBROUTINE ents_save_restart_wrapper
 
   SUBROUTINE cpl_flux_ocnatm_wrapper
     USE atchem

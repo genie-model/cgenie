@@ -413,6 +413,7 @@ CONTAINS
 
   SUBROUTINE rest_rokgem()
     USE rokgem_lib
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
 
     integer::ios
@@ -421,7 +422,11 @@ CONTAINS
     if (debug_init > 1) PRINT*,'saving netcdf record number',ncout2d_ntrec_rg
 
     ! dump restart data
-    loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
+    IF (writing_gui_restarts) THEN
+       loc_filename = 'gui_restart_rokgem'
+    ELSE
+       loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
+    end IF
     OPEN(20,status='replace',file=loc_filename,form='formatted',action='write',iostat=ios)
     WRITE(20,fmt='(i6)') ncout2d_ntrec_rg
     close(20)

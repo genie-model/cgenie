@@ -685,6 +685,8 @@ class Application(ttk.Frame):
 
     def pause_job(self):
         print('pause_job...')
+        with open(os.path.join(self.job.dir, 'command'), 'w') as fp:
+            print('PAUSE', file=fp)
 
 
     # Buttons that change state depending on the state of the
@@ -706,12 +708,20 @@ class Application(ttk.Frame):
                                   'clone_job'] }
 
 
-    def item_selected(self, event):
+    def item_selected(self, event=None):
         """Callback for item selection in job tree"""
 
         sel = self.tree.selection()[0]
         if len(self.tree.get_children(sel)) != 0:
             self.select_job(None)
+        else:
+            self.select_job(sel)
+        self.set_job_buttons()
+
+
+    def set_job_buttons(self):
+        sel = self.tree.selection()[0]
+        if self.job == None:
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     if ((k == 'move_rename' or k == 'delete_job')
@@ -720,7 +730,6 @@ class Application(ttk.Frame):
                     else:
                         v.state(['disabled'])
         else:
-            self.select_job(sel)
             on_buttons = self.state_buttons[G.job_status(sel)]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
@@ -752,6 +761,7 @@ class Application(ttk.Frame):
         ### ===> TODO: update plot panels
         if self.job and self.job.dir and s != self.job.status:
             self.tree.item(self.job.dir, image=G.status_img(self.job.status))
+        self.set_job_buttons()
         self.after(500, self.update_job_data)
 
     def create_widgets(self):

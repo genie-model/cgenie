@@ -12,6 +12,10 @@ PROGRAM GENIE
   USE genie_end_wrappers
   IMPLICIT NONE
 
+  LOGICAL :: command_exists
+  CHARACTER(LEN=80) :: command, command_arg
+
+
   PRINT *
   PRINT *, '*******************************************************'
   PRINT *, '  *** Welcome to cGENIE -- version: ', TRIM(genie_version)
@@ -67,7 +71,35 @@ PROGRAM GENIE
 
   ! NOTE: koverall is in hours
   DO koverall = 1, koverall_total
-     CALL write_status('RUNNING', 100 * REAL(koverall) / REAL(koverall_total))
+     CALL read_command(command_exists, command, command_arg)
+     IF (command_exists) THEN
+        PRINT *, 'Command: "' // TRIM(command) // '"'
+        PRINT *, 'Argument: "' // TRIM(command_arg) // '"'
+        SELECT CASE (TRIM(command))
+        CASE ('PAUSE')
+           CALL write_status('PAUSED')
+           PRINT *
+           PRINT *, '*******************************************************'
+           PRINT *, ' *** Pausing simulation on command from GUI ...'
+           PRINT *, '*******************************************************'
+
+           IF (debug_loop > 1) PRINT *, '>>> WRITING GUI RESTART FILES <<<'
+
+           writing_gui_restarts = .TRUE.
+           IF (flag_biogem) CALL biogem_save_restart_wrapper
+           IF (flag_atchem) CALL atchem_save_restart_wrapper
+           IF (flag_sedgem) CALL sedgem_save_restart_wrapper
+           IF (flag_rokgem) CALL rokgem_save_restart_wrapper
+           IF (flag_ebatmos) CALL embm_save_restart_wrapper
+           IF (flag_goldsteinocean) CALL goldstein_save_restart_wrapper
+           IF (flag_goldsteinseaice) CALL gold_seaice_save_restart_wrapper
+           IF (flag_ents) CALL ents_save_restart_wrapper
+           !!! ===> TODO: what about GEMLITE restarts?
+           !IF (flag_gemlite) CALL gemlite_save_restart_wrapper
+           STOP
+        END SELECT
+     END IF
+     CALL write_status('RUNNING')
 
      ! Increment the clock which accumulates total time
      CALL increment_genie_clock

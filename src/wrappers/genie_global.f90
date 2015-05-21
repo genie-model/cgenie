@@ -36,6 +36,9 @@ MODULE genie_global
   INTEGER(KIND=8) :: koverall
   INTEGER::katm
 
+  ! Flags for managing restart files used by GUI.
+  LOGICAL :: writing_gui_restarts = .FALSE., reading_gui_restarts = .FALSE.
+
   INTEGER :: istep_atm, istep_sic, istep_ocn, istep_lic, istep_gsurf, istep_che
   INTEGER :: katmos, kgem
   INTEGER :: istep_gem, istep_tot
@@ -434,20 +437,19 @@ CONTAINS
     CALL write_status('ERRORED')
   END SUBROUTINE alloc_die
 
-  SUBROUTINE write_status(status, pct)
+  SUBROUTINE write_status(status)
     !!! Needed for Intel Fortran: need some sort of preprocessor code
     !!! here...
     !!! USE ifport
     USE gem_cmn, ONLY: out
     IMPLICIT NONE
     CHARACTER(LEN=*), INTENT(IN) :: status
-    REAL, INTENT(IN), OPTIONAL :: pct
 
     INTEGER :: ios
 
     OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
-    IF (PRESENT(pct)) THEN
-       WRITE(UNIT=out,FMT=*) status, pct
+    IF (trim(status) == 'RUNNING' .or. trim(status) == 'PAUSED') THEN
+       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total
     ELSE
        WRITE(UNIT=out,FMT=*) status
     END IF
@@ -455,6 +457,31 @@ CONTAINS
     ios = RENAME('status_tmp', 'status')
     IF (status == 'ERRORED') STOP
   END SUBROUTINE write_status
+
+  SUBROUTINE read_command(command_exists, command, command_arg)
+    USE gem_cmn, ONLY: in
+    IMPLICIT NONE
+    LOGICAL, INTENT(OUT) :: command_exists
+    CHARACTER(LEN=*), INTENT(OUT) :: command, command_arg
+
+    CHARACTER(LEN=80) :: buff
+    INTEGER :: spc
+
+    INQUIRE(FILE='command', EXIST=command_exists)
+    command = ''
+    command_arg = ''
+    IF (command_exists) THEN
+       OPEN(UNIT=in, FILE='command', ACTION='read', STATUS='old')
+       READ (in, '(A80)') buff
+       spc = INDEX(TRIM(buff), ' ')
+       IF (spc > 0) THEN
+          command = buff(1:spc)
+          command_arg = TRIM(buff(spc+1:))
+       ELSE
+          command = TRIM(buff)
+       END IF
+    END IF
+  END SUBROUTINE read_command
 
   SUBROUTINE allocate_genie_global()
     IMPLICIT NONE

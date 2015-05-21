@@ -71,6 +71,13 @@ CONTAINS
     END WHERE
   END SUBROUTINE in_ents_netcdf
 
+  SUBROUTINE out_ents_netcdf(istep)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: istep
+
+    print *, istep
+    STOP 'NOT IMPLEMENTED!!!!'
+  END SUBROUTINE out_ents_netcdf
 
   ! Write output for restarts
   SUBROUTINE out_ents(unit, land_snow_lnd)
