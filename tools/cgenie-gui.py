@@ -93,15 +93,17 @@ class JobFolder:
     def move(self, fr, to):
         os.rename(fr, to)
         is_folder = fr in self.folders
-        if fr in self.folders:
-            del self.folders[fr]
-            self.folders[to] = 1
         to = os.path.relpath(to, self.path)
         self.tree.delete(fr)
         if is_folder:
             self.add_folder(to, True)
         else:
             self.add_job(to, True)
+
+    def clone(self, fr, to):
+        shutil.copytree(fr, to)
+        to = os.path.relpath(to, self.path)
+        self.add_job(to, True)
 
     def sort_children(self, f):
         def chcmp(x, y):
@@ -749,7 +751,6 @@ class Application(ttk.Frame):
         # Find adjacent item ID for post-delete selection.
         post = self.tree.next(p)
         if not post: post = self.tree.prev(p)
-        print('post:', post)
 
         # Recursively delete.
         try:
@@ -764,7 +765,15 @@ class Application(ttk.Frame):
 
 
     def clone_job(self):
-        print('clone_job...')
+        p = self.tree.selection()[0]
+        pnew = p + '-CLONE'
+        i = 1
+        while os.path.exists(pnew):
+            i += 1
+            pnew = p + '-CLONE' + str(i)
+        self.job_folder.clone(p, pnew)
+        self.tree.see(pnew)
+        self.tree.selection_set(pnew)
 
     def archive_job(self):
         print('archive_job...')
