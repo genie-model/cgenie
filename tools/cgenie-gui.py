@@ -29,6 +29,8 @@ if 'runtime_env' in locals():
     for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
 
 
+#----------------------------------------------------------------------
+
 class JobFolder:
     """Job folder management"""
     def __init__(self, path, name, tree):
@@ -36,7 +38,13 @@ class JobFolder:
         self.name = name
         self.tree = tree
         self.item = None
+        self.folders = { path: 1 }
         self.status = { }
+
+    def possible_folders(self):
+        fs = self.folders.keys()
+        fs.sort()
+        return fs
 
     def scan(self, select):
         self.item = self.tree.insert('', 'end', self.path,
@@ -56,6 +64,7 @@ class JobFolder:
             parent = p
             p = os.path.join(p, f)
             if not self.tree.exists(p):
+                self.folders[p] = 1
                 self.tree.insert(parent, 'end', p, text=f,
                                  image=G.status_img('FOLDER'))
         jpath = os.path.join(self.path, jfull)
@@ -71,9 +80,28 @@ class JobFolder:
             parent = p
             p = os.path.join(p, f)
             if not self.tree.exists(p):
+                self.folders[p] = 1
                 self.tree.insert(parent, 'end', p, text=f,
                                  image=G.status_img('FOLDER'))
         if sort: self.sort_children(self.item)
+
+    def delete(self, p):
+        self.tree.delete(p)
+        if p in self.folders: del self.folders[p]
+        if p in self.status: del self.status[p]
+
+    def move(self, fr, to):
+        os.rename(fr, to)
+        is_folder = fr in self.folders
+        if fr in self.folders:
+            del self.folders[fr]
+            self.folders[to] = 1
+        to = os.path.relpath(to, self.path)
+        self.tree.delete(fr)
+        if is_folder:
+            self.add_folder(to, True)
+        else:
+            self.add_job(to, True)
 
     def sort_children(self, f):
         def chcmp(x, y):
@@ -88,6 +116,8 @@ class JobFolder:
         self.tree.set_children(f, *cs)
         for c in cs: self.sort_children(c)
 
+
+#----------------------------------------------------------------------
 
 class Job:
     def __init__(self, jobid=None, folder=None):
@@ -188,6 +218,8 @@ class Job:
         if res != 'OK': tkMB.showerror('Error', res[4:])
 
 
+#----------------------------------------------------------------------
+
 class Panel(ttk.Frame):
     def __init__(self, notebook, type, title):
         self.stmp = ttk.Style()
@@ -239,24 +271,20 @@ class StatusPanel(Panel):
     def update(self):
         """Setting status panel fields"""
 
-        if not self.job: return
-        self.job_path.configure(text=self.job.dir_str())
-        s = self.job.status_str()
-        if s == 'RUNNING':
-            s += ' (' + format(G.job_pct(self.job.dir), '.2f') + '%)'
-        self.job_status.configure(text=s)
-        self.runlen.configure(text=self.job.runlen_str())
-        self.t100.configure(text=self.job.t100_str())
-        ### ===> TODO: get and display list of modules
-
-
-def check_runlen(s):
-    try:
-        v = s.strip()
-        if not v: return True
-        return int(v) > 0
-    except:
-        return False
+        if not self.job:
+            self.job_path.configure(text='')
+            self.job_status.configure(text='')
+            self.runlen.configure(text='')
+            self.t100.configure(text='')
+        else:
+            self.job_path.configure(text=self.job.dir_str())
+            s = self.job.status_str()
+            if s == 'RUNNING':
+                s += ' (' + format(G.job_pct(self.job.dir), '.2f') + '%)'
+            self.job_status.configure(text=s)
+            self.runlen.configure(text=self.job.runlen_str())
+            self.t100.configure(text=self.job.t100_str())
+            ### ===> TODO: get and display list of modules
 
 
 ### ===> TODO: also need to handle "full config" cases.
@@ -301,7 +329,7 @@ class SetupPanel(Panel):
 
         lab = ttk.Label(self, text='Run length:')
         lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
-        self.check = self.register(check_runlen)
+        self.check = self.register(self.check_runlen)
         self.runlen_var = tk.StringVar()
         self.runlen = ttk.Entry(self, width=20, validate='all',
                                 textvariable=self.runlen_var,
@@ -331,6 +359,14 @@ class SetupPanel(Panel):
         self.complete = False
 
         self.update()
+
+    def check_runlen(self, s):
+        try:
+            v = s.strip()
+            if not v: return True
+            return int(v) > 0
+        except:
+            return False
 
     def set_button_state(self):
         if self.edited and self.complete:
@@ -536,6 +572,63 @@ class PlotPanel(Panel):
         pass
 
 
+#----------------------------------------------------------------------
+
+class MoveRenameDialog(tkSD.Dialog):
+    def __init__(self, full_path, is_folder, folders, parent=None):
+        if not parent: parent = tk._default_root
+        self.orig_folder, self.orig_name = os.path.split(full_path)
+        self.is_folder = is_folder
+        self.new_folder = None
+        self.new_name = None
+        self.folder_changed = False
+        self.name_changed = False
+        self.folders = folders
+        self.result = False
+        tkSD.Dialog.__init__(self, parent, 'Move/rename job')
+
+    def destroy(self):
+        tkSD.Dialog.destroy(self)
+
+    def body(self, master):
+        lab = ttk.Label(master, text='Folder:')
+        lab.grid(column=0, row=0, pady=5, padx=5, sticky=tk.W)
+        self.folder = ttk.Combobox(master, values=self.folders, width=50)
+        self.folder.state(['readonly'])
+        self.folder.grid(column=1, row=0, pady=5, sticky=tk.W)
+        self.folder.set(self.orig_folder)
+
+        lab = ttk.Label(master, text='Name:')
+        lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
+        self.name = ttk.Entry(master, width=50)
+        self.name.grid(column=1, row=1, pady=5, sticky=tk.W)
+        self.name.insert(0, self.orig_name)
+
+        return self.name
+
+    def validate(self):
+        if len(self.name.get()) == 0:
+            tkMB.showwarning('Illegal value',
+                             "New name can't be empty!",
+                             parent=self)
+            return 0
+        if self.is_folder and self.folder.get().startswith(self.orig_folder):
+            tkMB.showwarning('Illegal move',
+                             "Can't move a folder into one " +
+                             "of its own descendants!",
+                             parent=self)
+            return 0
+        return 1
+
+    def apply(self):
+        self.new_folder = self.folder.get()
+        self.new_name = self.name.get()
+        if self.new_folder != self.orig_folder: self.folder_changed = True
+        if self.new_name != self.orig_name: self.name_changed = True
+        self.result = self.folder_changed or self.name_changed
+
+
+#----------------------------------------------------------------------
 
 class Application(ttk.Frame):
     def __init__(self, master=None):
@@ -617,12 +710,24 @@ class Application(ttk.Frame):
             return
 
         # Add folder entry to tree and select.
-        self.job_folder.add_folder(folder, True)
+        self.job_folder.add_folder(os.relpath(folder, U.cgenie_jobs), True)
         self.tree.selection_set(p)
 
 
     def move_rename(self):
-        print('move_rename...')
+        full_path = self.tree.selection()[0]
+        is_folder = G.is_folder(self.tree, full_path)
+        d = MoveRenameDialog(full_path, is_folder,
+                             self.job_folder.possible_folders())
+        if d.result:
+            new_full_path = os.path.join(d.new_folder, d.new_name)
+            try:
+                self.job_folder.move(full_path, new_full_path)
+                self.tree.see(new_full_path)
+                self.tree.selection_set(new_full_path)
+            except Exception as e:
+                print(e)
+                tkMB.showwarning('Move/rename failed', 'Oops', parent=self)
 
 
     def delete_job(self):
@@ -655,7 +760,7 @@ class Application(ttk.Frame):
 
         # Delete from tree and select.
         self.tree.selection_set(post)
-        self.tree.delete(p)
+        self.job_folder.delete(p)
 
 
     def clone_job(self):
@@ -712,7 +817,7 @@ class Application(ttk.Frame):
         """Callback for item selection in job tree"""
 
         sel = self.tree.selection()[0]
-        if len(self.tree.get_children(sel)) != 0:
+        if len(self.tree.get_children(sel)) != 0 or G.is_folder(self.tree, sel):
             self.select_job(None)
         else:
             self.select_job(sel)
@@ -746,6 +851,7 @@ class Application(ttk.Frame):
             self.job = Job(jobid, self.job_folder)
         else:
             self.job = None
+
         ### ===> TODO: need to track model output if it's running to
         ###      add to output panel (using same threading approach as
         ###      in go.py).
@@ -841,6 +947,8 @@ class Application(ttk.Frame):
         self.user_configs = us
         self.user_configs.sort()
 
+
+#----------------------------------------------------------------------
 
 root = tk.Tk()
 app = Application(root)
