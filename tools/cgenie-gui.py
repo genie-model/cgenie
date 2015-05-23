@@ -901,10 +901,16 @@ class Application(ttk.Frame):
     def create_widgets(self):
         """UI layout"""
 
-        self.tree = ttk.Treeview(self, selectmode='browse')
-        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.pane = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
 
-        self.toolbar = ttk.Frame(self)
+        self.tree = ttk.Treeview(self.pane, selectmode='browse')
+        self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.pane.add(self.tree)
+
+        self.main_frame = ttk.Frame(self.pane)
+        self.pane.add(self.main_frame)
+
+        self.toolbar = ttk.Frame(self.main_frame)
         self.tool_buttons = { }
         tool_info = [['new_job',     'New job'],
                      ['new_folder',  'New folder'],
@@ -930,7 +936,7 @@ class Application(ttk.Frame):
                 self.tool_buttons[t[0]] = b
 
         # Set up default notebook panels.
-        self.notebook = ttk.Notebook(self)
+        self.notebook = ttk.Notebook(self.main_frame)
         self.panels = { }
         self.panels['status'] = StatusPanel(self.notebook, self)
         self.panels['setup'] = SetupPanel(self.notebook, self)
@@ -942,13 +948,16 @@ class Application(ttk.Frame):
         top = self.winfo_toplevel()
         top.rowconfigure(0, weight=1)
         top.columnconfigure(0, weight=1)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=0)
-        self.columnconfigure(2, weight=1)
+        self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.tree.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
-        self.toolbar.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
-        self.notebook.grid(column=2, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.pane.columnconfigure(0, weight=1)
+        self.pane.rowconfigure(0, weight=1)
+        self.main_frame.columnconfigure(0, weight=0)
+        self.main_frame.columnconfigure(1, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
+        self.pane.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.toolbar.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.notebook.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
         self.menu = tk.Menu(top)
         top['menu'] = self.menu
