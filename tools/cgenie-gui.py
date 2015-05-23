@@ -857,19 +857,22 @@ class Application(ttk.Frame):
         if self.job == None:
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
-                    if ((k == 'move_rename' or k == 'delete_job')
-                        and self.tree.parent(sel) != ''):
-                        v.state(['!disabled'])
-                    else:
-                        v.state(['disabled'])
+                    e = ((k == 'move_rename' or k == 'delete_job')
+                         and self.tree.parent(sel) != '')
+                    v.state(['!disabled' if e else 'disabled'])
+                    self.job_menu.entryconfig(self.menu_items[k],
+                                              state=tk.NORMAL if e
+                                              else tk.DISABLED)
         else:
             on_buttons = self.state_buttons[G.job_status(sel)]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
+                    e = k in on_buttons
                     if k in on_buttons:
-                        v.state(['!disabled'])
-                    else:
-                        v.state(['disabled'])
+                        v.state(['!disabled' if e else 'disabled'])
+                        self.job_menu.entryconfig(self.menu_items[k],
+                                                  state=tk.NORMAL if e
+                                                  else tk.DISABLED)
 
 
     def select_job(self, jobid):
@@ -912,28 +915,28 @@ class Application(ttk.Frame):
 
         self.toolbar = ttk.Frame(self.main_frame)
         self.tool_buttons = { }
-        tool_info = [['new_job',     'New job'],
-                     ['new_folder',  'New folder'],
-                     ['move_rename', 'Move/rename job or folder'],
-                     ['delete_job',  'Delete job'],
-                     ['clear_job',   'Clear job output'],
-                     ['clone_job',   'Clone job'],
-                     ['archive_job', 'Archive job'],
-                     ['spacer', ''],
-                     ['run_job',     'Run job'],
-                     ['pause_job',   'Pause job']]
-        for t in tool_info:
-            if t[0] == 'spacer':
+        tool_info = [['new_job',     'New job', True],
+                     ['new_folder',  'New folder', True],
+                     ['move_rename', 'Move/rename job', True],
+                     ['delete_job',  'Delete job', True],
+                     ['clear_job',   'Clear job output', True],
+                     ['clone_job',   'Clone job', True],
+                     ['archive_job', 'Archive job', True],
+                     ['spacer', '', False],
+                     ['run_job',     'Run job', False],
+                     ['pause_job',   'Pause job', False]]
+        for t, title, dia in tool_info:
+            if t == 'spacer':
                 f = ttk.Frame(self.toolbar, height=16)
                 f.pack()
             else:
-                img = G.file_img(t[0])
+                img = G.file_img(t)
                 b = ttk.Button(self.toolbar, image=img,
-                               command=getattr(self, t[0]))
+                               command=getattr(self, t))
                 b.image = img
                 b.pack()
-                G.ToolTip(b, t[1])
-                self.tool_buttons[t[0]] = b
+                G.ToolTip(b, title)
+                self.tool_buttons[t] = b
 
         # Set up default notebook panels.
         self.notebook = ttk.Notebook(self.main_frame)
@@ -960,10 +963,23 @@ class Application(ttk.Frame):
         self.notebook.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
         self.menu = tk.Menu(top)
+        self.menu_items = { }
         top['menu'] = self.menu
-        self.file_menu = tk.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label='File', menu=self.file_menu)
-        self.file_menu.add_command(label='Quit', command=self.quit)
+        self.job_menu = tk.Menu(self.menu, tearoff=0)
+        self.menu.add_cascade(label='Job', menu=self.job_menu)
+        it = 0
+        for t, title, dia in tool_info:
+            if t == 'spacer':
+                self.job_menu.add_separator()
+            else:
+                if dia: title += '...'
+                c = getattr(self, t)
+                self.job_menu.add_command(label=title, command=c)
+                self.menu_items[t] = it
+                print(t, title, self.menu_items[t], self.job_menu.index(title))
+            it += 1
+        self.job_menu.add_separator()
+        self.job_menu.add_command(label='Quit', command=self.quit)
         self.help_menu = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='Help', menu=self.help_menu)
         self.help_menu.add_command(label='About')
