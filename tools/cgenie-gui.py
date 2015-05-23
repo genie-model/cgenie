@@ -747,6 +747,7 @@ class Application(ttk.Frame):
 
         # Confirmation dialog -- single job or folder.
         chk = tkMB.askokcancel('Confirm deletion', msg)
+        if not chk: return
 
         # Find adjacent item ID for post-delete selection.
         post = self.tree.next(p)
@@ -775,8 +776,26 @@ class Application(ttk.Frame):
         self.tree.see(pnew)
         self.tree.selection_set(pnew)
 
+
+    def clear_job(self):
+        p = self.tree.selection()[0]
+        msg = 'Are you sure you want to clear\n'
+        msg += 'all output data for this job?\n\n'
+        msg += 'This action is IRREVERSIBLE!'
+
+        chk = tkMB.askokcancel('Confirm deletion', msg)
+        if not chk: return
+
+        if os.path.exists(os.path.join(p, 'status')):
+            os.remove(os.path.join(p, 'status'))
+        for d, ds, fs in os.walk(os.path.join(p, 'output')):
+            for f in fs: os.remove(os.path.join(d, f))
+        self.update_job_data()
+
+
     def archive_job(self):
         print('archive_job...')
+
 
     def run_job(self):
         # Check for existence of genie-ship.exe executable.
@@ -805,20 +824,20 @@ class Application(ttk.Frame):
 
     # Buttons that change state depending on the state of the
     # currently selected job.
-    switchable_buttons = ['move_rename', 'delete_job', 'clone_job',
-                          'archive_job', 'run_job', 'pause_job']
+    switchable_buttons = ['move_rename', 'delete_job', 'clear_job',
+                          'clone_job', 'archive_job', 'run_job', 'pause_job']
 
     # Enabled buttons for different states of selected job.
-    state_buttons = { 'UNCONFIGURED': ['move_rename', 'delete_job',
+    state_buttons = { 'UNCONFIGURED': ['move_rename', 'clear_job', 'delete_job',
                                        'clone_job'],
-                      'RUNNABLE': ['move_rename', 'delete_job',
+                      'RUNNABLE': ['move_rename', 'clear_job', 'delete_job',
                                    'clone_job', 'run_job'],
                       'RUNNING': ['pause_job'],
-                      'PAUSED': ['move_rename', 'delete_job',
+                      'PAUSED': ['move_rename', 'clear_job', 'delete_job',
                                  'clone_job', 'archive_job', 'run_job'],
-                      'COMPLETE': ['move_rename', 'delete_job',
+                      'COMPLETE': ['move_rename', 'clear_job', 'delete_job',
                                    'clone_job', 'archive_job'],
-                      'ERRORED': ['move_rename', 'delete_job',
+                      'ERRORED': ['move_rename', 'clear_job', 'delete_job',
                                   'clone_job'] }
 
 
@@ -891,6 +910,7 @@ class Application(ttk.Frame):
                      ['new_folder',  'New folder'],
                      ['move_rename', 'Move/rename job or folder'],
                      ['delete_job',  'Delete job'],
+                     ['clear_job',   'Clear job output'],
                      ['clone_job',   'Clone job'],
                      ['archive_job', 'Archive job'],
                      ['spacer', ''],
