@@ -23,6 +23,7 @@ parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
                   action='store_true')
 parser.add_option('-b', '--base-config',   help='Base configuration name')
 parser.add_option('-u', '--user-config',   help='User configuration name')
+parser.add_option('-m', '--config-mods',   help='Configuration mods filename')
 parser.add_option('-c', '--config',        help='Full configuration name')
 parser.add_option('-r', '--restart',       help='Restart name')
 parser.add_option('--old-restart',         help='Restart from old cGENIE job',
@@ -49,6 +50,7 @@ running_from_gui = opts.gui
 overwrite = opts.overwrite
 base_config = opts.base_config
 user_config = opts.user_config
+config_mods = opts.config_mods
 full_config = opts.config
 restart = opts.restart
 test_job = opts.test_job
@@ -87,6 +89,9 @@ base_and_user_config = base_config and user_config
 if not base_and_user_config and not full_config and not test_job:
     error_exit('Either base and user, full configuration ' +
                'or test must be specified')
+if not base_and_user_config and config_mods:
+    error_exit('Configuration mods can only be specified if ' +
+               'using base and user configuration')
 nset = 0
 if base_and_user_config: nset += 1
 if full_config:          nset += 1
@@ -132,6 +137,7 @@ if not running_from_gui:
     if base_and_user_config:
         print('Base config:', base_config)
         print('User config:', user_config)
+    if config_mods: print('Config mods:', config_mods)
     if full_config: print('Full config:', full_config)
     if not test_job: print(' Run length:', run_length)
     print('  Overwrite:', overwrite)
@@ -157,6 +163,9 @@ if (base_and_user_config):
         user_config_path = user_config
     user = C.read_config(user_config_path, 'User configuration')
     configs = [base, user]
+    if config_mods:
+        mods = C.read_config(config_mods, 'Configuration modifications')
+        configs.append(mods)
 elif full_config:
     if not os.path.exists(full_config):
         full_config_dir = os.path.join(U.cgenie_data, 'full-configs')
@@ -259,6 +268,10 @@ if not running_from_gui:
                                 os.path.join(cfg_dir, 'full_config'))
                 print('full_config_dir:', full_config_dir, file=fp)
                 print('full_config:', full_config, file=fp)
+            if config_mods:
+                shutil.copyfile(config_mods,
+                                os.path.join(cfg_dir, 'config_mods'))
+                print('config_mods:', config_mods, file=fp)
             print('config_date:', str(datetime.datetime.today()), file=fp)
             print('run_length:', run_length, file=fp)
             print('t100:', t100, file=fp)
@@ -286,7 +299,7 @@ if len(configs) > 1:
     tsopts = C.timestepping_options(run_length, defines, t100=t100,
                                     quiet=running_from_gui)
     rstopts = C.restart_options(restart)
-    configs = [base, tsopts, rstopts, user]
+    configs = [configs[0], tsopts, rstopts] + configs[1:]
 
 
 # Create model version file for build.
