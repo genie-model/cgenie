@@ -37,11 +37,10 @@ MODULE genie_global
   INTEGER::katm
 
   ! Flags for managing restart files used by GUI.
-  LOGICAL :: writing_gui_restarts = .FALSE., reading_gui_restarts = .FALSE.
+  LOGICAL :: writing_gui_restarts = .FALSE., gui_restart = .FALSE.
 
-  INTEGER :: istep_atm, istep_sic, istep_ocn, istep_lic, istep_gsurf, istep_che
+  INTEGER :: istep_atm, istep_sic, istep_ocn, istep_gem
   INTEGER :: katmos, kgem
-  INTEGER :: istep_gem, istep_tot
   INTEGER :: gem_yr, gem_yr_min, gem_yr_max
   INTEGER :: gem_notyr, gem_notyr_min, gem_notyr_max, gem_dyr
   INTEGER :: gem_status, gem_switch
@@ -449,7 +448,7 @@ CONTAINS
 
     OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
     IF (trim(status) == 'RUNNING' .or. trim(status) == 'PAUSED') THEN
-       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total
+       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
     ELSE
        WRITE(UNIT=out,FMT=*) status
     END IF
@@ -473,6 +472,7 @@ CONTAINS
     IF (command_exists) THEN
        OPEN(UNIT=in, FILE='command', ACTION='read', STATUS='old')
        READ (in, '(A80)') buff
+       CLOSE(UNIT=in)
        spc = INDEX(TRIM(buff), ' ')
        IF (spc > 0) THEN
           command = buff(1:spc)

@@ -65,6 +65,13 @@ def job_pct(jd):
         if ss[0] != 'RUNNING' and ss[0] != 'PAUSED': return None
         return 100 * float(ss[1]) / float(ss[2])
 
+def job_status_params(jd):
+    if not os.path.exists(os.path.join(jd, 'status')):
+        return None
+    with open(os.path.join(jd, 'status')) as fp:
+        ss = fp.readline().strip().split()
+        return ss
+
 
 '''Michael Lange <klappnase (at) freakmail (dot) de>
 

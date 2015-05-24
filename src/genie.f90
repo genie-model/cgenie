@@ -14,6 +14,7 @@ PROGRAM GENIE
 
   LOGICAL :: command_exists
   CHARACTER(LEN=80) :: command, command_arg
+  INTEGER(KIND=8) :: koverall_start = 1, genie_clock_in
 
 
   PRINT *
@@ -24,7 +25,28 @@ PROGRAM GENIE
 
   ! *** INITIALIZE ***
 
+  istep_atm = 0
+  istep_ocn = 0
+  istep_sic = 0
+  istep_gem = 0
+  gem_yr    = gem_yr_min
+  gem_notyr = gem_notyr_max
+
+  CALL read_command(command_exists, command, command_arg)
+  IF (command_exists) THEN
+     IF (TRIM(command) == 'GUI_RESTART') THEN
+        gui_restart = .TRUE.
+        PRINT *
+        PRINT *, '*******************************************************'
+        PRINT *, ' *** Restarting simulation on command from GUI ...'
+        PRINT *, '*******************************************************'
+        PRINT *
+        READ (command_arg, *) koverall_start, genie_clock_in
+     END IF
+  END IF
+
   CALL initialise_genie
+  IF (gui_restart) genie_clock = genie_clock_in
   CALL allocate_genie_global
   IF (flag_goldsteinocean) CALL initialise_goldocean_wrapper
   IF (flag_ebatmos) CALL initialise_embm_wrapper
@@ -54,13 +76,6 @@ PROGRAM GENIE
   PRINT *, ' *** Initialisation complete: simulation starting ...'
   PRINT *, '*******************************************************'
 
-  istep_atm = 0
-  istep_ocn = 0
-  istep_sic = 0
-  istep_gem = 0
-  istep_tot = 0
-  gem_yr    = gem_yr_min
-  gem_notyr = gem_notyr_max
   ! *** BIOGEM model - headers and initialization run-time reporting
   IF (flag_biogem) THEN
      CALL biogem_climate_wrapper
@@ -70,11 +85,9 @@ PROGRAM GENIE
   !    *** MAIN TIME-STEPPING LOOP START ***
 
   ! NOTE: koverall is in hours
-  DO koverall = 1, koverall_total
+  DO koverall = koverall_start, koverall_total
      CALL read_command(command_exists, command, command_arg)
      IF (command_exists) THEN
-        PRINT *, 'Command: "' // TRIM(command) // '"'
-        PRINT *, 'Argument: "' // TRIM(command_arg) // '"'
         SELECT CASE (TRIM(command))
         CASE ('PAUSE')
            CALL write_status('PAUSED')
@@ -82,6 +95,9 @@ PROGRAM GENIE
            PRINT *, '*******************************************************'
            PRINT *, ' *** Pausing simulation on command from GUI ...'
            PRINT *, '*******************************************************'
+           PRINT *
+           PRINT *
+           PRINT *
 
            IF (debug_loop > 1) PRINT *, '>>> WRITING GUI RESTART FILES <<<'
 
@@ -108,7 +124,6 @@ PROGRAM GENIE
         IF (MOD(koverall, kgemlite * kocn_loop) == 1) THEN
            ! Increment GEM year count
            istep_gem = istep_gem + 1
-           istep_tot = istep_tot + 1
            IF (debug_loop > 2) PRINT *, istep_gem, gem_notyr, gem_yr
 
            ! Test for for GEM count exceeding a complete 1st (normal) cycle

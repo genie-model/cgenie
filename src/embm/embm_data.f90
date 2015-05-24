@@ -8,7 +8,7 @@ CONTAINS
 
   ! This module reads netcdf restarts for EMBM
   SUBROUTINE inm_netcdf_embm
-    USE genie_global, ONLY: write_status
+    USE genie_global, ONLY: write_status, gui_restart, istep_atm
     IMPLICIT NONE
 
     REAL, DIMENSION(maxi,maxj) :: temp_read, shum_read
@@ -20,7 +20,11 @@ CONTAINS
     REAL :: tmp_val(2), area
 
     timestep = 24.0 * 60.0 * 60.0 * yearlen / REAL(nyear * ndta)
-    fnamein = TRIM(filenetin)
+    IF (gui_restart) THEN
+       fnamein = 'gui_restart_embm.nc'
+    ELSE
+       fnamein = TRIM(filenetin)
+    END IF
     ifail = 0
     INQUIRE(FILE=TRIM(fnamein), EXIST=lexist)
     IF (.NOT. lexist) THEN
@@ -36,6 +40,8 @@ CONTAINS
          & TRIM(filenetin)
 
     CALL open_file_nc(TRIM(fnamein), ncid)
+    IF (gui_restart) &
+         & CALL get1di_data_nc(ncid, 'istep_atm', 1, istep_atm, ifail)
     CALL get1di_data_nc(ncid, 'ioffset', 1, ioffset_rest, ifail)
     CALL get1di_data_nc(ncid, 'iyear', 1, iyear_rest, ifail)
     CALL get1di_data_nc(ncid, 'imonth', 1, imonth_rest, ifail)
@@ -97,7 +103,7 @@ CONTAINS
     CHARACTER(LEN=200) :: fname
 
     ! For date and restarts...
-    INTEGER :: iday, iyearid, imonthid, idayid
+    INTEGER :: iday, iyearid, imonthid, idayid, istepatmid
     CHARACTER(LEN=10) :: yearstring
     CHARACTER(LEN=2) :: monthstring, daystring
     CHARACTER(LEN=7) :: datestring
@@ -145,6 +151,10 @@ CONTAINS
        CALL check_err(NF90_DEF_VAR(ncid, 'iyear', NF90_INT, nrecsid, iyearid))
        CALL check_err(NF90_DEF_VAR(ncid, 'imonth', NF90_INT, nrecsid, imonthid))
        CALL check_err(NF90_DEF_VAR(ncid, 'iday', NF90_INT, nrecsid, idayid))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_DEF_VAR(ncid, 'istep_atm', NF90_INT, &
+            &                             nrecsid, istepatmid))
+
 
        CALL check_err(NF90_DEF_VAR(ncid, 'air_temp', &
             & NF90_DOUBLE, dim1pass, ntempid))
@@ -156,6 +166,8 @@ CONTAINS
        CALL check_err(NF90_PUT_VAR(ncid, imonthid, imonth_rest))
        CALL check_err(NF90_PUT_VAR(ncid, idayid, iday))
        CALL check_err(NF90_PUT_VAR(ncid, ioffid, ioffset_rest))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_PUT_VAR(ncid, istepatmid, istep))
 
        CALL check_err(NF90_PUT_VAR(ncid, nlongit1id, lons1))
        CALL check_err(NF90_PUT_VAR(ncid, nlatit1id, lats1))

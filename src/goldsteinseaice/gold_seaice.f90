@@ -19,7 +19,7 @@ CONTAINS
        & iboxedge3_lon, iboxedge3_lat, ilandmask1, ilandmask2, ilandmask3, &
        & totsteps, hght_sic, frac_sic, temp_sic, albd_sic, test_energy_seaice)
     USE genie_util, ONLY: die
-    USE genie_global, ONLY: write_status
+    USE genie_global, ONLY: write_status, gui_restart
     IMPLICIT NONE
     ! ======================================================================
     ! Declarations
@@ -349,7 +349,7 @@ CONTAINS
     IF (debug_init) PRINT *, dirnetout
 
     ! Is this a new or continuing run?
-    IF (ans == 'n' .OR. ans == 'N') THEN
+    IF (ans == 'n' .OR. ans == 'N' .OR. .NOT. gui_restart) THEN
        IF (debug_init) PRINT *, &
             & 'this is a new run, initial conditions already set up'
        ! But set up initial default time and date....

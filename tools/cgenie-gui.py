@@ -33,13 +33,15 @@ if 'runtime_env' in locals():
 
 class JobFolder:
     """Job folder management"""
-    def __init__(self, path, name, tree):
+    def __init__(self, path, name, tree, app):
         self.path = path
         self.name = name
         self.tree = tree
         self.item = None
         self.folders = { path: 1 }
         self.status = { }
+        self.app = app
+        self.app.after(500, self.set_statuses)
 
     def possible_folders(self):
         fs = self.folders.keys()
@@ -117,6 +119,15 @@ class JobFolder:
         cs.sort(chcmp)
         self.tree.set_children(f, *cs)
         for c in cs: self.sort_children(c)
+
+    def set_statuses(self):
+        for p, s in self.status.iteritems():
+            pfull = os.path.join(self.path, p)
+            schk = G.job_status(pfull)
+            if schk != s:
+                self.status[p] = schk
+                self.tree.item(pfull, image=G.status_img(schk))
+        self.app.after(500, self.set_statuses)
 
 
 #----------------------------------------------------------------------
@@ -416,7 +427,6 @@ class SetupPanel(Panel):
         self.job.write_config()
         self.job.gen_namelists()
         self.job.status = G.job_status(self.job.dir)
-        print(self.job.dir, self.job.status)
         app.tree.item(self.job.dir, image=G.status_img(self.job.status))
         for p in app.panels.itervalues():
             if p != self: p.update()
@@ -549,18 +559,34 @@ class OutputPanel(Panel):
         self.out['state'] = tk.DISABLED
         if atend: self.out.see('end')
 
+    def clear(self):
+        self.tailer.stop()
+        self.tailer = None
+        self.tailer_job = None
+        self.output_text = ''
+        self.set_output_text()
+
     def update(self):
+        if self.job: log = os.path.join(self.job.dir, 'run.log')
+        if self.job and not os.path.exists(log):
+            self.output_text = ''
+            self.set_output_text()
         if self.tailer and self.tailer_job != self.job:
             self.tailer.stop()
             self.output_text = ''
             self.set_output_text()
+            self.tailer = None
+        if self.job and not self.tailer:
+            self.tailer_job = self.job
+            self.tailer = G.Tailer(app, log)
+            self.tailer.start(self.add_output_text)
         if self.job != self.tailer_job:
             if self.job:
                 self.tailer_job = self.job
-                self.tailer = G.Tailer(app,
-                                       os.path.join(self.job.dir, 'run.log'))
+                self.tailer = G.Tailer(app, log)
                 self.tailer.start(self.add_output_text)
             else:
+                self.tailer.stop()
                 self.tailer_job = None
                 self.tailer = None
 
@@ -645,7 +671,7 @@ class Application(ttk.Frame):
         self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.find_configs()
         self.create_widgets()
-        self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree)
+        self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
         self.job_folder.scan(True)
 
 
@@ -788,8 +814,13 @@ class Application(ttk.Frame):
 
         if os.path.exists(os.path.join(p, 'status')):
             os.remove(os.path.join(p, 'status'))
+        if os.path.exists(os.path.join(p, 'command')):
+            os.remove(os.path.join(p, 'command'))
+        if os.path.exists(os.path.join(p, 'run.log')):
+            os.remove(os.path.join(p, 'run.log'))
         for d, ds, fs in os.walk(os.path.join(p, 'output')):
             for f in fs: os.remove(os.path.join(d, f))
+        self.panels['output'].clear()
         self.update_job_data()
 
 
@@ -807,9 +838,19 @@ class Application(ttk.Frame):
             return
         shutil.copy(exe, runexe)
 
+        # Set up GUI_RESTART command file if this is a restart after a
+        # pause.
+        command = os.path.join(self.job.dir, 'command')
+        if os.path.exists(command): os.remove(command)
+        jpath = os.path.relpath(self.job.dir, self.job_folder.path)
+        if self.job_folder.status[jpath] == 'PAUSED':
+            st, koverall, dum, genie_clock = G.job_status_params(self.job.dir)
+            with open(command, 'w') as fp:
+                print('GUI_RESTART', koverall, genie_clock, file=fp)
+
         # Start executable with stdout and stderr directed to run.log
         # in job directory.
-        with open(os.path.join(self.job.dir, 'run.log'), 'w') as fp:
+        with open(os.path.join(self.job.dir, 'run.log'), 'a') as fp:
             try:
                 sp.Popen(runexe, cwd=self.job.dir, stdout=fp, stderr=sp.STDOUT)
             except Exception as e:
@@ -817,7 +858,6 @@ class Application(ttk.Frame):
 
 
     def pause_job(self):
-        print('pause_job...')
         with open(os.path.join(self.job.dir, 'command'), 'w') as fp:
             print('PAUSE', file=fp)
 
@@ -976,7 +1016,6 @@ class Application(ttk.Frame):
                 c = getattr(self, t)
                 self.job_menu.add_command(label=title, command=c)
                 self.menu_items[t] = it
-                print(t, title, self.menu_items[t], self.job_menu.index(title))
             it += 1
         self.job_menu.add_separator()
         self.job_menu.add_command(label='Quit', command=self.quit)

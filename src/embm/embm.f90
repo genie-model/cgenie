@@ -206,7 +206,7 @@ CONTAINS
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
     USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_unit, check_iostat
-    USE genie_global, ONLY: write_status
+    USE genie_global, ONLY: write_status, gui_restart
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
     REAL, DIMENSION(:), INTENT(OUT) :: alat1, alat2, alat3
@@ -1537,7 +1537,7 @@ CONTAINS
     IF (debug_init) PRINT *, atchem_radfor
 
     ! Is this a new or continuing run?
-    IF (ans == 'n' .OR. ans == 'N') THEN
+    IF (ans == 'n' .OR. ans == 'N' .OR. .NOT. gui_restart) THEN
        IF (debug_init) PRINT *, &
             & 'this is a new run, initial conditions already set up'
        ! But set up initial default time and date....

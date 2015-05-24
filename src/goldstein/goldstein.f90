@@ -526,6 +526,7 @@ CONTAINS
     USE genie_control, ONLY: &
          & dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, &
          & dim_GOLDSTEINNTRACS
+    USE genie_global, ONLY: gui_restart
 
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: olon1, olon2, olon3
@@ -1720,7 +1721,7 @@ CONTAINS
     END IF
 
     ! Is this a new or continuing run?
-    IF (ans == 'n' .OR. ans == 'N') THEN
+    IF (ans == 'n' .OR. ans == 'N' .OR. .NOT. gui_restart) THEN
        ! This is a new run, initial conditions already set up
        ! But set up initial default time and date....
        ! If we're not re-starting, then assume that
