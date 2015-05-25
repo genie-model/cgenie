@@ -448,9 +448,9 @@ CONTAINS
 
     OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
     SELECT CASE(TRIM(status))
-       CASE ('RUNNING', 'PAUSED', 'COMPLETE')
-          WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
-       CASE DEFAULT
+    CASE ('PAUSED', 'RUNNING', 'COMPLETE')
+       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
+    CASE DEFAULT
        WRITE(UNIT=out,FMT=*) status
     END SELECT
     CLOSE(UNIT=out)

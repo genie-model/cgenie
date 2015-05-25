@@ -946,11 +946,10 @@ class Application(ttk.Frame):
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     e = k in on_buttons
-                    if k in on_buttons:
-                        v.state(['!disabled' if e else 'disabled'])
-                        self.job_menu.entryconfig(self.menu_items[k],
-                                                  state=tk.NORMAL if e
-                                                  else tk.DISABLED)
+                    v.state(['!disabled' if e else 'disabled'])
+                    self.job_menu.entryconfig(self.menu_items[k],
+                                              state=tk.NORMAL if e
+                                              else tk.DISABLED)
 
 
     def select_job(self, jobid):
