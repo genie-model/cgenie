@@ -447,11 +447,12 @@ CONTAINS
     INTEGER :: ios
 
     OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
-    IF (trim(status) == 'RUNNING' .or. trim(status) == 'PAUSED') THEN
-       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
-    ELSE
+    SELECT CASE(TRIM(status))
+       CASE ('RUNNING', 'PAUSED', 'COMPLETE')
+          WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
+       CASE DEFAULT
        WRITE(UNIT=out,FMT=*) status
-    END IF
+    END SELECT
     CLOSE(UNIT=out)
     ios = RENAME('status_tmp', 'status')
     IF (status == 'ERRORED') STOP

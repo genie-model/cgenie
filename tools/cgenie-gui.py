@@ -164,6 +164,9 @@ class Job:
                         elif k == 'full_config': self.full_config = v
                         elif k == 'base_config': self.base_config = v
                         elif k == 'user_config': self.user_config = v
+                modfile = os.path.join(self.dir, 'config', 'config_mods')
+                if os.path.exists(modfile):
+                    with open(modfile) as fp: self.mods = fp.read()
             except Exception as e:
                 ### ===> TODO: better exception handling
                 print('Exception:', e)
@@ -191,6 +194,28 @@ class Job:
         return res
 
     def write_config(self):
+        self.status = G.job_status(self.dir)
+        if self.status == 'PAUSED' or self.status == 'COMPLETE':
+            cfgdir = os.path.join(self.dir, 'config')
+            segdir = os.path.join(cfgdir, 'segments')
+            segfile = os.path.join(cfgdir, 'seglist')
+            if not os.path.exists(segdir): os.mkdir(segdir)
+            save_seg = 1
+            startk = 1
+            endk = G.job_status_params(self.dir)[1]
+            if os.path.exists(segfile):
+                with open(segfile) as fp:
+                    l = fp.readlines()[-1].split()
+                    save_seg = int(l[0]) + 1
+                    startk = int(l[2])
+            with open(segfile, 'a') as fp:
+                print(save_seg, startk, endk, file=fp)
+            segdir = os.path.join(segdir, str(save_seg))
+            os.mkdir(segdir)
+            for f in ('base_config', 'user_config',
+                      'full_config', 'config_mods'):
+                p = os.path.join(cfgdir, f)
+                if os.path.exists(p): shutil.copy(p, segdir)
         try:
             with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
@@ -205,6 +230,11 @@ class Job:
                     print('full_config_dir:',
                           os.path.join(U.cgenie_data, 'full-configs'), file=fp)
                     print('full_config:', self.full_config, file=fp)
+                modfile = os.path.join(self.dir, 'config', 'config_mods')
+                if self.mods:
+                    with open(modfile, 'w') as fp: print(self.mods, file=fp)
+                else:
+                    if os.path.exists(modfile): os.remove(modfile)
                 print('config_date:', str(datetime.datetime.today()), file=fp)
                 print('run_length:', self.runlen, file=fp)
                 print('t100:', self.t100, file=fp)
@@ -408,8 +438,7 @@ class SetupPanel(Panel):
             if (self.user_config.get() and
                 self.user_config.get() != self.job.user_config):
                 self.edited = True
-            mods_tmp = self.mods.get('1.0', 'end').rstrip()
-            if (mods_tmp and mods_tmp != self.job.mods):
+            if (self.mods.get('1.0', 'end').rstrip() != self.job.mods.rstrip()):
                 self.edited = True
             ### ===> TODO: fix this
             if (self.runlen.get() and
@@ -421,6 +450,7 @@ class SetupPanel(Panel):
     def state_change(self, event=None, dummy1=None, dummy2=None):
         self.set_state()
         self.set_button_state()
+        self.mods.edit_modified(False)
 
     def save_changes(self):
         self.job.base_config = self.base_config.get()
@@ -824,6 +854,10 @@ class Application(ttk.Frame):
             os.remove(os.path.join(p, 'run.log'))
         for d, ds, fs in os.walk(os.path.join(p, 'output')):
             for f in fs: os.remove(os.path.join(d, f))
+        if os.path.exists(os.path.join(p, 'config', 'seglist')):
+            os.remove(os.path.join(p, 'config', 'seglist'))
+        if os.path.exists(os.path.join(p, 'config', 'segments')):
+            shutil.rmtree(os.path.join(p, 'config', 'segments'))
         self.panels['output'].clear()
         self.update_job_data()
 
