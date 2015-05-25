@@ -218,6 +218,10 @@ class Job:
         if self.base_config: cmd += ['-b', self.base_config]
         if self.user_config: cmd += ['-u', self.user_config]
         if self.full_config: cmd += ['-c', self.full_config]
+        if self.mods:
+            modfile = os.path.join(self.dir, 'config', 'config_mods')
+            with open(modfile, 'w') as fp: print(self.mods, file=fp)
+            cmd += ['-m', modfile]
         cmd += ['-j', self.jobdir]
         if self.t100: cmd += ['--t100']
         cmd += [self.jobid, str(self.runlen)]
