@@ -30,6 +30,7 @@ CONTAINS
     USE biogem_data
     USE biogem_data_ascii
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: gui_restart
     REAL, INTENT(IN) :: dum_saln0, dum_rhoair, dum_cd, dum_ds, dum_dphi
     REAL, INTENT(IN) :: dum_usc, dum_dsc, dum_fsc, dum_rh0sc
     REAL, INTENT(IN) :: dum_rhosc, dum_cpsc, dum_solconst, dum_scf
@@ -450,7 +451,7 @@ CONTAINS
     ! open units for runtime file I/O
     IF (ctrl_debug_lvl2) print*, 'open units for runtime file I/O'
     IF ((opt_append_data.eqv..FALSE.).OR.(ctrl_continuing.eqv..FALSE.)) THEN
-       IF (ctrl_data_save_sig_ascii)  CALL sub_init_data_save_runtime()
+       IF (.NOT. gui_restart .AND. ctrl_data_save_sig_ascii)  CALL sub_init_data_save_runtime()
     ENDIF
     ! initialize system forcings
     IF (ctrl_debug_lvl2) print*, 'initialize system forcings'

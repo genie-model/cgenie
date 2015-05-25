@@ -139,7 +139,7 @@ class Job:
         self.base_config = None
         self.user_config = None
         self.full_config = None
-        self.mods = None
+        self.mods = ''
         self.modules = None
         if not jobid:
             self.jobid = None
