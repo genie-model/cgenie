@@ -121,12 +121,16 @@ class JobFolder:
         for c in cs: self.sort_children(c)
 
     def set_statuses(self):
+        dels = []
         for p, s in self.status.iteritems():
             pfull = os.path.join(self.path, p)
             schk = G.job_status(pfull)
-            if schk != s:
+            if not schk:
+                dels.append(p)
+            elif schk != s:
                 self.status[p] = schk
                 self.tree.item(pfull, image=G.status_img(schk))
+        for p in dels: del self.status[p]
         self.app.after(500, self.set_statuses)
 
 
@@ -169,7 +173,7 @@ class Job:
                     with open(modfile) as fp: self.mods = fp.read()
             except Exception as e:
                 ### ===> TODO: better exception handling
-                print('Exception:', e)
+                print('Exception 1:', e)
 
     def dir_str(self): return self.dir if self.dir else 'n/a'
     def status_str(self): return self.status if self.status else 'n/a'
@@ -195,6 +199,7 @@ class Job:
 
     def write_config(self):
         self.status = G.job_status(self.dir)
+        print('write_config: ' + self.dir + ' ' + self.status)
         if self.status == 'PAUSED' or self.status == 'COMPLETE':
             cfgdir = os.path.join(self.dir, 'config')
             segdir = os.path.join(cfgdir, 'segments')
@@ -215,7 +220,10 @@ class Job:
             for f in ('base_config', 'user_config',
                       'full_config', 'config_mods'):
                 p = os.path.join(cfgdir, f)
-                if os.path.exists(p): shutil.copy(p, segdir)
+                print(p, os.path.exists(p))
+                if os.path.exists(p):
+                    shutil.copy(p, segdir)
+                    print('shutil.copy("' + p + '", "' + segdir + '")')
         try:
             with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
@@ -232,7 +240,7 @@ class Job:
                     print('full_config:', self.full_config, file=fp)
                 modfile = os.path.join(self.dir, 'config', 'config_mods')
                 if self.mods:
-                    with open(modfile, 'w') as fp: print(self.mods, file=fp)
+                    with open(modfile, 'w') as mfp: print(self.mods, file=mfp)
                 else:
                     if os.path.exists(modfile): os.remove(modfile)
                 print('config_date:', str(datetime.datetime.today()), file=fp)
@@ -240,9 +248,10 @@ class Job:
                 print('t100:', self.t100, file=fp)
         except Exception as e:
             ### ===> TODO: better exception handling
-            print('Exception:', e)
+            print('Exception 2:', e)
 
     def gen_namelists(self):
+        print('gen_namelists')
         new_job = os.path.join(U.cgenie_root, 'tools', 'new-job.py')
         cmd = [new_job, '--gui']
         if self.base_config: cmd += ['-b', self.base_config]
@@ -258,11 +267,23 @@ class Job:
         if plat.system() == 'Windows': cmd = ['python'] + cmd
         try:
             with open(os.devnull, 'w') as sink:
+                print(cmd)
                 res = sp.check_output(cmd, stderr=sink).strip()
         except Exception as e:
             print(e)
             res = 'ERR:Failed to run new-job script'
         if res != 'OK': tkMB.showerror('Error', res[4:])
+
+    def read_segments(self):
+        cfgdir = os.path.join(self.dir, 'config')
+        segfile = os.path.join(cfgdir, 'seglist')
+        if not os.path.exists(segfile): return []
+        segs = []
+        with open(segfile) as fp:
+            for l in fp:
+                l = l.split()
+                segs.append((int(l[1]), int(l[2])))
+        return segs
 
 
 #----------------------------------------------------------------------
@@ -347,24 +368,34 @@ class SetupPanel(Panel):
         self.job_path = ttk.Label(self, font=app.bold_font)
         self.job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
 
-        lab = ttk.Label(self, text='Base config:')
+        lab = ttk.Label(self, text='Run segment:')
         lab.grid(column=0, row=1, pady=5, padx=5, sticky=tk.W)
+        self.segments = ('1: 1-END [CURRENT]',)
+        self.segment_var = tk.StringVar()
+        self.segment_sel = ttk.OptionMenu(self, self.segment_var,
+                                          None, *self.segments,
+                                          command=self.segment_changed)
+        self.segment_sel.grid(column=1, row=1, pady=5, sticky=tk.W)
+        self.segment_var.set(self.segments[0])
+
+        lab = ttk.Label(self, text='Base config:')
+        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
         self.base_config = ttk.Combobox(self, values=app.base_configs, width=80)
         self.base_config.bind('<<ComboboxSelected>>', self.state_change)
         self.base_config.state(['readonly'])
-        self.base_config.grid(column=1, row=1, pady=5, sticky=tk.W)
+        self.base_config.grid(column=1, row=2, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='User config:')
-        lab.grid(column=0, row=2, pady=5, padx=5, sticky=tk.W)
+        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W)
         self.user_config = ttk.Combobox(self, values=app.user_configs, width=80)
         self.user_config.bind('<<ComboboxSelected>>', self.state_change)
         self.user_config.state(['readonly'])
-        self.user_config.grid(column=1, row=2, pady=5, sticky=tk.W)
+        self.user_config.grid(column=1, row=3, pady=5, sticky=tk.W)
 
         lab = ttk.Label(self, text='Modifications:')
-        lab.grid(column=0, row=3, pady=5, padx=5, sticky=tk.W+tk.N)
+        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W+tk.N)
         self.mods_frame = ttk.Frame(self)
-        self.mods_frame.grid(column=1, row=3, pady=5, sticky=tk.W)
+        self.mods_frame.grid(column=1, row=4, pady=5, sticky=tk.W)
         self.mods = tk.Text(self.mods_frame, width=80, height=20,
                             font=app.normal_font)
         self.mods.bind('<<Modified>>', self.state_change)
@@ -375,32 +406,30 @@ class SetupPanel(Panel):
         self.mods_scroll.grid(column=1, row=0, sticky=tk.N+tk.S)
 
         lab = ttk.Label(self, text='Run length:')
-        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
+        lab.grid(column=0, row=5, pady=5, padx=5, sticky=tk.W)
         self.check = self.register(self.check_runlen)
         self.runlen_var = tk.StringVar()
         self.runlen = ttk.Entry(self, width=20, validate='all',
                                 textvariable=self.runlen_var,
                                 validatecommand=(self.check, '%P'))
-        self.runlen.grid(column=1, row=4, pady=5, sticky=tk.W)
+        self.runlen.grid(column=1, row=5, pady=5, sticky=tk.W)
         self.runlen_var.trace('w', self.state_change)
 
         lab = ttk.Label(self, text='T100:')
-        lab.grid(column=0, row=5, pady=5, padx=5, sticky=tk.W)
+        lab.grid(column=0, row=6, pady=5, padx=5, sticky=tk.W)
         self.t100_var = tk.IntVar()
         self.t100 = ttk.Checkbutton(self, variable=self.t100_var,
                                     command=self.state_change)
-        self.t100.grid(column=1, row=5, pady=5, sticky=tk.W)
+        self.t100.grid(column=1, row=6, pady=5, sticky=tk.W)
 
         self.but_frame = ttk.Frame(self)
-        self.but_frame.grid(column=1, row=6, pady=5, sticky=tk.W)
+        self.but_frame.grid(column=1, row=7, pady=5, sticky=tk.W)
         self.save_button = ttk.Button(self.but_frame, text="Save changes",
                                       command=self.save_changes)
         self.revert_button = ttk.Button(self.but_frame, text="Revert changes",
                                         command=self.revert_changes)
         self.save_button.grid(column=0, row=0)
         self.revert_button.grid(column=1, row=0, padx=5)
-
-        # ===> TODO: add warning for changes to configuration files
 
         self.edited = False
         self.complete = False
@@ -452,6 +481,9 @@ class SetupPanel(Panel):
         self.set_button_state()
         self.mods.edit_modified(False)
 
+    def segment_changed(self, event):
+        print('segment_changed')
+
     def save_changes(self):
         self.job.base_config = self.base_config.get()
         self.job.user_config = self.user_config.get()
@@ -484,6 +516,13 @@ class SetupPanel(Panel):
         """Setting setup panel fields"""
 
         if not self.job:
+            self.base_config.set('')
+            self.user_config.set('')
+            self.mods.delete('1.0', 'end')
+            self.runlen.delete(0, 'end')
+            self.t100_var.set(False)
+            self.segments = ('1: 1-END [CURRENT]',)
+            self.segment_sel.set_menu(self.segments[0], *self.segments)
             self.set_button_state()
             return
         self.job_path.configure(text=self.job.dir_str())
@@ -500,9 +539,24 @@ class SetupPanel(Panel):
         self.mods.delete('1.0', 'end')
         if self.job.mods: self.mods.insert('end', self.job.mods)
         self.runlen.delete(0, 'end')
+        print(self.job.runlen)
         if self.job.runlen != None:
             self.runlen.insert('end', str(self.job.runlen))
         self.t100_var.set(bool(self.job.t100))
+        segs = self.job.read_segments()
+        if not segs:
+            self.segments = ('1: 1-END [CURRENT]',)
+        else:
+            self.segments = []
+            i = 1
+            for kstart, kend in segs:
+                self.segments.append(str(i) + ': ' +
+                                     str(kstart) + '-' + str(kend))
+                i += 1
+            self.segments.append(str(i) + ': ' + str(kend+1) + '-END')
+            self.segments.reverse()
+            self.segments = tuple(self.segments)
+        self.segment_sel.set_menu(self.segments[0], *self.segments)
         self.set_state()
         self.set_button_state()
 
@@ -541,7 +595,8 @@ class NamelistPanel(Panel):
     def set_namelist_text(self):
         self.out['state'] = tk.NORMAL
         self.out.delete('1.0', 'end')
-        self.out.insert('end', self.namelists[self.nl_var.get()])
+        if self.nl_var.get():
+            self.out.insert('end', self.namelists[self.nl_var.get()])
         self.out['state'] = tk.DISABLED
 
     def update(self):
@@ -555,10 +610,12 @@ class NamelistPanel(Panel):
                 with open(nl) as fp: self.namelists[nlname] = fp.read()
             nls.sort()
             nls = tuple(nls)
-            self.nl_sel.set_menu(nls[0], *nls)
+            self.nl_sel.set_menu(None if nls == () else nls[0], *nls)
             self.set_namelist_text()
         else:
             self.nl_sel.set_menu(None, *nls)
+            self.nl_var.set('')
+            self.set_namelist_text()
 
 
 class OutputPanel(Panel):
@@ -601,28 +658,26 @@ class OutputPanel(Panel):
         self.set_output_text()
 
     def update(self):
-        if self.job: log = os.path.join(self.job.dir, 'run.log')
-        if self.job and not os.path.exists(log):
-            self.output_text = ''
-            self.set_output_text()
-        if self.tailer and self.tailer_job != self.job:
-            self.tailer.stop()
-            self.output_text = ''
-            self.set_output_text()
+        if not self.job:
+            if self.tailer: self.tailer.stop()
+            self.tailer_job = None
             self.tailer = None
-        if self.job and not self.tailer:
-            self.tailer_job = self.job
-            self.tailer = G.Tailer(app, log)
-            self.tailer.start(self.add_output_text)
-        if self.job != self.tailer_job:
-            if self.job:
+            self.output_text = ''
+            self.set_output_text()
+        else:
+            log = os.path.join(self.job.dir, 'run.log')
+            if not os.path.exists(log):
+                self.output_text = ''
+                self.set_output_text()
+            if self.tailer and self.tailer_job != self.job:
+                self.tailer.stop()
+                self.output_text = ''
+                self.set_output_text()
+                self.tailer = None
+            if not self.tailer:
                 self.tailer_job = self.job
                 self.tailer = G.Tailer(app, log)
                 self.tailer.start(self.add_output_text)
-            else:
-                self.tailer.stop()
-                self.tailer_job = None
-                self.tailer = None
 
 
 class PlotPanel(Panel):
@@ -858,6 +913,8 @@ class Application(ttk.Frame):
             os.remove(os.path.join(p, 'config', 'seglist'))
         if os.path.exists(os.path.join(p, 'config', 'segments')):
             shutil.rmtree(os.path.join(p, 'config', 'segments'))
+        for f in glob.iglob(os.path.join(p, 'gui_restart_*.nc')):
+            os.remove(f)
         self.panels['output'].clear()
         self.update_job_data()
 

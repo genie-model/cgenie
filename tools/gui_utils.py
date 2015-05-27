@@ -50,6 +50,7 @@ def status_img(s):
     return status_images[s]
 
 def job_status(jd):
+    if not os.path.exists(jd): return None
     if not os.path.exists(os.path.join(jd, 'data_genie')):
         return 'UNCONFIGURED'
     if not os.path.exists(os.path.join(jd, 'status')):

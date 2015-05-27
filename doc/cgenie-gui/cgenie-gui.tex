@@ -405,7 +405,20 @@ Namelist variables controlling NetCDF restart generation are:
 
 %======================================================================
 \newpage
-\chapter{GUI coding}
+\chapter{Problems}
 
+This is a (probably incomplete) list of problems with the GUI and the
+interaction between the GUI and GENIE.
+
+\begin{itemize}
+  \item{When you pause and restart a job, the saving of BIOGEM time
+    series data gets a bit screwed up, in the sense that there's a
+    time shift between the model time and the time that BIOGEM thinks
+    it should be writing output.  I spent a bit of time looking at
+    this, but I think it's better for Andy to deal with it, probably
+    as part of a general cleanup of time handling in the model, which
+    is quite a mess.  There are probably the same kinds of problems in
+    other forms of data output...}
+\end{itemize}
 
 \end{document}

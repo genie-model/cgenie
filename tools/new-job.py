@@ -213,25 +213,25 @@ modules = map(C.module_from_flagname, mod_flags)
 
 # Set up job directory and per-module sub-directories.
 
+def safe_mkdir(p):
+    if not os.path.exists(p): os.makedirs(p)
+
 job_dir = os.path.join(job_dir_base, job_name)
-if running_from_gui:
-    if os.path.exists(os.path.join(job_dir, 'input')):
-        shutil.rmtree(os.path.join(job_dir, 'input'))
-    if os.path.exists(os.path.join(job_dir, 'output')):
-        shutil.rmtree(os.path.join(job_dir, 'output'))
-    if os.path.exists(os.path.join(job_dir, 'restart')):
-        shutil.rmtree(os.path.join(job_dir, 'restart'))
-else:
+if not running_from_gui:
     if overwrite: shutil.rmtree(job_dir, ignore_errors=True)
-    try: os.makedirs(job_dir)
+    try: safe_mkdir(job_dir)
     except OSError as e: error_exit("Can't create job directory: " + job_dir)
-for m in modules:
-    os.makedirs(os.path.join(job_dir, 'input', m))
-    os.makedirs(os.path.join(job_dir, 'output', m))
-    if restart: os.makedirs(os.path.join(job_dir, 'restart', m))
-os.makedirs(os.path.join(job_dir, 'input', 'main'))
-os.makedirs(os.path.join(job_dir, 'output', 'main'))
-if restart: os.makedirs(os.path.join(job_dir, 'restart', 'main'))
+try:
+    for m in modules:
+        safe_mkdir(os.path.join(job_dir, 'input', m))
+        safe_mkdir(os.path.join(job_dir, 'output', m))
+        if restart: safe_mkdir(os.path.join(job_dir, 'restart', m))
+    safe_mkdir(os.path.join(job_dir, 'input', 'main'))
+    safe_mkdir(os.path.join(job_dir, 'output', 'main'))
+    if restart: safe_mkdir(os.path.join(job_dir, 'restart', 'main'))
+except Exception as e:
+    with open('/dev/tty', 'w') as fp:
+        print(e, file=fp)
 
 
 # Write configuration information to job directory.
@@ -239,42 +239,44 @@ if restart: os.makedirs(os.path.join(job_dir, 'restart', 'main'))
 cfg_dir = os.path.join(job_dir, 'config')
 if not running_from_gui:
     os.mkdir(cfg_dir)
-    if test_job:
-        shutil.copyfile(os.path.join(test_dir, 'test_info'),
-                        os.path.join(cfg_dir, 'config'))
-        if os.path.exists(os.path.join(test_dir, 'base_config')):
-            shutil.copyfile(os.path.join(test_dir, 'base_config'),
-                            os.path.join(cfg_dir, 'base_config'))
-        if os.path.exists(os.path.join(test_dir, 'user_config')):
-            shutil.copyfile(os.path.join(test_dir, 'user_config'),
-                            os.path.join(cfg_dir, 'user_config'))
-        if os.path.exists(os.path.join(test_dir, 'full_config')):
-            shutil.copyfile(os.path.join(test_dir, 'full_config'),
-                            os.path.join(cfg_dir, 'full_config'))
-    else:
+    if not test_job:
         with open(os.path.join(cfg_dir, 'config'), 'w') as fp:
             if base_config:
-                shutil.copyfile(base_config_path,
-                                os.path.join(cfg_dir, 'base_config'))
                 print('base_config_dir:', base_config_dir, file=fp)
                 print('base_config:', base_config, file=fp)
             if user_config:
-                shutil.copyfile(user_config_path,
-                                os.path.join(cfg_dir, 'user_config'))
                 print('user_config_dir:', user_config_dir, file=fp)
                 print('user_config:', user_config, file=fp)
             if full_config:
-                shutil.copyfile(full_config_path,
-                                os.path.join(cfg_dir, 'full_config'))
                 print('full_config_dir:', full_config_dir, file=fp)
                 print('full_config:', full_config, file=fp)
             if config_mods:
-                shutil.copyfile(config_mods,
-                                os.path.join(cfg_dir, 'config_mods'))
                 print('config_mods:', config_mods, file=fp)
             print('config_date:', str(datetime.datetime.today()), file=fp)
             print('run_length:', run_length, file=fp)
             print('t100:', t100, file=fp)
+
+if test_job:
+    shutil.copyfile(os.path.join(test_dir, 'test_info'),
+                    os.path.join(cfg_dir, 'config'))
+    if os.path.exists(os.path.join(test_dir, 'base_config')):
+        shutil.copyfile(os.path.join(test_dir, 'base_config'),
+                        os.path.join(cfg_dir, 'base_config'))
+    if os.path.exists(os.path.join(test_dir, 'user_config')):
+        shutil.copyfile(os.path.join(test_dir, 'user_config'),
+                        os.path.join(cfg_dir, 'user_config'))
+    if os.path.exists(os.path.join(test_dir, 'full_config')):
+        shutil.copyfile(os.path.join(test_dir, 'full_config'),
+                        os.path.join(cfg_dir, 'full_config'))
+else:
+    if base_config:
+        shutil.copyfile(base_config_path, os.path.join(cfg_dir, 'base_config'))
+    if user_config:
+        shutil.copyfile(user_config_path, os.path.join(cfg_dir, 'user_config'))
+    if full_config:
+        shutil.copyfile(full_config_path, os.path.join(cfg_dir, 'full_config'))
+    if config_mods and not running_from_gui:
+        shutil.copyfile(config_mods, os.path.join(cfg_dir, 'config_mods'))
 
 
 # Extract coordinate definitions from configuration.
