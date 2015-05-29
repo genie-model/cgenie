@@ -10,8 +10,6 @@
 % 2015-04-15 - created
 %
 % arara: lualatex: {shell: true, draft: true}
-%% arara: biber
-%% arara: lualatex: {shell: true, draft: true}
 % arara: lualatex: {shell: true}
 %% arara: clean: {extensions: [aux, toc, bbl, run.xml, bcf, blg, out]}
 %
@@ -23,26 +21,26 @@
 
 \usepackage{scrhack}
 \usepackage{scrpage2}
-\usepackage{mathtools}
+%\usepackage{mathtools}
 \AfterPackage!{hyperref}{\usepackage[nameinlink]{cleveref}}
 \usepackage {fontspec,microtype}
 \usepackage {typearea,geometry}
-\usepackage {needspace}
-\usepackage {graphicx}
-\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+%\usepackage {needspace}
+%\usepackage {graphicx}
+%\DeclareGraphicsExtensions{.pdf,.png,.jpg}
 \usepackage {xcolor}
 \usepackage {luatextra}
-\usepackage {booktabs}
-\usepackage {quoting}
-\usepackage {tabu}
+%\usepackage {booktabs}
+%\usepackage {quoting}
+%\usepackage {tabu}
 \PassOptionsToPackage{hyphens,obeyspaces,spaces}{url}
 \usepackage {polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \usepackage {minted}
-\usepackage {siunitx,numprint}
-\ExplSyntaxOn
-\cs_new_eq:NN \siunitx_table_collect_begin:Nn \__siunitx_table_collect_begin:Nn
-\ExplSyntaxOff
+%\usepackage {siunitx,numprint}
+%\ExplSyntaxOn
+%\cs_new_eq:NN \siunitx_table_collect_begin:Nn \__siunitx_table_collect_begin:Nn
+%\ExplSyntaxOff
 \usepackage {enumitem}
 \setlist{nosep}
 \usepackage [english]{selnolig}
@@ -51,7 +49,6 @@
 \usepackage [autostyle,english=british]{csquotes}
 \usepackage {hyperxmp}
 \usepackage {hyperref}
-\usepackage [os=mac]{menukeys}
 
 
 
@@ -154,6 +151,7 @@ Mac OS X Instructions}
 }
 \makeatother
 
+\usepackage [os=mac]{menukeys}
 \begin{document}
 
 \maketitle
@@ -174,9 +172,16 @@ the application to your Dock for easy access if you haven't done so already.
 To install and run cGENIE on Mac OS X you will need the following packages
 installed:
 
-\begin{itemize} \item Apple Xcode \item Xcode Command line Tools \item the
-		MacPorts environment \item the HomeBrew packaging system \item gfortran
-		compiler \item NetCDF libraries \end{itemize}
+\begin{itemize}
+	\item Apple Xcode
+	\item Xcode Command line Tools
+	\item the MacPorts environment
+	\item the HomeBrew packaging system 
+	\item python
+	\item gfortran compiler 
+	\item wget
+	\item NetCDF libraries
+\end{itemize}
 
 \subsection{Apple Xcode}
 
@@ -238,9 +243,26 @@ should make sure your installation is fully up to date by running:
 
 \mint{console}|$ sudo port -v selfupdate|
 
+\subsection{Python}
+
+The install scripts for cGENIE are written in \texttt{python} and require version
+2.7.9. Mac OS X comes with \texttt{python} installed by default since version 10.8
+(Mountain Lion) but it is not the correct version (Yosemite comes with version
+2.7.6). You will therefore need to install an other version of \texttt{python}. The
+homebrew package is the correct version so we suggest you install this one.
+
+\mint{console}|$ brew install python|
+
+To check which version of \texttt{python} you are running:
+
+\begin{minted}{console}
+$ python -V
+Python 2.7.9
+\end{minted}
+
 \subsection{Fortran Compiler (\texttt{gfortran})}
 
-We will get gfortran from homebrew. This is simply done by using the command:
+We will get \texttt{gfortran} from homebrew. This is simply done by using the command:
 
 \mint{console}|$ brew install gfortran|
 
@@ -261,6 +283,14 @@ under the terms of the GNU General Public License.
 For more information about these matters, see the file named COPYING
 \end{minted}
 
+\subsection{wget}
+
+\texttt{wget} is a command line tool to download files hosted online. It is
+used by cGENIE install scripts to fetch files it requires. This programme is
+available as a homebrew package:
+
+\mint{console}|$ brew install wget|
+
 \subsection{NetCDF Libraries}
 
 For NetCDF we will use the version available from MacPorts (we have tried using
@@ -279,8 +309,15 @@ $ sudo port install netcdf
 $ sudo port install netcdf-fortran
 \end{minted}
 
-\section{Installing cGENIE (cupcake)}
+\section{Installing and running cGENIE (cupcake)}
 
+With all the steps described in this document, you should be able to follow the
+instructions described in the
+\href{run:./cupcake-config-build.pdf}{\texttt{cupcake-config-build.pdf}} file in this
+folder to install and run the model.
+
+If you have any issues with running cGENIE (cupcake) on Mac OS X, please report them at
+\url{https://github.com/genie-model/cgenie/issues}.
 
 \end{document}
 
