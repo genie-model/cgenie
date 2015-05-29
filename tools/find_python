@@ -46,7 +46,7 @@ if [ -z $PYTHON ]; then
     echo
     echo 'This may take a while:'
     echo '  Downloading Python distribution...'
-    if wget -q $PYTHONURL ; then
+    if curl -fsL $PYTHONURL -o $PYTHONTGZ ; then
         echo '  Unpacking Python distribution...'
         tar xzf $PYTHONTGZ
         /bin/rm $PYTHONTGZ
