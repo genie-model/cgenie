@@ -4,19 +4,16 @@ IF NOT EXIST "%USERPROFILE%\.cgenierc" (
   EXIT /B 0
 )
 
-:: Check for GENIE_PYTHON variable setting.
-SET PYTHON="%GENIE_PYTHON%"
-IF DEFINED GENIE_PYTHON GOTO:eof
+:: Check for ANACONDA_DIR variable setting.
+SET PYTHON="%ANACONDA_DIR%\bin\python.exe"
+IF DEFINED ANACONDA_DIR GOTO:eof
 
-:: Check for suitable 'python' executable.
-SET PYTHON=python
-FOR /F "delims=" %%v IN ('python -V 2^>^&1') DO ( SET AVV=%%v )
-IF "%AVV%" == "Python 2.7.9 " GOTO:eof
-
-:: Check for suitable 'python' executable in C:\Python27 directory.
-SET PYTHON="C:\Python27\python"
-IF EXIST C:\Python27 GOTO:eof
-
-ECHO NO SUITABLE PYTHON INSTALLATION FOUND^^!
+ECHO ANACONDA_DIR environment variable not set^^!
+ECHO
+ECHO GENIE relies on the Anaconda Python installation.
+ECHO You can find this at https://store.continuum.io/cshop/anaconda/
+ECHO
+ECHO Please install Anaconda and set the ANACONDA_DIR environment
+ECHO variable to point to the Anaconda installation directory.
 SET PYTHON=
 EXIT /B 0

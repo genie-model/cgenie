@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
 import errno, os, sys, shutil, platform, string
 import re, hashlib, glob

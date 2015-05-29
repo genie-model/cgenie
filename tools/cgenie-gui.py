@@ -1,7 +1,5 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
-import os, os.path, shutil, re, datetime, glob
+import os, os.path, shutil, re, datetime, glob, math
 import subprocess as sp
 import platform as plat
 import Tkinter as tk
@@ -9,6 +7,10 @@ import tkSimpleDialog as tkSD
 import tkMessageBox as tkMB
 import tkFont
 import ttk
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as mpl
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import utils as U
 import gui_utils as G
@@ -199,7 +201,6 @@ class Job:
 
     def write_config(self):
         self.status = G.job_status(self.dir)
-        print('write_config: ' + self.dir + ' ' + self.status)
         if self.status == 'PAUSED' or self.status == 'COMPLETE':
             cfgdir = os.path.join(self.dir, 'config')
             segdir = os.path.join(cfgdir, 'segments')
@@ -220,10 +221,7 @@ class Job:
             for f in ('base_config', 'user_config',
                       'full_config', 'config_mods'):
                 p = os.path.join(cfgdir, f)
-                print(p, os.path.exists(p))
-                if os.path.exists(p):
-                    shutil.copy(p, segdir)
-                    print('shutil.copy("' + p + '", "' + segdir + '")')
+                if os.path.exists(p): shutil.copy(p, segdir)
         try:
             with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
@@ -251,7 +249,6 @@ class Job:
             print('Exception 2:', e)
 
     def gen_namelists(self):
-        print('gen_namelists')
         new_job = os.path.join(U.cgenie_root, 'tools', 'new-job.py')
         cmd = [new_job, '--gui']
         if self.base_config: cmd += ['-b', self.base_config]
@@ -267,10 +264,8 @@ class Job:
         if plat.system() == 'Windows': cmd = ['python'] + cmd
         try:
             with open(os.devnull, 'w') as sink:
-                print(cmd)
                 res = sp.check_output(cmd, stderr=sink).strip()
         except Exception as e:
-            print(e)
             res = 'ERR:Failed to run new-job script'
         if res != 'OK': tkMB.showerror('Error', res[4:])
 
@@ -284,6 +279,14 @@ class Job:
                 l = l.split()
                 segs.append((int(l[1]), int(l[2])))
         return segs
+
+    def check_output_files(self):
+        od = os.path.join(self.dir, 'output')
+        chkds = [os.path.join(od, 'biogem', 'biogem_series_*.res')]
+        res = { }
+        for g in chkds:
+            for f in glob.glob(g): res[os.path.basename(f)] = f
+        return res
 
 
 #----------------------------------------------------------------------
@@ -539,7 +542,6 @@ class SetupPanel(Panel):
         self.mods.delete('1.0', 'end')
         if self.job.mods: self.mods.insert('end', self.job.mods)
         self.runlen.delete(0, 'end')
-        print(self.job.runlen)
         if self.job.runlen != None:
             self.runlen.insert('end', str(self.job.runlen))
         self.t100_var.set(bool(self.job.t100))
@@ -682,11 +684,97 @@ class OutputPanel(Panel):
 
 class PlotPanel(Panel):
     def __init__(self, notebook, app):
-        Panel.__init__(self, notebook, 'plot1', '+')
-        ttk.Label(self, text='View: plot').grid(column=0, row=0)
+        Panel.__init__(self, notebook, 'plots', 'Plots')
+
+        self.app = app
+        self.plot_job = None
+
+        self.figure = mpl.figure(figsize=(5,4), dpi=100)
+        self.plot = self.figure.add_subplot(111)
+
+        self.choice_frame = ttk.Frame(self)
+        lab = ttk.Label(self.choice_frame, text='Data file:')
+        lab.pack(side=tk.LEFT, padx=5)
+        self.files = ()
+        self.file_var = tk.StringVar()
+        self.file_sel = ttk.OptionMenu(self.choice_frame, self.file_var,
+                                       None, *self.files,
+                                       command=self.file_changed)
+        self.file_sel.pack(side=tk.LEFT, padx=5)
+        lab = ttk.Label(self.choice_frame, text='')
+        lab.pack(side=tk.LEFT, padx=5)
+        lab = ttk.Label(self.choice_frame, text='Variable:')
+        lab.pack(side=tk.LEFT, padx=5)
+        self.vars = ()
+        self.var_var = tk.StringVar()
+        self.var_sel = ttk.OptionMenu(self.choice_frame, self.var_var,
+                                      None, *self.vars,
+                                      command=self.var_changed)
+        self.var_sel.pack(side=tk.LEFT, padx=5)
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self)
+        self.choice_frame.pack(side=tk.TOP, pady=10, anchor=tk.NW)
+        self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
     def update(self):
-        pass
+        if self.job != self.plot_job:
+            self.plot_job = self.job
+            self.files = ()
+            self.vars = ()
+            self.file_sel.set_menu(None, *self.files)
+            self.file_var.set('')
+            self.var_sel.set_menu(None, *self.vars)
+            self.var_var.set('')
+            self.output_files = { }
+            if self.job: self.after(500, self.check_job_files)
+
+    def check_job_files(self):
+        if self.job and not self.files:
+            self.output_files = self.job.check_output_files()
+            self.files = self.output_files.keys()
+            self.files.sort()
+            self.file_sel.set_menu(None, *self.files)
+            self.after(500, self.check_job_files)
+
+    def file_changed(self, event):
+        if self.file_var.get():
+            tsp = self.output_files[self.file_var.get()]
+            self.vars = ()
+            self.var_sel.set_menu(None, *self.vars)
+            self.var_var.set('')
+            self.ts_file = G.TimeSeriesFile(self.app, tsp, self.data_update)
+        else:
+            self.ts_file = None
+        print('file_changed')
+
+    def data_update(self, t, d):
+        if self.vars == ():
+            self.vars = self.ts_file.vars
+            self.var_sel.set_menu(None, *self.vars)
+            self.plot.clear()
+            if len(self.vars) == 1:
+                self.var_var.set(self.vars[0])
+                self.var_changed()
+            else:
+                self.canvas.draw()
+
+    def var_changed(self, event=None):
+        print('var_changed')
+        t = []
+        s = []
+        it = 0.0
+        v = self.var_var.get()
+        if v:
+            while it <= 3.0:
+                t.append(it)
+                if 'temp' in v:
+                    s.append(math.sin(2 * math.pi * it))
+                elif 'humidity' in v:
+                    s.append(math.cos(2 * math.pi * it))
+                else:
+                    s.append(it * it)
+                it += 0.01
+        self.plot.plot(t, s)
+        self.canvas.draw()
 
 
 #----------------------------------------------------------------------
@@ -750,10 +838,13 @@ class MoveRenameDialog(tkSD.Dialog):
 class Application(ttk.Frame):
     def __init__(self, master=None):
         self.root = root
+        self.aft_c2id = { }
+        self.aft_id2c = { }
+        self.aft_n = 0
         self.normal_font = ttk.Style().lookup('TEntry', 'font')
-        self.mono_font = tkFont.Font(family='DejaVu Sans Mono', size=10)
-        self.bold_font = tkFont.Font(family='Helvetica', weight='bold')
-        self.big_font = tkFont.Font(family='Helvetica', size=16, weight='bold')
+        self.mono_font = tkFont.Font(family='liberation mono', size=10)
+        self.bold_font = tkFont.Font(family='droid sans', weight='bold')
+        self.big_font = tkFont.Font(family='droid sans', size=16, weight='bold')
         self.jobid = None
         self.job = Job()
         ttk.Frame.__init__(self, master)
@@ -762,6 +853,33 @@ class Application(ttk.Frame):
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
         self.job_folder.scan(True)
+
+    # This is a little nasty: we use a lot of "after" timers, and
+    # Tkinter doesn't seem to have a built-in way to clean them all up
+    # before exit.  If you don't clean them up, the application hangs
+    # on exit with a bunch of error messages.  So, we override the
+    # after handling here to make sure everything does get cleaned up
+    # before exit.
+
+    def after(self, ms, func=None, *args):
+        id = ttk.Frame.after(self, ms, self.trigger, self.aft_n, func, *args)
+        self.aft_c2id[self.aft_n] = id
+        self.aft_id2c[id] = self.aft_n
+        self.aft_n += 1
+
+    def after_cancel(self, id):
+        del self.aft_id2c[id]
+        del self.aft_c2id[self.aft_id2c[id]]
+        ttk.Frame.after_cancel(self, id)
+
+    def trigger(self, c, func, *args):
+        del self.aft_id2c[self.aft_c2id[c]]
+        del self.aft_c2id[c]
+        func(*args)
+
+    def quit(self):
+        for id in self.aft_id2c.keys(): ttk.Frame.after_cancel(self, id)
+        ttk.Frame.quit(self)
 
 
     def new_job(self):
@@ -1079,7 +1197,7 @@ class Application(ttk.Frame):
         self.panels['setup'] = SetupPanel(self.notebook, self)
         self.panels['namelists'] = NamelistPanel(self.notebook, self)
         self.panels['output'] = OutputPanel(self.notebook, self)
-        self.panels['plot1'] = PlotPanel(self.notebook, self)
+        self.panels['plots'] = PlotPanel(self.notebook, self)
 
         # Enable window resizing and place widgets.
         top = self.winfo_toplevel()

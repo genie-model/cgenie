@@ -5,70 +5,15 @@ if [ -z $cgenie_root ]; then
     exit 1
 fi
 
-# Required Python version.
-REQVERSION='Python 2.7.9'
-
-# Check for 'python' executable.
-export PYTHON=
-if type -p python > /dev/null; then
-    VER="$(python -V 2>&1)"
-    if [ "$VER" = "$REQVERSION" ]; then PYTHON=`type -p python`; fi
-fi
-
-# Check for 'python2' executable.
-if [ -z $PYTHON ]; then
-    if type -p python2 > /dev/null; then
-        VER="$(python2 -V 2>&1)"
-        if [ "$VER" = "$REQVERSION" ]; then PYTHON=`type -p python2`; fi
-    fi
-fi
-
-# For local Python installation.
-PYTHONVER='2.7.9'
-PYTHONDIR=Python-$PYTHONVER
-PYTHONTGZ=$PYTHONDIR.tgz
-PYTHONURL=https://www.python.org/ftp/python/$PYTHONVER/$PYTHONTGZ
-PYTHONROOT=$cgenie_root/tools/python-local-$PYTHONVER
-LOCALPYTHON=$PYTHONROOT/bin/python
-
-# Check for local 'python' executable.
-if [ -z $PYTHON ]; then
-    if [ -f $LOCALPYTHON ]; then
-        VER="$($LOCALPYTHON -V 2>&1)"
-        if [ "$VER" = "$REQVERSION" ]; then PYTHON=$LOCALPYTHON; fi
-    fi
-fi
-
-# Install local Python 2.7.9 if no other option.
-if [ -z $PYTHON ]; then
+if [ -z "$ANACONDA_DIR" ]; then
+    echo 'ANACONDA_DIR environment variable not set!'
     echo
-    echo 'A suitable version of the Python language will now be installed.'
+    echo 'GENIE relies on the Anaconda Python installation.'
+    echo 'You can find this at https://store.continuum.io/cshop/anaconda/'
     echo
-    echo 'This may take a while:'
-    echo '  Downloading Python distribution...'
-    if wget -q $PYTHONURL ; then
-        echo '  Unpacking Python distribution...'
-        tar xzf $PYTHONTGZ
-        /bin/rm $PYTHONTGZ
-        cd $PYTHONDIR
-        echo '  Configuring Python distribution...'
-        if ./configure --prefix=$PYTHONROOT > /dev/null 2>&1; then
-            echo '  Building and installing Python distribution...'
-            if make install > /dev/null 2>&1; then
-                echo '  Cleaning up...'
-                cd ..
-                /bin/rm -fr $PYTHONDIR
-                PYTHON=$LOCALPYTHON
-            else
-                echo 'FATAL ERROR: FAILED TO BUILD PYTHON'
-                exit 1
-            fi
-        else
-            echo 'FATAL ERROR: FAILED TO CONFIGURE PYTHON'
-            exit 1
-        fi
-    else
-        echo 'FATAL ERROR: FAILED TO DOWNLOAD PYTHON INSTALLATION'
-        exit 1
-    fi
+    echo 'Please install Anaconda and set the ANACONDA_DIR environment'
+    echo 'variable to point to the Anaconda installation directory.'
+    exit 0
 fi
+
+export PYTHON=$ANACONDA_DIR/bin/python
