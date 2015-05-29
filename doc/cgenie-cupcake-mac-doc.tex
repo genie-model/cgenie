@@ -178,6 +178,7 @@ installed:
 	\item the MacPorts environment
 	\item the HomeBrew packaging system 
 	\item python
+	\item scons
 	\item gfortran compiler 
 	\item wget
 	\item NetCDF libraries
@@ -260,6 +261,28 @@ $ python -V
 Python 2.7.9
 \end{minted}
 
+\subsection{SCons}
+
+\texttt{SCons} is a software construction tools built in \texttt{python} which role and
+functionality is similar to the \texttt{autotool}\slash \texttt{automake} and
+\texttt{make} tool chain. cGENIE Cupcake does not use \texttt{make} any more and is built
+on \texttt{SCons} instead.
+
+As with previous tools, we will use the package provided by Homebrew:
+
+\mint{console}|$ brew install scons|
+
+You can then test your installations with:
+
+\begin{minted}{console}
+$ scons --version
+SCons by Steven Knight et al.:
+	script: v2.3.4, 2014/09/27 12:51:43, by garyo on lubuntu
+	engine: v2.3.4, 2014/09/27 12:51:43, by garyo on lubuntu
+	engine path: ['/usr/local/Cellar/scons/2.3.4/libexec/scons-local/SCons']
+Copyright (c) 2001 - 2014 The SCons Foundation
+\end{minted}
+
 \subsection{Fortran Compiler (\texttt{gfortran})}
 
 We will get \texttt{gfortran} from homebrew. This is simply done by using the command:
@@ -287,14 +310,14 @@ For more information about these matters, see the file named COPYING
 
 \texttt{wget} is a command line tool to download files hosted online. It is
 used by cGENIE install scripts to fetch files it requires. This programme is
-available as a homebrew package:
+available as a Homebrew package:
 
 \mint{console}|$ brew install wget|
 
 \subsection{NetCDF Libraries}
 
 For NetCDF we will use the version available from MacPorts (we have tried using
-homebrew for this in order to minimise the requirements and not mix the
+Homebrew for this in order to minimise the requirements and not mix the
 packaging environment but unfortunately, the NetCDF brew package could not be
 installed on our test machine. If this changes, we will reevaluate our
 instructions.
@@ -318,6 +341,28 @@ folder to install and run the model.
 
 If you have any issues with running cGENIE (cupcake) on Mac OS X, please report them at
 \url{https://github.com/genie-model/cgenie/issues}.
+
+\section{Quirks}
+
+Because so much of the system depends on third party repositories, it may not
+always behave as expected. We are aware that MacPorts for example provide
+packages for most of the tools we get from Hombrew, however, we have had
+reports of failures on systems with MacPorts packages where installing the
+Homebrew package was a solution. This is especially valid for python.
+
+We realised that making users change there tool chains is very much a
+annoyance. We are trying to test multiple install setup and try to understand
+why one tool chain fails where the other doesn't, but we currently lack the
+resources to do so quickly.
+
+The information in this document is valid at the time of writing with the
+version of packages available at that time. Since we do not control the
+packages distributed on either Homebrew or MacPorts, we cannot tell whether
+updated versions of these packages will still work. We will endeavour to follow
+the releases of the packages with use and test any upgrade but it is not
+guaranteed happen in a timely manner. The main victim of that is python, the
+version of which is currently hardcoded in the code and is required to be
+2.7.9.
 
 \end{document}
 
