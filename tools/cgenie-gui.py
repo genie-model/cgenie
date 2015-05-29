@@ -9,7 +9,7 @@ import tkFont
 import ttk
 import matplotlib
 matplotlib.use('TkAgg')
-import matplotlib.pyplot as mpl
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import utils as U
@@ -689,8 +689,9 @@ class PlotPanel(Panel):
         self.app = app
         self.plot_job = None
 
-        self.figure = mpl.figure(figsize=(5,4), dpi=100)
-        self.plot = self.figure.add_subplot(111)
+        self.fig = plt.figure(figsize=(5,4), dpi=100)
+        self.ax = self.fig.add_subplot(111)
+        self.plot = None
 
         self.choice_frame = ttk.Frame(self)
         lab = ttk.Label(self.choice_frame, text='Data file:')
@@ -700,6 +701,7 @@ class PlotPanel(Panel):
         self.file_sel = ttk.OptionMenu(self.choice_frame, self.file_var,
                                        None, *self.files,
                                        command=self.file_changed)
+        self.file_sel.state(['disabled'])
         self.file_sel.pack(side=tk.LEFT, padx=5)
         lab = ttk.Label(self.choice_frame, text='')
         lab.pack(side=tk.LEFT, padx=5)
@@ -710,10 +712,25 @@ class PlotPanel(Panel):
         self.var_sel = ttk.OptionMenu(self.choice_frame, self.var_var,
                                       None, *self.vars,
                                       command=self.var_changed)
+        self.var_sel.state(['disabled'])
         self.var_sel.pack(side=tk.LEFT, padx=5)
-        self.canvas = FigureCanvasTkAgg(self.figure, master=self)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.choice_frame.pack(side=tk.TOP, pady=10, anchor=tk.NW)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    def clear(self):
+        self.plot_job = None
+        self.files = ()
+        self.vars = ()
+        self.file_sel.set_menu(None, *self.files)
+        self.file_var.set('')
+        self.file_sel.state(['disabled'])
+        self.var_sel.set_menu(None, *self.vars)
+        self.var_var.set('')
+        self.var_sel.state(['disabled'])
+        self.output_files = { }
+        self.ax.clear()
+        self.canvas.draw()
 
     def update(self):
         if self.job != self.plot_job:
@@ -722,9 +739,13 @@ class PlotPanel(Panel):
             self.vars = ()
             self.file_sel.set_menu(None, *self.files)
             self.file_var.set('')
+            self.file_sel.state(['disabled'])
             self.var_sel.set_menu(None, *self.vars)
             self.var_var.set('')
+            self.var_sel.state(['disabled'])
             self.output_files = { }
+            self.ax.clear()
+            self.canvas.draw()
             if self.job: self.after(500, self.check_job_files)
 
     def check_job_files(self):
@@ -733,6 +754,7 @@ class PlotPanel(Panel):
             self.files = self.output_files.keys()
             self.files.sort()
             self.file_sel.set_menu(None, *self.files)
+            self.file_sel.state(['!disabled'])
             self.after(500, self.check_job_files)
 
     def file_changed(self, event):
@@ -741,39 +763,36 @@ class PlotPanel(Panel):
             self.vars = ()
             self.var_sel.set_menu(None, *self.vars)
             self.var_var.set('')
+            self.var_sel.state(['disabled'])
             self.ts_file = G.TimeSeriesFile(self.app, tsp, self.data_update)
         else:
             self.ts_file = None
-        print('file_changed')
 
-    def data_update(self, t, d):
+    def data_update(self, tnew, dnew):
         if self.vars == ():
             self.vars = self.ts_file.vars
             self.var_sel.set_menu(None, *self.vars)
-            self.plot.clear()
+            self.var_sel.state(['!disabled'])
+            self.ax.clear()
             if len(self.vars) == 1:
                 self.var_var.set(self.vars[0])
                 self.var_changed()
             else:
                 self.canvas.draw()
+        else:
+            self.plot.set_xdata(self.ts_file.time)
+            self.plot.set_ydata(self.ts_file.data[self.var_var.get()])
+            self.ax.relim()
+            self.ax.autoscale_view()
+            self.canvas.draw()
 
     def var_changed(self, event=None):
-        print('var_changed')
-        t = []
-        s = []
-        it = 0.0
-        v = self.var_var.get()
-        if v:
-            while it <= 3.0:
-                t.append(it)
-                if 'temp' in v:
-                    s.append(math.sin(2 * math.pi * it))
-                elif 'humidity' in v:
-                    s.append(math.cos(2 * math.pi * it))
-                else:
-                    s.append(it * it)
-                it += 0.01
-        self.plot.plot(t, s)
+        self.ax.clear()
+        t = self.ts_file.time
+        d = self.ts_file.data[self.var_var.get()]
+        self.plot, = self.ax.plot(t, d)
+        self.ax.set_xlabel('Time (yr)')
+        self.ax.set_ylabel(self.var_var.get())
         self.canvas.draw()
 
 
@@ -1034,6 +1053,7 @@ class Application(ttk.Frame):
         for f in glob.iglob(os.path.join(p, 'gui_restart_*.nc')):
             os.remove(f)
         self.panels['output'].clear()
+        self.panels['plots'].clear()
         self.update_job_data()
 
 
@@ -1259,4 +1279,5 @@ root = tk.Tk()
 app = Application(root)
 app.master.title("cGENIE GUI")
 app.master.geometry("1024x768")
+root.protocol("WM_DELETE_WINDOW", app.quit)
 app.mainloop()
