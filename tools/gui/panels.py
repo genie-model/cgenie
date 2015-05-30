@@ -9,11 +9,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from gui.tailer import *
 from gui.tsfile import *
+from gui.util import *
 
 #----------------------------------------------------------------------
-
-def enable(w, on): w.state(['!disabled' if on else 'disabled'])
-
 
 class Panel(ttk.Frame):
     def __init__(self, notebook, app, type, title):
@@ -421,6 +419,7 @@ class PlotPanel(Panel):
         self.output_files = { }
         self.ax.clear()
         self.canvas.draw()
+        self.after(500, self.check_job_files)
 
     def update(self):
         if self.job != self.plot_job:

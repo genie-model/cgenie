@@ -14,6 +14,8 @@ from gui.job_folder import *
 from gui.job import *
 from gui.panels import *
 from gui.dialogs import *
+from gui.after import *
+from gui.util import *
 
 
 # GENIE configuration
@@ -33,57 +35,19 @@ if 'runtime_env' in locals():
 
 #----------------------------------------------------------------------
 
-class Application(ttk.Frame):
+class Application(ttk.Frame, AfterHandler):
     def __init__(self, master=None):
-        self.root = root
-        self.aft_c2id = { }
-        self.aft_id2c = { }
-        self.aft_n = 0
+        ttk.Frame.__init__(self, master)
         ### ===> TODO: Sort out fonts
         self.normal_font = ttk.Style().lookup('TEntry', 'font')
         self.mono_font = tkFont.Font(family='liberation mono', size=10)
         self.bold_font = tkFont.Font(family='droid sans', weight='bold')
         self.big_font = tkFont.Font(family='droid sans', size=16, weight='bold')
-        self.jobid = None
         self.job = Job()
-        ttk.Frame.__init__(self, master)
         self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.find_configs()
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
-
-
-    #------------------------------------------------------------------
-    #
-    #  AFTER TIMER HANDLING
-    #
-    # This is a little nasty: we use a lot of "after" timers, and
-    # Tkinter doesn't seem to have a built-in way to clean them all up
-    # before exit.  If you don't clean them up, the application hangs
-    # on exit with a bunch of error messages.  So, we override the
-    # after handling here to make sure everything does get cleaned up
-    # before exit.
-
-    def after(self, ms, func=None, *args):
-        id = ttk.Frame.after(self, ms, self.trigger, self.aft_n, func, *args)
-        self.aft_c2id[self.aft_n] = id
-        self.aft_id2c[id] = self.aft_n
-        self.aft_n += 1
-        return id
-
-    def after_cancel(self, id):
-        del self.aft_c2id[self.aft_id2c[id]]
-        del self.aft_id2c[id]
-        ttk.Frame.after_cancel(self, id)
-
-    def trigger(self, c, func, *args):
-        del self.aft_id2c[self.aft_c2id[c]]
-        del self.aft_c2id[c]
-        func(*args)
-
-    def quit(self):
-        for id in self.aft_id2c.keys(): ttk.Frame.after_cancel(self, id)
-        ttk.Frame.quit(self)
 
 
     #------------------------------------------------------------------
@@ -249,6 +213,7 @@ class Application(ttk.Frame):
 
     def run_job(self):
         # Check for existence of genie-ship.exe executable.
+        ### ===> TODO: Sort this out properly
         exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
                            platform, 'ship', 'genie.exe')
         runexe = os.path.join(self.job.jobdir, 'genie-ship.exe')
@@ -320,7 +285,7 @@ class Application(ttk.Frame):
                 if k in self.switchable_buttons:
                     e = ((k == 'move_rename' or k == 'delete_job')
                          and self.tree.parent(sel) != '')
-                    v.state(['!disabled' if e else 'disabled'])
+                    enable(v, e)
                     self.job_menu.entryconfig(self.menu_items[k],
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
@@ -329,7 +294,7 @@ class Application(ttk.Frame):
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     e = k in on_buttons
-                    v.state(['!disabled' if e else 'disabled'])
+                    enable(v, e)
                     self.job_menu.entryconfig(self.menu_items[k],
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
@@ -346,15 +311,9 @@ class Application(ttk.Frame):
 
 
     def update_job_data(self):
-        s = None
-        if self.job and self.job.jobdir:
-            s = self.job.status
-            self.job.set_status()
+        if self.job: self.job.set_status()
         self.panels['status'].update()
         self.panels['output'].update()
-        ### ===> TODO: update plot panels
-        if self.job and self.job.jobdir and s != self.job.status:
-            self.tree.item(self.job.jobdir, image=self.job.status_img())
         self.set_job_buttons()
         self.after(500, self.update_job_data)
 
