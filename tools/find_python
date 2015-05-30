@@ -5,15 +5,25 @@ if [ -z $cgenie_root ]; then
     exit 1
 fi
 
-if [ -z "$ANACONDA_DIR" ]; then
-    echo 'ANACONDA_DIR environment variable not set!'
+export PYTHON=$ANACONDA_DIR/bin/python
+
+if [ ! -z "$CGENIE_PYTHON" ]; then
+    export PYTHON=$CGENIE_PYTHON
+elif [ -z "$ANACONDA_DIR" ]; then
+    echo 'NO SUITABLE PYTHON SETUP FOUND!'
     echo
-    echo 'GENIE relies on the Anaconda Python installation.'
-    echo 'You can find this at https://store.continuum.io/cshop/anaconda/'
+    echo 'You have two choices:'
     echo
-    echo 'Please install Anaconda and set the ANACONDA_DIR environment'
-    echo 'variable to point to the Anaconda installation directory.'
+    echo '1. Set the CGENIE_PYTHON environment variable to point to a'
+    echo '   Python 2.7.9 interpreter that has the matplotlib package'
+    echo '   installed.'
+    echo
+    echo '2. Install the Anaconda Python installation and set the ANACONDA_DIR'
+    echo '   environment variable to point to the installation directory.'
+    echo
+    echo 'Of these two options, the first is preferred for Linux installations,'
+    echo 'because the GUI libraries supplied with the Anaconda distribution do'
+    echo 'not support font anti-aliasing.'
+    echo
     exit 0
 fi
-
-export PYTHON=$ANACONDA_DIR/bin/python

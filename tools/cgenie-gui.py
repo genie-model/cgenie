@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, os.path, shutil, re, glob
+import platform as plat
 import subprocess as sp
 import Tkinter as tk
 import tkSimpleDialog as tkSD
@@ -38,11 +39,12 @@ if 'runtime_env' in locals():
 class Application(ttk.Frame, AfterHandler):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
-        ### ===> TODO: Sort out fonts
-        self.normal_font = ttk.Style().lookup('TEntry', 'font')
-        self.mono_font = tkFont.Font(family='liberation mono', size=10)
-        self.bold_font = tkFont.Font(family='droid sans', weight='bold')
-        self.big_font = tkFont.Font(family='droid sans', size=16, weight='bold')
+        AfterHandler.__init__(self)
+        self.normal_font = tkFont.nametofont('TkDefaultFont')
+        self.mono_font = tkFont.nametofont('TkFixedFont')
+        self.bold_font = self.normal_font.copy()
+        sz = self.normal_font.cget('size')
+        self.bold_font.configure(weight='bold', size=int(1.5*sz))
         self.job = Job()
         self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.find_configs()
