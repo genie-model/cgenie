@@ -1,6 +1,8 @@
 from __future__ import print_function
-import os, os.path, glob
+import os, os.path, glob, datetime, shutil, sys
+import subprocess as sp
 import Tkinter as tk
+import tkMessageBox as tkMB
 import utils as U
 
 def job_status(jd):
@@ -88,7 +90,7 @@ class Job:
         return res
 
     def write_config(self):
-        self.status = G.job_status(self.jobdir)
+        self.set_status()
         if self.status == 'PAUSED' or self.status == 'COMPLETE':
             cfgdir = os.path.join(self.jobdir, 'config')
             segdir = os.path.join(cfgdir, 'segments')
@@ -96,7 +98,7 @@ class Job:
             if not os.path.exists(segdir): os.mkdir(segdir)
             save_seg = 1
             startk = 1
-            endk = G.job_status_params(self.jobdir)[1]
+            endk = self.status_params()[1]
             if os.path.exists(segfile):
                 with open(segfile) as fp:
                     l = fp.readlines()[-1].split()
@@ -150,7 +152,7 @@ class Job:
         cmd += ['-j', self.base_jobdir]
         if self.t100: cmd += ['--t100']
         cmd += [self.jobid, str(self.runlen)]
-        if plat.system() == 'Windows': cmd = ['python'] + cmd
+        cmd = [sys.executable] + cmd
         try:
             with open(os.devnull, 'w') as sink:
                 res = sp.check_output(cmd, stderr=sink).strip()

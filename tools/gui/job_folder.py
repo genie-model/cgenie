@@ -1,4 +1,4 @@
-import os, os.path
+import os, os.path, shutil
 import Tkinter as tk
 from job import *
 import utils as U
