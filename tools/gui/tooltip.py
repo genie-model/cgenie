@@ -1,77 +1,3 @@
-from __future__ import print_function
-import os, os.path
-import Tkinter as tk
-
-import utils as U
-
-
-def job_split(jfull):
-    d, j = os.path.split(jfull)
-    ds = []
-    while d:
-        d, d1 = os.path.split(d)
-        ds.append(d1)
-    ds.reverse()
-    return (ds, j)
-
-def file_img(f):
-    return tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools',
-                                           'images', f + '.gif'))
-
-def walk_jobs(p, basedir=None):
-    if not basedir: basedir = p
-    model_dir = os.path.join(basedir, 'MODELS')
-    es = os.listdir(p)
-    for e in os.listdir(p):
-        f = os.path.join(p, e)
-        if f.startswith(model_dir): continue
-        if os.path.exists(os.path.join(f, 'config', 'config')):
-            yield (f, 'JOB')
-        elif os.path.isdir(f):
-            if not os.listdir(f):
-                yield (f, 'FOLDER')
-            else:
-                for sube in walk_jobs(f, basedir):
-                    yield sube
-
-
-def is_folder(tree, id):
-    if id == U.cgenie_jobs: return True
-    return str(tree.item(id, 'image')[0]) == str(status_img('FOLDER'))
-
-status_images = { }
-def status_img(s):
-    if not s in status_images:
-        p = os.path.join(U.cgenie_root, 'tools', 'images',
-                         'status-' + s + '.gif')
-        status_images[s] = tk.PhotoImage(file=p)
-    return status_images[s]
-
-def job_status(jd):
-    if not os.path.exists(jd): return None
-    if not os.path.exists(os.path.join(jd, 'data_genie')):
-        return 'UNCONFIGURED'
-    if not os.path.exists(os.path.join(jd, 'status')):
-        return 'RUNNABLE'
-    with open(os.path.join(jd, 'status')) as fp:
-        return fp.readline().strip().split()[0]
-
-def job_pct(jd):
-    if not os.path.exists(os.path.join(jd, 'status')):
-        return None
-    with open(os.path.join(jd, 'status')) as fp:
-        ss = fp.readline().strip().split()
-        if ss[0] != 'RUNNING' and ss[0] != 'PAUSED': return None
-        return 100 * float(ss[1]) / float(ss[2])
-
-def job_status_params(jd):
-    if not os.path.exists(os.path.join(jd, 'status')):
-        return None
-    with open(os.path.join(jd, 'status')) as fp:
-        ss = fp.readline().strip().split()
-        return ss
-
-
 '''Michael Lange <klappnase (at) freakmail (dot) de>
 
 The ToolTip class provides a flexible tooltip widget for Tkinter; it is based on
@@ -129,6 +55,8 @@ create_contents() : creates the contents of the tooltip window (by default a
                     Tkinter.Label)
 '''
 # Ideas gleaned from PySol
+
+import Tkinter
 
 class ToolTip:
     def __init__(self, master, text='Your text here', delay=750, **opts):
@@ -192,7 +120,7 @@ class ToolTip:
             self._unschedule()
             return
         if not self._tipwindow:
-            self._tipwindow = tw = tk.Toplevel(self.master)
+            self._tipwindow = tw = Tkinter.Toplevel(self.master)
             # hide the window until we know the geometry
             tw.withdraw()
             tw.wm_overrideredirect(1)
@@ -247,89 +175,23 @@ class ToolTip:
         opts = self._opts.copy()
         for opt in ('delay', 'follow_mouse', 'state'):
             del opts[opt]
-        label = tk.Label(self._tipwindow, **opts)
+        label = Tkinter.Label(self._tipwindow, **opts)
         label.pack()
 
 ## DEMO CODE
 
 # def demo():
-#     root = tk.Tk(className='ToolTip-demo')
-#     l = tk.Listbox(root)
+#     root = Tkinter.Tk(className='ToolTip-demo')
+#     l = Tkinter.Listbox(root)
 #     l.insert('end', "I'm a listbox")
 #     l.pack(side='top')
 #     t1 = ToolTip(l, follow_mouse=1,
 #                  text="I'm a tooltip with follow_mouse set to 1, " +
 #                  "so I won't be placed outside my parent")
-#     b = tk.Button(root, text='Quit', command=root.quit)
+#     b = Tkinter.Button(root, text='Quit', command=root.quit)
 #     b.pack(side='bottom')
 #     t2 = ToolTip(b, text='Enough of this')
 #     root.mainloop()
 
 # if __name__ == '__main__':
 #     demo()
-
-
-class Tailer:
-    def __init__(self, app, fname):
-        self.app = app
-        self.fname = fname
-        self.pos = 0
-        self.fp = None
-        self.after_id = None
-        self.cb = None
-
-    def start(self, cb):
-        self.cb = cb
-        if not self.after_id: self.after_id = self.app.after(500, self.read)
-
-    def stop(self):
-        if self.after_id: self.app.after_cancel(self.after_id)
-        self.after_id = None
-
-    def read(self):
-        if not self.fp and os.path.exists(self.fname):
-            self.fp = open(self.fname)
-            self.pos = 0
-        if self.fp:
-            self.fp.seek(0, os.SEEK_END)
-            self.size = self.fp.tell()
-            if self.size > self.pos:
-                self.fp.seek(self.pos, os.SEEK_SET)
-                new = self.fp.read(self.size - self.pos)
-                self.pos = self.size
-                self.cb(new)
-        self.after_id = self.app.after(500, self.read)
-
-
-class TimeSeriesFile:
-    def __init__(self, app, p, cb):
-        self.app = app
-        self.time = []
-        self.data = { }
-        self.vars = ()
-        self.cb = cb
-        self.tailer = None
-        if os.path.exists(p):
-            self.time = []
-            self.data = { }
-            self.vars = ()
-            self.tailer = Tailer(app, p)
-            self.tailer.start(self.add_output)
-
-    def add_output(self, t):
-        tnew = []
-        dnew = []
-        for l in t.splitlines():
-            if self.vars == ():
-                header = l.strip().lstrip('%').strip()
-                header = map(lambda s: s.strip(), header.split(' / '))
-                self.vars = tuple(header[1:])
-                for v in self.vars: self.data[v] = []
-            else:
-                l = l.strip().split()
-                self.time.append(l[0])
-                for i in range(1, len(l)):
-                    self.data[self.vars[i-1]].append(l[i])
-                tnew.append(l[0])
-                dnew.append(l[1:])
-        self.cb(tnew, dnew)

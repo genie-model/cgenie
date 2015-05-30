@@ -13,7 +13,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import utils as U
-import gui_utils as G
+from gui.tooltip import *
+from gui.tailer import *
+from gui.tsfile import *
+from gui.job_folder import *
+from gui.job import *
 
 
 # GENIE configuration
@@ -29,264 +33,6 @@ platform = U.discover_platform()
 execfile(os.path.join(U.cgenie_root, 'platforms', platform))
 if 'runtime_env' in locals():
     for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
-
-
-#----------------------------------------------------------------------
-
-class JobFolder:
-    """Job folder management"""
-    def __init__(self, path, name, tree, app):
-        self.path = path
-        self.name = name
-        self.tree = tree
-        self.item = None
-        self.folders = { path: 1 }
-        self.status = { }
-        self.app = app
-        self.app.after(500, self.set_statuses)
-
-    def possible_folders(self):
-        fs = self.folders.keys()
-        fs.sort()
-        return fs
-
-    def scan(self, select):
-        self.item = self.tree.insert('', 'end', self.path,
-                                     text=self.name, open=True)
-        for p, type in G.walk_jobs(self.path):
-            if type == 'JOB':
-                self.add_job(os.path.relpath(p, self.path))
-            else:
-                self.add_folder(os.path.relpath(p, self.path))
-        self.sort_children(self.item)
-        if select: self.tree.selection_set(self.item)
-
-    def add_job(self, jfull, sort=False):
-        ds, j = G.job_split(jfull)
-        p = self.path
-        for f in ds:
-            parent = p
-            p = os.path.join(p, f)
-            if not self.tree.exists(p):
-                self.folders[p] = 1
-                self.tree.insert(parent, 'end', p, text=f,
-                                 image=G.status_img('FOLDER'))
-        jpath = os.path.join(self.path, jfull)
-        self.status[jfull] = G.job_status(jpath)
-        self.tree.insert(p, 'end', jpath, text=j,
-                         image=G.status_img(self.status[jfull]))
-        if sort: self.sort_children(self.item)
-
-    def add_folder(self, ffull, sort=False):
-        ds, j = G.job_split(os.path.join(ffull, 'DUMMY'))
-        p = self.path
-        for f in ds:
-            parent = p
-            p = os.path.join(p, f)
-            if not self.tree.exists(p):
-                self.folders[p] = 1
-                self.tree.insert(parent, 'end', p, text=f,
-                                 image=G.status_img('FOLDER'))
-        if sort: self.sort_children(self.item)
-
-    def delete(self, p):
-        self.tree.delete(p)
-        if p in self.folders: del self.folders[p]
-        if p in self.status: del self.status[p]
-
-    def move(self, fr, to):
-        os.rename(fr, to)
-        is_folder = fr in self.folders
-        to = os.path.relpath(to, self.path)
-        self.tree.delete(fr)
-        if is_folder:
-            self.add_folder(to, True)
-        else:
-            self.add_job(to, True)
-
-    def clone(self, fr, to):
-        shutil.copytree(fr, to)
-        to = os.path.relpath(to, self.path)
-        self.add_job(to, True)
-
-    def sort_children(self, f):
-        def chcmp(x, y):
-            fx = G.is_folder(self.tree, x)
-            fy = G.is_folder(self.tree, y)
-            if fx == fy: return cmp(x, y)
-            else:
-                if fx: return -1
-                else: return 1
-        cs = list(self.tree.get_children(f))
-        cs.sort(chcmp)
-        self.tree.set_children(f, *cs)
-        for c in cs: self.sort_children(c)
-
-    def set_statuses(self):
-        dels = []
-        for p, s in self.status.iteritems():
-            pfull = os.path.join(self.path, p)
-            schk = G.job_status(pfull)
-            if not schk:
-                dels.append(p)
-            elif schk != s:
-                self.status[p] = schk
-                self.tree.item(pfull, image=G.status_img(schk))
-        for p in dels: del self.status[p]
-        self.app.after(500, self.set_statuses)
-
-
-#----------------------------------------------------------------------
-
-class Job:
-    def __init__(self, jobid=None, folder=None):
-        self.runlen = None
-        self.t100 = None
-        self.base_config = None
-        self.user_config = None
-        self.full_config = None
-        self.mods = ''
-        self.modules = None
-        if not jobid:
-            self.jobid = None
-            self.jobdir = None
-            self.dir = None
-            self.status = None
-        else:
-            self.jobdir = folder.path
-            self.jobid = os.path.relpath(jobid, folder.path)
-            self.dir = jobid
-            self.status = G.job_status(self.dir)
-            try:
-                with open(os.path.join(self.dir, 'config', 'config')) as fp:
-                    for line in fp:
-                        ss = line.split(':')
-                        k = ss[0].strip()
-                        v = ':'.join(ss[1:]).strip()
-                        if k == 't100':
-                            self.t100 = True if v == 'True' else False
-                        elif k == 'run_length':
-                            self.runlen = None if v == '?' else int(v)
-                        elif k == 'full_config': self.full_config = v
-                        elif k == 'base_config': self.base_config = v
-                        elif k == 'user_config': self.user_config = v
-                modfile = os.path.join(self.dir, 'config', 'config_mods')
-                if os.path.exists(modfile):
-                    with open(modfile) as fp: self.mods = fp.read()
-            except Exception as e:
-                ### ===> TODO: better exception handling
-                print('Exception 1:', e)
-
-    def dir_str(self): return self.dir if self.dir else 'n/a'
-    def status_str(self): return self.status if self.status else 'n/a'
-    def runlen_str(self): return str(self.runlen) if self.runlen else 'n/a'
-    def t100_str(self): return str(self.t100) if self.t100 != None else 'n/a'
-    def config_type(self): return 'full' if self.full_config else 'base+user'
-
-    def __str__(self):
-        res = '{ '
-        res += 'jobid:' + str(self.jobid) + ' '
-        res += 'jobdir:' + str(self.jobdir) + ' '
-        res += 'dir:' + str(self.dir) + ' '
-        res += 'base_config:' + str(self.base_config) + ' '
-        res += 'user_config:' + str(self.user_config) + ' '
-        res += 'full_config:' + str(self.full_config) + ' '
-        res += 'mods:' + str(self.mods) + ' '
-        res += 'modules:' + str(self.modules) + ' '
-        res += 'runlen:' + str(self.runlen) + ' '
-        res += 't100:' + str(self.t100) + ' '
-        res += 'status:' + str(self.status) + ' '
-        res += '}'
-        return res
-
-    def write_config(self):
-        self.status = G.job_status(self.dir)
-        if self.status == 'PAUSED' or self.status == 'COMPLETE':
-            cfgdir = os.path.join(self.dir, 'config')
-            segdir = os.path.join(cfgdir, 'segments')
-            segfile = os.path.join(cfgdir, 'seglist')
-            if not os.path.exists(segdir): os.mkdir(segdir)
-            save_seg = 1
-            startk = 1
-            endk = G.job_status_params(self.dir)[1]
-            if os.path.exists(segfile):
-                with open(segfile) as fp:
-                    l = fp.readlines()[-1].split()
-                    save_seg = int(l[0]) + 1
-                    startk = int(l[2])
-            with open(segfile, 'a') as fp:
-                print(save_seg, startk, endk, file=fp)
-            segdir = os.path.join(segdir, str(save_seg))
-            os.mkdir(segdir)
-            for f in ('base_config', 'user_config',
-                      'full_config', 'config_mods'):
-                p = os.path.join(cfgdir, f)
-                if os.path.exists(p): shutil.copy(p, segdir)
-        try:
-            with open(os.path.join(self.dir, 'config', 'config'), 'w') as fp:
-                if self.base_config:
-                    print('base_config_dir:',
-                          os.path.join(U.cgenie_data, 'base-configs'), file=fp)
-                    print('base_config:', self.base_config, file=fp)
-                if self.user_config:
-                    print('user_config_dir:',
-                          os.path.join(U.cgenie_data, 'user-configs'), file=fp)
-                    print('user_config:', self.user_config, file=fp)
-                if self.full_config:
-                    print('full_config_dir:',
-                          os.path.join(U.cgenie_data, 'full-configs'), file=fp)
-                    print('full_config:', self.full_config, file=fp)
-                modfile = os.path.join(self.dir, 'config', 'config_mods')
-                if self.mods:
-                    with open(modfile, 'w') as mfp: print(self.mods, file=mfp)
-                else:
-                    if os.path.exists(modfile): os.remove(modfile)
-                print('config_date:', str(datetime.datetime.today()), file=fp)
-                print('run_length:', self.runlen, file=fp)
-                print('t100:', self.t100, file=fp)
-        except Exception as e:
-            ### ===> TODO: better exception handling
-            print('Exception 2:', e)
-
-    def gen_namelists(self):
-        new_job = os.path.join(U.cgenie_root, 'tools', 'new-job.py')
-        cmd = [new_job, '--gui']
-        if self.base_config: cmd += ['-b', self.base_config]
-        if self.user_config: cmd += ['-u', self.user_config]
-        if self.full_config: cmd += ['-c', self.full_config]
-        if self.mods:
-            modfile = os.path.join(self.dir, 'config', 'config_mods')
-            with open(modfile, 'w') as fp: print(self.mods, file=fp)
-            cmd += ['-m', modfile]
-        cmd += ['-j', self.jobdir]
-        if self.t100: cmd += ['--t100']
-        cmd += [self.jobid, str(self.runlen)]
-        if plat.system() == 'Windows': cmd = ['python'] + cmd
-        try:
-            with open(os.devnull, 'w') as sink:
-                res = sp.check_output(cmd, stderr=sink).strip()
-        except Exception as e:
-            res = 'ERR:Failed to run new-job script'
-        if res != 'OK': tkMB.showerror('Error', res[4:])
-
-    def read_segments(self):
-        cfgdir = os.path.join(self.dir, 'config')
-        segfile = os.path.join(cfgdir, 'seglist')
-        if not os.path.exists(segfile): return []
-        segs = []
-        with open(segfile) as fp:
-            for l in fp:
-                l = l.split()
-                segs.append((int(l[1]), int(l[2])))
-        return segs
-
-    def check_output_files(self):
-        od = os.path.join(self.dir, 'output')
-        chkds = [os.path.join(od, 'biogem', 'biogem_series_*.res')]
-        res = { }
-        for g in chkds:
-            for f in glob.glob(g): res[os.path.basename(f)] = f
-        return res
 
 
 #----------------------------------------------------------------------
@@ -332,11 +78,6 @@ class StatusPanel(Panel):
         self.t100 = ttk.Label(self)
         self.t100.grid(column=1, row=3, pady=5, sticky=tk.W)
 
-        lab = ttk.Label(self, text='Modules:')
-        lab.grid(column=0, row=4, pady=5, padx=5, sticky=tk.W)
-        self.modules = ttk.Label(self)
-        self.modules.grid(column=1, row=4, pady=5, sticky=tk.W)
-
         self.update()
 
     def update(self):
@@ -348,17 +89,15 @@ class StatusPanel(Panel):
             self.runlen.configure(text='')
             self.t100.configure(text='')
         else:
-            self.job_path.configure(text=self.job.dir_str())
+            self.job_path.configure(text=self.job.jobdir_str())
             s = self.job.status_str()
             if s == 'RUNNING':
-                s += ' (' + format(G.job_pct(self.job.dir), '.2f') + '%)'
+                s += ' (' + format(self.job.pct_done(), '.2f') + '%)'
             self.job_status.configure(text=s)
             self.runlen.configure(text=self.job.runlen_str())
             self.t100.configure(text=self.job.t100_str())
-            ### ===> TODO: get and display list of modules
 
 
-### ===> TODO: also need to handle "full config" cases.
 ### ===> TODO: also need to handle restart setup.
 class SetupPanel(Panel):
     def __init__(self, notebook, app):
@@ -472,7 +211,6 @@ class SetupPanel(Panel):
                 self.edited = True
             if (self.mods.get('1.0', 'end').rstrip() != self.job.mods.rstrip()):
                 self.edited = True
-            ### ===> TODO: fix this
             if (self.runlen.get() and
                 int(self.runlen.get()) != self.job.runlen):
                 self.edited = True
@@ -485,6 +223,9 @@ class SetupPanel(Panel):
         self.mods.edit_modified(False)
 
     def segment_changed(self, event):
+        ### ===> TODO: update view - set everything to read-only if
+        ###      selected segment is not current; save current segment
+        ###      values.
         print('segment_changed')
 
     def save_changes(self):
@@ -495,8 +236,8 @@ class SetupPanel(Panel):
         self.job.t100 = True if self.t100_var.get() else False
         self.job.write_config()
         self.job.gen_namelists()
-        self.job.status = G.job_status(self.job.dir)
-        app.tree.item(self.job.dir, image=G.status_img(self.job.status))
+        self.job.set_status()
+        app.tree.item(self.job.jobdir, image=self.job.status_img())
         for p in app.panels.itervalues():
             if p != self: p.update()
         self.set_state()
@@ -528,7 +269,7 @@ class SetupPanel(Panel):
             self.segment_sel.set_menu(self.segments[0], *self.segments)
             self.set_button_state()
             return
-        self.job_path.configure(text=self.job.dir_str())
+        self.job_path.configure(text=self.job.jobdir_str())
         if self.job.base_config:
             self.base_config.set(self.job.base_config
                                  if self.job.base_config != '?' else '')
@@ -545,13 +286,12 @@ class SetupPanel(Panel):
         if self.job.runlen != None:
             self.runlen.insert('end', str(self.job.runlen))
         self.t100_var.set(bool(self.job.t100))
-        segs = self.job.read_segments()
-        if not segs:
+        if not self.job.segments:
             self.segments = ('1: 1-END [CURRENT]',)
         else:
             self.segments = []
             i = 1
-            for kstart, kend in segs:
+            for kstart, kend in self.job.segments:
                 self.segments.append(str(i) + ': ' +
                                      str(kstart) + '-' + str(kend))
                 i += 1
@@ -606,7 +346,7 @@ class NamelistPanel(Panel):
         self.namelists = { }
         if self.job:
             nls = []
-            for nl in glob.iglob(os.path.join(self.job.dir, 'data_*')):
+            for nl in glob.iglob(os.path.join(self.job.jobdir, 'data_*')):
                 nlname = os.path.basename(nl)[5:]
                 nls.append(nlname)
                 with open(nl) as fp: self.namelists[nlname] = fp.read()
@@ -667,7 +407,7 @@ class OutputPanel(Panel):
             self.output_text = ''
             self.set_output_text()
         else:
-            log = os.path.join(self.job.dir, 'run.log')
+            log = os.path.join(self.job.jobdir, 'run.log')
             if not os.path.exists(log):
                 self.output_text = ''
                 self.set_output_text()
@@ -678,7 +418,7 @@ class OutputPanel(Panel):
                 self.tailer = None
             if not self.tailer:
                 self.tailer_job = self.job
-                self.tailer = G.Tailer(app, log)
+                self.tailer = Tailer(app, log)
                 self.tailer.start(self.add_output_text)
 
 
@@ -764,7 +504,7 @@ class PlotPanel(Panel):
             self.var_sel.set_menu(None, *self.vars)
             self.var_var.set('')
             self.var_sel.state(['disabled'])
-            self.ts_file = G.TimeSeriesFile(self.app, tsp, self.data_update)
+            self.ts_file = TimeSeriesFile(self.app, tsp, self.data_update)
         else:
             self.ts_file = None
 
@@ -871,7 +611,6 @@ class Application(ttk.Frame):
         self.find_configs()
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
-        self.job_folder.scan(True)
 
     # This is a little nasty: we use a lot of "after" timers, and
     # Tkinter doesn't seem to have a built-in way to clean them all up
@@ -906,14 +645,14 @@ class Application(ttk.Frame):
 
         # Get folder location for new job.
         loc = self.tree.selection()[0]
-        while not G.is_folder(self.tree, loc):
+        while not self.job_folder.is_folder(loc):
             loc = self.tree.parent(loc)
 
         # Get new job name and check.
         job_name = tkSD.askstring("New job", "Name for new job")
         if not job_name: return
         jobdir = os.path.join(loc, job_name)
-        jobid = os.path.relpath(jobdir, self.job_folder.path)
+        jobid = os.path.relpath(jobdir, self.job_folder.base_path)
         if os.path.exists(jobdir):
             tkMB.showerror('Error', job_name + ' already exists!')
             return
@@ -970,7 +709,7 @@ class Application(ttk.Frame):
 
     def move_rename(self):
         full_path = self.tree.selection()[0]
-        is_folder = G.is_folder(self.tree, full_path)
+        is_folder = self.job_folder.is_folder(full_path)
         d = MoveRenameDialog(full_path, is_folder,
                              self.job_folder.possible_folders())
         if d.result:
@@ -989,7 +728,7 @@ class Application(ttk.Frame):
 
         # Determine whether a single job or a folder is selected.
         p = self.tree.selection()[0]
-        if G.is_folder(self.tree, p):
+        if self.job_folder.is_folder(p):
             msg = 'Are you sure you want to delete this folder?\n\n'
             msg += 'This will delete all jobs beneath the folder!\n\n'
             msg += 'This action is IRREVERSIBLE!'
@@ -1057,15 +796,11 @@ class Application(ttk.Frame):
         self.update_job_data()
 
 
-    def archive_job(self):
-        print('archive_job...')
-
-
     def run_job(self):
         # Check for existence of genie-ship.exe executable.
         exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
                            platform, 'ship', 'genie.exe')
-        runexe = os.path.join(self.job.dir, 'genie-ship.exe')
+        runexe = os.path.join(self.job.jobdir, 'genie-ship.exe')
         if not os.path.exists(exe):
             tkMB.showerror('Error', 'GENIE executable missing!')
             return
@@ -1073,32 +808,33 @@ class Application(ttk.Frame):
 
         # Set up GUI_RESTART command file if this is a restart after a
         # pause.
-        command = os.path.join(self.job.dir, 'command')
+        command = os.path.join(self.job.jobdir, 'command')
         if os.path.exists(command): os.remove(command)
-        jpath = os.path.relpath(self.job.dir, self.job_folder.path)
+        jpath = os.path.relpath(self.job.jobdir, self.job_folder.base_path)
         if self.job_folder.status[jpath] == 'PAUSED':
-            st, koverall, dum, genie_clock = G.job_status_params(self.job.dir)
+            st, koverall, dum, genie_clock = self.job.status_params()
             with open(command, 'w') as fp:
                 print('GUI_RESTART', koverall, genie_clock, file=fp)
 
         # Start executable with stdout and stderr directed to run.log
         # in job directory.
-        with open(os.path.join(self.job.dir, 'run.log'), 'a') as fp:
+        with open(os.path.join(self.job.jobdir, 'run.log'), 'a') as fp:
             try:
-                sp.Popen(runexe, cwd=self.job.dir, stdout=fp, stderr=sp.STDOUT)
+                sp.Popen(runexe, cwd=self.job.jobdir,
+                         stdout=fp, stderr=sp.STDOUT)
             except Exception as e:
                 tkMB.showerror('Error', 'Failed to start GENIE executable!')
 
 
     def pause_job(self):
-        with open(os.path.join(self.job.dir, 'command'), 'w') as fp:
+        with open(os.path.join(self.job.jobdir, 'command'), 'w') as fp:
             print('PAUSE', file=fp)
 
 
     # Buttons that change state depending on the state of the
     # currently selected job.
     switchable_buttons = ['move_rename', 'delete_job', 'clear_job',
-                          'clone_job', 'archive_job', 'run_job', 'pause_job']
+                          'clone_job', 'run_job', 'pause_job']
 
     # Enabled buttons for different states of selected job.
     state_buttons = { 'UNCONFIGURED': ['move_rename', 'clear_job', 'delete_job',
@@ -1107,9 +843,9 @@ class Application(ttk.Frame):
                                    'clone_job', 'run_job'],
                       'RUNNING': ['pause_job'],
                       'PAUSED': ['move_rename', 'clear_job', 'delete_job',
-                                 'clone_job', 'archive_job', 'run_job'],
+                                 'clone_job', 'run_job'],
                       'COMPLETE': ['move_rename', 'clear_job', 'delete_job',
-                                   'clone_job', 'archive_job'],
+                                   'clone_job'],
                       'ERRORED': ['move_rename', 'clear_job', 'delete_job',
                                   'clone_job'] }
 
@@ -1118,7 +854,8 @@ class Application(ttk.Frame):
         """Callback for item selection in job tree"""
 
         sel = self.tree.selection()[0]
-        if len(self.tree.get_children(sel)) != 0 or G.is_folder(self.tree, sel):
+        if (len(self.tree.get_children(sel)) != 0 or
+            self.job_folder.is_folder(sel)):
             self.select_job(None)
         else:
             self.select_job(sel)
@@ -1137,7 +874,7 @@ class Application(ttk.Frame):
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
         else:
-            on_buttons = self.state_buttons[G.job_status(sel)]
+            on_buttons = self.state_buttons[self.job.status]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     e = k in on_buttons
@@ -1154,24 +891,22 @@ class Application(ttk.Frame):
             self.job = Job(jobid, self.job_folder)
         else:
             self.job = None
-
-        ### ===> TODO: need to track model output if it's running to
-        ###      add to output panel (using same threading approach as
-        ###      in go.py).
         for p in self.panels.itervalues(): p.set_job(self.job)
+
 
     def update_job_data(self):
         s = None
-        if self.job and self.job.dir:
+        if self.job and self.job.jobdir:
             s = self.job.status
-            self.job.status = G.job_status(self.job.dir)
+            self.job.set_status()
         self.panels['status'].update()
         self.panels['output'].update()
         ### ===> TODO: update plot panels
-        if self.job and self.job.dir and s != self.job.status:
-            self.tree.item(self.job.dir, image=G.status_img(self.job.status))
+        if self.job and self.job.jobdir and s != self.job.status:
+            self.tree.item(self.job.jobdir, image=self.job.status_img())
         self.set_job_buttons()
         self.after(500, self.update_job_data)
+
 
     def create_widgets(self):
         """UI layout"""
@@ -1193,7 +928,6 @@ class Application(ttk.Frame):
                      ['delete_job',  'Delete job', True],
                      ['clear_job',   'Clear job output', True],
                      ['clone_job',   'Clone job', True],
-                     ['archive_job', 'Archive job', True],
                      ['spacer', '', False],
                      ['run_job',     'Run job', False],
                      ['pause_job',   'Pause job', False]]
@@ -1202,12 +936,13 @@ class Application(ttk.Frame):
                 f = ttk.Frame(self.toolbar, height=16)
                 f.pack()
             else:
-                img = G.file_img(t)
+                img = tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools',
+                                                      'images', t + '.gif'))
                 b = ttk.Button(self.toolbar, image=img,
                                command=getattr(self, t))
                 b.image = img
                 b.pack()
-                G.ToolTip(b, title)
+                ToolTip(b, title)
                 self.tool_buttons[t] = b
 
         # Set up default notebook panels.
@@ -1256,6 +991,7 @@ class Application(ttk.Frame):
         self.help_menu.add_command(label='About')
 
         self.after(500, self.update_job_data)
+
 
     def find_configs(self):
         """Find all base and user configuration files"""
