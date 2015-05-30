@@ -148,3 +148,11 @@ class JobFolder:
                 self.tree.item(pfull, image=job_status_img(schk))
         for p in dels: del self.status[p]
         self.app.after(500, self.set_statuses)
+
+    def find_restart_jobs(self):
+        res = []
+        for p, v in self.status.iteritems():
+            if v == 'COMPLETE': res.append(p)
+        res.append('<None>')
+        res.sort()
+        return res

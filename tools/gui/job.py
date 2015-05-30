@@ -28,6 +28,7 @@ class Job:
         self.base_config = None
         self.user_config = None
         self.full_config = None
+        self.restart = None
         self.mods = ''
         self.segments = []
         if not jobdir:
@@ -53,6 +54,7 @@ class Job:
                         elif k == 'full_config': self.full_config = v
                         elif k == 'base_config': self.base_config = v
                         elif k == 'user_config': self.user_config = v
+                        elif k == 'restart': self.restart = v
                 modfile = os.path.join(self.jobdir, 'config', 'config_mods')
                 if os.path.exists(modfile):
                     with open(modfile) as fp: self.mods = fp.read()
@@ -82,6 +84,7 @@ class Job:
         res += 'base_config:' + str(self.base_config) + ' '
         res += 'user_config:' + str(self.user_config) + ' '
         res += 'full_config:' + str(self.full_config) + ' '
+        res += 'restart:' + str(self.restart) + ' '
         res += 'mods:' + str(self.mods) + ' '
         res += 'runlen:' + str(self.runlen) + ' '
         res += 't100:' + str(self.t100) + ' '
@@ -127,6 +130,8 @@ class Job:
                     print('full_config_dir:',
                           os.path.join(U.cgenie_data, 'full-configs'), file=fp)
                     print('full_config:', self.full_config, file=fp)
+                if self.restart:
+                    print('restart:', self.restart, file=fp)
                 modfile = os.path.join(self.jobdir, 'config', 'config_mods')
                 if self.mods:
                     with open(modfile, 'w') as mfp: print(self.mods, file=mfp)
@@ -145,6 +150,7 @@ class Job:
         if self.base_config: cmd += ['-b', self.base_config]
         if self.user_config: cmd += ['-u', self.user_config]
         if self.full_config: cmd += ['-c', self.full_config]
+        if self.restart: cmd += ['-r', self.restart]
         if self.mods:
             modfile = os.path.join(self.jobdir, 'config', 'config_mods')
             with open(modfile, 'w') as fp: print(self.mods, file=fp)

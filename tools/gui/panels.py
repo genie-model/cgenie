@@ -94,6 +94,7 @@ class SetupPanel(Panel):
                                           command=self.segment_changed)
         self.segment_sel.grid(column=1, row=1, pady=5, sticky=tk.W)
         self.segment_var.set(self.segments[0])
+        enable(self.segment_sel, len(self.segments) > 1)
 
         self.label('Base config:', 2)
         self.base_config = ttk.Combobox(self, values=self.app.base_configs,
@@ -136,8 +137,15 @@ class SetupPanel(Panel):
                                     command=self.state_change)
         self.t100.grid(column=1, row=6, pady=5, sticky=tk.W)
 
+        self.label('Restart from:', 7)
+        self.restart = ttk.Combobox(self, values=self.app.restart_jobs,
+                                    width=80)
+        self.restart.bind('<<ComboboxSelected>>', self.state_change)
+        self.restart.state(['readonly'])
+        self.restart.grid(column=1, row=7, pady=5, sticky=tk.W)
+
         self.but_frame = ttk.Frame(self)
-        self.but_frame.grid(column=1, row=7, pady=5, sticky=tk.W)
+        self.but_frame.grid(column=1, row=8, pady=5, sticky=tk.W)
         self.save_button = ttk.Button(self.but_frame, text="Save changes",
                                       command=self.save_changes)
         self.revert_button = ttk.Button(self.but_frame, text="Revert changes",
@@ -201,6 +209,9 @@ class SetupPanel(Panel):
         self.job.mods = self.mods.get('1.0', 'end').rstrip()
         self.job.runlen = int(self.runlen_var.get())
         self.job.t100 = True if self.t100_var.get() else False
+        r = self.restart.get()
+        if r == '<None>': r = None
+        self.job.restart = r
         self.job.write_config()
         self.job.gen_namelists()
         self.job.set_status()
@@ -221,21 +232,24 @@ class SetupPanel(Panel):
         if self.job.runlen != None:
             self.runlen.insert('end', str(self.job.runlen))
         self.t100_var.set(bool(self.job.t100))
+        self.restart.set(self.job.restart if self.job.restart else '<None>')
         self.state_change(None)
 
     def update(self):
         """Setting setup panel fields"""
 
-        if not self.job:
-            self.base_config.set('')
-            self.user_config.set('')
-            self.mods.delete('1.0', 'end')
-            self.runlen.delete(0, 'end')
-            self.t100_var.set(False)
-            self.segments = ('1: 1-END [CURRENT]',)
-            self.segment_sel.set_menu(self.segments[0], *self.segments)
-            self.set_button_state()
-            return
+        self.restart.configure(values=self.app.restart_jobs)
+        self.base_config.set('')
+        self.user_config.set('')
+        self.restart.set('<None>')
+        self.mods.delete('1.0', 'end')
+        self.runlen.delete(0, 'end')
+        self.t100_var.set(False)
+        self.segments = ('1: 1-END [CURRENT]',)
+        self.segment_sel.set_menu(self.segments[0], *self.segments)
+        enable(self.segment_sel, len(self.segments) > 1)
+        self.set_button_state()
+        if not self.job: return
         self.job_path.configure(text=self.job.jobdir_str())
         if self.job.base_config:
             self.base_config.set(self.job.base_config
@@ -247,6 +261,7 @@ class SetupPanel(Panel):
                                  if self.job.user_config != '?' else '')
         else:
             self.user_config.set('')
+        self.restart.set(self.job.restart if self.job.restart else '<None>')
         self.mods.delete('1.0', 'end')
         if self.job.mods: self.mods.insert('end', self.job.mods)
         self.runlen.delete(0, 'end')
@@ -282,7 +297,6 @@ class NamelistPanel(Panel):
         self.nl_var = tk.StringVar()
         self.nl_sel = ttk.OptionMenu(self.sel_frame, self.nl_var, None, *nls,
                                      command=self.set_namelist_text)
-        if self.job: self.nl_var.set(nls[0])
 
         self.out = tk.Text(self, font=self.app.mono_font,
                            state=tk.DISABLED, wrap=tk.NONE)
@@ -316,11 +330,14 @@ class NamelistPanel(Panel):
                 with open(nl) as fp: self.namelists[nlname] = fp.read()
             nls.sort()
             nls = tuple(nls)
-            self.nl_sel.set_menu(None if nls == () else nls[0], *nls)
+            self.nl_sel.set_menu(None if not nls else nls[0], *nls)
+            self.nl_var.set(nls[0] if nls else '')
+            enable(self.nl_sel, True if nls else False)
             self.set_namelist_text()
         else:
             self.nl_sel.set_menu(None, *nls)
             self.nl_var.set('')
+            enable(self.nl_sel, False)
             self.set_namelist_text()
 
 
@@ -419,13 +436,13 @@ class PlotPanel(Panel):
         self.output_files = { }
         self.ax.clear()
         self.canvas.draw()
-        self.after(500, self.check_job_files)
+        self.after(0, self.check_job_files)
 
     def update(self):
         if self.job != self.plot_job:
             self.clear()
             self.plot_job = self.job
-            if self.job: self.after(500, self.check_job_files)
+            if self.job: self.after(0, self.check_job_files)
 
     def check_job_files(self):
         if self.job and not self.files:

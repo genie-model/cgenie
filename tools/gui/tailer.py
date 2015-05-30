@@ -11,7 +11,7 @@ class Tailer:
 
     def start(self, cb):
         self.cb = cb
-        if not self.after_id: self.after_id = self.app.after(500, self.read)
+        if not self.after_id: self.after_id = self.app.after(0, self.read)
 
     def stop(self):
         if self.after_id: self.app.after_cancel(self.after_id)

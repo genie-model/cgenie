@@ -253,6 +253,7 @@ if not running_from_gui:
             print('config_date:', str(datetime.datetime.today()), file=fp)
             print('run_length:', run_length, file=fp)
             print('t100:', t100, file=fp)
+            if restart: print('restart:', restart, file=fp)
 
 if test_job:
     shutil.copyfile(os.path.join(test_dir, 'test_info'),

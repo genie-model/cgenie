@@ -48,8 +48,11 @@ class Application(ttk.Frame, AfterHandler):
         self.job = Job()
         self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.find_configs()
+        self.restart_jobs = []
         self.create_widgets()
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
+        self.restart_jobs = self.job_folder.find_restart_jobs()
+        self.panels['setup'].update()
 
 
     #------------------------------------------------------------------
@@ -307,6 +310,7 @@ class Application(ttk.Frame, AfterHandler):
 
         if jobid:
             self.job = Job(jobid, self.job_folder)
+            self.restart_jobs = self.job_folder.find_restart_jobs()
         else:
             self.job = None
         for p in self.panels.itervalues(): p.set_job(self.job)
