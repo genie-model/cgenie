@@ -174,8 +174,13 @@ class Job:
             for f in glob.glob(g): res[os.path.basename(f)] = f
         return res
 
-    def set_status(self):
+    def set_status(self, runlen_increased=False):
         self.status = job_status(self.jobdir)
+        if runlen_increased and self.status == 'COMPLETE':
+            sout = ' PAUSED ' + ' '.join(self.status_params()[1:])
+            with open(os.path.join(self.jobdir, 'status'), 'w') as fp:
+                print(sout, file=fp)
+            self.status = 'PAUSED'
 
     def status_img(self):
         return job_status_img(self.status)

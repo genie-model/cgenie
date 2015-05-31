@@ -206,14 +206,17 @@ class SetupPanel(Panel):
         self.job.base_config = self.base_config.get()
         self.job.user_config = self.user_config.get()
         self.job.mods = self.mods.get('1.0', 'end').rstrip()
-        self.job.runlen = int(self.runlen_var.get())
+        new_runlen = int(self.runlen_var.get())
+        runlen_increased = (self.job.runlen != None and
+                            new_runlen > self.job.runlen)
+        self.job.runlen = new_runlen
         self.job.t100 = True if self.t100_var.get() else False
         r = self.restart.get()
         if r == '<None>': r = None
         self.job.restart = r
         self.job.write_config()
         self.job.gen_namelists()
-        self.job.set_status()
+        self.job.set_status(runlen_increased)
         self.app.tree.item(self.job.jobdir, image=self.job.status_img())
         for p in self.app.panels.itervalues():
             if p != self: p.update()
