@@ -58,16 +58,20 @@ class Job:
                 modfile = os.path.join(self.jobdir, 'config', 'config_mods')
                 if os.path.exists(modfile):
                     with open(modfile) as fp: self.mods = fp.read()
-                cfgdir = os.path.join(self.jobdir, 'config')
-                segfile = os.path.join(cfgdir, 'seglist')
-                if os.path.exists(segfile):
-                    with open(segfile) as fp:
-                        for l in fp:
-                            l = l.split()
-                            self.segments.append((int(l[1]), int(l[2])))
+                self.read_segments()
             except Exception as e:
                 # Shouldn't get here...
                 print('Exception 1:', e)
+
+    def read_segments(self):
+        self.segments = []
+        cfgdir = os.path.join(self.jobdir, 'config')
+        segfile = os.path.join(cfgdir, 'seglist')
+        if os.path.exists(segfile):
+            with open(segfile) as fp:
+                for l in fp:
+                    l = l.split()
+                    self.segments.append((int(l[1]), int(l[2])))
 
     def jobdir_str(self): return self.jobdir if self.jobdir else 'n/a'
     def status_str(self): return self.status if self.status else 'n/a'
@@ -102,21 +106,22 @@ class Job:
             if not os.path.exists(segdir): os.mkdir(segdir)
             save_seg = 1
             startk = 1
-            endk = self.status_params()[1]
+            endk = int(self.status_params()[1])
             if os.path.exists(segfile):
                 with open(segfile) as fp:
                     l = fp.readlines()[-1].split()
                     save_seg = int(l[0]) + 1
                     startk = int(l[2])
-            with open(segfile, 'a') as fp:
-                print(save_seg, startk, endk, file=fp)
-            self.segments.append((startk, endk))
-            segdir = os.path.join(segdir, str(save_seg))
-            os.mkdir(segdir)
-            for f in ('config', 'base_config', 'user_config',
-                      'full_config', 'config_mods'):
-                p = os.path.join(cfgdir, f)
-                if os.path.exists(p): shutil.copy(p, segdir)
+            if startk != endk:
+                with open(segfile, 'a') as fp:
+                    print(save_seg, startk, endk, file=fp)
+                self.segments.append((startk, endk))
+                segdir = os.path.join(segdir, str(save_seg))
+                os.mkdir(segdir)
+                for f in ('config', 'base_config', 'user_config',
+                          'full_config', 'config_mods'):
+                    p = os.path.join(cfgdir, f)
+                    if os.path.exists(p): shutil.copy(p, segdir)
         try:
             with open(os.path.join(self.jobdir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
@@ -202,6 +207,7 @@ class Job:
             return ss
 
     def segment_strs(self):
+        self.read_segments()
         if len(self.segments) == 0:
             res = ('1: 1-END',)
         else:

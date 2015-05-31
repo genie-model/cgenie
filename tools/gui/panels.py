@@ -264,8 +264,7 @@ class SetupPanel(Panel):
         self.job.gen_namelists()
         self.job.set_status(runlen_increased)
         self.app.tree.item(self.job.jobdir, image=self.job.status_img())
-        for p in self.app.panels.itervalues():
-            if p != self: p.update()
+        for p in self.app.panels.itervalues(): p.update()
         self.set_state()
         self.set_button_state()
 

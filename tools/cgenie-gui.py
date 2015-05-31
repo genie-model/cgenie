@@ -40,6 +40,7 @@ class Application(ttk.Frame, AfterHandler):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
         AfterHandler.__init__(self)
+        self.reapable = set()
         self.normal_font = tkFont.nametofont('TkDefaultFont')
         self.mono_font = tkFont.nametofont('TkFixedFont')
         self.bold_font = self.normal_font.copy()
@@ -211,11 +212,10 @@ class Application(ttk.Frame, AfterHandler):
             shutil.rmtree(os.path.join(p, 'config', 'segments'))
         for f in glob.iglob(os.path.join(p, 'gui_restart_*.nc')):
             os.remove(f)
-        for p in self.panels.itervalues(): p.clear()
         self.update_job_data()
+        for p in self.panels.itervalues(): p.clear()
 
 
-    ### ===> TODO: get job pause/restart working properly
     def run_job(self):
         # Check for existence of genie-ship.exe executable and build
         # if necessary.
@@ -241,8 +241,9 @@ class Application(ttk.Frame, AfterHandler):
         # in job directory.
         with open(os.path.join(self.job.jobdir, 'run.log'), 'a') as fp:
             try:
-                sp.Popen(runexe, cwd=self.job.jobdir,
-                         stdout=fp, stderr=sp.STDOUT)
+                pipe = sp.Popen(runexe, cwd=self.job.jobdir,
+                                stdout=fp, stderr=sp.STDOUT)
+                self.reapable.add(pipe)
             except Exception as e:
                 tkMB.showerror('Error', 'Failed to start GENIE executable!')
 
@@ -321,8 +322,16 @@ class Application(ttk.Frame, AfterHandler):
         self.panels['status'].update()
         self.panels['output'].update()
         self.set_job_buttons()
+        self.reap()
         self.after(500, self.update_job_data)
 
+    def reap(self):
+        reaped = set()
+        for ch in self.reapable:
+            if ch.poll() != None:
+                ch.wait()
+                reaped.add(ch)
+        self.reapable -= reaped
 
     def create_widgets(self):
         """UI layout"""
