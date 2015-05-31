@@ -74,7 +74,6 @@ class StatusPanel(Panel):
             self.t100.configure(text=self.job.t100_str())
 
 
-### ===> TODO: also need to handle restart setup.
 class SetupPanel(Panel):
     def __init__(self, notebook, app):
         """Initial creation of setup panel"""

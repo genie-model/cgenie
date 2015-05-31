@@ -217,14 +217,14 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def run_job(self):
-        # Check for existence of genie-ship.exe executable.
-        ### ===> TODO: Sort this out properly
+        # Check for existence of genie-ship.exe executable and build
+        # if necessary.
         exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
                            platform, 'ship', 'genie.exe')
         runexe = os.path.join(self.job.jobdir, 'genie-ship.exe')
         if not os.path.exists(exe):
-            tkMB.showerror('Error', 'GENIE executable missing!')
-            return
+            d = BuildExecutableDialog(self, self.job.jobdir)
+            if not d.result: return
         shutil.copy(exe, runexe)
 
         # Set up GUI_RESTART command file if this is a restart after a
