@@ -200,13 +200,19 @@ end if
   ! Subroutine to read in restart info - just the netcdf record number for appending data at the moment
 
   SUBROUTINE sub_load_rokgem_restart()
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     ! local variables
     integer::ios                                    ! local counting variables
     CHARACTER(len=255)::loc_filename                ! filename string
 
     ! retrieve restart data
-    loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
+    IF (gui_restart) THEN
+       PRINT *, 'READING ROKGEM GUI RESTART FILE: gui_restart_rokgem'
+       loc_filename = 'gui_restart_rokgem'
+    ELSE
+       loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
+    END IF
     OPEN(unit=in,status='old',file=loc_filename,form='formatted',action='read',iostat=ios)
     READ(unit=in,fmt='(i6)') ncout2d_ntrec_rg
     close(unit=in)

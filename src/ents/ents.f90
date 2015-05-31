@@ -264,6 +264,7 @@ CONTAINS
   SUBROUTINE setup_ents(dum_rsc, dum_syr, dum_ds, dum_dphi, dum_ca, &
        & dum_tq, dum_rmax, dum_rdtdim, dum_co2_out, gn_daysperyear, &
        & landice_slicemask_lic, albs_lnd, land_snow_lnd)
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_rsc, dum_syr, dum_dphi
     REAL, DIMENSION(:), INTENT(IN) :: dum_ds
@@ -419,7 +420,10 @@ CONTAINS
     PRINT *, include_emissions
 
     ! Continue run
-    IF (restart == 'c' .OR. restart == 'C') THEN
+    IF (gui_restart) THEN
+       PRINT *, 'READING ENTS GUI RESTART FILE: gui_restart_ents.nc'
+       CALL in_ents_netcdf('gui_restart_ents.nc', land_snow_lnd)
+    ELSE IF (restart == 'c' .OR. restart == 'C') THEN
        CALL in_ents_netcdf(filenetin, land_snow_lnd)
     END IF
 
@@ -460,7 +464,6 @@ CONTAINS
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
-    USE netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, nyear
     REAL, DIMENSION(:,:), INTENT(IN) :: torog_atm
@@ -486,16 +489,7 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(IN) :: sfcatm_lnd
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: sfxatm_lnd
 
-    INTEGER :: itv, iout, i, j, istot
-    CHARACTER(LEN=200) :: fname, label
-
-    REAL, DIMENSION(:,:,:), ALLOCATABLE :: var_data
-    CHARACTER(LEN=8), DIMENSION(10) :: labels = &
-         & (/ 'photo   ', 'respveg ', 'leaf    ', 'respsoil', 'Cveg    ', &
-         &    'Csoil   ', 'fv      ', 'tqld1   ', 'tqld2   ', 'snow    ' /)
-    INTEGER :: kk, myyear, var_id, vardim_id, ncid
-    INTEGER :: mymonth, myday, inistep
-    LOGICAL :: fexist
+    INTEGER :: itv, iout, istot
 
     dum_istep0 = 0
     istot=0
@@ -532,75 +526,7 @@ CONTAINS
     END IF
 
     ! Write ENTS restarts
-    IF (MOD(istep, iwstp) == 0) THEN
-       inistep = INT(nyear * iniday / yearlen) + istep
-       myyear = INT(inistep / nyear)
-       mymonth = INT(12 * MOD(inistep, nyear) / nyear)
-       myday = INT(yearlen * inistep / nyear - &
-            & mymonth * (yearlen / 12) - myyear * yearlen)
-
-       IF (MOD(iwstp, nyear) == 0) THEN
-          fname = TRIM(outdir_name) // TRIM(out_name) // &
-               & '_restart_' // TRIM(ConvertFunc(myyear - 1, 10)) // &
-               & '_12_30.nc'
-       ELSE
-          fname = TRIM(outdir_name) // TRIM(out_name) // &
-               & '_restart_' // &
-               & TRIM(ConvertFunc(myyear, 10)) // '_' // &
-               & TRIM(ConvertFunc(mymonth, 2)) // '_' // &
-               & TRIM(ConvertFunc(myday, 2)) // '.nc'
-       END IF
-
-       INQUIRE(FILE=fname,EXIST=fexist)
-       IF (fexist) THEN
-          OPEN(8,FILE=fname,STATUS='old')
-          CLOSE(8,STATUS='delete')
-       END IF
-
-       DO kk = 1, 10
-          ALLOCATE(var_data(1,maxj,maxi))
-          label = labels(kk)
-          DO j = 1, maxj
-             DO i = 1, maxi
-                SELECT CASE (kk)
-                CASE (1)
-                   var_data(1,j,i) = photo(i,j)
-                CASE (2)
-                   var_data(1,j,i) = respveg(i,j)
-                CASE (3)
-                   var_data(1,j,i) = leaf(i,j)
-                CASE (4)
-                   var_data(1,j,i) = respsoil(i,j)
-                CASE (5)
-                   var_data(1,j,i) = Cveg(i,j)
-                CASE (6)
-                   var_data(1,j,i) = Csoil(i,j)
-                CASE (7)
-                   var_data(1,j,i) = fv(i,j)
-                CASE (8)
-                   var_data(1,j,i) = tqld(1,i,j)
-                CASE (9)
-                   var_data(1,j,i) = tqld(2,i,j)
-                CASE (10)
-                   var_data(1,j,i) = land_snow_lnd(i,j)
-                END SELECT
-             END DO
-          END DO
-          CALL netcdf_ents(fname, var_data, label, myday)
-          DEALLOCATE(var_data)
-       END DO
-
-       ! Adding final restart value (single)
-       CALL check_err(NF90_OPEN(fname, NF90_WRITE, ncid))
-       CALL check_err(NF90_REDEF(ncid))
-       CALL check_err(NF90_DEF_DIM(ncid, 'pco2ld', 1, vardim_id))
-       CALL check_err(NF90_DEF_VAR(ncid, 'pco2ld', &
-            & NF90_FLOAT, (/ vardim_id /), var_id))
-       CALL check_err(NF90_PUT_ATT(ncid, var_id, 'long_name', 'pco2ld'))
-       CALL check_err(NF90_ENDDEF(ncid))
-       CALL check_err(NF90_PUT_VAR(ncid, var_id, pco2ld))
-       CALL check_err(NF90_CLOSE(ncid))
-    END IF
+    IF (MOD(istep, iwstp) == 0) CALL out_ents_netcdf(istep, land_snow_lnd)
 
     IF (MOD(istep, itstp) == 0) THEN
        CALL carbt_diags(istep)

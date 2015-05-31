@@ -90,6 +90,7 @@ CONTAINS
     USE atchem_lib
     use gem_netcdf
     USE genie_util, ONLY:check_unit,check_iostat
+    USE genie_global, ONLY: gui_restart
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -110,7 +111,10 @@ CONTAINS
     ! -------------------------------------------------------- !
     loc_atm = 0.0
     ! -------------------------------------------------------- ! set filename
-    IF (ctrl_ncrst) THEN
+    IF (gui_restart) THEN
+       PRINT *, 'READING ATCHEM GUI RESTART FILE: gui_restart_atchem.nc'
+       loc_filename = 'gui_restart_atchem.nc'
+    ELSE IF (ctrl_ncrst) THEN
        loc_filename = TRIM(par_rstdir_name)//par_ncrst_name
     else
        loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
@@ -130,7 +134,7 @@ CONTAINS
        ! -------------------------------------------------------- !
        ! LOAD RESTART
        ! -------------------------------------------------------- !
-       IF (ctrl_ncrst) THEN
+       IF (ctrl_ncrst .OR. gui_restart) THEN
           call sub_openfile(loc_filename,loc_ncid)
           ! -------------------------------------------------------- ! determine number of variables
           call sub_inqdims (loc_filename,loc_ncid,loc_ndims,loc_nvars)

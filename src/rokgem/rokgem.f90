@@ -50,6 +50,7 @@ CONTAINS
   SUBROUTINE initialise_rokgem(dum_genie_timestep, dum_sfxrok, dum_sfxsumrok1)
     USE genie_control, ONLY: dim_ROKGEMNLONS, dim_ROKGEMNLATS
     USE genie_util, ONLY: die
+    USE genie_global, ONLY: gui_restart
     USE rokgem_data
     USE rokgem_box
     USE rokgem_data_netCDF
@@ -123,7 +124,7 @@ CONTAINS
     string_ncout2d_rg  = TRIM(par_outdir_name)//'fields_rokgem_2d.nc' !note: this needs to be less than 100 characters
     if (debug_init > 1) print*, 'netcdf ouput file: ',TRIM(string_ncout2d_rg)
     ! initialise 2d netcdf files
-    IF (ctrl_continuing.AND.opt_append_data) THEN
+    IF (ctrl_continuing.AND.opt_append_data .OR. gui_restart) THEN
        call sub_load_rokgem_restart()
     ELSE
        ncout2d_ntrec_rg = 0
@@ -137,7 +138,7 @@ CONTAINS
     string_ncout2d_rg  = TRIM(par_outdir_name)//'fields_rokgem_2d.nc' !note: this needs to be less than 100 characters
     if (debug_init > 1) print*, 'netcdf ouput file: ',TRIM(string_ncout2d_rg)
     ! initialise 2d netcdf files
-    IF (ctrl_continuing.AND.opt_append_data) THEN
+    IF (ctrl_continuing.AND.opt_append_data .OR. gui_restart) THEN
        call sub_load_rokgem_restart()
     ELSE
        ncout2d_ntrec_rg = 0

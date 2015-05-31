@@ -491,7 +491,7 @@ CONTAINS
     ENDIF
 
     ! *** load restart information ***
-    IF (ctrl_continuing) then
+    IF (ctrl_continuing .OR. gui_restart) then
        call sub_data_load_rst()
     end if
 

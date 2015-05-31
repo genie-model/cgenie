@@ -22,6 +22,7 @@ CONTAINS
     USE sedgem_data
     USE genie_util, ONLY: check_iostat
     USE genie_control, ONLY: dim_SEDGEMNLONS, dim_SEDGEMNLATS
+    USE genie_global, ONLY: gui_restart
 
     IMPLICIT NONE
     REAL, INTENT(in) :: dum_genie_timestep                       ! genie time-step (in seconds)
@@ -165,7 +166,7 @@ CONTAINS
     ENDIF
     ! ---------------------------------------------------------- ! LOAD SEDIMENT RE-START
     IF (ctrl_misc_debug2) print*, 'LOAD SEDIMENT RE-START'
-    IF (ctrl_continuing) then
+    IF (ctrl_continuing .OR. gui_restart) then
        CALL sub_data_load_rst(dum_sfxsumsed,dum_sfxocn)
        ! modify sediment ages
        if (sed_select(is_CaCO3_age)) then

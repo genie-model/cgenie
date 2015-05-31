@@ -172,7 +172,7 @@ CONTAINS
   SUBROUTINE ents_save_restart_wrapper
     USE ents_data
     IMPLICIT NONE
-    CALL out_ents_netcdf(istep_ocn)
+    CALL out_ents_netcdf(istep_ocn, land_snow_lnd)
   END SUBROUTINE ents_save_restart_wrapper
 
   SUBROUTINE cpl_flux_ocnatm_wrapper

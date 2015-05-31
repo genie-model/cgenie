@@ -21,6 +21,7 @@ CONTAINS
 
     timestep = 24.0 * 60.0 * 60.0 * yearlen / REAL(nyear)
     IF (gui_restart) THEN
+       PRINT *, 'READING SEAICE GUI RESTART FILE: gui_restart_goldsteinseaice.nc'
        fnamein = 'gui_restart_goldsteinseaice.nc'
     ELSE
        fnamein = TRIM(filenetin)

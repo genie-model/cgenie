@@ -199,6 +199,7 @@ CONTAINS
     USE sedgem_lib
     use gem_netcdf
     USE genie_util, ONLY:check_unit,check_iostat
+    USE genie_global, ONLY: gui_restart
     ! -------------------------------------------------------- !
     ! DEFINE DUMMY ARGUMENTS
     ! -------------------------------------------------------- !
@@ -230,11 +231,14 @@ CONTAINS
     IF (ctrl_misc_debug3) print*, 'INITIALIZE LOCAL VARIABLES'
     ! -------------------------------------------------------- ! set filename
     IF (ctrl_misc_debug4) print*, 'set filename'
-    IF (ctrl_ncrst) THEN
+    IF (gui_restart) THEN
+       PRINT *, 'READING SEDGEM GUI RESTART FILE: gui_restart_sedgem.nc'
+       loc_filename = 'gui_restart_sedgem.nc'
+    ELSE IF (ctrl_ncrst) THEN
        loc_filename = TRIM(par_rstdir_name)//par_ncrst_name
-    else
+    ELSE
        loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
-    endif
+    END IF
     ! -------------------------------------------------------- ! check file status
     IF (ctrl_misc_debug4) print*, 'check file status'
     call check_unit(in,__LINE__,__FILE__)
@@ -252,7 +256,7 @@ CONTAINS
        ! LOAD RESTART
        ! -------------------------------------------------------- !
        IF (ctrl_misc_debug3) print*, 'LOAD RESTART'
-       IF (ctrl_ncrst) THEN
+       IF (ctrl_ncrst .OR. gui_restart) THEN
           call sub_openfile(loc_filename,loc_ncid)
           ! -------------------------------------------------------- ! determine number of variables
           IF (ctrl_misc_debug4) print*, 'determine number of variables'

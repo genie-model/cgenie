@@ -22,6 +22,7 @@ CONTAINS
     USE atchem_data
     USE atchem_data_netCDF
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm    ! atmosphere-surface tracer composition; atm grid
@@ -47,7 +48,7 @@ CONTAINS
     CALL sub_init_phys_atm()
     CALL sub_init_tracer_atm_comp()
 
-    IF (ctrl_continuing) CALL sub_data_load_rst()
+    IF (ctrl_continuing .OR. gui_restart) CALL sub_data_load_rst()
 
     dum_sfxsumatm = 0.0
     dum_sfcatm = atm

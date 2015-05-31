@@ -21,6 +21,7 @@ CONTAINS
 
     timestep = 24.0 * 60.0 * 60.0 * yearlen / REAL(nyear * ndta)
     IF (gui_restart) THEN
+       PRINT *, 'READING EMBM GUI RESTART FILE: gui_restart_embm.nc'
        fnamein = 'gui_restart_embm.nc'
     ELSE
        fnamein = TRIM(filenetin)
