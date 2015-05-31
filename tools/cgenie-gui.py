@@ -211,11 +211,11 @@ class Application(ttk.Frame, AfterHandler):
             shutil.rmtree(os.path.join(p, 'config', 'segments'))
         for f in glob.iglob(os.path.join(p, 'gui_restart_*.nc')):
             os.remove(f)
-        self.panels['output'].clear()
-        self.panels['plots'].clear()
+        for p in self.panels.itervalues(): p.clear()
         self.update_job_data()
 
 
+    ### ===> TODO: get job pause/restart working properly
     def run_job(self):
         # Check for existence of genie-ship.exe executable and build
         # if necessary.

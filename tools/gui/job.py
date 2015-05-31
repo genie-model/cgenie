@@ -60,14 +60,13 @@ class Job:
                     with open(modfile) as fp: self.mods = fp.read()
                 cfgdir = os.path.join(self.jobdir, 'config')
                 segfile = os.path.join(cfgdir, 'seglist')
-                ### ===> TODO: read all segment data here
                 if os.path.exists(segfile):
                     with open(segfile) as fp:
                         for l in fp:
                             l = l.split()
                             self.segments.append((int(l[1]), int(l[2])))
             except Exception as e:
-                ### ===> TODO: better exception handling
+                # Shouldn't get here...
                 print('Exception 1:', e)
 
     def jobdir_str(self): return self.jobdir if self.jobdir else 'n/a'
@@ -92,6 +91,8 @@ class Job:
         res += '}'
         return res
 
+    ### ===> TODO: collapse zero-length segments (from multiple edits
+    ###            at same point)
     def write_config(self):
         self.set_status()
         if self.status == 'PAUSED' or self.status == 'COMPLETE':
@@ -109,13 +110,13 @@ class Job:
                     startk = int(l[2])
             with open(segfile, 'a') as fp:
                 print(save_seg, startk, endk, file=fp)
+            self.segments.append((startk, endk))
             segdir = os.path.join(segdir, str(save_seg))
             os.mkdir(segdir)
-            for f in ('base_config', 'user_config',
+            for f in ('config', 'base_config', 'user_config',
                       'full_config', 'config_mods'):
                 p = os.path.join(cfgdir, f)
                 if os.path.exists(p): shutil.copy(p, segdir)
-            ### ===> TODO: update segment information member variables
         try:
             with open(os.path.join(self.jobdir, 'config', 'config'), 'w') as fp:
                 if self.base_config:
@@ -141,7 +142,7 @@ class Job:
                 print('run_length:', self.runlen, file=fp)
                 print('t100:', self.t100, file=fp)
         except Exception as e:
-            ### ===> TODO: better exception handling
+            # Shouldn't get here...
             print('Exception 2:', e)
 
     def gen_namelists(self):
@@ -199,3 +200,39 @@ class Job:
         with open(os.path.join(self.jobdir, 'status')) as fp:
             ss = fp.readline().strip().split()
             return ss
+
+    def segment_strs(self):
+        if len(self.segments) == 0:
+            res = ('1: 1-END',)
+        else:
+            res = []
+            iseg = 1
+            for kstart, kend in self.segments:
+                res.append(str(iseg) + ': ' + str(kstart) + '-' + str(kend))
+                iseg += 1
+            res.append(str(iseg) + ': ' + str(kend + 1) + '-END')
+            res.reverse()
+            res = tuple(res)
+        return res
+
+    def read_segment(self, iseg):
+        segdir = os.path.join(self.jobdir, 'config', 'segments', str(iseg))
+        if not os.path.exists(segdir): return None
+        res = { }
+        with open(os.path.join(segdir, 'config')) as fp:
+            for line in fp:
+                ss = line.split(':')
+                k = ss[0].strip()
+                v = ':'.join(ss[1:]).strip()
+                if k == 't100':
+                    res['t100'] = True if v == 'True' else False
+                elif k == 'run_length':
+                    res['runlen'] = None if v == '?' else int(v)
+                elif k == 'full_config': res['full_config'] = v
+                elif k == 'base_config': res['base_config'] = v
+                elif k == 'user_config': res['user_config'] = v
+                elif k == 'restart': res['restart'] = v
+        modfile = os.path.join(segdir, 'config_mods')
+        if os.path.exists(modfile):
+            with open(modfile) as fp: res['mods'] = fp.read()
+        return res

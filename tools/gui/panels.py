@@ -31,6 +31,9 @@ class Panel(ttk.Frame):
         lab.grid(column=column, row=row, pady=5, padx=5, sticky=tk.W)
         return lab
 
+    def clear(self):
+        self.update()
+
 
 class StatusPanel(Panel):
     def __init__(self, notebook, app):
@@ -85,14 +88,17 @@ class SetupPanel(Panel):
         self.job_path.grid(column=1, row=0, pady=5, sticky=tk.W)
 
         self.label('Run segment:', 1)
-        ### ===> TODO: Set up segments from job data
-        self.segments = ('1: 1-END [CURRENT]',)
+        if self.job:
+            self.segments = self.job.segment_strs()
+        else:
+            self.segments = ('1: 1-END',)
         self.segment_var = tk.StringVar()
         self.segment_sel = ttk.OptionMenu(self, self.segment_var,
                                           None, *self.segments,
                                           command=self.segment_changed)
         self.segment_sel.grid(column=1, row=1, pady=5, sticky=tk.W)
         self.segment_var.set(self.segments[0])
+        self.current_seg = self.segments[0]
         enable(self.segment_sel, len(self.segments) > 1)
 
         self.label('Base config:', 2)
@@ -187,8 +193,11 @@ class SetupPanel(Panel):
             if (self.runlen.get() and
                 int(self.runlen.get()) != self.job.runlen):
                 self.edited = True
-            if (self.t100_var.get() != self.job.t100):
+            if self.t100_var.get() != self.job.t100:
                 self.edited = True
+            r = self.restart.get()
+            if r == '<None>': r = None
+            if r != self.job.restart: self.edited = True
 
     def state_change(self, event=None, dummy1=None, dummy2=None):
         self.set_state()
@@ -196,11 +205,48 @@ class SetupPanel(Panel):
         self.mods.edit_modified(False)
 
     def segment_changed(self, event):
-        ### ===> TODO: save current segment values and switch display
-        ###      to segment values if not current segment and disable
-        ###      editing; if current segment, restore values and
-        ###      button state from saved state.
-        print('segment_changed')
+        seg = int(self.segment_var.get().split(':')[0])
+        was_current = self.current_seg.endswith('END')
+        now_current = self.segment_var.get().endswith('END')
+        self.current_seg = self.segment_var.get()
+        self.mods.configure(state=tk.NORMAL)
+        if was_current:
+            self.base_config_save = self.base_config.get()
+            self.user_config_save = self.user_config.get()
+            self.mods_save = self.mods.get('1.0', 'end')
+            self.runlen_save = self.runlen.get()
+            self.t100_save = self.t100_var.get()
+            self.restart_save = self.restart.get()
+        if now_current:
+            self.base_config.set(self.base_config_save)
+            self.user_config.set(self.user_config_save)
+            self.mods.delete('1.0', 'end')
+            self.mods.insert('end', self.mods_save)
+            self.runlen_var.set(self.runlen_save)
+            self.t100_var.set(self.t100_save)
+            self.restart.set(self.restart_save)
+        else:
+            vals = self.job.read_segment(seg)
+            self.base_config.set(vals['base_config']
+                                 if 'base_config' in vals else '')
+            self.user_config.set(vals['user_config']
+                                 if 'user_config' in vals else '')
+            self.mods.delete('1.0', 'end')
+            if 'mods' in vals: self.mods.insert('end', vals['mods'])
+            self.runlen_var.set(vals['runlen'])
+            self.t100_var.set(vals['t100'])
+            self.restart.set(vals['restart'] if 'restart' in vals else '')
+        enable(self.base_config, now_current)
+        enable(self.user_config, now_current)
+        self.mods.configure(state=tk.NORMAL if now_current else tk.DISABLED)
+        enable(self.runlen, now_current)
+        enable(self.t100, now_current)
+        enable(self.restart, now_current)
+        if now_current:
+            self.state_change()
+        else:
+            enable(self.save_button, False)
+            enable(self.revert_button, False)
 
     def save_changes(self):
         self.job.base_config = self.base_config.get()
@@ -247,8 +293,12 @@ class SetupPanel(Panel):
         self.mods.delete('1.0', 'end')
         self.runlen.delete(0, 'end')
         self.t100_var.set(False)
-        self.segments = ('1: 1-END [CURRENT]',)
+        if self.job:
+            self.segments = self.job.segment_strs()
+        else:
+            self.segments = ('1: 1-END',)
         self.segment_sel.set_menu(self.segments[0], *self.segments)
+        self.current_seg = self.segments[0]
         enable(self.segment_sel, len(self.segments) > 1)
         self.set_button_state()
         if not self.job: return
@@ -270,18 +320,10 @@ class SetupPanel(Panel):
         if self.job.runlen != None:
             self.runlen.insert('end', str(self.job.runlen))
         self.t100_var.set(bool(self.job.t100))
-        if not self.job.segments:
-            self.segments = ('1: 1-END [CURRENT]',)
+        if self.job:
+            self.segments = self.job.segment_strs()
         else:
-            self.segments = []
-            i = 1
-            for kstart, kend in self.job.segments:
-                self.segments.append(str(i) + ': ' +
-                                     str(kstart) + '-' + str(kend))
-                i += 1
-            self.segments.append(str(i) + ': ' + str(kend+1) + '-END')
-            self.segments.reverse()
-            self.segments = tuple(self.segments)
+            self.segments = ('1: 1-END',)
         self.segment_sel.set_menu(self.segments[0], *self.segments)
         self.set_state()
         self.set_button_state()
