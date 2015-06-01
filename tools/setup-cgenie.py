@@ -49,7 +49,7 @@ else:
         print('cgenie_jobs: ' + jobs, file=fp)
         print('cgenie_version: ' + vers, file=fp)
     try:
-        os.mkdir(jobs)
+        if not os.path.exists(jobs): os.mkdir(jobs)
     except IOError:
         print('Could not create jobs directory!')
 

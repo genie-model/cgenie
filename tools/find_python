@@ -1,24 +1,14 @@
 #!/bin/bash
 
-export PYTHON=$ANACONDA_DIR/bin/python
-
 if [ ! -z "$CGENIE_PYTHON" ]; then
     export PYTHON=$CGENIE_PYTHON
-elif [ -z "$ANACONDA_DIR" ]; then
+else
+    echo
     echo 'NO SUITABLE PYTHON SETUP FOUND!'
     echo
-    echo 'You have two choices:'
-    echo
-    echo '1. Set the CGENIE_PYTHON environment variable to point to a'
-    echo '   Python 2.7.9 interpreter that has the matplotlib package'
-    echo '   installed.'
-    echo
-    echo '2. Install the Anaconda Python installation and set the ANACONDA_DIR'
-    echo '   environment variable to point to the installation directory.'
-    echo
-    echo 'Of these two options, the first is preferred for Linux installations,'
-    echo 'because the GUI libraries supplied with the Anaconda distribution do'
-    echo 'not support font anti-aliasing.'
+    echo 'The CGENIE_PYTHON environment variable needs to be set to'
+    echo 'point to the Python interpreter executable (which must be'
+    echo 'Python 2.7.9).'
     echo
     exit 0
 fi
