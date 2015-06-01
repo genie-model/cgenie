@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ -z $cgenie_root ]; then
-    echo "SOMETHING IS WRONG: cgenie_root NOT SET IN find_python"
-    exit 1
-fi
-
 export PYTHON=$ANACONDA_DIR/bin/python
 
 if [ ! -z "$CGENIE_PYTHON" ]; then

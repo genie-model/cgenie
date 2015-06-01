@@ -1,19 +1,26 @@
 @ECHO OFF
-IF NOT EXIST "%USERPROFILE%\.cgenierc" (
-  ECHO GENIE not set up: run the setup-cgenie script^^!
-  EXIT /B 0
-)
+
+:: Check for CGENIE_PYTHON variable setting.
+SET PYTHON="%CGENIE_PYTHON%"
+IF DEFINED CGENIE_PYTHON GOTO:eof
 
 :: Check for ANACONDA_DIR variable setting.
 SET PYTHON="%ANACONDA_DIR%\bin\python.exe"
 IF DEFINED ANACONDA_DIR GOTO:eof
 
-ECHO ANACONDA_DIR environment variable not set^^!
+ECHO NO SUITABLE PYTHON SETUP FOUND^^!
 ECHO
-ECHO GENIE relies on the Anaconda Python installation.
-ECHO You can find this at https://store.continuum.io/cshop/anaconda/
+ECHO You have two choices:
 ECHO
-ECHO Please install Anaconda and set the ANACONDA_DIR environment
-ECHO variable to point to the Anaconda installation directory.
+ECHO 1. Set the CGENIE_PYTHON environment variable to point to a
+ECHO    Python 2.7.9 interpreter that has the matplotlib package
+ECHO    installed.
+ECHO
+ECHO 2. Install the Anaconda Python installation and set the ANACONDA_DIR
+ECHO    environment variable to point to the installation directory.
+ECHO
+ECHO Of these two options, the second is preferred for Windows installations,
+ECHO because it's simpler to manage.
+
 SET PYTHON=
 EXIT /B 0

@@ -48,6 +48,10 @@ else:
         print('cgenie_test: ' + test, file=fp)
         print('cgenie_jobs: ' + jobs, file=fp)
         print('cgenie_version: ' + vers, file=fp)
+    try:
+        os.mkdir(jobs)
+    except IOError:
+        print('Could not create jobs directory!')
 
 
 # Download data and test repositories if required.
