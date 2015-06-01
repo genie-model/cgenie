@@ -437,9 +437,9 @@ CONTAINS
   END SUBROUTINE alloc_die
 
   SUBROUTINE write_status(status)
-    !!! Needed for Intel Fortran: need some sort of preprocessor code
-    !!! here...
-    !!! USE ifport
+#ifdef __INTEL_COMPILER
+    USE ifport
+#endif
     USE gem_cmn, ONLY: out
     IMPLICIT NONE
     CHARACTER(LEN=*), INTENT(IN) :: status
