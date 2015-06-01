@@ -9,17 +9,16 @@ import utils as U
 from tailer import *
 from util import *
 
-# Fixed version of base dialog class from tkSimpleDialog.
+# Fixed version of base dialog class from tkSimpleDialog.  The default
+# tkSimpleDialog class doesn't deal well with resizing of dialogs,
+# which we really need for the model build output window.  See the
+# original tkSimpleDialog code for documentation.
 
 class SimpleDialog(tk.Toplevel):
     def __init__(self, parent, title = None):
         tk.Toplevel.__init__(self, parent)
-        self.withdraw() # remain invisible for now
-        # If the master is not viewable, don't
-        # make the child transient, or else it
-        # would be opened withdrawn
+        self.withdraw()
         if parent.winfo_viewable(): self.transient(parent)
-
         if title: self.title(title)
         self.parent = parent
         self.result = None
@@ -32,16 +31,13 @@ class SimpleDialog(tk.Toplevel):
         top.rowconfigure(0, weight=1)
         top.rowconfigure(1, weight=0)
         top.columnconfigure(0, weight=1)
-
         if not self.initial_focus: self.initial_focus = self
         self.protocol("WM_DELETE_WINDOW", self.cancel)
         if self.parent is not None:
             self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
                                       parent.winfo_rooty()+50))
-        self.deiconify() # become visibile now
+        self.deiconify()
         self.initial_focus.focus_set()
-
-        # wait for window to appear on screen before calling grab_set
         self.wait_visibility()
         self.grab_set()
         self.wait_window(self)
@@ -69,10 +65,8 @@ class SimpleDialog(tk.Toplevel):
         if not self.validate():
             self.initial_focus.focus_set() # put focus back
             return
-
         self.withdraw()
         self.update_idletasks()
-
         try:
             self.apply()
         finally:
@@ -90,6 +84,10 @@ class SimpleDialog(tk.Toplevel):
         pass
 
 
+# Dialog for moving and/or renaming jobs and folders.  Has an option
+# menu allowing the user to select a new folder to move the item into,
+# plus a text field to allow the user to give a new name for the item.
+
 class MoveRenameDialog(SimpleDialog):
     def __init__(self, full_path, is_folder, folders, parent=None):
         if not parent: parent = tk._default_root
@@ -102,7 +100,6 @@ class MoveRenameDialog(SimpleDialog):
         self.folders = folders
         self.result = False
         SimpleDialog.__init__(self, parent, 'Move/rename job')
-
 
     def body(self, master):
         lab = ttk.Label(master, text='Folder:')
@@ -120,7 +117,6 @@ class MoveRenameDialog(SimpleDialog):
 
         return self.name
 
-
     def validate(self):
         if len(self.name.get()) == 0:
             tkMB.showwarning('Illegal value',
@@ -135,7 +131,6 @@ class MoveRenameDialog(SimpleDialog):
             return 0
         return 1
 
-
     def apply(self):
         self.new_folder = self.folder.get()
         self.new_name = self.name.get()
@@ -144,6 +139,12 @@ class MoveRenameDialog(SimpleDialog):
         self.result = self.folder_changed or self.name_changed
 
 
+
+# Dialog for managing model rebuilds.  This has a little state machine
+# for keeping track of whether the build is running or not and uses a
+# Tailer object to capture the build output into a text widget.  The
+# build itself is done using the "go" script in a particular job
+# directory.
 
 class BuildExecutableDialog(SimpleDialog):
     def __init__(self, app, dir, parent=None):
@@ -156,7 +157,6 @@ class BuildExecutableDialog(SimpleDialog):
         self.pipe = None
         SimpleDialog.__init__(self, parent, 'Build model executable')
 
-
     def destroy(self):
         if self.state == 'RUNNING':
             if self.tailer: self.tailer.stop()
@@ -165,7 +165,6 @@ class BuildExecutableDialog(SimpleDialog):
             self.pipe.terminate()
             self.pipe.wait()
         SimpleDialog.destroy(self)
-
 
     def body(self, master):
         msg = 'GENIE executable needs to be rebuilt\n\n'
@@ -211,12 +210,10 @@ class BuildExecutableDialog(SimpleDialog):
 
         return self.out
 
-
     def buttonbox(self):
         box = SimpleDialog.buttonbox(self)
         enable(self.ok_button, False)
         return box
-
 
     def message(self, s):
         self.out['state'] = tk.NORMAL
@@ -229,7 +226,6 @@ class BuildExecutableDialog(SimpleDialog):
         self.out['state'] = tk.DISABLED
         self.out.see(tk.END)
 
-
     def add_output(self, t):
         if self.pipe.poll() != None:
             self.state = 'COMPLETE'
@@ -240,7 +236,6 @@ class BuildExecutableDialog(SimpleDialog):
         self.out.insert('end', t)
         self.out['state'] = tk.DISABLED
         if atend: self.out.see('end')
-
 
     def validate(self):
         if self.state != 'COMPLETE' and self.state != 'FAILED':

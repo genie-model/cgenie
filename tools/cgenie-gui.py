@@ -8,8 +8,10 @@ import tkMessageBox as tkMB
 import tkFont
 import ttk
 
+# General GENIE utilities.
 import utils as U
 
+# Most of the GUI code is in these modules...
 from gui.tooltip import *
 from gui.job_folder import *
 from gui.job import *
@@ -18,6 +20,8 @@ from gui.dialogs import *
 from gui.after import *
 from gui.util import *
 
+
+#----------------------------------------------------------------------
 
 # GENIE configuration
 
@@ -35,23 +39,42 @@ if 'runtime_env' in locals():
 
 
 #----------------------------------------------------------------------
+#
+#  MAIN TKINTER APPLICATION CLASS
+#
 
 class Application(ttk.Frame, AfterHandler):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
         AfterHandler.__init__(self)
         self.reapable = set()
+
+        # Set up monospaced and bold fonts.
         self.normal_font = tkFont.nametofont('TkDefaultFont')
         self.mono_font = tkFont.nametofont('TkFixedFont')
         self.bold_font = self.normal_font.copy()
         sz = self.normal_font.cget('size')
         self.bold_font.configure(weight='bold', size=int(1.5*sz))
+
+        # Initialise job member and find all available model
+        # configurations.
         self.job = Job()
-        self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
-        self.find_configs()
         self.restart_jobs = []
+        self.find_configs()
+
+        # Set up UI: this creates the main window (with a menu bar,
+        # the "job tree", a button toolbar and a notebook for the main
+        # part of the window) plus all the "panels" that appear in the
+        # notebook part of the UI.
+        self.grid(sticky=tk.N+tk.E+tk.S+tk.W)
         self.create_widgets()
+
+        # Creating this JobFolder object populates the job tree in the
+        # UI.
         self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
+
+        # Find jobs suitable for use as restarts and update the setup
+        # panel to use them.
         self.restart_jobs = self.job_folder.find_restart_jobs()
         self.panels['setup'].update()
 
@@ -62,7 +85,7 @@ class Application(ttk.Frame, AfterHandler):
     #
 
     def new_job(self):
-        """Callback for new job button press"""
+        """Create a new job (button press callback)"""
 
         # Get folder location for new job.
         loc = self.tree.selection()[0]
@@ -86,7 +109,7 @@ class Application(ttk.Frame, AfterHandler):
             tkMB.showerror('Error', "Couldn't create directory: " + jobdir)
             return
 
-        # Write initial job configuration file.
+        # Write initial placeholder job configuration file.
         with open(os.path.join(jobdir, 'config', 'config'), 'w') as fp:
             print('base_config: ?', file=fp)
             print('user_config: ?', file=fp)
@@ -100,7 +123,7 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def new_folder(self):
-        """Callback for new folder button press"""
+        """Create a new folder (button press callback)"""
 
         # Get folder location for new folder.
         loc = self.tree.selection()[0]
@@ -129,8 +152,14 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def move_rename(self):
+        """Move or rename a folder or job (button press callback)"""
+
+        # Find current full path to the selected element in the job
+        # tree and determine whether it's a job or a folder.
         full_path = self.tree.selection()[0]
         is_folder = self.job_folder.is_folder(full_path)
+
+        # Run the move/rename dialog and act on the result.
         d = MoveRenameDialog(full_path, is_folder,
                              self.job_folder.possible_folders())
         if d.result:
@@ -145,9 +174,11 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def delete_job(self):
-        """Delete a job or a folder from tree (and on disk)"""
+        """Delete a job or a folder from tree and on disk (button press
+           callback)
+        """
 
-        # Determine whether a single job or a folder is selected.
+        # Determine whether a job or a folder is selected.
         p = self.tree.selection()[0]
         if self.job_folder.is_folder(p):
             msg = 'Are you sure you want to delete this folder?\n\n'
@@ -178,26 +209,39 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def clone_job(self):
+        """Clone a job (button press callback)"""
+
+        # Determine a suitable name for the new job -- the clone has a
+        # name derived from the original job, and the user can rename
+        # it as they like after cloning.
         p = self.tree.selection()[0]
         pnew = p + '-CLONE'
         i = 1
         while os.path.exists(pnew):
             i += 1
             pnew = p + '-CLONE' + str(i)
+
+        # Clone the job on disk and in the job tree, make it visible
+        # and select it.
         self.job_folder.clone(p, pnew)
         self.tree.see(pnew)
         self.tree.selection_set(pnew)
 
 
     def clear_job(self):
+        """Clear job data (button press callback)"""
+
+        # Confirmation dialog.
         p = self.tree.selection()[0]
         msg = 'Are you sure you want to clear\n'
         msg += 'all output data for this job?\n\n'
         msg += 'This action is IRREVERSIBLE!'
-
         chk = tkMB.askokcancel('Confirm deletion', msg)
         if not chk: return
 
+        # Clean everything up: status, command and log files, model
+        # output, "run segment" configuration storage and GUI restart
+        # files.
         if os.path.exists(os.path.join(p, 'status')):
             os.remove(os.path.join(p, 'status'))
         if os.path.exists(os.path.join(p, 'command')):
@@ -212,11 +256,16 @@ class Application(ttk.Frame, AfterHandler):
             shutil.rmtree(os.path.join(p, 'config', 'segments'))
         for f in glob.iglob(os.path.join(p, 'gui_restart_*.nc')):
             os.remove(f)
+
+        # Update record of job data and reflect the changes in the
+        # panel views.
         self.update_job_data()
         for p in self.panels.itervalues(): p.clear()
 
 
     def run_job(self):
+        """Run a job (button press callback)"""
+
         # Check for existence of genie-ship.exe executable and build
         # if necessary.
         exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
@@ -238,7 +287,25 @@ class Application(ttk.Frame, AfterHandler):
                 print('GUI_RESTART', koverall, genie_clock, file=fp)
 
         # Start executable with stdout and stderr directed to run.log
-        # in job directory.
+        # in job directory.  Add the resulting process to the
+        # "reapable" set.  We check this list periodically and reap
+        # (i.e. wait for) any processes that have finished.  On Linux,
+        # you need to do this to make sure that you don't end up with
+        # a load of defunct "zombie" processes hanging around, waiting
+        # for their parent to notice that they've finished.  (This is
+        # only really a problem because the existence of a zombie
+        # process still marks the executable that the process was
+        # running as being in use, which means you can't overwrite it.
+        # If you run a job to completion from the GUI, then extend its
+        # run length and try to continue it, this means that you can't
+        # update the GENIE executable, as we do above in the line that
+        # says "shutil.copy(exe, runexe)".  If you try to do that, you
+        # get an error saying something like "Text file busy".  The
+        # solution is to explicitly clean up these child processes
+        # when they finish.  If the GUI exits before the model
+        # processes that it starts, those processes become orphaned,
+        # which is fine, since the kernel reparents them to the init
+        # process and they can happily continue running.)
         with open(os.path.join(self.job.jobdir, 'run.log'), 'a') as fp:
             try:
                 pipe = sp.Popen(runexe, cwd=self.job.jobdir,
@@ -249,12 +316,44 @@ class Application(ttk.Frame, AfterHandler):
 
 
     def pause_job(self):
+        """Pause a running job (button press callback)"""
+
+        # Just write a command file to let the model know that it
+        # should pause.
         with open(os.path.join(self.job.jobdir, 'command'), 'w') as fp:
             print('PAUSE', file=fp)
 
 
+
+    #----------------------------------------------------------------------
+    #
+    #  JOB TREE MANAGEMENT
+    #
+
+    def item_selected(self, event=None):
+        """Callback for item selection in job tree"""
+
+        # If we have a real job selected in the tree, make a Job
+        # object for it and recalculate the possible restart jobs for
+        # the setup panel.
+        jobid = self.tree.selection()[0]
+        if (len(self.tree.get_children(jobid)) != 0 or
+            self.job_folder.is_folder(jobid)):
+            self.job = None
+        else:
+            self.job = Job(jobid, self.job_folder)
+            self.restart_jobs = self.job_folder.find_restart_jobs()
+
+        # Let all the panels know we have a new selected job.
+        for p in self.panels.itervalues(): p.set_job(self.job)
+
+        # Set the action button states depending on the job status.
+        self.set_job_buttons()
+
+
     # Buttons that change state depending on the state of the
-    # currently selected job.
+    # currently selected job.  Some buttons (add job, add folder,
+    # etc.) are always enabled.
     switchable_buttons = ['move_rename', 'delete_job', 'clear_job',
                           'clone_job', 'run_job', 'pause_job']
 
@@ -271,22 +370,16 @@ class Application(ttk.Frame, AfterHandler):
                       'ERRORED': ['move_rename', 'clear_job', 'delete_job',
                                   'clone_job'] }
 
-
-    def item_selected(self, event=None):
-        """Callback for item selection in job tree"""
-
-        sel = self.tree.selection()[0]
-        if (len(self.tree.get_children(sel)) != 0 or
-            self.job_folder.is_folder(sel)):
-            self.select_job(None)
-        else:
-            self.select_job(sel)
-        self.set_job_buttons()
-
-
     def set_job_buttons(self):
+        """Enable or disable action buttons and menu items depending on the
+           state of the selected job.
+        """
+
         sel = self.tree.selection()[0]
         if self.job == None:
+            # A folder is selected: for folders other than the
+            # top-level "My Jobs" folder, we can move/rename or delete
+            # the folder.
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     e = ((k == 'move_rename' or k == 'delete_job')
@@ -296,6 +389,8 @@ class Application(ttk.Frame, AfterHandler):
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
         else:
+            # A job is selected: the actions that are enabled depend
+            # on the job status.
             on_buttons = self.state_buttons[self.job.status]
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
@@ -306,18 +401,11 @@ class Application(ttk.Frame, AfterHandler):
                                               else tk.DISABLED)
 
 
-    def select_job(self, jobid):
-        """Select a job and set up information tracking"""
-
-        if jobid:
-            self.job = Job(jobid, self.job_folder)
-            self.restart_jobs = self.job_folder.find_restart_jobs()
-        else:
-            self.job = None
-        for p in self.panels.itervalues(): p.set_job(self.job)
-
-
     def update_job_data(self):
+        """Runs on a timer to update job data in panels, maintain action
+           button states and clean up child processes.
+        """
+
         if self.job: self.job.set_status()
         self.panels['status'].update()
         self.panels['output'].update()
@@ -325,26 +413,39 @@ class Application(ttk.Frame, AfterHandler):
         self.reap()
         self.after(500, self.update_job_data)
 
-    def reap(self):
-        reaped = set()
-        for ch in self.reapable:
-            if ch.poll() != None:
-                ch.wait()
-                reaped.add(ch)
-        self.reapable -= reaped
+
+    #----------------------------------------------------------------------
+    #
+    #  UI SETUP
+    #
 
     def create_widgets(self):
         """UI layout"""
 
+        # The main window is paned, so you can drag the divider
+        # between the job tree and the main notebook part of the
+        # window.
         self.pane = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
 
+        # The job tree is populated by the creation of the JobFolder
+        # object in the application constructor.  Here we just set it
+        # up as an empty tree and put it into the paned view.
         self.tree = ttk.Treeview(self.pane, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.pane.add(self.tree)
 
+        # The right-hand part of the main window has the button
+        # toolbar and the panel notebook, so we make a frame to
+        # contain them.
         self.main_frame = ttk.Frame(self.pane)
         self.pane.add(self.main_frame)
 
+        # Create toolbar buttons -- the names of the tools here
+        # (e.g. "new_job") refer both to the methods that are called
+        # when the buttons are pressed and to the image files that are
+        # used to make the buttons (which live in
+        # <cgenie_root>/tools/images).  Each of the buttons has
+        # floating tooltip help, implemented using a helper class.
         self.toolbar = ttk.Frame(self.main_frame)
         self.tool_buttons = { }
         tool_info = [['new_job',     'New job', True],
@@ -394,6 +495,11 @@ class Application(ttk.Frame, AfterHandler):
         self.toolbar.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
         self.notebook.grid(column=1, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
 
+        # Create a main menu using mostly the same items as appear in
+        # the toolbar.  Having a menu as well as a toolbar means that
+        # it's possible to add less frequently used actions to the
+        # menu so that the main part of the GUI doesn't get too
+        # cluttered.
         self.menu = tk.Menu(top)
         self.menu_items = { }
         top['menu'] = self.menu
@@ -411,20 +517,27 @@ class Application(ttk.Frame, AfterHandler):
             it += 1
         self.job_menu.add_separator()
         self.job_menu.add_command(label='Quit', command=self.quit)
-        self.help_menu = tk.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label='Help', menu=self.help_menu)
-        self.help_menu.add_command(label='About')
 
+        # Start the background update timer.
         self.after(500, self.update_job_data)
 
+
+    #----------------------------------------------------------------------
+    #
+    #  UTILITY FUNCTIONS
+    #
 
     def find_configs(self):
         """Find all base and user configuration files"""
 
+        # Base configuration files -- all in one directory.
         bs = os.listdir(os.path.join(U.cgenie_data, 'base-configs'))
         bs = filter(lambda s: s.endswith('.config'), bs)
         self.base_configs = map(lambda s: s.rpartition('.')[0], bs)
         self.base_configs.sort()
+
+        # User configuration files -- need to walk the directory
+        # hierarchy here.
         us = []
         udir = os.path.join(U.cgenie_data, 'user-configs')
         for d, ds, fs in os.walk(udir):
@@ -434,7 +547,35 @@ class Application(ttk.Frame, AfterHandler):
         self.user_configs.sort()
 
 
+    def reap(self):
+        """Reap child processes"""
+
+        # Check the status of all child processes that have been
+        # recorded as reapable, reap those that have finished (which
+        # is indicated by the Popen.poll method returning something
+        # other than None) by waiting for them (which does nothing
+        # here except make sure they're removed from the kernel's
+        # process table), then removing them from our "reapable" set.
+        reaped = set()
+        for ch in self.reapable:
+            if ch.poll() != None:
+                ch.wait()
+                reaped.add(ch)
+        self.reapable -= reaped
+
+
 #----------------------------------------------------------------------
+#
+#  MAIN PROGRAM
+#
+
+# The "main program" here just initialises the Tkinter toolkit,
+# creates the main Application object, sets a couple of top-level
+# properties (window title and geometry and a window manager protocol
+# handler to deal with window close events), then fires off the
+# Tkinter event loop.  Everything else that happens is driven by
+# callbacks from menu or button actions or other GUI component
+# interactions.
 
 root = tk.Tk()
 app = Application(root)

@@ -2,12 +2,12 @@ import ttk
 
 #  AFTER TIMER HANDLING
 #
-# This is a little nasty: we use a lot of "after" timers, and
-# Tkinter doesn't seem to have a built-in way to clean them all up
-# before exit.  If you don't clean them up, the application hangs
-# on exit with a bunch of error messages.  So, we override the
-# after handling here to make sure everything does get cleaned up
-# before exit.
+# This is a little nasty: we use a lot of "after" timers, and Tkinter
+# doesn't seem to have a built-in way to clean them all up before
+# exit.  If you don't clean them up, the application hangs on exit
+# with a bunch of error messages.  So, we override the after handling
+# here to make sure everything does get cleaned up before exit.  This
+# class is used as a mixin to the main application class.
 
 class AfterHandler:
     def __init__(self):
