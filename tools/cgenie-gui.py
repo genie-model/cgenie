@@ -13,6 +13,7 @@ import utils as U
 
 # Most of the GUI code is in these modules...
 from gui.tooltip import *
+from gui.filetreeview import *
 from gui.job_folder import *
 from gui.job import *
 from gui.panels import *
@@ -430,7 +431,7 @@ class Application(ttk.Frame, AfterHandler):
         # The job tree is populated by the creation of the JobFolder
         # object in the application constructor.  Here we just set it
         # up as an empty tree and put it into the paned view.
-        self.tree = ttk.Treeview(self.pane, selectmode='browse')
+        self.tree = FileTreeview(self.pane, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.pane.add(self.tree)
 
