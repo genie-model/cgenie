@@ -10,7 +10,8 @@ import ttk
 # class is used as a mixin to the main application class.
 
 class AfterHandler:
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         self.aft_c2id = { }
         self.aft_id2c = { }
         self.aft_n = 0
@@ -34,4 +35,7 @@ class AfterHandler:
 
     def quit(self):
         for id in self.aft_id2c.keys(): ttk.Frame.after_cancel(self, id)
-        ttk.Frame.quit(self)
+        # This arrangement (calling quit then destroy on the root
+        # object) is needed to avoid a threading bug on Windows.
+        self.root.quit()
+        self.root.destroy()

@@ -44,10 +44,10 @@ if 'runtime_env' in locals():
 #  MAIN TKINTER APPLICATION CLASS
 #
 
-class Application(ttk.Frame, AfterHandler):
+class Application(AfterHandler, ttk.Frame):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
-        AfterHandler.__init__(self)
+        AfterHandler.__init__(self, master)
         self.reapable = set()
 
         # Set up monospaced and bold fonts.
