@@ -1,13 +1,14 @@
+from __future__ import print_function
 import Tkinter
 from Tkinter import _flatten, _join, _stringify, _splitdict
 import ttk
 import os.path, platform
 
 def winpath_to_id(p):
-    (dr, p) = os.path.splitdrive(os.path.abspath(p))
-    return '/' + dr[0] + p.replace('\\', '/')
+    (dr, pt) = os.path.splitdrive(os.path.abspath(p))
+    return '/' + dr[0] + pt.replace('\\', '/')
 
-def id_to_windpath(id):
+def id_to_winpath(id):
     ps = id.split('/')
     return ps[1] + ':\\' + '\\'.join(ps[2:])
 
@@ -159,7 +160,8 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
     def focus(self, item=None):
         """If item is specified, sets the focus item to item. Otherwise,
         returns the current focus item, or '' if there is none."""
-        return self.tk.call(self._w, "focus", self.p2id(item))
+        return self.id2p(self.tk.call(self._w, "focus",
+                                      self.p2id(item)))
 
 
     def heading(self, column, option=None, **kw):
@@ -203,7 +205,7 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
 
     def identify_row(self, y):
         """Returns the item ID of the item at position y."""
-        return self.identify("row", 0, y)
+        return self.id2p(self.identify("row", 0, y))
 
 
     def identify_column(self, x):
@@ -259,7 +261,7 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
             res = self.tk.call(self._w, "insert", self.p2id(parent),
                                index, *opts)
 
-        return res
+        return self.id2p(res)
 
 
     def item(self, item, option=None, **kw):
@@ -321,22 +323,22 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
 
     def selection_set(self, items):
         """items becomes the new selection."""
-        self.selection("set", self.ps2ids(items))
+        self.selection("set", items)
 
 
     def selection_add(self, items):
         """Add items to the selection."""
-        self.selection("add", self.ps2ids(items))
+        self.selection("add", items)
 
 
     def selection_remove(self, items):
         """Remove items from the selection."""
-        self.selection("remove", self.ps2ids(items))
+        self.selection("remove", items)
 
 
     def selection_toggle(self, items):
         """Toggle the selection state of each item in items."""
-        self.selection("toggle", self.ps2ids(items))
+        self.selection("toggle", items)
 
 
     def set(self, item, column=None, value=None):
