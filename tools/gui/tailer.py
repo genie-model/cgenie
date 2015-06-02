@@ -24,7 +24,9 @@ class Tailer:
     def stop(self):
         # Stop a running tailer.
         if self.after_id: self.app.after_cancel(self.after_id)
+        if self.fp: self.fp.close()
         self.after_id = None
+        self.fp = None
 
     def read(self):
         # Attempt to read new data from the tailed file and report to

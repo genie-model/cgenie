@@ -132,7 +132,7 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
         Otherwise, sets the options to the corresponding values."""
         if option is not None:
             kw[option] = None
-        return _val_or_dict(self.tk, kw, self._w, "column", column)
+        return ttk._val_or_dict(self.tk, kw, self._w, "column", column)
 
 
     def delete(self, *items):
@@ -193,7 +193,7 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
         if option is not None:
             kw[option] = None
 
-        return _val_or_dict(self.tk, kw, self._w, 'heading', column)
+        return ttk._val_or_dict(self.tk, kw, self._w, 'heading', column)
 
 
     def identify(self, component, x, y):
@@ -273,7 +273,8 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
         values as given by kw."""
         if option is not None:
             kw[option] = None
-        return _val_or_dict(self.tk, kw, self._w, "item", self.p2id(item))
+        return ttk._val_or_dict(self.tk, kw, self._w,
+                                "item", self.p2id(item))
 
 
     def move(self, item, parent, index):
@@ -372,8 +373,8 @@ class FileTreeview(ttk.Widget, Tkinter.XView, Tkinter.YView):
         values for the given tagname."""
         if option is not None:
             kw[option] = None
-        return _val_or_dict(self.tk, kw, self._w, "tag", "configure",
-            tagname)
+        return ttk._val_or_dict(self.tk, kw, self._w,
+                                "tag", "configure", tagname)
 
 
     def tag_has(self, tagname, item=None):

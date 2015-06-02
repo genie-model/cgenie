@@ -313,6 +313,9 @@ class PlotPanel(Panel):
         # some logic in the update method).
         self.plot_job = None
 
+        # The time series follower.
+        self.ts_file = None
+
         # Create the matplotlib figure and plot objects that we're
         # going to use.
         self.fig = plt.figure(figsize=(5,4), dpi=100)
@@ -355,6 +358,8 @@ class PlotPanel(Panel):
     def clear(self):
         # Clear everything -- set option menus to empty and disabled,
         # clear plot and restart job file checking.
+        if self.ts_file: self.ts_file.stop()
+        self.ts_file = None
         self.plot_job = None
         self.files = ()
         self.vars = ()

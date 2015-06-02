@@ -21,6 +21,10 @@ class TimeSeriesFile:
             self.tailer = Tailer(app, p)
             self.tailer.start(self.add_output)
 
+    def stop(self):
+        if self.tailer: self.tailer.stop()
+        self.tailer = None
+
     def add_output(self, t):
         # Tailer callback.
         tnew = []

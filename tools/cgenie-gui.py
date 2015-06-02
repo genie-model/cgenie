@@ -240,6 +240,11 @@ class Application(AfterHandler, ttk.Frame):
         chk = tkMB.askokcancel('Confirm deletion', msg)
         if not chk: return
 
+        # Clear panels: this MUST be done before trying to delete any
+        # files so that any data files get closed.  Otherwise Windows
+        # won't delete them...
+        for pan in self.panels.itervalues(): pan.clear()
+        
         # Clean everything up: status, command and log files, model
         # output, "run segment" configuration storage and GUI restart
         # files.
@@ -261,7 +266,6 @@ class Application(AfterHandler, ttk.Frame):
         # Update record of job data and reflect the changes in the
         # panel views.
         self.update_job_data()
-        for p in self.panels.itervalues(): p.clear()
 
 
     def run_job(self):
