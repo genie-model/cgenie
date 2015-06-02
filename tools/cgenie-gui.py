@@ -279,6 +279,7 @@ class Application(AfterHandler, ttk.Frame):
         if not os.path.exists(exe):
             d = BuildExecutableDialog(self, self.job.jobdir)
             if not d.result: return
+        if os.path.exists(runexe): os.remove(runexe)
         shutil.copy(exe, runexe)
 
         # Set up GUI_RESTART command file if this is a restart after a

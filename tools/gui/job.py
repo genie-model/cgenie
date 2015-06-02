@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, os.path, glob, datetime, shutil, sys
+import os, os.path, glob, datetime, shutil, sys, time
 import subprocess as sp
 import Tkinter as tk
 import tkMessageBox as tkMB
@@ -9,6 +9,28 @@ import utils as U
 #
 #  UTILITIES
 #
+
+def read_status_file(jd):
+    # Ho hum.  Windows doesn't like it if you try to read a file while
+    # another process is writing it...  (Linux has a transactional
+    # approach to file operations, so if you open a file, then another
+    # process opens the file and writes to it, and you read from the
+    # file, you get the contents of the file before the second process
+    # got at it, and everything is consistent.  With Windows, you just
+    # get an exception.)
+    status = None
+    safety = 0
+    while not status and safety < 1000:
+        try:
+            if safety != 0: time.sleep(0.001)
+            safety += 1
+            with open(os.path.join(jd, 'status')) as fp:
+                status = fp.readline().strip().split()
+        except IOError as e:
+            pass
+    if safety == 1000: print('BORKED!')
+    return status
+
 
 def job_status(jd):
     # Determine the current status of a job given the path to its job
@@ -28,8 +50,7 @@ def job_status(jd):
 
     # Otherwise, GENIE will have recorded the job status in the status
     # file.
-    with open(os.path.join(jd, 'status')) as fp:
-        return fp.readline().strip().split()[0]
+    return read_status_file(jd)[0]
 
 
 status_images = { }
@@ -304,10 +325,9 @@ class Job:
         # jobs and these are used to calculate the percentage done.
         if not os.path.exists(os.path.join(self.jobdir, 'status')):
             return None
-        with open(os.path.join(self.jobdir, 'status')) as fp:
-            ss = fp.readline().strip().split()
-            if ss[0] != 'RUNNING' and ss[0] != 'PAUSED': return None
-            return 100 * float(ss[1]) / float(ss[2])
+        ss = read_status_file(self.jobdir)
+        if ss[0] != 'RUNNING' and ss[0] != 'PAUSED': return None
+        return 100 * float(ss[1]) / float(ss[2])
 
 
     def status_params(self):
@@ -318,9 +338,7 @@ class Job:
         # pauses.
         if not os.path.exists(os.path.join(self.jobdir, 'status')):
             return None
-        with open(os.path.join(self.jobdir, 'status')) as fp:
-            ss = fp.readline().strip().split()
-            return ss
+        return read_status_file(self.jobdir)
 
 
     def segment_strs(self):

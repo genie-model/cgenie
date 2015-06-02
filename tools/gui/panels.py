@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os.path, glob
 import Tkinter as tk
 import ttk
