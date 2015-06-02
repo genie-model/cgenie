@@ -372,8 +372,8 @@ class Application(ttk.Frame, AfterHandler):
                                   'clone_job'] }
 
     def set_job_buttons(self):
-        """Enable or disable action buttons and menu items depending on the
-           state of the selected job.
+        """Enable or disable action buttons depending on the state of the
+           selected job.
         """
 
         sel = self.tree.selection()[0]
@@ -386,6 +386,30 @@ class Application(ttk.Frame, AfterHandler):
                     e = ((k == 'move_rename' or k == 'delete_job')
                          and self.tree.parent(sel) != '')
                     enable(v, e)
+        else:
+            # A job is selected: the actions that are enabled depend
+            # on the job status.
+            on_buttons = self.state_buttons[self.job.status]
+            for k, v in self.tool_buttons.iteritems():
+                if k in self.switchable_buttons:
+                    e = k in on_buttons
+                    enable(v, e)
+
+
+    def set_menu_state(self):
+        """Enable or disable menu items depending on the state of the selected
+           job.
+        """
+
+        sel = self.tree.selection()[0]
+        if self.job == None:
+            # A folder is selected: for folders other than the
+            # top-level "My Jobs" folder, we can move/rename or delete
+            # the folder.
+            for k, v in self.tool_buttons.iteritems():
+                if k in self.switchable_buttons:
+                    e = ((k == 'move_rename' or k == 'delete_job')
+                         and self.tree.parent(sel) != '')
                     self.job_menu.entryconfig(self.menu_items[k],
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
@@ -396,7 +420,6 @@ class Application(ttk.Frame, AfterHandler):
             for k, v in self.tool_buttons.iteritems():
                 if k in self.switchable_buttons:
                     e = k in on_buttons
-                    enable(v, e)
                     self.job_menu.entryconfig(self.menu_items[k],
                                               state=tk.NORMAL if e
                                               else tk.DISABLED)
@@ -504,7 +527,8 @@ class Application(ttk.Frame, AfterHandler):
         self.menu = tk.Menu(top)
         self.menu_items = { }
         top['menu'] = self.menu
-        self.job_menu = tk.Menu(self.menu, tearoff=0)
+        self.job_menu = tk.Menu(self.menu, tearoff=0,
+                                postcommand=self.set_menu_state)
         self.menu.add_cascade(label='Job', menu=self.job_menu)
         it = 0
         for t, title, dia in tool_info:
