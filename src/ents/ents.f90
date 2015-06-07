@@ -22,6 +22,7 @@ CONTAINS
        & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
     USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     CHARACTER(LEN=13), INTENT(IN) :: dum_lin
     REAL, INTENT(IN) :: dum_rsc, dum_syr
@@ -53,8 +54,8 @@ CONTAINS
     ! Namelist declaration for ENTS goin variables
     NAMELIST /ents_control/ indir_name, outdir_name, condir_name
     NAMELIST /ents_control/ igrid, npstp, iwstp, itstp, ianav
-    NAMELIST /ents_control/ restart, yearlen, out_name, netin
-    NAMELIST /ents_control/ netout, ascout, filenetin, dirnetout, rstdir_name
+    NAMELIST /ents_control/ restart, yearlen, out_name
+    NAMELIST /ents_control/ filenetin, dirnetout, rstdir_name
     NAMELIST /ents_control/ restart_file, dosc
     NAMELIST /ents_control/ topt, copt, k7, k8, k9, k10, k11, k11a, k12
     NAMELIST /ents_control/ k13, k14, k16, k17, k18, k20, k24, k26
@@ -82,13 +83,13 @@ CONTAINS
     OPEN(UNIT=59, FILE='data_ENTS', STATUS='old', IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open ENTS namelist file'
-       STOP
+       CALL write_status('ERRORED')
     END IF
 
     READ(UNIT=59, NML=ENTS_CONTROL, IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not read ENTS namelist'
-       STOP
+       CALL write_status('ERRORED')
     ELSE
        CLOSE(59)
     END IF
@@ -263,6 +264,7 @@ CONTAINS
   SUBROUTINE setup_ents(dum_rsc, dum_syr, dum_ds, dum_dphi, dum_ca, &
        & dum_tq, dum_rmax, dum_rdtdim, dum_co2_out, gn_daysperyear, &
        & landice_slicemask_lic, albs_lnd, land_snow_lnd)
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_rsc, dum_syr, dum_dphi
     REAL, DIMENSION(:), INTENT(IN) :: dum_ds
@@ -276,9 +278,6 @@ CONTAINS
 
     REAL :: Cveg_ini, Csoil_ini, fv_ini, photo_ini, fws, fta, fco2, rland_pts
     REAL :: z0_ini
-    INTEGER :: isdump
-    CHARACTER(LEN=30) :: dumpfl
-    CHARACTER(LEN=200) :: filename
 
     ! pbh k_constants are no longer read in from "k_constants.dat" but
     ! are now namelist paramaters k21 is now hard-wired. This is the
@@ -421,31 +420,11 @@ CONTAINS
     PRINT *, include_emissions
 
     ! Continue run
-    IF (restart == 'c' .OR. restart == 'C') THEN
-       IF (netin == 'y' .OR. netin == 'Y') THEN
-          CALL in_ents_netcdf(filenetin, land_snow_lnd)
-       ELSE
-          filename = indir_name(1:lenin) // TRIM(restart_file)
-          OPEN(1,FILE=TRIM(filename))
-          CALL in_ents_ascii(1, land_snow_lnd)
-
-          ! Continue ENTS from a different .sland file
-          READ (66,*) isdump
-          PRINT *, 'Continue run from different .sland file? (0=N 1=Y)', isdump
-          READ (66,'(a35)') dumpfl
-          IF (isdump == 1) THEN
-             PRINT *, 'Different land restart file name is'
-             PRINT *, dumpfl
-             OPEN(1,FILE=TRIM(dumpfl),STATUS='old')
-             PRINT *, 'ENTS restart file is ', dumpfl
-             CALL in_ents_ascii(1, land_snow_lnd)
-             CLOSE(1)
-          ELSE
-             PRINT *, 'ENTS restart file is ', filename
-          END IF
-          CLOSE(66)
-          CLOSE(1)
-       END IF
+    IF (gui_restart) THEN
+       PRINT *, 'READING ENTS GUI RESTART FILE: gui_restart_ents.nc'
+       CALL in_ents_netcdf('gui_restart_ents.nc', land_snow_lnd)
+    ELSE IF (restart == 'c' .OR. restart == 'C') THEN
+       CALL in_ents_netcdf(filenetin, land_snow_lnd)
     END IF
 
     ! Initialise sealevel module
@@ -485,7 +464,6 @@ CONTAINS
        & albs_lnd, land_albs_snow_lnd, land_albs_nosnow_lnd, &
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, sfcatm_lnd, sfxatm_lnd)
-    USE netcdf
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep, nyear
     REAL, DIMENSION(:,:), INTENT(IN) :: torog_atm
@@ -511,16 +489,7 @@ CONTAINS
     REAL, DIMENSION(:,:,:), INTENT(IN) :: sfcatm_lnd
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: sfxatm_lnd
 
-    INTEGER :: itv, iout, i, j, istot
-    CHARACTER(LEN=200) :: filename, fname, label
-
-    REAL, DIMENSION(:,:,:), ALLOCATABLE :: var_data
-    CHARACTER(LEN=8), DIMENSION(10) :: labels = &
-         & (/ 'photo   ', 'respveg ', 'leaf    ', 'respsoil', 'Cveg    ', &
-         &    'Csoil   ', 'fv      ', 'tqld1   ', 'tqld2   ', 'snow    ' /)
-    INTEGER :: kk, myyear, var_id, vardim_id, ncid
-    INTEGER :: mymonth, myday, inistep
-    LOGICAL :: fexist
+    INTEGER :: itv, iout, istot
 
     dum_istep0 = 0
     istot=0
@@ -557,93 +526,7 @@ CONTAINS
     END IF
 
     ! Write ENTS restarts
-    IF (MOD(istep, iwstp) == 0) THEN
-       IF (ascout == 'y' .OR. ascout == 'Y') THEN
-          PRINT *, 'Writing ENTS restart file'
-          filename = TRIM(outdir_name) // TRIM(out_name) // '.sland'
-          OPEN(3,FILE=TRIM(filename))
-          REWIND(3)
-          CALL out_ents(3, land_snow_lnd)
-          CLOSE(3)
-       END IF
-
-       IF (netout == 'y' .OR. netout == 'Y') THEN
-          IF (netin == 'y' .OR. netin == 'Y') THEN
-             inistep = INT(nyear * iniday / yearlen) + istep
-             myyear = INT(inistep / nyear)
-             mymonth = INT(12 * MOD(inistep, nyear) / nyear)
-             myday = INT(yearlen * inistep / nyear - &
-                  & mymonth * (yearlen / 12) - myyear * yearlen)
-          ELSE
-             myyear = INT(istep / nyear)
-             mymonth = INT(12 * MOD(istep, nyear) / nyear)
-             myday = INT(yearlen * istep / nyear - &
-                  & mymonth * (yearlen / 12) - myyear * yearlen)
-          END IF
-
-          IF (MOD(iwstp, nyear) == 0) THEN
-             fname = TRIM(outdir_name) // TRIM(out_name) // &
-                  & '_restart_' // TRIM(ConvertFunc(myyear - 1, 10)) // &
-                  & '_12_30.nc'
-          ELSE
-             fname = TRIM(outdir_name) // TRIM(out_name) // &
-                  & '_restart_' // &
-                  & TRIM(ConvertFunc(myyear, 10)) // '_' // &
-                  & TRIM(ConvertFunc(mymonth, 2)) // '_' // &
-                  & TRIM(ConvertFunc(myday, 2)) // '.nc'
-          END IF
-
-          INQUIRE(FILE=fname,EXIST=fexist)
-          IF (fexist) THEN
-             OPEN(8,FILE=fname,STATUS='old')
-             CLOSE(8,STATUS='delete')
-          END IF
-
-          DO kk = 1, 10
-             ALLOCATE(var_data(1,maxj,maxi))
-             label = labels(kk)
-             DO j = 1, maxj
-                DO i = 1, maxi
-                   SELECT CASE (kk)
-                   CASE (1)
-                      var_data(1,j,i) = photo(i,j)
-                   CASE (2)
-                      var_data(1,j,i) = respveg(i,j)
-                   CASE (3)
-                      var_data(1,j,i) = leaf(i,j)
-                   CASE (4)
-                      var_data(1,j,i) = respsoil(i,j)
-                   CASE (5)
-                      var_data(1,j,i) = Cveg(i,j)
-                   CASE (6)
-                      var_data(1,j,i) = Csoil(i,j)
-                   CASE (7)
-                      var_data(1,j,i) = fv(i,j)
-                   CASE (8)
-                      var_data(1,j,i) = tqld(1,i,j)
-                   CASE (9)
-                      var_data(1,j,i) = tqld(2,i,j)
-                   CASE (10)
-                      var_data(1,j,i) = land_snow_lnd(i,j)
-                   END SELECT
-                END DO
-             END DO
-             CALL netcdf_ents(fname, var_data, label, myday)
-             DEALLOCATE(var_data)
-          END DO
-
-          ! Adding final restart value (single)
-          CALL check_err(NF90_OPEN(fname, NF90_WRITE, ncid))
-          CALL check_err(NF90_REDEF(ncid))
-          CALL check_err(NF90_DEF_DIM(ncid, 'pco2ld', 1, vardim_id))
-          CALL check_err(NF90_DEF_VAR(ncid, 'pco2ld', &
-               & NF90_FLOAT, (/ vardim_id /), var_id))
-          CALL check_err(NF90_PUT_ATT(ncid, var_id, 'long_name', 'pco2ld'))
-          CALL check_err(NF90_ENDDEF(ncid))
-          CALL check_err(NF90_PUT_VAR(ncid, var_id, pco2ld))
-          CALL check_err(NF90_CLOSE(ncid))
-       END IF
-    END IF
+    IF (MOD(istep, iwstp) == 0) CALL out_ents_netcdf(istep, land_snow_lnd)
 
     IF (MOD(istep, itstp) == 0) THEN
        CALL carbt_diags(istep)

@@ -36,9 +36,11 @@ MODULE genie_global
   INTEGER(KIND=8) :: koverall
   INTEGER::katm
 
-  INTEGER :: istep_atm, istep_sic, istep_ocn, istep_lic, istep_gsurf, istep_che
+  ! Flags for managing restart files used by GUI.
+  LOGICAL :: writing_gui_restarts = .FALSE., gui_restart = .FALSE.
+
+  INTEGER :: istep_atm, istep_sic, istep_ocn, istep_gem
   INTEGER :: katmos, kgem
-  INTEGER :: istep_gem, istep_tot
   INTEGER :: gem_yr, gem_yr_min, gem_yr_max
   INTEGER :: gem_notyr, gem_notyr_min, gem_notyr_max, gem_dyr
   INTEGER :: gem_status, gem_switch
@@ -431,8 +433,56 @@ CONTAINS
     END IF
     WRITE (6,*) 'stopping'
     CALL flush(6)
-    STOP
+    CALL write_status('ERRORED')
   END SUBROUTINE alloc_die
+
+  SUBROUTINE write_status(status)
+#ifdef __INTEL_COMPILER
+    USE ifport
+#endif
+    USE gem_cmn, ONLY: out
+    IMPLICIT NONE
+    CHARACTER(LEN=*), INTENT(IN) :: status
+
+    INTEGER :: ios
+
+    OPEN(UNIT=out,FILE='status_tmp',ACTION='write',STATUS='replace')
+    SELECT CASE(TRIM(status))
+    CASE ('PAUSED', 'RUNNING', 'COMPLETE')
+       WRITE(UNIT=out,FMT=*) status, koverall, koverall_total, genie_clock
+    CASE DEFAULT
+       WRITE(UNIT=out,FMT=*) status
+    END SELECT
+    CLOSE(UNIT=out)
+    ios = RENAME('status_tmp', 'status')
+    IF (status == 'ERRORED') STOP
+  END SUBROUTINE write_status
+
+  SUBROUTINE read_command(command_exists, command, command_arg)
+    USE gem_cmn, ONLY: in
+    IMPLICIT NONE
+    LOGICAL, INTENT(OUT) :: command_exists
+    CHARACTER(LEN=*), INTENT(OUT) :: command, command_arg
+
+    CHARACTER(LEN=80) :: buff
+    INTEGER :: spc
+
+    INQUIRE(FILE='command', EXIST=command_exists)
+    command = ''
+    command_arg = ''
+    IF (command_exists) THEN
+       OPEN(UNIT=in, FILE='command', ACTION='read', STATUS='old')
+       READ (in, '(A80)') buff
+       CLOSE(UNIT=in)
+       spc = INDEX(TRIM(buff), ' ')
+       IF (spc > 0) THEN
+          command = buff(1:spc)
+          command_arg = TRIM(buff(spc+1:))
+       ELSE
+          command = TRIM(buff)
+       END IF
+    END IF
+  END SUBROUTINE read_command
 
   SUBROUTINE allocate_genie_global()
     IMPLICIT NONE

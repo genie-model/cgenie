@@ -1,4 +1,5 @@
 SUBROUTINE get2d_data_nc(ncid, varname, dim1, dim2, arrayout,ifail)
+  USE genie_global, ONLY: write_status
   USE netcdf
   IMPLICIT NONE
   INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
@@ -23,7 +24,7 @@ SUBROUTINE get2d_data_nc(ncid, varname, dim1, dim2, arrayout,ifail)
   status = NF90_INQUIRE_VARIABLE(ncid, varid, ndims=ndims)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: could not find dims. of variable'
-     STOP
+     CALL write_status('ERRORED')
   END IF
   IF (ndims /= 2) then
      WRITE (6, *) 'ERROR: variable has ', ndims, &
@@ -32,7 +33,7 @@ SUBROUTINE get2d_data_nc(ncid, varname, dim1, dim2, arrayout,ifail)
   status = NF90_INQUIRE_VARIABLE(ncid, varid, dimids=dimids)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: could not find dimension IDs'
-     STOP
+     CALL write_status('ERRORED')
   END IF
 
   ! check that dimensions match
@@ -40,14 +41,14 @@ SUBROUTINE get2d_data_nc(ncid, varname, dim1, dim2, arrayout,ifail)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: Could not get 1st dimension from ' &
           & //'netcdf file'
-     STOP
+     CALL write_status('ERRORED')
   END IF
   IF (dim1nc /= dim1) THEN
      WRITE (6, *) 'ERROR: 1st dimension of variable in model ' &
           & //'and netcdf file do not match'
      WRITE (6, *) 'model and netcdf dims are ', dim1, ' and ' &
           & , dim1nc
-     STOP
+     CALL write_status('ERRORED')
   END IF
   status = NF90_INQUIRE_DIMENSION(ncid, dimids(2), len=dim2nc)
   IF (status /= NF90_NOERR) THEN
@@ -60,13 +61,13 @@ SUBROUTINE get2d_data_nc(ncid, varname, dim1, dim2, arrayout,ifail)
           & //'and netcdf file do not match'
      WRITE (6, *) 'model and netcdf dims are ', dim2, ' and ' &
           & , dim2nc
-     STOP
+     CALL write_status('ERRORED')
   END IF
 
   ! get variable
   status = NF90_GET_VAR(ncid, varid, arrayout)
   IF (status /= NF90_NOERR) THEN
      WRITE (6, *) 'ERROR: getting variable'
-     STOP
+     CALL write_status('ERRORED')
   END IF
 END SUBROUTINE get2d_data_nc

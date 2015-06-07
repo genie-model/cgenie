@@ -1,7 +1,5 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
-import os, os.path, sys, shutil, argparse, glob
+import os, os.path, sys, shutil, argparse, glob, signal
 import subprocess as sp
 import platform as plat
 import datetime as dt
@@ -223,14 +221,29 @@ def console_message(s):
 def console_line(s):
     print(s)
 
+runner = None
+
+def cleanup(signum, frame):
+    global runner
+    if runner: runner.terminate()
+    runner = None
+    raise IOError('Terminated')
+
 def console_manage(cmd, logfp, cont, *rest):
+    global runner
+    runner = None
+    signal.signal(signal.SIGTERM, cleanup)
     runner = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
     while True:
         line = runner.stdout.readline()
         if not line: break
         logfp.write(line)
+        logfp.flush()
         print(line, end='')
-    cont(runner.wait(), *rest)
+    res = runner.wait()
+    runner = None
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    cont(res, *rest)
 
 
 # Command line arguments.
@@ -302,7 +315,7 @@ def build(cont):
     model_dir = model_config.directory()
     with open(os.devnull, 'w') as sink:
         cmd = [scons, '-q', '-C', model_dir]
-        if plat.system() == 'Windows': cmd = ['python'] + cmd
+        cmd = [sys.executable] + cmd
         need_build = sp.call(cmd, stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
@@ -314,7 +327,7 @@ def build(cont):
     logfp = open(os.path.join(model_dir, 'build.log'), 'w')
     rev = 'rev=' + model_config.display_model_version
     cmd = [scons, '-C', model_dir, rev]
-    if plat.system() == 'Windows': cmd = ['python'] + cmd
+    cmd = [sys.executable, '-u'] + cmd
     cmd.append('progress=' + ('1' if progress else '0'))
     manage(cmd, logfp, build2, cont)
 

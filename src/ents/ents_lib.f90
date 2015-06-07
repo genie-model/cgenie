@@ -17,7 +17,6 @@ MODULE ents_lib
   CHARACTER(LEN=3) :: lout
   CHARACTER(LEN=200) :: indir_name, outdir_name, condir_name, &
        & out_name, restart_file, filenetin, dirnetout
-  CHARACTER(LEN=1) :: netin, netout, ascout
   CHARACTER(LEN=255) :: rstdir_name
   CHARACTER(LEN=127) :: par_output_years_file_0d, par_output_years_file_2d
 

@@ -31,6 +31,8 @@ CONTAINS
 
 
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::ios
     ! read data_rokgem file
@@ -38,13 +40,13 @@ CONTAINS
     open(unit=in,file='data_ROKGEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open rokgem initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_rokgem file
     read(UNIT=in,NML=ini_rokgem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read rokgem namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
@@ -198,13 +200,19 @@ end if
   ! Subroutine to read in restart info - just the netcdf record number for appending data at the moment
 
   SUBROUTINE sub_load_rokgem_restart()
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     ! local variables
     integer::ios                                    ! local counting variables
     CHARACTER(len=255)::loc_filename                ! filename string
 
     ! retrieve restart data
-    loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
+    IF (gui_restart) THEN
+       PRINT *, 'READING ROKGEM GUI RESTART FILE: gui_restart_rokgem'
+       loc_filename = 'gui_restart_rokgem'
+    ELSE
+       loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
+    END IF
     OPEN(unit=in,status='old',file=loc_filename,form='formatted',action='read',iostat=ios)
     READ(unit=in,fmt='(i6)') ncout2d_ntrec_rg
     close(unit=in)

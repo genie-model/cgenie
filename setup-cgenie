@@ -3,6 +3,5 @@ if [ -f ~/.cgenierc ]; then
     echo 'GENIE already set up -- if you want to start over, remove ~/.cgenierc'
     exit 0
 fi
-cgenie_root=`pwd`
 source tools/find_python
 exec $PYTHON tools/setup-cgenie.py

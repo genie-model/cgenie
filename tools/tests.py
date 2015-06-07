@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
 import os, os.path, sys, errno, shutil, glob, re
 import optparse
@@ -237,38 +235,11 @@ def do_run(t, rdir, logfp, i, n):
     else:
         cmd = [os.path.join(os.curdir, 'new-job')]
 
-    # Read test information file.
-    config = { }
-    with open(os.path.join(test_dir, 'test_info')) as fp:
-        for line in fp:
-            k, v = line.strip().split(':')
-            config[k.strip()] = v.strip()
-            have_full = os.path.exists(os.path.join(test_dir, 'full_config'))
-            have_base = os.path.exists(os.path.join(test_dir, 'base_config'))
-            have_user = os.path.exists(os.path.join(test_dir, 'user_config'))
-
-    # Set up configuration file options for "new-job".
-    if have_full:
-        cmd += ['-c', os.path.join(test_dir, 'full_config')]
-    elif have_base and have_user:
-        cmd += ['-b', os.path.join(test_dir, 'base_config')]
-        cmd += ['-u', os.path.join(test_dir, 'user_config')]
-    else:
-        sys.exit('Test "' + t + '" configured incorrectly!')
+    # Set up test job configuration option for "new-job".
+    cmd += ['-t', t]
 
     # Set up other options for "new-job".
     cmd += ['-j', rdir]
-    if 't100' in config and config['t100'] == 'True':
-        cmd += ['--t100']
-    if test_version != U.cgenie_version:
-        cmd += ['-v', test_version]
-    if os.path.exists(os.path.join(test_dir, 'restart')):
-        cmd += ['-r', os.path.join(test_dir, 'restart')]
-    elif 'restart_from' in config:
-        rjobdir = config['restart_from']
-        if plat.system() == 'Windows': rjobdir = rjobdir.replace('/', '\\')
-        cmd += ['-r', rjobdir]
-    cmd += [t, config['run_length']]
 
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')

@@ -81,9 +81,15 @@ CONTAINS
          & netsolar_atm, netlong_atm, evap_atm, precip_atm, &
          & ocean_stressx2_ocn, ocean_stressy2_ocn, &
          & ocean_stressx3_ocn, ocean_stressy3_ocn, &
-         & tstar_atm, surf_qstar_atm, koverall, torog_atm, surf_orog_atm, &
+         & tstar_atm, surf_qstar_atm, torog_atm, surf_orog_atm, &
          & flag_ents, atmos_lowestlu2_atm, atmos_lowestlv3_atm)
   END SUBROUTINE embm_wrapper
+
+  SUBROUTINE embm_save_restart_wrapper
+    USE embm_data
+    IMPLICIT NONE
+    CALL outm_netcdf_embm(istep_atm)
+  END SUBROUTINE embm_save_restart_wrapper
 
   SUBROUTINE gold_seaice_wrapper
     USE gold_seaice
@@ -103,8 +109,15 @@ CONTAINS
     !
     CALL step_seaice(istep_sic, dhght_sic, dfrac_sic, ustar_ocn, vstar_ocn, &
          & hght_sic, frac_sic, temp_sic, albd_sic, waterflux_ocn, &
-         & conductflux_ocn, test_energy_seaice, test_water_seaice, koverall)
+         & conductflux_ocn, test_energy_seaice, test_water_seaice)
   END SUBROUTINE gold_seaice_wrapper
+
+  SUBROUTINE gold_seaice_save_restart_wrapper
+    USE gold_seaice_data
+    IMPLICIT NONE
+    CALL outm_netcdf_sic(istep_sic)
+  END SUBROUTINE gold_seaice_save_restart_wrapper
+
 
   SUBROUTINE goldstein_wrapper
     USE goldstein
@@ -133,9 +146,15 @@ CONTAINS
          & ocean_stressx2_ocn, ocean_stressy2_ocn, &
          & ocean_stressx3_ocn, ocean_stressy3_ocn, &
          & tstar_ocn, sstar_ocn, ustar_ocn, vstar_ocn, albedo_ocn, &
-         & test_energy_ocean, test_water_ocean, koverall, &
+         & test_energy_ocean, test_water_ocean, &
          & go_ts, go_ts1, go_cost, go_uvw, go_tau, go_psi, go_mldta, go_rho)
   END SUBROUTINE goldstein_wrapper
+
+  SUBROUTINE goldstein_save_restart_wrapper
+    USE goldstein_data
+    IMPLICIT NONE
+    CALL outm_netcdf(istep_ocn)
+  END SUBROUTINE goldstein_save_restart_wrapper
 
   SUBROUTINE ents_wrapper
     USE ents
@@ -149,6 +168,12 @@ CONTAINS
          & land_bcap_lnd, land_z0_lnd, land_temp_lnd, land_moisture_lnd, &
          & genie_sfcatm_lnd, genie_sfxatm_lnd)
   END SUBROUTINE ents_wrapper
+
+  SUBROUTINE ents_save_restart_wrapper
+    USE ents_data
+    IMPLICIT NONE
+    CALL out_ents_netcdf(istep_ocn, land_snow_lnd)
+  END SUBROUTINE ents_save_restart_wrapper
 
   SUBROUTINE cpl_flux_ocnatm_wrapper
     USE atchem

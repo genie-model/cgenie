@@ -26,7 +26,9 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! LOAD BioGeM 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_biogem()
-    USE genie_util, ONLY: check_unit,check_iostat
+    USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! local variables
     integer::l,io,ia                                                    ! tracer counter
     integer::ios                                                        !
@@ -35,13 +37,13 @@ CONTAINS
     open(unit=in,file='data_BIOGEM',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open BIOGEM initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_BIOGEM file
     read(UNIT=in,NML=ini_biogem_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read BIOGEM namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in,iostat=ios)
        call check_iostat(ios,__LINE__,__FILE__)
@@ -436,7 +438,8 @@ CONTAINS
   SUBROUTINE sub_data_load_rst()
     USE biogem_lib
     use gem_netcdf
-    USE genie_util, ONLY:check_unit,check_iostat
+    USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: gui_restart
     ! -------------------------------------------------------- !
     ! DEFINE LOCAL VARIABLES
     ! -------------------------------------------------------- !
@@ -459,11 +462,14 @@ CONTAINS
     loc_conv_iselected_io = 0 ; loc_conv_iselected_is = 0
     loc_ocn = 0.0 ; loc_part = 0.0
     ! -------------------------------------------------------- ! set filename
-    IF (ctrl_ncrst) THEN
+    IF (gui_restart) THEN
+       PRINT *, 'READING BIOGEM GUI RESTART FILE: gui_restart_biogem.nc'
+       loc_filename = 'gui_restart_biogem.nc'
+    ELSE IF (ctrl_ncrst) THEN
        loc_filename = TRIM(par_rstdir_name)//par_ncrst_name
-    else
+    ELSE
        loc_filename = TRIM(par_rstdir_name)//trim(par_infile_name)
-    endif
+    END IF
     ! -------------------------------------------------------- ! check file status
     call check_unit(in,__LINE__,__FILE__)
     OPEN(unit=in,status='old',file=loc_filename,form='unformatted',action='read',IOSTAT=ios)
@@ -479,7 +485,7 @@ CONTAINS
        ! -------------------------------------------------------- !
        ! LOAD RESTART
        ! -------------------------------------------------------- !
-       IF (ctrl_ncrst) THEN
+       IF (ctrl_ncrst .OR. gui_restart) THEN
           call sub_openfile(loc_filename,loc_ncid)
           ! -------------------------------------------------------- ! determine number of variables
           call sub_inqdims (loc_filename,loc_ncid,loc_ndims,loc_nvars)

@@ -50,6 +50,7 @@ CONTAINS
   SUBROUTINE initialise_rokgem(dum_genie_timestep, dum_sfxrok, dum_sfxsumrok1)
     USE genie_control, ONLY: dim_ROKGEMNLONS, dim_ROKGEMNLATS
     USE genie_util, ONLY: die
+    USE genie_global, ONLY: gui_restart
     USE rokgem_data
     USE rokgem_box
     USE rokgem_data_netCDF
@@ -123,7 +124,7 @@ CONTAINS
     string_ncout2d_rg  = TRIM(par_outdir_name)//'fields_rokgem_2d.nc' !note: this needs to be less than 100 characters
     if (debug_init > 1) print*, 'netcdf ouput file: ',TRIM(string_ncout2d_rg)
     ! initialise 2d netcdf files
-    IF (ctrl_continuing.AND.opt_append_data) THEN
+    IF (ctrl_continuing.AND.opt_append_data .OR. gui_restart) THEN
        call sub_load_rokgem_restart()
     ELSE
        ncout2d_ntrec_rg = 0
@@ -137,7 +138,7 @@ CONTAINS
     string_ncout2d_rg  = TRIM(par_outdir_name)//'fields_rokgem_2d.nc' !note: this needs to be less than 100 characters
     if (debug_init > 1) print*, 'netcdf ouput file: ',TRIM(string_ncout2d_rg)
     ! initialise 2d netcdf files
-    IF (ctrl_continuing.AND.opt_append_data) THEN
+    IF (ctrl_continuing.AND.opt_append_data .OR. gui_restart) THEN
        call sub_load_rokgem_restart()
     ELSE
        ncout2d_ntrec_rg = 0
@@ -413,6 +414,7 @@ CONTAINS
 
   SUBROUTINE rest_rokgem()
     USE rokgem_lib
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
 
     integer::ios
@@ -421,7 +423,11 @@ CONTAINS
     if (debug_init > 1) PRINT*,'saving netcdf record number',ncout2d_ntrec_rg
 
     ! dump restart data
-    loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
+    IF (writing_gui_restarts) THEN
+       loc_filename = 'gui_restart_rokgem'
+    ELSE
+       loc_filename = TRIM(par_outdir_name)//trim(par_outfile_name)
+    end IF
     OPEN(20,status='replace',file=loc_filename,form='formatted',action='write',iostat=ios)
     WRITE(20,fmt='(i6)') ncout2d_ntrec_rg
     close(20)

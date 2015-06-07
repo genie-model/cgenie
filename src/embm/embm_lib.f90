@@ -158,7 +158,6 @@ MODULE embm_lib
 
   ! For netcdf restarts
   CHARACTER(LEN=200) :: filenetin, dirnetout, rstdir_name
-  LOGICAL :: lnetin, lnetout, lascout
   INTEGER :: iyear_rest, imonth_rest, ioffset_rest
   REAL :: day_rest
 

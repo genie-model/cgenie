@@ -6,38 +6,9 @@ MODULE embm_data
 
 CONTAINS
 
-  SUBROUTINE inm_embm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, l
-    REAL :: tmp_val(2), area
-
-    READ (unit,*) (((tq(l,i,j), l = 1, 2), i = 1, maxi), j = 1, maxj)
-
-    IF (debug_init) WRITE (*,220) 'Avg T','Avg Q'
-
-    tmp_val = 0.0
-
-    ! Sum layer state variables and flow field
-    area = 0.0
-    DO j = 1, maxj
-       DO i = 1, maxi
-          area = area + ds(j)
-          tmp_val = tmp_val + tq(:,i,j) * ds(j)
-       END DO
-    END DO
-
-    IF (debug_init) &
-         & WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
-
-210 FORMAT(2f13.9)
-220 FORMAT(2a13)
-  END SUBROUTINE inm_embm
-
-
   ! This module reads netcdf restarts for EMBM
   SUBROUTINE inm_netcdf_embm
+    USE genie_global, ONLY: write_status, gui_restart, istep_atm
     IMPLICIT NONE
 
     REAL, DIMENSION(maxi,maxj) :: temp_read, shum_read
@@ -49,7 +20,12 @@ CONTAINS
     REAL :: tmp_val(2), area
 
     timestep = 24.0 * 60.0 * 60.0 * yearlen / REAL(nyear * ndta)
-    fnamein = TRIM(filenetin)
+    IF (gui_restart) THEN
+       PRINT *, 'READING EMBM GUI RESTART FILE: gui_restart_embm.nc'
+       fnamein = 'gui_restart_embm.nc'
+    ELSE
+       fnamein = TRIM(filenetin)
+    END IF
     ifail = 0
     INQUIRE(FILE=TRIM(fnamein), EXIST=lexist)
     IF (.NOT. lexist) THEN
@@ -58,13 +34,15 @@ CONTAINS
     END IF
     IF (ifail /= 0) THEN
        PRINT *, ' Correct error and try again '
-       STOP 1
+       CALL write_status('ERRORED')
     END IF
 
     PRINT *, ' embm: Opening restart file for read: ', &
          & TRIM(filenetin)
 
     CALL open_file_nc(TRIM(fnamein), ncid)
+    IF (gui_restart) &
+         & CALL get1di_data_nc(ncid, 'istep_atm', 1, istep_atm, ifail)
     CALL get1di_data_nc(ncid, 'ioffset', 1, ioffset_rest, ifail)
     CALL get1di_data_nc(ncid, 'iyear', 1, iyear_rest, ifail)
     CALL get1di_data_nc(ncid, 'imonth', 1, imonth_rest, ifail)
@@ -111,36 +89,10 @@ CONTAINS
   END SUBROUTINE inm_netcdf_embm
 
 
-  ! Write EMBM output data
-  SUBROUTINE outm_embm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j
-    REAL :: tmp_val(2), area
-
-    WRITE (unit,FMT='(e24.15)') tq
-    IF (debug_loop) WRITE (*,220) 'Avg T','Avg Q'
-    tmp_val = 0.0
-    area = 0.0
-    DO j = 1, maxj
-       DO i = 1, maxi
-          area = area + ds(j)
-          tmp_val = tmp_val + tq(:,i,j) * ds(j)
-       END DO
-    END DO
-    IF (debug_loop) &
-         & WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
-
-210 FORMAT(2f13.9)
-220 FORMAT(2a13)
-
-  END SUBROUTINE outm_embm
-
-
   ! This module writes netcdf restarts for embm
   SUBROUTINE outm_netcdf_embm(istep)
     USE netcdf
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
 
@@ -152,7 +104,7 @@ CONTAINS
     CHARACTER(LEN=200) :: fname
 
     ! For date and restarts...
-    INTEGER :: iday, iyearid, imonthid, idayid
+    INTEGER :: iday, iyearid, imonthid, idayid, istepatmid
     CHARACTER(LEN=10) :: yearstring
     CHARACTER(LEN=2) :: monthstring, daystring
     CHARACTER(LEN=7) :: datestring
@@ -164,15 +116,9 @@ CONTAINS
     REAL :: tmp_val(2), area
 
     ! output file format is yyyy_mm_dd
-    ! 30 day months are assumed
-    IF (MOD(yearlen, 30.0) /= 0) THEN
-       PRINT *, 'ERROR: Goldstein NetCDF restarts (outm_netdf):'
-       PRINT *, '   mod(yearlen,30.0) must be zero'
-       STOP
-    END IF
     timestep = yearlen / REAL(nyear * ndta)
     iday = NINT(day_rest)
-    IF (mod(istep, iwstp * ndta) == 0)THEN
+    IF (MOD(istep, iwstp * ndta) == 0 .OR. writing_gui_restarts) THEN
        ! WRITE A RESTART.....
        lons1 = nclon1
        lats1 = nclat1
@@ -184,9 +130,13 @@ CONTAINS
        WRITE (monthstring,'(i2.2)') imonth_rest
        WRITE (daystring,'(i2.2)') iday
 
-       fname = TRIM(dirnetout) // '/embm_restart_' // &
-            & TRIM(ADJUSTL(yearstring)) // '_' // &
-            & monthstring // '_' // daystring // '.nc'
+       IF (writing_gui_restarts) THEN
+          fname = 'gui_restart_embm.nc'
+       ELSE
+          fname = TRIM(dirnetout) // '/embm_restart_' // &
+               & TRIM(ADJUSTL(yearstring)) // '_' // &
+               & monthstring // '_' // daystring // '.nc'
+       END IF
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
@@ -202,6 +152,10 @@ CONTAINS
        CALL check_err(NF90_DEF_VAR(ncid, 'iyear', NF90_INT, nrecsid, iyearid))
        CALL check_err(NF90_DEF_VAR(ncid, 'imonth', NF90_INT, nrecsid, imonthid))
        CALL check_err(NF90_DEF_VAR(ncid, 'iday', NF90_INT, nrecsid, idayid))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_DEF_VAR(ncid, 'istep_atm', NF90_INT, &
+            &                             nrecsid, istepatmid))
+
 
        CALL check_err(NF90_DEF_VAR(ncid, 'air_temp', &
             & NF90_DOUBLE, dim1pass, ntempid))
@@ -213,6 +167,8 @@ CONTAINS
        CALL check_err(NF90_PUT_VAR(ncid, imonthid, imonth_rest))
        CALL check_err(NF90_PUT_VAR(ncid, idayid, iday))
        CALL check_err(NF90_PUT_VAR(ncid, ioffid, ioffset_rest))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_PUT_VAR(ncid, istepatmid, istep))
 
        CALL check_err(NF90_PUT_VAR(ncid, nlongit1id, lons1))
        CALL check_err(NF90_PUT_VAR(ncid, nlatit1id, lats1))

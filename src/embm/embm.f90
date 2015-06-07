@@ -21,7 +21,7 @@ CONTAINS
 
   SUBROUTINE step_embm(istep, latent_atm, sensible_atm, netsolar_atm, &
        & netlong_atm, evap_atm, pptn_atm, stressxu_atm, stressyu_atm, &
-       & stressxv_atm, stressyv_atm, tstar_atm, qstar_atm, koverall, &
+       & stressxv_atm, stressyv_atm, tstar_atm, qstar_atm, &
        & torog_atm, surf_orog_atm, flag_ents, lowestlu2_atm, lowestlv3_atm)
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
@@ -32,7 +32,6 @@ CONTAINS
     REAL, DIMENSION(:,:), INTENT(OUT) :: &
          & stressxu_atm, stressyu_atm, stressxv_atm, stressyv_atm, &
          & tstar_atm, qstar_atm
-    INTEGER(kind=8), INTENT(IN) :: koverall
     REAL, INTENT(OUT) :: torog_atm(maxi,maxj)
     REAL, INTENT(IN) :: surf_orog_atm(maxi,maxj)
     LOGICAL, INTENT(IN) :: flag_ents
@@ -107,23 +106,10 @@ CONTAINS
     END IF
 
     ! Atmosphere diagnostics and output
-    IF (lnetout) CALL outm_netcdf_embm(istep)
+    CALL outm_netcdf_embm(istep)
 
     ! write EMBM restart file
     IF (MOD(istep, iwstp * ndta) == 0) THEN
-       IF (lascout) THEN
-          ext = conv_num(MOD(iw, 10))
-          IF (debug_loop) PRINT *, 'Writing EMBM restart file at time', &
-               & istep / REAL(ndta), '(koverall', koverall, ')'
-          CALL check_unit(2, __LINE__, __FILE__)
-          OPEN(2,FILE=outdir_name(1:lenout)//lout//'.'//ext, IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          REWIND 2
-          CALL outm_embm(2)
-          CLOSE(2,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-       END IF
-
        iw = iw + 1
        IF (debug_loop) PRINT *
     END IF
@@ -220,6 +206,7 @@ CONTAINS
        & syr, flag_ents, lowestlu2_atm, lowestlv3_atm, flag_wind)
     USE gem_cmn, ONLY: alloc_error
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status, gui_restart
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: alon1, alon2, alon3
     REAL, DIMENSION(:), INTENT(OUT) :: alat1, alat2, alat3
@@ -268,8 +255,7 @@ CONTAINS
     INTEGER :: len_xu, len_yu, len_xv, len_yv
     CHARACTER(LEN=20) :: u_wspeed, v_wspeed
     INTEGER :: len_uws, len_vws
-    CHARACTER(LEN=13) :: lin
-    CHARACTER(LEN=1) :: ans, netin, netout, ascout
+    CHARACTER(LEN=1) :: ans, netin
 
     REAL :: deltq, qsat
 
@@ -326,8 +312,8 @@ CONTAINS
     NAMELIST /ini_embm_nml/ tdata_missing, qdata_missing
     NAMELIST /ini_embm_nml/ tdata_scaling, qdata_scaling
     NAMELIST /ini_embm_nml/ tdata_offset, qdata_offset
-    NAMELIST /ini_embm_nml/ qdata_rhum, tqinterp, lout, netin, netout, ascout
-    NAMELIST /ini_embm_nml/ rmax, filenetin, dirnetout, lin, atchem_radfor
+    NAMELIST /ini_embm_nml/ qdata_rhum, tqinterp, lout, netin
+    NAMELIST /ini_embm_nml/ rmax, filenetin, dirnetout, atchem_radfor
     NAMELIST /ini_embm_nml/ orbit_radfor, t_orbit, norbit, orbitsteps
     NAMELIST /ini_embm_nml/ filenameorbit, t_co2, nco2, co2steps, filenameco2
     NAMELIST /ini_embm_nml/ diffa_scl, diffa_len, dosc, delf2x
@@ -368,20 +354,20 @@ CONTAINS
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not open EMBM namelist file'
        PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-       STOP
+       CALL write_status('ERRORED')
     END IF
 
     READ(UNIT=56,NML=ini_embm_nml,IOSTAT=ios)
     IF (ios /= 0) THEN
        PRINT *, 'ERROR: could not read EMBM namelist'
        PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-       STOP
+       CALL write_status('ERRORED')
     ELSE
        CLOSE(56,IOSTAT=ios)
        IF (ios /= 0) THEN
           PRINT *, 'ERROR: could not close EMBM namelist file'
           PRINT *, "ERROR on line ", __LINE__, " in file ", __FILE__
-          STOP
+          CALL write_status('ERRORED')
        END IF
     END IF
 
@@ -1541,15 +1527,6 @@ CONTAINS
     CALL radfor(0, gn_daysperyear, solconst, flag_ents)
     IF (debug_init) PRINT *, 'file extension for output (a3) ?'
     IF (debug_init) PRINT *, lout
-    IF (debug_init) PRINT *, 'netCDF restart input ?'
-    IF (debug_init) PRINT *, netin
-    lnetin = .NOT. (netin == 'n' .OR. netin == 'N')
-    IF (debug_init) PRINT *, 'netCDF restart output ?'
-    IF (debug_init) PRINT *, netout
-    lnetout = .NOT. (netout == 'n' .OR. netout == 'N')
-    IF (debug_init) PRINT *, 'ASCII restart output ?'
-    IF (debug_init) PRINT *, ascout
-    lascout = .NOT. (ascout == 'n' .OR. ascout == 'N')
     IF (debug_init) PRINT *, 'filename for netCDF restart input ?'
     IF (debug_init) PRINT *, filenetin
     IF (debug_init) PRINT *,  &
@@ -1560,7 +1537,7 @@ CONTAINS
     IF (debug_init) PRINT *, atchem_radfor
 
     ! Is this a new or continuing run?
-    IF (ans == 'n' .OR. ans == 'N') THEN
+    IF (ans == 'n' .OR. ans == 'N' .OR. .NOT. gui_restart) THEN
        IF (debug_init) PRINT *, &
             & 'this is a new run, initial conditions already set up'
        ! But set up initial default time and date....
@@ -1571,28 +1548,8 @@ CONTAINS
        IF (debug_init) PRINT *, 'day_rest = ', day_rest
     ELSE
        ! This is a continuing run, read in end state filename
-       IF (debug_init) PRINT *, 'input file extension for input (a6)'
-       IF (debug_init) PRINT *, lin
        IF (debug_init) PRINT *, 'Reading EMBM restart file'
-       IF (lnetin) THEN
-          CALL inm_netcdf_embm
-       ELSE
-          CALL check_unit(1, __LINE__, __FILE__)
-          OPEN(1,FILE=rstdir_name(1:lenrst)//lin,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          CALL inm_embm(1)
-          CLOSE(1,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-
-          ! But set up initial default time and date....
-          iyear_rest = 2000
-          imonth_rest = 1
-          ioffset_rest = 0
-          day_rest = yearlen / (nyear * ndta)
-          IF (debug_init) PRINT *, 'day_rest = ', day_rest
-       END IF
-
-       ! EMBM atm
+       CALL inm_netcdf_embm
        tq1 = tq
     END IF
 
@@ -1735,7 +1692,7 @@ CONTAINS
     IF (t_orog == 1) THEN
        IF (t_d18o == 1) THEN
           PRINT *, 'ERROR: Both transient orography switches are on'
-          STOP
+          CALL write_status('ERRORED')
        END IF
        OPEN(77,FILE=TRIM(filenameorog))
        ALLOCATE(orog_vect(maxi,maxj,norog),STAT=alloc_error)
@@ -1836,7 +1793,7 @@ CONTAINS
     IF (t_lice == 1) THEN
        IF (t_d18o == 1) THEN
           PRINT *, 'ERROR: Both transient icemask switches are on'
-          STOP
+          CALL write_status('ERRORED')
        END IF
        OPEN(77,FILE=TRIM(filenamelice))
        ALLOCATE(lice_vect(maxi,maxj,nlice),STAT=alloc_error) ; lice_vect = 0.0
@@ -2601,6 +2558,7 @@ CONTAINS
        & land_snow_lnd, land_bcap_lnd, land_z0_lnd, land_temp_lnd, &
        & land_moisture_lnd, flag_ents, lowestlu2_atm, lowestlv3_atm)
     USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: istep
     REAL, DIMENSION(:,:), INTENT(IN) :: otemp, osaln, atemp, sich, sica, &
@@ -3204,7 +3162,7 @@ CONTAINS
                      & 'qsatsic ', qsatsic, 'evapsic ', evapsic(i,j), &
                      & 'tieqn ', tieqn, 'dtieq ', dtieq
                 PRINT *, 'sich ', sich(i,j), 'sica ', sica(i,j)
-                IF (debug_loop) STOP
+                IF (debug_loop) CALL write_status('ERRORED')
 10              tice(i,j) = MIN(REAL(tfreez), tice(i,j))
 
                 ! recalc everything in case of resetting of tice
@@ -3827,7 +3785,8 @@ CONTAINS
   ! matrix (iroff(i,j),jroff(i,j))
   ! which defines where to put the runoff from point (i,j)
   subroutine readroff
-    implicit none
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
 
     integer i, j, loop, iroe, iros, irow, iron
 
@@ -3866,7 +3825,8 @@ CONTAINS
                 PRINT *, 'jroff(i,j) = ',jroff(i,j)
                 PRINT *, 'k1(iroff(i,j),jroff(i,j)) = ', &
                      & k1(iroff(i,j),jroff(i,j)),' (maxk = ',maxk,')'
-                stop 'problem calculating runoff'
+                PRINT *, 'problem calculating runoff'
+                CALL write_status('ERRORED')
              END IF
           END DO
        END DO

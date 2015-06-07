@@ -3064,6 +3064,8 @@ CONTAINS
   ! ****************************************************************************************************************************** !
   ! Calculate Fe scavenging
   SUBROUTINE sub_box_scav_H2S(dum_dtyr,dum_dt_scav,dum_ocn_H2S,dum_bio_part,dum_bio_remin)
+    USE genie_global, ONLY: write_status
+    IMPLICIT NONE
     ! dummy arguments
     REAL,INTENT(in)::dum_dtyr
     REAL,INTENT(in)::dum_dt_scav
@@ -3102,7 +3104,7 @@ CONTAINS
     dum_bio_remin(io2l(io_H2S))      = dum_bio_remin(io2l(io_H2S)) - loc_H2S_scavenging
     dum_bio_part(is2l(is_POM_S))     = dum_bio_part(is2l(is_POM_S)) + loc_H2S_scavenging
     dum_bio_part(is2l(is_POC_frac2)) = dum_bio_part(is2l(is_POC_frac2)) + loc_H2S_scavenging/dum_bio_part(is2l(is_POC))
-    if (dum_bio_part(is2l(is_POC_frac2)) > 1.1) stop
+    if (dum_bio_part(is2l(is_POC_frac2)) > 1.1) CALL write_status('ERRORED')
     if (dum_bio_part(is2l(is_POC_frac2)) > 1.0) dum_bio_part(is2l(is_POC_frac2)) = 1.0
 
   end SUBROUTINE sub_box_scav_H2S

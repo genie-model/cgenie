@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
 import errno, os, sys, shutil, platform, string
 import re, hashlib, glob
@@ -69,9 +67,11 @@ build_types = ['normal', 'debug', 'ship', 'profile', 'bounds', 'coverage']
 
 class ModelConfig:
     # Assumes current working directory is the job directory.
-    def __init__(self, build_type):
+    def __init__(self, build_type, dir=None):
         if not build_type: build_type = 'normal'
-        with open(os.path.join('config', 'model-version')) as fp:
+        vfile = os.path.join('config', 'model-version')
+        if dir: vfile = os.path.join(dir, vfile)
+        with open(vfile) as fp:
             self.model_version = fp.readline().strip()
             self.display_model_version = self.model_version
             if self.model_version.startswith('DEVELOPMENT:'):

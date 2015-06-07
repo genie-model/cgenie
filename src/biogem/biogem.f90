@@ -30,6 +30,7 @@ CONTAINS
     USE biogem_data
     USE biogem_data_ascii
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: gui_restart
     REAL, INTENT(IN) :: dum_saln0, dum_rhoair, dum_cd, dum_ds, dum_dphi
     REAL, INTENT(IN) :: dum_usc, dum_dsc, dum_fsc, dum_rh0sc
     REAL, INTENT(IN) :: dum_rhosc, dum_cpsc, dum_solconst, dum_scf
@@ -450,7 +451,7 @@ CONTAINS
     ! open units for runtime file I/O
     IF (ctrl_debug_lvl2) print*, 'open units for runtime file I/O'
     IF ((opt_append_data.eqv..FALSE.).OR.(ctrl_continuing.eqv..FALSE.)) THEN
-       IF (ctrl_data_save_sig_ascii)  CALL sub_init_data_save_runtime()
+       IF (.NOT. gui_restart .AND. ctrl_data_save_sig_ascii)  CALL sub_init_data_save_runtime()
     ENDIF
     ! initialize system forcings
     IF (ctrl_debug_lvl2) print*, 'initialize system forcings'
@@ -490,7 +491,7 @@ CONTAINS
     ENDIF
 
     ! *** load restart information ***
-    IF (ctrl_continuing) then
+    IF (ctrl_continuing .OR. gui_restart) then
        call sub_data_load_rst()
     end if
 
@@ -530,6 +531,7 @@ CONTAINS
     USE biogem_box
     USE biogem_data
     USE biogem_data_ascii
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts                                ! biogem time-step length (seconds)
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock             ! genie clock (ms since start) NOTE: 8-byte integer
@@ -1823,7 +1825,7 @@ CONTAINS
             & .true.               &
             & )
        CALL end_biogem()
-       STOP
+       CALL write_status('ERRORED')
     END IF
   END SUBROUTINE step_biogem
 
@@ -2230,6 +2232,7 @@ CONTAINS
   ! RESTART BioGeM (save data)
   SUBROUTINE biogem_save_restart(dum_genie_clock)
     USE biogem_data_netCDF
+    USE genie_global, ONLY: writing_gui_restarts
     USE genie_util, ONLY:check_unit,check_iostat
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock               ! genie clock (milliseconds since start) NOTE: 8-byte integer
@@ -2274,11 +2277,15 @@ CONTAINS
     ! ---------------------------------------------------------- ! calculate local time (years)
     loc_yr = real(dum_genie_clock)/(1000.0*conv_yr_s)
     ! ---------------------------------------------------------- ! test for restart format
-    IF (ctrl_ncrst) THEN
+    IF (ctrl_ncrst .OR. writing_gui_restarts) THEN
        ! ------------------------------------------------------- !
        ! SAVE RESTART DATA: NETCDF FORMAT
        ! ------------------------------------------------------- !
-       string_ncrst = TRIM(par_outdir_name)//trim(par_ncrst_name)
+       IF (writing_gui_restarts) THEN
+          string_ncrst = 'gui_restart_biogem.nc'
+       ELSE
+          string_ncrst = TRIM(par_outdir_name)//TRIM(par_ncrst_name)
+       END IF
        ncrst_ntrec = 0
        call sub_data_netCDF_ncrstsave(trim(string_ncrst),loc_yr,loc_iou)
     else

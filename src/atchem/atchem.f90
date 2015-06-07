@@ -22,6 +22,7 @@ CONTAINS
     USE atchem_data
     USE atchem_data_netCDF
     USE genie_util, ONLY: check_iostat
+    USE genie_global, ONLY: gui_restart
     IMPLICIT NONE
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfxsumatm ! atmosphere-surface fluxes; integrated, atm grid
     REAL, DIMENSION(:,:,:), INTENT(INOUT) :: dum_sfcatm    ! atmosphere-surface tracer composition; atm grid
@@ -47,7 +48,7 @@ CONTAINS
     CALL sub_init_phys_atm()
     CALL sub_init_tracer_atm_comp()
 
-    IF (ctrl_continuing) CALL sub_data_load_rst()
+    IF (ctrl_continuing .OR. gui_restart) CALL sub_data_load_rst()
 
     dum_sfxsumatm = 0.0
     dum_sfcatm = atm
@@ -159,6 +160,7 @@ CONTAINS
 
   ! RESTART AtChem (save data)
   SUBROUTINE atchem_save_rst(dum_genie_clock)
+    USE genie_global, ONLY: writing_gui_restarts
     USE atchem_data_netCDF
     IMPLICIT NONE
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock  ! genie clock (milliseconds since start)
@@ -169,11 +171,15 @@ CONTAINS
     ! ---------------------------------------------------------- ! calculate local time (years)
     loc_yr = REAL(dum_genie_clock) / (1000.0 * conv_yr_s)
     ! ---------------------------------------------------------- ! test for restart format
-    IF (ctrl_ncrst) THEN
+    IF (ctrl_ncrst .OR. writing_gui_restarts) THEN
        ! ------------------------------------------------------- !
        ! SAVE RESTART DATA: NETCDF FORMAT
        ! ------------------------------------------------------- !
-       string_ncrst = TRIM(par_outdir_name) // TRIM(par_ncrst_name)
+       IF (writing_gui_restarts) THEN
+          string_ncrst = 'gui_restart_atchem.nc'
+       ELSE
+          string_ncrst = TRIM(par_outdir_name) // TRIM(par_ncrst_name)
+       END IF
        ncrst_ntrec = 0
        call sub_data_netCDF_ncrstsave(TRIM(string_ncrst),loc_yr,loc_iou)
     ELSE

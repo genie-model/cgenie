@@ -18,7 +18,7 @@ CONTAINS
        & netlong_ocn, fx0sic_ocn, evap_ocn, pptn_ocn, runoff_ocn, fwsic_ocn, &
        & stressxu_ocn, stressyu_ocn, stressxv_ocn, stressyv_ocn, tsval_ocn, &
        & ssval_ocn, usval_ocn, vsval_ocn, albedo_ocn, test_energy_ocean, &
-       & test_water_ocean, koverall, go_ts, go_ts1, go_cost, go_u, go_tau, &
+       & test_water_ocean, go_ts, go_ts1, go_cost, go_u, go_tau, &
        & go_psi, go_mldta, go_rho)
     USE genie_util, ONLY: check_unit, check_iostat
     IMPLICIT NONE
@@ -29,7 +29,6 @@ CONTAINS
          & stressyu_ocn, stressxv_ocn, stressyv_ocn, tsval_ocn, ssval_ocn, &
          & usval_ocn, vsval_ocn, albedo_ocn
     REAL, INTENT(OUT) :: test_energy_ocean, test_water_ocean
-    INTEGER(KIND=8), INTENT(IN) :: koverall
     ! Dummy variables to be passed to/from BIOGEM via genie.F
     REAL, DIMENSION(:,:,:,:), INTENT(INOUT) :: go_ts, go_ts1
     REAL, DIMENSION(:,:), INTENT(INOUT) :: go_cost, go_mldta
@@ -255,24 +254,10 @@ CONTAINS
     END IF
 
     ! Model restart (ASCII and netCDF)
-    IF (lnetout) CALL outm_netcdf(istep)
+    CALL outm_netcdf(istep)
 
     IF (MOD(istep, iwstp) == 0) THEN
        ext = conv(MOD(iw, 10))
-       ! write GOLDSTEIN restart file
-
-       IF (lascout) THEN
-          IF (debug_loop) PRINT *, 'Writing GOLDSTEIN restart file at time', &
-               & istep, '(koverall', koverall, ')'
-          CALL check_unit(12, __LINE__, __FILE__)
-          OPEN(12,FILE=outdir_name(1:lenout)//lout//'.'//ext,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          REWIND 12
-          CALL outm(12)
-          CLOSE(12,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-       END IF
-
        ! Oscillating streamfunction
        IF (.NOT. flat) THEN
           IF (debug_loop) &
@@ -424,21 +409,19 @@ CONTAINS
     END IF
 
     ! Defunct model output (instantaneous version of averaging above)
-    IF (lnetout) THEN
-       IF (MOD(istep, iwstp) == 0) THEN
-          IF (debug_loop) &
-               & PRINT *, 'Writing GOLDSTEIN netCDF file at time', istep
+    IF (MOD(istep, iwstp) == 0) THEN
+       IF (debug_loop) &
+            & PRINT *, 'Writing GOLDSTEIN netCDF file at time', istep
 
-          ! Get streamfunction data
-          CALL diagopsi(ominp, omaxp, omina, omaxa, opsi, opsia, opsip, iposa)
+       ! Get streamfunction data
+       CALL diagopsi(ominp, omaxp, omina, omaxa, opsi, opsia, opsip, iposa)
 
-          CALL ini_netcdf_ocn(istep, 1)
-          CALL write_netcdf_ocn(k1, ncdepth1, &
-               & opsi, opsia, opsip, ts, u, rho, fx0flux, fwflux, work, &
-               & dsc, usc, rsc, saln0, maxi, maxj, maxk, maxl, 1)
-          CALL end_netcdf_ocn(1)
-          IF (debug_loop) PRINT *
-       END IF
+       CALL ini_netcdf_ocn(istep, 1)
+       CALL write_netcdf_ocn(k1, ncdepth1, &
+            & opsi, opsia, opsip, ts, u, rho, fx0flux, fwflux, work, &
+            & dsc, usc, rsc, saln0, maxi, maxj, maxk, maxl, 1)
+       CALL end_netcdf_ocn(1)
+       IF (debug_loop) PRINT *
     END IF
 
     ! Output arguments
@@ -543,6 +526,7 @@ CONTAINS
     USE genie_control, ONLY: &
          & dim_GOLDSTEINNLONS, dim_GOLDSTEINNLATS, dim_GOLDSTEINNLEVS, &
          & dim_GOLDSTEINNTRACS
+    USE genie_global, ONLY: gui_restart
 
     IMPLICIT NONE
     REAL, DIMENSION(:), INTENT(OUT) :: olon1, olon2, olon3
@@ -601,9 +585,6 @@ CONTAINS
     CHARACTER(LEN=3) :: cmip_model
     INTEGER :: lenworld, lencmip_model
 
-    ! For netcdf restarts....
-    CHARACTER(LEN=1) :: netin, netout, ascout
-
     ! ssmax parameters
     REAL :: ssmaxmid, ssmaxdiff, ssmaxtanhefold, ssmaxtanh0dep, zssmax
 
@@ -633,8 +614,8 @@ CONTAINS
     NAMELIST /ini_gold_nml/ tdata_missing, sdata_missing
     NAMELIST /ini_gold_nml/ tdata_scaling, sdata_scaling
     NAMELIST /ini_gold_nml/ tdata_offset, sdata_offset
-    NAMELIST /ini_gold_nml/ tsinterp, lout, netin
-    NAMELIST /ini_gold_nml/ netout, ascout, filenetin, dirnetout, lin
+    NAMELIST /ini_gold_nml/ tsinterp, lout
+    NAMELIST /ini_gold_nml/ filenetin, dirnetout
     NAMELIST /ini_gold_nml/ dosc, diso, debug_init, debug_end, debug_loop
     NAMELIST /ini_gold_nml/ ctrl_diagend
     NAMELIST /ini_gold_nml/ saln0
@@ -1730,18 +1711,9 @@ CONTAINS
        END IF
     END IF
 
-    lnetin = .NOT. (netin == 'n' .OR. netin == 'N')
-    lnetout = .NOT. (netout == 'n' .OR. netout == 'N')
-    lascout = .NOT. (ascout == 'n' .OR. ascout == 'N')
     IF (debug_init) THEN
        PRINT *, 'file extension for output (a3) ?'
        PRINT *, lout
-       PRINT *, 'NETCDF restart input ?'
-       PRINT *, netin
-       PRINT *, 'NETCDF restart output ?'
-       PRINT *, netout
-       PRINT *, 'ASCII restart output ?'
-       PRINT *, ascout
        PRINT *, 'filename for NETCDF restart input ?'
        PRINT *, filenetin
        PRINT *, 'directory name for NETCDF restart output ?'
@@ -1749,7 +1721,7 @@ CONTAINS
     END IF
 
     ! Is this a new or continuing run?
-    IF (ans == 'n' .OR. ans == 'N') THEN
+    IF (ans == 'n' .OR. ans == 'N' .OR. .NOT. gui_restart) THEN
        ! This is a new run, initial conditions already set up
        ! But set up initial default time and date....
        ! If we're not re-starting, then assume that
@@ -1764,23 +1736,7 @@ CONTAINS
        IF (debug_init) PRINT *, 'input file extension for input (a6)'
        IF (debug_init) PRINT *, lin
        IF (debug_init) PRINT *, 'Reading GOLDSTEIN restart file'
-       IF (lnetin) THEN
-          CALL inm_netcdf(lrestart_genie)
-       ELSE
-          CALL check_unit(1, __LINE__, __FILE__)
-          OPEN(1,FILE=rstdir_name(1:lenrst)//lin,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          CALL inm(1)
-          CLOSE(1,IOSTAT=ios)
-          CALL check_iostat(ios, __LINE__, __FILE__)
-          ! If we're re-starting from an ascii restart file, then assume that
-          ! the restart file was written at the end of a year....:
-          iyear_rest = 2000
-          imonth_rest = 1
-          ioffset_rest = 0
-          day_rest = yearlen / REAL(nyear)
-          IF (debug_init) PRINT *, 'day_rest = ', day_rest
-       END IF
+       CALL inm_netcdf(lrestart_genie)
 
        DO k = 1, maxk
           DO j = 1, maxj
@@ -3727,6 +3683,7 @@ CONTAINS
   ! separated from stream.f 9/2/1
   ! updated for generalised grid (RMA, 10/5/05)
   SUBROUTINE wind
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
 
     INTEGER :: i, j, k, n, ip1
@@ -3740,8 +3697,10 @@ CONTAINS
           ip1 = MOD(i, maxi) + 1
           k = i + j * n
           IF (MAX(k1(i,j), k1(i+1,j), k1(i,j+1), k1(i+1,j+1)) <= maxk) THEN
-             IF (j == maxj .OR. j == 0) &
-                  & STOP 'wind stress not defined outside domain'
+             IF (j == maxj .OR. j == 0) THEN
+                WRITE (*, *) 'wind stress not defined outside domain'
+                CALL write_status('ERRORED')
+             END IF
              gb(k) = (tau(2,ip1,j) * rh(2,i+1,j) - &
                   &   tau(2,i,j) * rh(2,i,j)) * rdphi * rcv(j) - &
                   &  (tau(1,i,j+1) * c(j+1) * rh(1,i,j+1) - &

@@ -6,53 +6,9 @@ MODULE goldstein_data
 
 CONTAINS
 
-  ! Read in data for goldstein
-  SUBROUTINE inm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, k, l, icell
-    REAL :: tmp_val(4)
-
-    READ (unit,*) ((((ts(l,i,j,k), l = 1, 2), (u1(l,i,j,k), l = 1, 2), &
-         & k = 1, maxk), i = 1, maxi), j = 1, maxj)
-
-    ! Write out layer averages for restart checks
-    IF (debug_init) &
-         & WRITE (*,120) 'Layer','Avg T','Avg S','Avg U','Avg V','Cells'
-    DO k = 1, maxk
-       ! Clear temporary variables
-       tmp_val = 0
-       icell = 0
-
-       ! Sum layer state variables and flow field
-       DO j = 1, maxj
-          DO i = 1, maxi
-             IF (k >= k1(i,j)) icell = icell + 1
-             DO l = 1, 2
-                IF (k >= k1(i,j)) tmp_val(l) = tmp_val(l) + ts(l,i,j,k)
-                tmp_val(l+2) = tmp_val(l+2) + u1(l,i,j,k)
-
-                ! Set up u array from read-in u1 array
-                u(l,i,j,k) = u1(l,i,j,k)
-             END DO
-          END DO
-       END DO
-
-       ! Print average values out
-       IF (debug_init) &
-            & WRITE (*,110) k, tmp_val(1) / icell, &
-            & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
-    END DO
-
-110 FORMAT(i5,2f13.9,2e17.9,i4)
-120 FORMAT(a5,2a13,2a17,a6)
-  END SUBROUTINE inm
-
-
   ! Read NetCDF restarts for goldstein
   SUBROUTINE inm_netcdf(lrestart_genie)
+    USE genie_global, ONLY: write_status, gui_restart, istep_ocn
     IMPLICIT NONE
     LOGICAL, INTENT(IN) :: lrestart_genie
 
@@ -75,7 +31,12 @@ CONTAINS
     REAL :: tmp_val(4)
 
     timestep = 24.0 * 60.0 * 60.0 * yearlen / REAL(nyear)
-    fnamein = TRIM(filenetin)
+    IF (gui_restart) THEN
+       PRINT *, 'READING GOLDSTEIN GUI RESTART FILE: gui_restart_goldstein.nc'
+       fnamein = 'gui_restart_goldstein.nc'
+    ELSE
+       fnamein = TRIM(filenetin)
+    END IF
     ifail = 0
     INQUIRE(FILE=TRIM(fnamein),EXIST=lexist)
     IF (.NOT. lexist) THEN
@@ -84,12 +45,14 @@ CONTAINS
     END IF
     IF (ifail /= 0) THEN
        PRINT *, ' Correct error and try again '
-       STOP 1
+       CALL write_status('ERRORED')
     END IF
 
     PRINT *, 'GOLDSTEIN: Opening restart file for read: ', TRIM(filenetin)
 
     call open_file_nc(TRIM(fnamein), ncid)
+    IF (gui_restart) &
+         & CALL get1di_data_nc(ncid, 'istep_ocn', 1, istep_ocn, ifail)
     call get1di_data_nc(ncid, 'ioffset', 1, ioffset_rest, ifail)
     call get1di_data_nc(ncid, 'iyear', 1, iyear_rest, ifail)
     call get1di_data_nc(ncid, 'imonth', 1, imonth_rest, ifail)
@@ -186,71 +149,10 @@ CONTAINS
   END SUBROUTINE inm_netcdf
 
 
-  ! Write out data for goldstein
-  SUBROUTINE outm(unit)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: unit
-
-    INTEGER :: i, j, k, l, icell
-    REAL :: tmp_val(4), out_file(4,maxk,maxi,maxj)
-
-    DO j = 1, maxj
-       DO i = 1, maxi
-          DO k = 1, maxk
-             DO l = 1, 2
-                IF (k >= k1(i,j)) THEN
-                   out_file(l,k,i,j) = ts(l,i,j,k)
-                ELSE
-                   out_file(l,k,i,j) = 0.0
-                END IF
-             end do
-             DO l = 1, 2
-                out_file(l+2,k,i,j) = u(l,i,j,k)
-             END DO
-          END DO
-       END DO
-    END DO
-    WRITE (unit,fmt='(e24.15)') out_file
-
-    ! Write out layer averages for restart checks
-    IF (debug_loop) &
-         & WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
-    DO k = 1, maxk
-       ! Clear temporary variables
-       tmp_val = 0
-       icell = 0
-
-       ! Sum layer state variables and flow field
-       DO j = 1, maxj
-          DO i = 1, maxi
-             IF (k >= k1(i,j)) icell = icell + 1
-             DO l = 1, 2
-                IF (k >= k1(i,j)) THEN
-                   tmp_val(l) = tmp_val(l) + ts(l,i,j,k)
-                END IF
-                tmp_val(l+2) = tmp_val(l+2) + u(l,i,j,k)
-             END DO
-          END DO
-       END DO
-
-       ! Prevent divide-by-zero
-       IF (icell == 0) icell = 1
-
-       ! Print average values out
-       IF (debug_loop) &
-            & WRITE (*,110) k, tmp_val(1) / icell, &
-            & (tmp_val(2) / icell) + saln0, &
-            & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
-    END DO
-
-110 FORMAT(i5,2f13.9,2e17.9,i4)
-120 FORMAT(a5,2a13,2a17,a6)
-  END SUBROUTINE outm
-
-
   ! Write NetCDF restarts for goldstein
   SUBROUTINE outm_netcdf(istep)
     USE netcdf
+    USE genie_global, ONLY: writing_gui_restarts
     IMPLICIT NONE
     INTEGER, INTENT(in) :: istep
 
@@ -264,6 +166,7 @@ CONTAINS
 
     INTEGER ::ntempid, nsalinityid, nuvelid, nvvelid, nevapid, nlateid, nsensid
     INTEGER :: nlon1id, nlongit1id, ndep1id, nlat1id, nlatit1id, ndepth1id
+    INTEGER :: istepocnid
     INTEGER :: nrecsid(1), ioffsetid, ncid
     INTEGER :: dim1pass(3), dimpass(2)
     CHARACTER(LEN=200) :: fname
@@ -280,17 +183,11 @@ CONTAINS
     REAL :: tmp_val(4)
 
     ! Output file format is yyyy_mm_dd
-    ! 30 day months are assumed
-    IF (MOD(yearlen, 30.0) /= 0) THEN
-       PRINT *, 'ERROR: Goldstein NetCDF restarts (outm_netdf):'
-       PRINT *, '   MOD(yearlen,30.0) must be zero'
-       STOP
-    END IF
 
     timestep = yearlen / REAL(nyear)
     iday = NINT(day_rest)
 
-    IF (MOD(istep, iwstp) == 0) THEN
+    IF (MOD(istep, iwstp) == 0 .OR. writing_gui_restarts) THEN
        ! WRITE A RESTART.....
 
        ! This bit modified from initialise_ocean.F
@@ -326,9 +223,13 @@ CONTAINS
        !-------------------------------------------------------
        ! create a netcdf file
        !-------------------------------------------------------
-       fname = TRIM(dirnetout) // '/goldstein_restart_' // &
-            & TRIM(adjustl(yearstring)) // '_' // monthstring // &
-            & '_'//daystring//'.nc'
+       IF (writing_gui_restarts) THEN
+          fname = 'gui_restart_goldstein.nc'
+       ELSE
+          fname = TRIM(dirnetout) // '/goldstein_restart_' // &
+               & TRIM(adjustl(yearstring)) // '_' // monthstring // &
+               & '_'//daystring//'.nc'
+       END IF
        PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
@@ -352,6 +253,9 @@ CONTAINS
        CALL check_err(NF90_DEF_VAR(ncid, 'iyear', NF90_INT, nrecsid, iyearid))
        CALL check_err(NF90_DEF_VAR(ncid, 'imonth', NF90_INT, nrecsid, imonthid))
        CALL check_err(NF90_DEF_VAR(ncid, 'iday', NF90_INT, nrecsid, idayid))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_DEF_VAR(ncid, 'istep_ocn', NF90_INT, &
+            &                             nrecsid, istepocnid))
        CALL check_err(NF90_DEF_VAR(ncid, 'temp', NF90_DOUBLE, &
             & dim1pass, ntempid))
        CALL check_err(NF90_DEF_VAR(ncid, 'salinity', NF90_DOUBLE, &
@@ -378,6 +282,8 @@ CONTAINS
        CALL check_err(NF90_PUT_VAR(ncid, imonthid, imonth_rest))
        CALL check_err(NF90_PUT_VAR(ncid, idayid, iday))
        CALL check_err(NF90_PUT_VAR(ncid, ioffsetid, ioffset_rest))
+       IF (writing_gui_restarts) &
+            & CALL check_err(NF90_PUT_VAR(ncid, istepocnid, istep))
 
        CALL check_err(NF90_PUT_VAR(ncid, nlongit1id, lons1))
        CALL check_err(NF90_PUT_VAR(ncid, nlatit1id, lats1))

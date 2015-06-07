@@ -41,6 +41,12 @@ f90 = {
     'libpath': [ifort_lib]
 }
 
+
+# Platform runtime environment variables.
+
+runtime_env = { 'FORT_FMT_NO_WRAP_MARGIN': 'TRUE' }
+
+
 # NetCDF platform definitions.
 netcdf = {
     # NetCDF base directory.

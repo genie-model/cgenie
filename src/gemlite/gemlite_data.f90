@@ -7,19 +7,20 @@
 
 MODULE gemlite_data
 
-  
+
   USE gemlite_lib
   IMPLICIT NONE
   SAVE
-  
-  
+
+
 CONTAINS
-  
-  
+
+
   ! ****************************************************************************************************************************** !
   ! LOAD GEMlite 'goin' FILE OPTIONS
   SUBROUTINE sub_load_goin_gemlite()
-    USE genie_util, ONLY: check_unit,check_iostat
+    USE genie_util, ONLY: check_unit, check_iostat
+    USE genie_global, ONLY: write_status
     ! local variables
     integer::ios                                                        !
     ! read data_GEMLTIE file
@@ -27,13 +28,13 @@ CONTAINS
     open(unit=in,file='data_GEMLITE',status='old',action='read',iostat=ios)
     if (ios /= 0) then
        print*,'ERROR: could not open GEMLTIE initialisation namelist file'
-       stop
+       CALL write_status('ERRORED')
     end if
     ! read in namelist and close data_GEMLTIE file
     read(UNIT=in,NML=ini_gemlite_nml,IOSTAT=ios)
     if (ios /= 0) then
        print*,'ERROR: could not read GEMLTIE namelist'
-       stop
+       CALL write_status('ERRORED')
     else
        close(unit=in)
     end if

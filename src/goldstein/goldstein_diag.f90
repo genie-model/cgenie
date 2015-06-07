@@ -8,6 +8,7 @@ CONTAINS
 
   ! Frequent diagnostics for GOLDSTEIN
   SUBROUTINE diag2(sum, avn, avs)
+    USE genie_global, ONLY: write_status
     IMPLICIT NONE
     REAL, INTENT(OUT) :: sum(8*maxl), avn,  avs
 
@@ -53,7 +54,7 @@ CONTAINS
        CONTINUE
     ELSE
        PRINT *,  'big avs , stopping'
-       STOP
+       CALL write_status('ERRORED')
     END IF
 
     DO i = 1, 8

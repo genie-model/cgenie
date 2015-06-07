@@ -1,22 +1,20 @@
 @ECHO OFF
-IF NOT EXIST "%USERPROFILE%\.cgenierc" (
-  ECHO GENIE not set up: run the setup-cgenie script^^!
-  EXIT /B 0
-)
 
-:: Check for GENIE_PYTHON variable setting.
-SET PYTHON="%GENIE_PYTHON%"
-IF DEFINED GENIE_PYTHON GOTO:eof
+:: Check for CGENIE_PYTHON variable setting.
+SET PYTHON="%CGENIE_PYTHON%"
+IF DEFINED CGENIE_PYTHON GOTO:eof
 
-:: Check for suitable 'python' executable.
-SET PYTHON=python
-FOR /F "delims=" %%v IN ('python -V 2^>^&1') DO ( SET AVV=%%v )
-IF "%AVV%" == "Python 2.7.9 " GOTO:eof
+ECHO(
+ECHO NO SUITABLE PYTHON SETUP FOUND^^!
+ECHO(
+ECHO The CGENIE_PYTHON environment variable needs to be set to
+ECHO point to the Python interpreter executable (which must be
+ECHO Python 2.7.9).
+ECHO(
+ECHO We recommend that you install the Anaconda Python installation
+ECHO into C:\Anaconda and set CGENIE_PYTHON to
+ECHO C:\Anaconda\python.exe
+ECHO(
 
-:: Check for suitable 'python' executable in C:\Python27 directory.
-SET PYTHON="C:\Python27\python"
-IF EXIST C:\Python27 GOTO:eof
-
-ECHO NO SUITABLE PYTHON INSTALLATION FOUND^^!
 SET PYTHON=
 EXIT /B 0

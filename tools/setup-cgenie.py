@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 from __future__ import print_function
 import os, sys, glob, shutil
 import subprocess as sp
@@ -50,6 +48,10 @@ else:
         print('cgenie_test: ' + test, file=fp)
         print('cgenie_jobs: ' + jobs, file=fp)
         print('cgenie_version: ' + vers, file=fp)
+    try:
+        if not os.path.exists(jobs): os.mkdir(jobs)
+    except IOError:
+        print('Could not create jobs directory!')
 
 
 # Download data and test repositories if required.
