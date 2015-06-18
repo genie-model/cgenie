@@ -21,27 +21,15 @@
 
 \usepackage{scrhack}
 \usepackage{scrpage2}
-%\usepackage{mathtools}
-\AfterPackage!{hyperref}{\usepackage[nameinlink]{cleveref}}
 \usepackage {fontspec,microtype}
 \usepackage {typearea,geometry}
-%\usepackage {needspace}
-%\usepackage {graphicx}
-%\DeclareGraphicsExtensions{.pdf,.png,.jpg}
 \usepackage {xcolor}
 \usepackage {luatextra}
-%\usepackage {booktabs}
-%\usepackage {quoting}
-%\usepackage {tabu}
 \PassOptionsToPackage{hyphens,obeyspaces,spaces}{url}
 \usepackage {polyglossia}
 \setdefaultlanguage[variant=british]{english}
 \usepackage{verbatim}
 \usepackage{minted}
-%\usepackage {siunitx,numprint}
-%\ExplSyntaxOn
-%\cs_new_eq:NN \siunitx_table_collect_begin:Nn \__siunitx_table_collect_begin:Nn
-%\ExplSyntaxOff
 \usepackage {enumitem}
 \setlist{nosep}
 \usepackage [english]{selnolig}
@@ -53,11 +41,9 @@
 
 % Font definitions
 \defaultfontfeatures{Ligatures = {TeX}, Scale = {MatchLowercase}}
-%\setmainfont [Numbers = {Proportional,OldStyle}]{Linux Libertine O}
 \setmainfont [Numbers = {Proportional,OldStyle}]{Minion Pro}
 \setsansfont [Numbers = {Proportional,OldStyle}]{Linux Biolinum O}
 \setmonofont[ItalicFont = *, ItalicFeatures = FakeSlant, RawFeature = -tlig;-trep, StylisticSet={1,3}]{Inconsolata zi4}
-%\newfontfamily\liningroman[Numbers={Lining}]{Linux Libertine O}
 
 \usepackage[math-style=TeX]{unicode-math}
 \setmathfont{Tex Gyre Pagella Math}
@@ -67,15 +53,9 @@
     fontsize	= 11pt,
     numbers		= noendperiod,
     parskip		= half-,
-%	twocolumn,
-%	twoside,
-	%draft,
 	captions	= tableheading,
-%	toc		= listofnumbered,
 	listof		= leveldown,
-%	chapterprefix	= true,
-	DIV		= 9,
-%	BCOR		= 7mm,
+	DIV			= 9,
 }
 \recalctypearea
 \pagestyle{scrheadings}
@@ -88,27 +68,13 @@
   \BeginAccSupp{method=plain,ActualText={}}#1\EndAccSupp{}%
 }
 
-%\BeforeBeginEnvironment{minted}{\begin{singlespace}}
-%\AfterEndEnvironment{minted}{\end{singlespace}}
-\renewcommand{\theFancyVerbLine}{
-  \fontspec[Numbers = {Lining,Monospaced}]{Minion Pro}\color[rgb]{0.5,0.5,0.5}\scriptsize\squelch{\arabic{FancyVerbLine}}}
-
 \usemintedstyle{autumn}
 
 \setminted{%frame = lines,
-%	framesep=2mm,
-%	linenos=true,
 	numbersep = 5pt,
-	%gobble = 2,
-%	fontsize = \footnotesize,
-%	xleftmargin=20pt,
-%	xrightmargin=20pt,
 	tabsize=3,
 	breaklines = true,
 	breaksymbolleft = \squelch{\tiny\ensuremath{\hookrightarrow}},
-%	breaksymbolright = \squelch{\tiny\ensuremath{\hookleftarrow}},
-%	breaksymbolindentright = 0pt,
-%	breaksymbolsepright = 0pt
 }
 
 \title{cGENIE (Cupcake v0.3)\\
@@ -117,39 +83,34 @@ Mac OS X Instructions}
 
 \pdfminorversion=7
 
-%\DTMsetstyle{pdf}
 \makeatletter
 \hypersetup {
 	hidelinks,
 	breaklinks,
 	linktocpage             = true,
 	unicode                 = true,
-	%hyperfootnotes          = true,
 	bookmarksnumbered       = true,
 	bookmarksopen           = true,
 	pdfdisplaydoctitle      = true,
-	%pdfpagelabels           = false,
 	plainpages              = false,
 	pdfauthor               = {\@author},
 	pdftitle                = {\@title},
-	pdfcontactemail		= {g.j.l.tourte@bristol.ac.uk},
-	pdfcontactcity		= {Bristol},
-	pdfcontactpostcode	= {BS8 1SS},
-	pdfcontactcountry	= {United Kingdom},
-	pdfcontacturl		= {http://www.bridge.bris.ac.uk/},
+	pdfcontactemail			= {g.j.l.tourte@bristol.ac.uk},
+	pdfcontactcity			= {Bristol},
+	pdfcontactpostcode		= {BS8 1SS},
+	pdfcontactcountry		= {United Kingdom},
+	pdfcontacturl			= {http://www.bridge.bris.ac.uk/},
 	pdfsubject              = {},
 	pdfkeywords             = {},
-	pdfcopyright		= {Copyright © 2015, Gregory J. L. Tourte},
-	pdflicenseurl		= {http://creativecommons.org/licenses/by-nc-sa/4.0/},
+	pdfcopyright			= {Copyright © 2015, Gregory J. L. Tourte},
+	pdflicenseurl			= {http://creativecommons.org/licenses/by-nc-sa/4.0/},
 	pdflang                 = en-GB,
 	pdfencoding             = auto,
 	pdfduplex               = DuplexFlipLongEdge,
 	pdfprintscaling         = None,
 	pdfinfo					= {
 		CreationDate={D:20150323103000Z},
-%		ModDate={\DTMnow},
 	},
-	%draft,
 }
 \makeatother
 
@@ -189,8 +150,6 @@ installed:
 	\item the HomeBrew packaging system 
 	\item Python and extensions
 	\item gfortran compiler 
-%	\item scons
-%	\item wget
 	\item NetCDF libraries
 \end{itemize}
 
@@ -205,10 +164,6 @@ In addition to Xcode, you will need to install the Xcode Command Line Tools.
 These used to be installed by default on older versions of Xcode but are now
 distributed separately. Once Xcode is installed, you will need to run the
 following command in the terminal:
-%You can find instructions on installing this at
-%\url{http://railsapps.github.io/xcode-command-line-tools.html}\,\footnote{Future
-%versions of this document will reproduce these instructions in case the link
-%disapear}.
 
 \mint{console}|$ xcode-select --install| %stopzone 
 
@@ -269,10 +224,10 @@ to simplify things).
 
 \mint{console}|$ brew install python|%stopzone
 
-Once installed, you will need to specify the location of your python environment via the
-\verb|$CGENIE_PYTHON| environment variable for cGENIE to use it. Using the homebrew
-version of python you need to add the following line to your
-\verb|.bash_profile| file:
+Once installed, you will need to specify the location of your python
+environment via the \verb|$CGENIE_PYTHON| environment variable for cGENIE to
+use it. Using the homebrew version of python you need to add the following line
+to your \verb|.bash_profile| file:
 
 \mint{bash}|export CGENIE_PYTHON="/usr/local/bin/python2.7"|
 
@@ -307,9 +262,10 @@ Location: /usr/local/lib/python2.7/site-packages
 Requires: numpy, pytz, pyparsing, python-dateutil, nose, six, mock
 \end{minted}
 
-If \texttt{matplotlib} is already installed, you may want to make sure that it and all its dependencies are up to date by using the command:
+If \texttt{matplotlib} is already installed, you may want to make sure that it
+and all its dependencies are up to date by using the command:
 
-\mint{console}|$ pip install --upgrade matplotlib| %%stopzone
+\mint{console}|$ pip install --upgrade matplotlib| %stopzone
 
 Since \texttt{python}, and therefore pip, are now install from homebrew, you
 should be able to run all the pip commands as a normal user and the modules
@@ -324,28 +280,6 @@ new one as your user to keep the \path{/usr/local} environment as clean as
 possible, or simply run \texttt{pip} as root instead bearing in mind that you
 may have permission issues later when using homebrew that will need to be fixed
 as root.
-
-%\subsection{SCons}
-%
-%\texttt{SCons} is a software construction tools built in \texttt{python} which role and
-%functionality is similar to the \texttt{autotool}\slash \texttt{automake} and
-%\texttt{make} tool chain. cGENIE Cupcake does not use \texttt{make} any more and is built
-%on \texttt{SCons} instead.
-%
-%As with previous tools, we will use the package provided by Homebrew:
-%
-%\mint{console}|$ brew install scons|
-%
-%You can then test your installations with:
-%
-%\begin{minted}{console}
-%$ scons --version
-%SCons by Steven Knight et al.:
-%	script: v2.3.4, 2014/09/27 12:51:43, by garyo on lubuntu
-%	engine: v2.3.4, 2014/09/27 12:51:43, by garyo on lubuntu
-%	engine path: ['/usr/local/Cellar/scons/2.3.4/libexec/scons-local/SCons']
-%Copyright (c) 2001 - 2014 The SCons Foundation
-%\end{minted}
 
 \subsection{Fortran Compiler (\texttt{gfortran})}
 
@@ -381,7 +315,7 @@ GNU Fortran comes with NO WARRANTY, to the extent permitted by law.
 You may redistribute copies of GNU Fortran
 under the terms of the GNU General Public License.
 For more information about these matters, see the file named COPYING
-\end{minted} 
+\end{minted}
 
 \subsection{NetCDF Libraries}
 
