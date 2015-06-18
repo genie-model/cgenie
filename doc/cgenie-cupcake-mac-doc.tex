@@ -56,7 +56,7 @@
 %\setmainfont [Numbers = {Proportional,OldStyle}]{Linux Libertine O}
 \setmainfont [Numbers = {Proportional,OldStyle}]{Minion Pro}
 \setsansfont [Numbers = {Proportional,OldStyle}]{Linux Biolinum O}
-\setmonofont[ItalicFont = *, ItalicFeatures = FakeSlant, RawFeature = -tlig;-trep, StylisticSet={1,3}]{Inconsolatazi4-Regular.otf}
+\setmonofont[ItalicFont = *, ItalicFeatures = FakeSlant, RawFeature = -tlig;-trep, StylisticSet={1,3}]{Inconsolata zi4}
 %\newfontfamily\liningroman[Numbers={Lining}]{Linux Libertine O}
 
 \usepackage[math-style=TeX]{unicode-math}
@@ -171,6 +171,12 @@ and searching for `\textit{Terminal}', alternatively it can be found in the
 \directory{Macintosh HD/Applications/Utilities} directory. We suggest you pin
 the application to your Dock for easy access if you haven't done so already.
 
+{\itshape \textbf{Note:} Throughout this document, shell commands are shown in
+\textup{\texttt{monospace}} font and prefixed with \textup{\texttt{\$}} (the
+dolar sign should not be reproduced when typing the command in the terminal).
+Commands that extend over several lines are marked with an
+{\tiny\ensuremath{\hookrightarrow}} on the following line.}
+
 \section{System Requirements}
 
 To install and run cGENIE on Mac OS X you will need the following packages
@@ -283,7 +289,7 @@ Python 2.7.10
 The newly developed gui requires additional python modules such as
 \texttt{matplotlib}. These modules can be installed as normal python modules,
 i.e., you can either use the source tarballs or use a packaging system such as
-\texttt{pip}. Using pip, you should just need to do:
+\texttt{pip} or \verb|easy_install|. Using pip, you should just need to do:
 
 \begin{minted}{console}
 $ pip install matplotlib
@@ -300,6 +306,10 @@ License: BSD
 Location: /usr/local/lib/python2.7/site-packages
 Requires: numpy, pytz, pyparsing, python-dateutil, nose, six, mock
 \end{minted}
+
+If \texttt{matplotlib} is already installed, you may want to make sure that it and all its dependencies are up to date by using the command:
+
+\mint{console}|$ pip install --upgrade matplotlib| %%stopzone
 
 Since \texttt{python}, and therefore pip, are now install from homebrew, you
 should be able to run all the pip commands as a normal user and the modules
@@ -409,7 +419,7 @@ packages for most of the tools we get from Hombrew, however, we have had
 reports of failures on systems with MacPorts packages where installing the
 Homebrew package was a solution. This is especially valid for python.
 
-We realised that making users change there tool chains is very much a
+We realised that making users change their tool chains is very much a
 annoyance. We are trying to test multiple install setup and try to understand
 why one tool chain fails where the other doesn't, but we currently lack the
 resources to do so quickly.
@@ -419,9 +429,7 @@ version of packages available at that time. Since we do not control the
 packages distributed on either Homebrew or MacPorts, we cannot tell whether
 updated versions of these packages will still work. We will endeavour to follow
 the releases of the packages with use and test any upgrade but it is not
-guaranteed happen in a timely manner. The main victim of that is python, the
-version of which is currently hardcoded in the code and is required to be
-2.7.9.
+guaranteed happen in a timely manner.
 
 \end{document}
 
