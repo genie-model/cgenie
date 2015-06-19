@@ -48,6 +48,17 @@
 \usepackage[math-style=TeX]{unicode-math}
 \setmathfont{Tex Gyre Pagella Math}
 
+% Work around bug with luaoftload and math mode
+% http://tex.stackexchange.com/a/251158/12332
+\makeatletter
+\g@addto@macro\UrlSpecials{%
+  \do\`{\mbox{\UrlFont\char`\`}}%
+  \do\'{\mbox{\UrlFont\char`\'}}%
+  \do\l{\mbox{\UrlFont\char`\l}}%
+  \do\0{\mbox{\UrlFont\char`\0}}%
+}
+\makeatother
+
 
 \KOMAoptions{
     fontsize	= 11pt,
