@@ -99,7 +99,7 @@ if nset > 1:
                'or test may be specified')
 
 
-# Check for existence of any restart job.
+# 
 
 if test_job:
     test_dir = os.path.join(U.cgenie_test, test_job)
@@ -111,6 +111,9 @@ if test_job:
             if k == 'restart_from': restart = v
             elif k == 'run_length': run_length = int(v)
             elif k == 't100': t100 = True if v == 'True' else False
+
+
+# Check for existence of any restart job.
 
 if restart:
     if old_restart:
@@ -167,7 +170,7 @@ if (base_and_user_config):
 elif full_config:
     if not os.path.exists(full_config):
         full_config_dir = os.path.join(U.cgenie_data, 'full-configs')
-        full_config_path = os.path.join(full_configs_dir,
+        full_config_path = os.path.join(full_config_dir,
                                         full_config + '.config')
     else:
         full_config_dir = os.getcwd()
@@ -363,7 +366,6 @@ for m in modules + ['main', 'gem']:
         if restart:
             C.copy_restart_files(m, nml, os.path.join(job_dir, 'restart', m),
                                  restart_path)
-
 
 
 # Extra data files for main program.

@@ -230,7 +230,7 @@ CONTAINS
                & TRIM(adjustl(yearstring)) // '_' // monthstring // &
                & '_'//daystring//'.nc'
        END IF
-       PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
+       IF (debug_end) PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
        CALL check_err(NF90_DEF_DIM(ncid, 'longitude', maxi, nlon1id))
@@ -299,7 +299,9 @@ CONTAINS
        CALL check_err(NF90_CLOSE(ncid))
 
        ! Write out layer averages for restart checks
-       WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
+       IF (debug_end) then
+          WRITE (*,120) 'Layer', 'Avg T', 'Avg S', 'Avg U', 'Avg V', 'Cells'
+       end if
        DO k = 1, maxk
           ! Clear temporary variables
           tmp_val = 0
@@ -319,9 +321,11 @@ CONTAINS
           END DO
 
           ! Print average values out
-          WRITE (*,110) k, tmp_val(1) / icell, &
-               & (tmp_val(2) / icell) + saln0, &
-               & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
+          IF (debug_end) then
+             WRITE (*,110) k, tmp_val(1) / icell, &
+                  & (tmp_val(2) / icell) + saln0, &
+                  & tmp_val(3) / (maxi * maxj), tmp_val(4) / (maxi * maxj), icell
+          end if
        END DO
 
 110    FORMAT(i5,2f13.9,2e17.9,i4)

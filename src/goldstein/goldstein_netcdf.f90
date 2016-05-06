@@ -709,9 +709,9 @@ CONTAINS
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: imode
 
-    PRINT *, ' calling end_netcdf_ocn for file = ', imode
+    IF (debug_end) PRINT *, ' calling end_netcdf_ocn for file = ', imode
     CALL closenc(nco(imode))
-    PRINT *, ' called end_netcdf_ocn for file = ', imode
+    IF (debug_end) PRINT *, ' called end_netcdf_ocn for file = ', imode
   END SUBROUTINE end_netcdf_ocn
 
 END MODULE goldstein_netcdf

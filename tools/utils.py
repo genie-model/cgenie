@@ -28,6 +28,14 @@ def read_cgenie_config():
     else: return False
 
 
+# 
+# could be: subprocess.Popen(cmd) instead
+
+def fixe(file):
+    cmd = [os.path.join(cgenie_root, 'tools', 'fix-exceptions.py'), file]
+    #os.system(cmd)
+    sp.Popen(cmd)
+
 
 # Discover build platform.
 

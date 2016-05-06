@@ -137,7 +137,7 @@ CONTAINS
                & TRIM(ADJUSTL(yearstring)) // '_' // &
                & monthstring // '_' // daystring // '.nc'
        END IF
-       PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
+       IF (debug_end) PRINT *, ' Opening netcdf restart file for write: ', TRIM(fname)
        CALL check_err(NF90_CREATE(TRIM(fname), NF90_CLOBBER, ncid))
        CALL check_err(NF90_DEF_DIM(ncid, 'nrecs', 1, nrecsid(1)))
        CALL check_err(NF90_DEF_DIM(ncid, 'longitude', maxi, nlon1id))
@@ -177,7 +177,7 @@ CONTAINS
 
        CALL check_err(NF90_CLOSE(ncid))
 
-       WRITE (*,220) 'Avg T','Avg Q'
+       IF (debug_end) WRITE (*,220) 'Avg T','Avg Q'
        tmp_val = 0.0
        area = 0.0
        DO j = 1, maxj
@@ -186,7 +186,7 @@ CONTAINS
              tmp_val = tmp_val + tq(:,i,j) * ds(j)
           END DO
        END DO
-       WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
+       IF (debug_end) WRITE (*,210) tmp_val(1) / area, (tmp_val(2) / area) * 1000.0
 
 210    FORMAT(2f13.9)
 220    FORMAT(2a13)

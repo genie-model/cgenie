@@ -128,9 +128,15 @@ excs = { 'ents_1': 'ents_indir_name',
 if len(sys.argv) != 2: sys.exit('Usage: fix-exceptions.py <infile>')
 
 with open(sys.argv[1]) as fp:
+    fileout = '#Automatically processed by: fix-exceptions.py'
     for lin in fp:
         ws = lin.split('=')
         if len(ws) > 1 and ws[0] in excs:
             ws[0] = excs[ws[0]]
         lout = '='.join(ws)
-        print(lout, end='')
+        fileout = fileout + lout
+        #print(lout, end='')
+
+with open(sys.argv[1], 'w') as fp:
+    fp.write(fileout)
+
