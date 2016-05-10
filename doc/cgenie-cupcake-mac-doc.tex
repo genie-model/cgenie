@@ -10,8 +10,6 @@
 % 2015-04-15 - created
 %
 % arara: lualatex: {shell: true, draft: true}
-%% arara: biber
-%% arara: lualatex: {shell: true, draft: true}
 % arara: lualatex: {shell: true}
 %% arara: clean: {extensions: [aux, toc, bbl, run.xml, bcf, blg, out]}
 %
@@ -23,26 +21,15 @@
 
 \usepackage{scrhack}
 \usepackage{scrpage2}
-\usepackage{mathtools}
-\AfterPackage!{hyperref}{\usepackage[nameinlink]{cleveref}}
 \usepackage {fontspec,microtype}
 \usepackage {typearea,geometry}
-\usepackage {needspace}
-\usepackage {graphicx}
-\DeclareGraphicsExtensions{.pdf,.png,.jpg}
 \usepackage {xcolor}
 \usepackage {luatextra}
-\usepackage {booktabs}
-\usepackage {quoting}
-\usepackage {tabu}
 \PassOptionsToPackage{hyphens,obeyspaces,spaces}{url}
 \usepackage {polyglossia}
 \setdefaultlanguage[variant=british]{english}
-\usepackage {minted}
-\usepackage {siunitx,numprint}
-\ExplSyntaxOn
-\cs_new_eq:NN \siunitx_table_collect_begin:Nn \__siunitx_table_collect_begin:Nn
-\ExplSyntaxOff
+\usepackage{verbatim}
+\usepackage{minted}
 \usepackage {enumitem}
 \setlist{nosep}
 \usepackage [english]{selnolig}
@@ -51,35 +38,36 @@
 \usepackage [autostyle,english=british]{csquotes}
 \usepackage {hyperxmp}
 \usepackage {hyperref}
-\usepackage [os=mac]{menukeys}
-
-
 
 % Font definitions
 \defaultfontfeatures{Ligatures = {TeX}, Scale = {MatchLowercase}}
-%\setmainfont [Numbers = {Proportional,OldStyle}]{Linux Libertine O}
 \setmainfont [Numbers = {Proportional,OldStyle}]{Minion Pro}
 \setsansfont [Numbers = {Proportional,OldStyle}]{Linux Biolinum O}
 \setmonofont[ItalicFont = *, ItalicFeatures = FakeSlant, RawFeature = -tlig;-trep, StylisticSet={1,3}]{Inconsolata zi4}
-%\newfontfamily\liningroman[Numbers={Lining}]{Linux Libertine O}
 
 \usepackage[math-style=TeX]{unicode-math}
 \setmathfont{Tex Gyre Pagella Math}
 
+% Work around bug with luaoftload and math mode
+% http://tex.stackexchange.com/a/251158/12332
+\makeatletter
+\g@addto@macro\UrlSpecials{%
+  \do\`{\mbox{\UrlFont\char`\`}}%
+  \do\'{\mbox{\UrlFont\char`\'}}%
+  \do\l{\mbox{\UrlFont\char`\l}}%
+  \do\0{\mbox{\UrlFont\char`\0}}%
+}
+\makeatother
+
+\usepackage{realscripts}
 
 \KOMAoptions{
     fontsize	= 11pt,
     numbers		= noendperiod,
     parskip		= half-,
-%	twocolumn,
-%	twoside,
-	%draft,
 	captions	= tableheading,
-%	toc		= listofnumbered,
 	listof		= leveldown,
-%	chapterprefix	= true,
-	DIV		= 9,
-%	BCOR		= 7mm,
+	DIV			= 9,
 }
 \recalctypearea
 \pagestyle{scrheadings}
@@ -92,68 +80,55 @@
   \BeginAccSupp{method=plain,ActualText={}}#1\EndAccSupp{}%
 }
 
-%\BeforeBeginEnvironment{minted}{\begin{singlespace}}
-%\AfterEndEnvironment{minted}{\end{singlespace}}
-\renewcommand{\theFancyVerbLine}{
-  \fontspec[Numbers = {Lining,Monospaced}]{Minion Pro}\color[rgb]{0.5,0.5,0.5}\scriptsize\squelch{\arabic{FancyVerbLine}}}
-
 \usemintedstyle{autumn}
 
 \setminted{%frame = lines,
-%	framesep=2mm,
-%	linenos=true,
 	numbersep = 5pt,
-	%gobble = 2,
-%	fontsize = \footnotesize,
-%	xleftmargin=20pt,
-%	xrightmargin=20pt,
 	tabsize=3,
 	breaklines = true,
 	breaksymbolleft = \squelch{\tiny\ensuremath{\hookrightarrow}},
 }
 
-\title{cGENIE (Cupcake)\\
+\title{cGENIE (Cupcake v0.3)\\
 Mac OS X Instructions}
 \author{Gregory J. L. Tourte}
 
 \pdfminorversion=7
 
-%\DTMsetstyle{pdf}
 \makeatletter
 \hypersetup {
 	hidelinks,
 	breaklinks,
 	linktocpage             = true,
 	unicode                 = true,
-	%hyperfootnotes          = true,
 	bookmarksnumbered       = true,
 	bookmarksopen           = true,
 	pdfdisplaydoctitle      = true,
-	%pdfpagelabels           = false,
 	plainpages              = false,
 	pdfauthor               = {\@author},
 	pdftitle                = {\@title},
-	pdfcontactemail		= {g.j.l.tourte@bristol.ac.uk},
-	pdfcontactcity		= {Bristol},
-	pdfcontactpostcode	= {BS8 1SS},
-	pdfcontactcountry	= {United Kingdom},
-	pdfcontacturl		= {http://www.bridge.bris.ac.uk/},
+	pdfcontactemail			= {g.j.l.tourte@bristol.ac.uk},
+	pdfcontactcity			= {Bristol},
+	pdfcontactpostcode		= {BS8 1SS},
+	pdfcontactcountry		= {United Kingdom},
+	pdfcontacturl			= {http://www.bridge.bris.ac.uk/},
 	pdfsubject              = {},
 	pdfkeywords             = {},
-	pdfcopyright		= {Copyright © 2015, Gregory J. L. Tourte},
-	pdflicenseurl		= {http://creativecommons.org/licenses/by-nc-sa/4.0/},
+	pdfcopyright			= {Copyright © 2015, Gregory J. L. Tourte},
+	pdflicenseurl			= {http://creativecommons.org/licenses/by-nc-sa/4.0/},
 	pdflang                 = en-GB,
 	pdfencoding             = auto,
 	pdfduplex               = DuplexFlipLongEdge,
 	pdfprintscaling         = None,
 	pdfinfo					= {
 		CreationDate={D:20150323103000Z},
-%		ModDate={\DTMnow},
 	},
-	%draft,
 }
 \makeatother
 
+\DeclareRobustCommand\Cpp{\hbox{C\hspace{-.05em}\raisebox{.2ex}{\textbf{+\kern-.2ex+}}}}
+
+\usepackage [os=mac]{menukeys}
 \begin{document}
 
 \maketitle
@@ -169,14 +144,26 @@ and searching for `\textit{Terminal}', alternatively it can be found in the
 \directory{Macintosh HD/Applications/Utilities} directory. We suggest you pin
 the application to your Dock for easy access if you haven't done so already.
 
+{\itshape \textbf{Note:} Throughout this document, shell commands are shown in
+\textup{\texttt{monospace}} font and prefixed with \textup{\texttt{\$}} (the
+dolar sign should not be reproduced when typing the command in the terminal).
+Commands that extend over several lines are marked with an
+{\tiny\ensuremath{\hookrightarrow}} on the following line.}
+
 \section{System Requirements}
 
 To install and run cGENIE on Mac OS X you will need the following packages
 installed:
 
-\begin{itemize} \item Apple Xcode \item Xcode Command line Tools \item the
-		MacPorts environment \item the HomeBrew packaging system \item gfortran
-		compiler \item NetCDF libraries \end{itemize}
+\begin{itemize}
+	\item Apple Xcode
+	\item Xcode Command line Tools
+	\item the MacPorts environment
+	\item the HomeBrew packaging system 
+	\item Python and extensions
+	\item gfortran compiler 
+	\item NetCDF libraries
+\end{itemize}
 
 \subsection{Apple Xcode}
 
@@ -189,29 +176,23 @@ In addition to Xcode, you will need to install the Xcode Command Line Tools.
 These used to be installed by default on older versions of Xcode but are now
 distributed separately. Once Xcode is installed, you will need to run the
 following command in the terminal:
-%You can find instructions on installing this at
-%\url{http://railsapps.github.io/xcode-command-line-tools.html}\,\footnote{Future
-%versions of this document will reproduce these instructions in case the link
-%disapear}.
 
-\begin{minted}{console}
-$ xcode-select --install
-\end{minted} 
+\mint{console}|$ xcode-select --install| %stopzone 
 
 You can check if Xcode is properly installed using the command:
 
-\mint{console}|$ xcode-select -p|
+\mint{console}|$ xcode-select -p| %stopzone
+
 which should contain the following line in the response:
-\begin{minted}{console}
-/Applications/Xcode.app/Contents/Developer
-\end{minted}
+
+\mint{console}{/Applications/Xcode.app/Contents/Developer} 
 
 While we are checking the environment, you can check that \texttt{gcc} is installed properly:
 
 \begin{minted}{console}
 $ gcc --version
 Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
-Apple LLVM version 6.1.0 (clang-602.0.49) (based on LLVM 3.6.0svn)
+Apple LLVM version 6.1.0 (clang-602.0.53) (based on LLVM 3.6.0svn)
 Target: x86_64-apple-darwin14.3.0
 Thread model: posix
 \end{minted}
@@ -229,30 +210,117 @@ on the Mac.
 Homebrew and information about it can be found at \url{http://brew.sh/}. To
 install the environment, simply type the following line in the Terminal:
 
-\mint{console}|$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"|
+\mint{console}|$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"| %stopzone
 
 MacPort and information about it can be found at
 \url{https://www.macports.org/} and instructions on how to install it are found
 at \url{https://www.macports.org/install.php}. Following the installation, you
 should make sure your installation is fully up to date by running:
 
-\mint{console}|$ sudo port -v selfupdate|
+\mint{console}|$ sudo port -v selfupdate| %stopzone
+
+\subsection{Python}
+
+The install scripts, running script as well as the gui for cGENIE are written
+in \texttt{python} and require version 2.x but preferably v2.7.x. Mac OS X
+comes with \texttt{python} installed by default since version 10.8 (Mountain
+Lion) and appears to satisfies the minimum version requirements (Yosemite comes
+with version 2.7.6). However, the version on Yosemite doesn't seems to be quite
+adequate for some of the scripts within cGENIE, especially the gui. You will
+therefore need to install another version of \texttt{python}. The version
+provided by homebrew is known to work (whereas the one from macport is known
+not to) so you will need to install the homebrew version even if you already
+have the macport package (they are no installed in the same location so should
+not clash. If you are happy with the homebrew version, remove the macport one
+to simplify things).
+
+\mint{console}|$ brew install python|%stopzone
+
+Once installed, you will need to specify the location of your python
+environment via the \verb|$CGENIE_PYTHON| environment variable for cGENIE to
+use it. Using the homebrew version of python you need to add the following line
+to your \verb|.bash_profile| file:
+
+\mint{bash}|export CGENIE_PYTHON="/usr/local/bin/python2.7"|
+
+You should also run that same line from the command line if you do not wish to
+have to open a new terminal.
+
+\begin{minted}{console}
+$ echo $CGENIE_PYTHON
+/usr/local/bin/python2.7
+$ (exec $CGENIE_PYTHON --version)
+Python 2.7.10
+\end{minted}
+
+The newly developed gui requires additional python modules such as
+\texttt{matplotlib}. These modules can be installed as normal python modules,
+i.e., you can either use the source tarballs or use a packaging system such as
+\texttt{pip} or \verb|easy_install|. Using pip, you should just need to do:
+
+\begin{minted}{console}
+$ pip install matplotlib
+$ pip show matplotlib
+---
+Metadata-Version: 2.0
+Name: matplotlib
+Version: 1.4.3
+Summary: Python plotting package
+Home-page: http://matplotlib.org
+Author: John D. Hunter, Michael Droettboom
+Author-email: mdroe@stsci.edu
+License: BSD
+Location: /usr/local/lib/python2.7/site-packages
+Requires: numpy, pytz, pyparsing, python-dateutil, nose, six, mock
+\end{minted}
+
+If \texttt{matplotlib} is already installed, you may want to make sure that it
+and all its dependencies are up to date by using the command:
+
+\mint{console}|$ pip install --upgrade matplotlib| %stopzone
+
+Since \texttt{python}, and therefore pip, are now install from homebrew, you
+should be able to run all the pip commands as a normal user and the modules
+will be installed in \path{/usr/local/lib/python2.7/site-packages}. However,
+if you have used the distribution's version of python in the past, some old
+version of modules may already be installed in
+\path{/Library/Python/2.7/site-packages/} instead, at which point some
+user-run \texttt{pip} commands may fail. There is no pretty fix for this, you
+will need to run the \texttt{pip} command as root (via \texttt{sudo}). You can
+either uninstall the offending package as root and then install or upgrade the
+new one as your user to keep the \path{/usr/local} environment as clean as
+possible, or simply run \texttt{pip} as root instead bearing in mind that you
+may have permission issues later when using homebrew that will need to be fixed
+as root.
 
 \subsection{Fortran Compiler (\texttt{gfortran})}
 
-We will get gfortran from homebrew. This is simply done by using the command:
+The source of the \texttt{gfortran} compiler has changed since the instructions
+for Cupcake v0.2. The reasons for this change is that packages have been
+updated on the third party repositories, both macport and homebrew, and none of
+them work properly. The homebrew package we were using previously has been
+removed in favour of a full \texttt{GCC} install (overriding the system one
+although not replacing it). The version of \texttt{GCC} from homebrew is now
+5.1.0 and is incompatible with the version of the \texttt{netcdf} package we
+will be getting from macport (the homebrew package for that still doesn't
+work). The macport package also installs the entire \texttt{GCC} suite but with
+different names for the binaries making it harder to use with standardise code.
 
-\mint{console}|$ brew install gfortran|
+Since our requirement is the \texttt{netcdf} package from macport, and this
+package is built with \texttt{gfortran} 4.9, we need to install this version of
+\texttt{gfortran}. The \texttt{GCC} maintainers do provide such a package for
+Mac, for both Mavericks (10.9) and Yosemite (10.10). Information can be found
+at \url{https://gcc.gnu.org/wiki/GFortranBinaries#MacOS}. For Yosemites, the
+packages is currently available from
+\url{http://coudert.name/software/gfortran-4.9.2-Yosemite.dmg}. 
 
-it will download and install all the dependencies as well as the request
-software itself. At the time of writing, the version of \texttt{gfortran}
-available on the brew servers is 4.9.2.  
-
-You can check that \texttt{gfortran} is properly installed by issuing the command:
+Once the packages is installed the \texttt{gfortran} binary should be available
+in your \verb|$PATH|. You can check that \texttt{gfortran} is properly
+installed by issuing the command:
 
 \begin{minted}{console}
 $ gfortran --version
-GNU Fortran (Homebrew gcc 4.9.2_1) 4.9.2
+GNU Fortran (GCC) 4.9.2
 Copyright (C) 2014 Free Software Foundation, Inc.
 
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.
@@ -264,13 +332,13 @@ For more information about these matters, see the file named COPYING
 \subsection{NetCDF Libraries}
 
 For NetCDF we will use the version available from MacPorts (we have tried using
-homebrew for this in order to minimise the requirements and not mix the
+Homebrew for this in order to minimise the requirements and not mix the
 packaging environment but unfortunately, the NetCDF brew package could not be
 installed on our test machine. If this changes, we will reevaluate our
 instructions.
 
-Although previous versions of cGENIE required the C, C++ and fortran versions
-of the library, this is no longer the case and the C++ layer is not a
+Although previous versions of cGENIE required the C, \Cpp{} and fortran versions
+of the library, this is no longer the case and the \Cpp{} layer is not a
 requirement anymore. The following commands  will install the necessary NetCDF
 libraries:
 
@@ -279,8 +347,35 @@ $ sudo port install netcdf
 $ sudo port install netcdf-fortran
 \end{minted}
 
-\section{Installing cGENIE (cupcake)}
+\section{Installing and running cGENIE (cupcake)}
 
+With all the steps described in this document, you should be able to follow the
+instructions described in the
+\href{run:./cupcake-config-build.pdf}{\texttt{cupcake-config-build.pdf}} file
+in this folder to install and run the model.
+
+If you have any issues with running cGENIE (cupcake) on Mac OS X, please report
+them at \url{https://github.com/genie-model/cgenie/issues}.
+
+\section{Quirks}
+
+Because so much of the system depends on third party repositories, it may not
+always behave as expected. We are aware that MacPorts for example provide
+packages for most of the tools we get from Hombrew, however, we have had
+reports of failures on systems with MacPorts packages where installing the
+Homebrew package was a solution. This is especially valid for python.
+
+We realised that making users change their tool chains is very much a
+annoyance. We are trying to test multiple install setup and try to understand
+why one tool chain fails where the other doesn't, but we currently lack the
+resources to do so quickly.
+
+The information in this document is valid at the time of writing with the
+version of packages available at that time. Since we do not control the
+packages distributed on either Homebrew or MacPorts, we cannot tell whether
+updated versions of these packages will still work. We will endeavour to follow
+the releases of the packages with use and test any upgrade but it is not
+guaranteed happen in a timely manner.
 
 \end{document}
 
