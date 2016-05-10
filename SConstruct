@@ -109,6 +109,10 @@ env = Environment(ENV = envcopy,
                   LIBPATH = [netcdflib] + extraf90libpaths,
                   LIBS = netcdf['libs'])
 
+if 'ld_library_path' in f90:
+    env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
+
+print('SConstruct from cgenie called')
 
 # Set up prompt progress reporting.
 

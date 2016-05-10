@@ -102,11 +102,11 @@ else:
     print('  Using platform "' + platform + '"')
 try:
     execfile(os.path.join(U.cgenie_root, 'platforms', platform))
-except:
-    setup_error('PLATFORM SETUP FAILED!')
+except Exception as e:
+    setup_error('PLATFORM SETUP FAILED!' + str(e))
+
 print('    Fortran compiler:      ' + f90['compiler'])
 print('    NetCDF base directory: ' + netcdf['base'])
-
 
 # Test Git version.
 
@@ -214,6 +214,10 @@ env = Environment(ENV = envcopy,
                   FORTRANMODDIRPREFIX = f90['module_dir'],
                   FORTRANMODDIR = '${TARGET.dir}',
                   LIBPATH = extraf90libpaths)
+
+if 'ld_library_path' in f90:
+    env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
+
 env.Program('f90test.exe', ['f90test.f90'])
 """, file=sconsfp)
 
@@ -224,12 +228,13 @@ try:
     cmd = [scons, '-C', tmpdir]
     if plat.system() == 'Windows': cmd = ['python'] + cmd
     with open(os.devnull, 'w') as sink:
-        if sp.call(cmd, stdout=sink, stderr=sink) == 0:
+        if sp.call(cmd) == 0:
+        #if sp.call(cmd, stdout=sink, stderr=sink) == 0:
             print('  Basic executable build OK')
         else:
             setup_error('BASIC FORTRAN BUILD FAILED! [1]')
 except Exception as e:
-    setup_error('BASIC FORTRAN BUILD FAILED! [2]')
+    setup_error('BASIC FORTRAN BUILD FAILED! [2]' + str(e))
 
 # Check for existence of executable, run executable and check result.
 
@@ -327,6 +332,10 @@ env = Environment(ENV = envcopy,
                   FORTRANMODDIR = '${TARGET.dir}',
                   LIBPATH = [netcdflib] + extraf90libpaths,
                   LIBS = netcdf['libs'])
+
+if 'ld_library_path' in f90:
+    env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
+
 env.Program('f90nctest.exe', ['f90nctest.f90'])
 """, file=sconsfp)
 
@@ -336,7 +345,7 @@ try:
     cmd = [scons, '-C', tmpdir]
     if plat.system() == 'Windows': cmd = ['python'] + cmd
     with open(os.devnull, 'w') as sink:
-        if sp.call(cmd, stdout=sink, stderr=sink) == 0:
+        if sp.call(cmd) == 0:
             print('  NetCDF executable build OK')
         else:
             setup_error('NETCDF FORTRAN BUILD FAILED! [1]')
