@@ -10,4 +10,5 @@ else
     echo 'point to the Python interpreter executable (which must be'
     echo 'Python 2.7.9).'
     echo
+    exit 0
 fi
