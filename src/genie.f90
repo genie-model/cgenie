@@ -16,12 +16,25 @@ PROGRAM GENIE
   CHARACTER(LEN=80) :: command, command_arg
   INTEGER(KIND=8) :: koverall_start = 1, genie_clock_in
 
+  ! clock timing variables
+  INTEGER :: cr, cm
+  INTEGER :: clock_starttime, clock_endtime
 
   PRINT *
   PRINT *, '*******************************************************'
   PRINT *, '  *** Welcome to cGENIE -- version: ', TRIM(genie_version)
   PRINT *, '*******************************************************'
   PRINT *
+  PRINT *, 'MODIFIED IN JOB SRC'
+
+ ! First initialize the system_clock
+  CALL system_clock(count_rate=cr)
+  CALL system_clock(count_max=cm)
+
+
+  CALL SYSTEM_CLOCK(clock_starttime)
+  call CPU_TIME(cpu_starttime)
+
 
   ! *** INITIALIZE ***
 
@@ -646,5 +659,10 @@ PROGRAM GENIE
   PRINT *, '*******************************************************'
   PRINT *
   CALL write_status('COMPLETE')
+  call CPU_TIME(cpu_endtime)
+  CALL SYSTEM_CLOCK(clock_endtime)
+
+  print *, "system_clock : ",(clock_endtime - clock_starttime)/real(cr)
+  print *, 'cpu_clock:', cpu_endtime - cpu_starttime
 
 END PROGRAM GENIE
