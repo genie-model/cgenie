@@ -92,7 +92,9 @@ if build_type in f90: extraf90flags = f90[build_type]
 extralinkflags = []
 if build_type + '_link' in f90: extralinkflags = f90[build_type + '_link']
 extraf90libpaths = []
-if 'libpath' in f90: extraf90libpaths = f90['libpath']
+if 'libpath' in f90: extraf90libpaths.append(f90['libpath'])
+extraf90libs = []
+if 'libs' in f90: extraf90libs.append(f90['libs'])
 
 target_vs_arch = 'linux'
 if 'TARGET_VS_ARCH' in os.environ:
@@ -107,7 +109,7 @@ env = Environment(ENV = envcopy,
                   FORTRANMODDIRPREFIX = f90['module_dir'],
                   FORTRANMODDIR = '${TARGET.dir}',
                   LIBPATH = [netcdflib] + extraf90libpaths,
-                  LIBS = netcdf['libs'])
+                  LIBS = netcdf['libs'] + extraf90libs)
 
 if 'ld_library_path' in f90:
     env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
