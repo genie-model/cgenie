@@ -1,4 +1,8 @@
+import platform
+import os
 # Fortran 90 platform definitions.
+print('platform called')
+print(platform.python_version())
 
 f90 = {
     # Compiler name.
@@ -12,7 +16,7 @@ f90 = {
                   ],
 
     # Debug flags.
-    'debug': ['-g', '-ffpe-trap=invalid,overflow'],
+    'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
 
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops'],
@@ -35,7 +39,7 @@ f90 = {
 
     # the following 3 lines are for vtune instrumentation
     'libpath': '/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/',
-    'libs': ['dl', 'pthread', File('/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/libittnotify.a')],
+    'libs': ['dl', 'pthread'],
     'debug_link': [ '/panfs/panasas01/geog/td14281/cgenie/src/profile_api/api_fortran_itt.o'],
 
     # required for blue crystal
@@ -45,6 +49,15 @@ f90 = {
 # env['ENV']['LD_LIBRARY_PATH'] = '/cm/shared/languages/GCC-5.3/lib'
 
 }
+
+try:
+    f90['libs'].append(File('/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/libittnotify.a'))
+    print(f90['libs'])
+except NameError:
+    #this happens when called by go.py, when not needed anyway.
+    #Succeeds in scons presumably File is defined when scons makes the call
+    print('Add libittnotify.a fail (not important when called by go.py)')
+
 
 
 # Platform runtime environment variables.
