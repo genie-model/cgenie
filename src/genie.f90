@@ -10,7 +10,9 @@ PROGRAM GENIE
   USE genie_ini_wrappers
   USE genie_loop_wrappers
   USE genie_end_wrappers
+#ifdef INTEL_PROFILE
   use itt_fortran
+#endif
   USE, INTRINSIC :: ISO_C_BINDING
   IMPLICIT NONE
 
@@ -23,6 +25,7 @@ PROGRAM GENIE
   INTEGER :: clock_starttime, clock_endtime
   real :: cpu_starttime, cpu_endtime
 
+#ifdef INTEL_PROFILE
   type(c_ptr) domain
 
   type(c_ptr) task_timestep
@@ -32,15 +35,14 @@ PROGRAM GENIE
   type(c_ptr) task_gemlite2
 
    domain = FORTRAN_ITT_DOMAIN_CREATE(C_CHAR_"dom"//C_NULL_CHAR)
-   task_timestep = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"task_timestep"//C_NULL_CHAR)
-   task_status = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"task_status"//C_NULL_CHAR)
+   task_timestep = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"timestep"//C_NULL_CHAR)
+   task_status = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"status"//C_NULL_CHAR)
 
-   task_gemlite = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"task_gemlite"//C_NULL_CHAR)
-   task_normal = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"task_normal"//C_NULL_CHAR)
-   task_gemlite2 = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"task_gemlite2"//C_NULL_CHAR)
+   task_gemlite = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"gemlite"//C_NULL_CHAR)
+   task_normal = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"normal"//C_NULL_CHAR)
+   task_gemlite2 = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"gemlite2"//C_NULL_CHAR)
 
-call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite)
-call FORTRAN_ITT_TASK_END(domain)
+#endif
 
   PRINT *
   PRINT *, '*******************************************************'
@@ -48,16 +50,16 @@ call FORTRAN_ITT_TASK_END(domain)
   PRINT *, '*******************************************************'
   PRINT *
   PRINT *, 'MODIFIED IN JOB SRC'
-  print *, 'intel task1'
+#ifdef INTEL_PROFILE
+  print *, 'Intel task API enabled'
+#endif
 
  ! First initialize the system_clock
   CALL system_clock(count_rate=cr)
   CALL system_clock(count_max=cm)
 
-
   CALL SYSTEM_CLOCK(clock_starttime)
   call CPU_TIME(cpu_starttime)
-
 
   ! *** INITIALIZE ***
 
@@ -122,10 +124,10 @@ call FORTRAN_ITT_TASK_END(domain)
 
   ! NOTE: koverall is in hours
   DO koverall = koverall_start, koverall_total
-
+#ifdef INTEL_PROFILE
      call FORTRAN_ITT_TASK_BEGIN(domain, task_timestep)
-
      call FORTRAN_ITT_TASK_BEGIN(domain, task_status)
+#endif
      CALL read_command(command_exists, command, command_arg)
      IF (command_exists) THEN
         SELECT CASE (TRIM(command))
@@ -155,17 +157,22 @@ call FORTRAN_ITT_TASK_END(domain)
            STOP
         END SELECT
      END IF
-     !IF (MOD(koverall, 100) == 0) THEN
-     CALL write_status('RUNNING')
-     !endif
-call FORTRAN_ITT_TASK_END(domain)
+     ! write status every 200 timesteps
+     IF (MOD(koverall, 200) == 0) THEN
+        CALL write_status('RUNNING')
+     endif
+#ifdef INTEL_PROFILE
+     call FORTRAN_ITT_TASK_END(domain)
+#endif
 
      ! Increment the clock which accumulates total time
      CALL increment_genie_clock
 
      IF (flag_gemlite) THEN
         IF (MOD(koverall, kgemlite * kocn_loop) == 1) THEN
-call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite)
+#ifdef INTEL_PROFILE
+           call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite)
+#endif
            ! Increment GEM year count
            istep_gem = istep_gem + 1
            IF (debug_loop > 2) PRINT *, istep_gem, gem_notyr, gem_yr
@@ -243,14 +250,18 @@ call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite)
               ! *** NOTHING! ***
               ! NO NEED TO SWITCH CYCLE PHASE => keep calm and pony on
            END IF
-call FORTRAN_ITT_TASK_END(domain)
+#ifdef INTEL_PROFILE
+           call FORTRAN_ITT_TASK_END(domain)
+#endif
         END IF
      END IF
 
      ! Test for being within 1st part of cycle
      IF (istep_gem <= gem_notyr .OR. .NOT. flag_gemlite) THEN
         ! START NORMAL
-call FORTRAN_ITT_TASK_BEGIN(domain, task_normal)
+#ifdef INTEL_PROFILE
+        call FORTRAN_ITT_TASK_BEGIN(domain, task_normal)
+#endif
         gem_status = 0
         IF (flag_gemlite .AND. istep_gem == gem_notyr) gem_switch = 1
         IF (flag_gemlite) THEN
@@ -461,11 +472,15 @@ call FORTRAN_ITT_TASK_BEGIN(domain, task_normal)
         IF (flag_gemlite) THEN
            IF (istep_gem > 1 .AND. istep_gem < gem_notyr) gem_switch = 0
         END IF
-call FORTRAN_ITT_TASK_END(domain)
+#ifdef INTEL_PROFILE
+        call FORTRAN_ITT_TASK_END(domain)
+#endif
         ! END NORMAL
      ELSE
         ! START GEMLITE
-call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite2)
+#ifdef INTEL_PROFILE
+        call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite2)
+#endif
         gem_status = 1
         gem_switch = 0
         IF (flag_gemlite) THEN
@@ -633,9 +648,13 @@ call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite2)
            END IF
         END IF
         ! END GEMLITE
-call FORTRAN_ITT_TASK_END(domain)
+#ifdef INTEL_PROFILE
+        call FORTRAN_ITT_TASK_END(domain)
+#endif
      END IF
-    call FORTRAN_ITT_TASK_END(domain)
+#ifdef INTEL_PROFILE
+     call FORTRAN_ITT_TASK_END(domain)
+#endif
 
   END DO
   !    *** MAIN TIME-STEPPING LOOP END ***
