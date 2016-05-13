@@ -20,10 +20,13 @@ PROGRAM GENIE
   CHARACTER(LEN=80) :: command, command_arg
   INTEGER(KIND=8) :: koverall_start = 1, genie_clock_in
 
+  integer :: status_interval
+
   ! clock timing variables
   INTEGER :: cr, cm
-  INTEGER :: clock_starttime, clock_endtime
+  INTEGER :: clock_starttime, clock_now, clock_last_status
   real :: cpu_starttime, cpu_endtime
+
 
 #ifdef INTEL_PROFILE
   type(c_ptr) domain
@@ -51,15 +54,22 @@ PROGRAM GENIE
   PRINT *
   PRINT *, 'MODIFIED IN JOB SRC'
 #ifdef INTEL_PROFILE
-  print *, 'Intel task API enabled'
+  print *, 'Intel Profile API enabled'
 #endif
 
  ! First initialize the system_clock
   CALL system_clock(count_rate=cr)
   CALL system_clock(count_max=cm)
 
+  ! set interval write to status file every 5 seconds (in units of the clock rate cr)
+  status_interval = 5 * cr
+
   CALL SYSTEM_CLOCK(clock_starttime)
   call CPU_TIME(cpu_starttime)
+
+  ! set the initial clock_last_status in the past,
+  ! so that the first loop iteration triggers a status write
+  clock_last_status = clock_starttime - 2*status_interval
 
   ! *** INITIALIZE ***
 
@@ -157,10 +167,12 @@ PROGRAM GENIE
            STOP
         END SELECT
      END IF
-     ! write status every 200 timesteps
-     IF (MOD(koverall, 200) == 0) THEN
+
+     CALL SYSTEM_CLOCK(clock_now)
+     IF(clock_now - clock_last_status > status_interval) then
+        clock_last_status = clock_now
         CALL write_status('RUNNING')
-     endif
+     ENDIF
 #ifdef INTEL_PROFILE
      call FORTRAN_ITT_TASK_END(domain)
 #endif
@@ -716,9 +728,9 @@ PROGRAM GENIE
   PRINT *
   CALL write_status('COMPLETE')
   call CPU_TIME(cpu_endtime)
-  CALL SYSTEM_CLOCK(clock_endtime)
+  CALL SYSTEM_CLOCK(clock_now)
 
-  print *, "system_clock : ",(clock_endtime - clock_starttime)/real(cr)
+  print *, "system_clock : ",(clock_now - clock_starttime)/real(cr)
   print *, 'cpu_clock:', cpu_endtime - cpu_starttime
 
 END PROGRAM GENIE
