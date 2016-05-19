@@ -4,36 +4,36 @@ MODULE ITT_FORTRAN
 
     INTERFACE
 
-        SUBROUTINE FORTRAN_ITT_RESUME() &
+        SUBROUTINE FITT_RESUME() &
             BIND(C, NAME='fortran_itt_resume')
-        END SUBROUTINE FORTRAN_ITT_RESUME
+        END SUBROUTINE FITT_RESUME
 
-        SUBROUTINE FORTRAN_ITT_PAUSE() &
+        SUBROUTINE FITT_PAUSE() &
             BIND(C, NAME='fortran_itt_pause')
         END SUBROUTINE
 
-        FUNCTION FORTRAN_ITT_DOMAIN_CREATE(name) &
+        FUNCTION FITT_DOMAIN_CREATE(name) &
             BIND(C, NAME='fortran_itt_domain_create')
             use iso_c_binding, only: c_char, c_ptr
             character(kind=c_char) :: name(*)
-            type(c_ptr) :: FORTRAN_ITT_DOMAIN_CREATE
+            type(c_ptr) :: FITT_DOMAIN_CREATE
         END FUNCTION
 
-        FUNCTION FORTRAN_ITT_STRING_HANDLE_CREATE(name) &
+        FUNCTION FITT_STRING_HANDLE_CREATE(name) &
             BIND(C, NAME='fortran_itt_string_handle_create')
             use iso_c_binding, only: c_char, c_ptr
             character(kind=c_char) :: name(*)
-            type(c_ptr) :: FORTRAN_ITT_STRING_HANDLE_CREATE
+            type(c_ptr) :: FITT_STRING_HANDLE_CREATE
         END FUNCTION
 
-        subroutine FORTRAN_ITT_TASK_BEGIN(domain, handle) &
+        subroutine FITT_TASK_BEGIN(domain, handle) &
             BIND(C, NAME='fortran_itt_task_begin')
             use iso_c_binding, only: c_ptr
             type(c_ptr), intent(in), value :: domain
             type(c_ptr), intent(in), value :: handle
         END subroutine
 
-        subroutine FORTRAN_ITT_TASK_END(domain) &
+        subroutine FITT_TASK_END(domain) &
             BIND(C, NAME='fortran_itt_task_end')
             use iso_c_binding, only: c_ptr
             type(c_ptr), intent(in), value :: domain

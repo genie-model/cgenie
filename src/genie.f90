@@ -11,7 +11,7 @@ PROGRAM GENIE
   USE genie_loop_wrappers
   USE genie_end_wrappers
 #ifdef INTEL_PROFILE
-  use itt_fortran
+  use itt_profile
 #endif
   USE, INTRINSIC :: ISO_C_BINDING
   IMPLICIT NONE
@@ -28,25 +28,6 @@ PROGRAM GENIE
   real :: cpu_starttime, cpu_endtime
 
 
-#ifdef INTEL_PROFILE
-  type(c_ptr) domain
-
-  type(c_ptr) task_timestep
-  type(c_ptr) task_status
-  type(c_ptr) task_gemlite
-  type(c_ptr) task_normal
-  type(c_ptr) task_gemlite2
-
-   domain = FORTRAN_ITT_DOMAIN_CREATE(C_CHAR_"dom"//C_NULL_CHAR)
-   task_timestep = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"timestep"//C_NULL_CHAR)
-   task_status = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"status"//C_NULL_CHAR)
-
-   task_gemlite = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"gemlite"//C_NULL_CHAR)
-   task_normal = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"normal"//C_NULL_CHAR)
-   task_gemlite2 = FORTRAN_ITT_STRING_HANDLE_CREATE(C_CHAR_"gemlite2"//C_NULL_CHAR)
-
-#endif
-
   PRINT *
   PRINT *, '*******************************************************'
   PRINT *, '  *** Welcome to cGENIE -- version: ', TRIM(genie_version)
@@ -55,6 +36,7 @@ PROGRAM GENIE
   PRINT *, 'MODIFIED IN JOB SRC'
 #ifdef INTEL_PROFILE
   print *, 'Intel Profile API enabled'
+  call itt_profile_init()
 #endif
 
  ! First initialize the system_clock
@@ -135,8 +117,8 @@ PROGRAM GENIE
   ! NOTE: koverall is in hours
   DO koverall = koverall_start, koverall_total
 #ifdef INTEL_PROFILE
-     call FORTRAN_ITT_TASK_BEGIN(domain, task_timestep)
-     call FORTRAN_ITT_TASK_BEGIN(domain, task_status)
+     call itt_profile_begin(task_timestep)
+     call itt_profile_begin(task_status)
 #endif
      CALL read_command(command_exists, command, command_arg)
      IF (command_exists) THEN
@@ -174,7 +156,7 @@ PROGRAM GENIE
         CALL write_status('RUNNING')
      ENDIF
 #ifdef INTEL_PROFILE
-     call FORTRAN_ITT_TASK_END(domain)
+     call itt_profile_end()
 #endif
 
      ! Increment the clock which accumulates total time
@@ -183,7 +165,7 @@ PROGRAM GENIE
      IF (flag_gemlite) THEN
         IF (MOD(koverall, kgemlite * kocn_loop) == 1) THEN
 #ifdef INTEL_PROFILE
-           call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite)
+           call itt_profile_begin(task_gemlite)
 #endif
            ! Increment GEM year count
            istep_gem = istep_gem + 1
@@ -263,7 +245,7 @@ PROGRAM GENIE
               ! NO NEED TO SWITCH CYCLE PHASE => keep calm and pony on
            END IF
 #ifdef INTEL_PROFILE
-           call FORTRAN_ITT_TASK_END(domain)
+           call itt_profile_end()
 #endif
         END IF
      END IF
@@ -272,7 +254,7 @@ PROGRAM GENIE
      IF (istep_gem <= gem_notyr .OR. .NOT. flag_gemlite) THEN
         ! START NORMAL
 #ifdef INTEL_PROFILE
-        call FORTRAN_ITT_TASK_BEGIN(domain, task_normal)
+        call itt_profile_begin(task_normal)
 #endif
         gem_status = 0
         IF (flag_gemlite .AND. istep_gem == gem_notyr) gem_switch = 1
@@ -288,10 +270,16 @@ PROGRAM GENIE
            ! The next line should read " == 1" so that c-GOLDSTEIN
            ! surflux is executed on the first time-step
            IF (MOD(koverall,kocn_loop) == 1) THEN
+#ifdef INTEL_PROFILE
+        call itt_profile_begin(task_surflux_wrapper)
+#endif
               IF (debug_loop > 2) PRINT *, '>>> SURFLUX @ ', koverall, kocn_loop
               istep_ocn = istep_ocn + 1
               CALL surflux_wrapper
               IF (debug_loop > 2) PRINT *, '<<<'
+#ifdef INTEL_PROFILE
+           call itt_profile_end()
+#endif
            END IF
         END IF
 
@@ -372,6 +360,9 @@ PROGRAM GENIE
         ! => force t-series save
         IF (flag_biogem) THEN
            IF (MOD(koverall, conv_kocn_kbiogem * kocn_loop) == 0) THEN
+#ifdef INTEL_PROFILE
+               call itt_profile_begin(task_biogem)
+#endif
               IF (debug_loop > 2) PRINT *, '>>> BIOGEM @ ', &
                    & koverall, conv_kocn_kbiogem * kocn_loop
               ! THIS MOSTLY FIXES THE INITIAL LACK-OF-INSOLATION PROBLEM,
@@ -379,20 +370,65 @@ PROGRAM GENIE
               IF (koverall == conv_kocn_kbiogem * kocn_loop) &
                    & CALL biogem_climate_sol_wrapper
               CALL biogem_forcing_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_begin(task_biogem_wrapper)
+#endif
               CALL biogem_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+               call itt_profile_begin(task_biogem_tracercoupling_wrapper)
+#endif
+
               CALL biogem_tracercoupling_wrapper
+#ifdef INTEL_PROFILE
+              call itt_profile_end()
+              call itt_profile_begin(task_biogem_climate_wrapper)
+#endif
+
               IF (debug_loop > 2) PRINT *, '<<<'
+
               CALL biogem_climate_wrapper
+
+#ifdef INTEL_PROFILE
+              call itt_profile_end()
+              call itt_profile_begin(task_diag_biogem_timeslice_wrapper)
+#endif
+
               CALL diag_biogem_timeslice_wrapper
+#ifdef INTEL_PROFILE
+              call itt_profile_end()
+              call itt_profile_begin(task_diag_biogem_timeseries_wrapper)
+#endif
+
               IF (flag_gemlite .AND. (gem_switch.ne.0)) THEN
                  CALL diag_biogem_force_timeseries_wrapper
               ELSE
                  CALL diag_biogem_timeseries_wrapper
               end if
+
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+               call itt_profile_begin(task_cpl_flux_ocnatm_wrapper)
+#endif
               CALL cpl_flux_ocnatm_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+               call itt_profile_begin(task_cpl_flux_ocnsed_wrapper)
+#endif
               CALL cpl_flux_ocnsed_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+               call itt_profile_begin(task_cpl_comp_ocnsed_wrapper)
+#endif
               CALL cpl_comp_ocnsed_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+               call itt_profile_begin(task_reinit_flux_rokocn_wrapper)
+#endif
               CALL reinit_flux_rokocn_wrapper
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+#endif
               IF (debug_loop > 0) CALL diag_biogem_wrapper
               ! If GEMlite: test for the end of the 1st (normal) part
               ! of cycle => create annual averages of <ocn> (for later
@@ -401,6 +437,9 @@ PROGRAM GENIE
                  IF (debug_loop > 3) PRINT *, '* cpl_comp_ocngem'
                  CALL cpl_comp_ocngem_wrapper
               END IF
+#ifdef INTEL_PROFILE
+              call itt_profile_end() ! end normal
+#endif
            END IF
         END IF
 
@@ -430,6 +469,9 @@ PROGRAM GENIE
         ! is above the allowed threshold
         IF (flag_biogem .AND. gem_adapt_auto) THEN
            IF (MOD(koverall, kgemlite * kocn_loop) == 0) THEN
+#ifdef INTEL_PROFILE
+    call itt_profile_begin(task_biogem_adapt)
+#endif
               ! update (@ current time-step, not annual average) value
               ! of gem_pCO2
               CALL diag_biogem_pCO2_wrapper
@@ -459,6 +501,9 @@ PROGRAM GENIE
               ! save current value of gem_pCO2 as gem_pCO2_OLD
               ! for calculating rate of change of pCO2 between GEM (year) steps
               gem_pCO2_OLD = gem_pCO2
+#ifdef INTEL_PROFILE
+    call itt_profile_end()
+#endif
            END IF
         END IF
 
@@ -485,13 +530,13 @@ PROGRAM GENIE
            IF (istep_gem > 1 .AND. istep_gem < gem_notyr) gem_switch = 0
         END IF
 #ifdef INTEL_PROFILE
-        call FORTRAN_ITT_TASK_END(domain)
+        call itt_profile_end()
 #endif
         ! END NORMAL
      ELSE
         ! START GEMLITE
 #ifdef INTEL_PROFILE
-        call FORTRAN_ITT_TASK_BEGIN(domain, task_gemlite2)
+        call itt_profile_begin(task_gemlite2)
 #endif
         gem_status = 1
         gem_switch = 0
@@ -661,11 +706,11 @@ PROGRAM GENIE
         END IF
         ! END GEMLITE
 #ifdef INTEL_PROFILE
-        call FORTRAN_ITT_TASK_END(domain)
+        call itt_profile_end()
 #endif
      END IF
 #ifdef INTEL_PROFILE
-     call FORTRAN_ITT_TASK_END(domain)
+     call itt_profile_end()
 #endif
 
   END DO
