@@ -532,6 +532,9 @@ CONTAINS
     USE biogem_data
     USE biogem_data_ascii
     USE genie_global, ONLY: write_status
+#ifdef INTEL_PROFILE
+    use itt_profile
+#endif
     IMPLICIT NONE
     REAL, INTENT(IN) :: dum_dts                                ! biogem time-step length (seconds)
     INTEGER(KIND=8), INTENT(IN) :: dum_genie_clock             ! genie clock (ms since start) NOTE: 8-byte integer
@@ -553,7 +556,7 @@ CONTAINS
     real::loc_rdts,loc_rdtyr                                       ! time reciprocals
     logical::loc_debug_ij                                          !
     logical,DIMENSION(n_ocn)::locio_mask                           !
-    REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
+    ! NEVER USED !REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_ocn                  ! local ocean tracer array
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::locijk_focn                 ! local ocean tracer flux array
     REAL,DIMENSION(n_sed,n_i,n_j,n_k)::locijk_fpart                ! local particulate tracer flux array
     REAL,DIMENSION(n_atm,n_i,n_j)::locij_fatm                      ! local atmosphere tracer flux array
@@ -584,26 +587,32 @@ CONTAINS
     real,dimension(1:n_l_ocn)::loc_vocn                            !
     real,dimension(n_l_ocn,n_l_sed)::loc_conv_ls_lo                !
 
+
+
     loc_debug_ij = .FALSE.
 
     ! *** RESET GLOBAL ARRAYS ***
     ! reset remin array
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
-       bio_remin(io,:,:,:) = 0.0
+       bio_remin(io,:,:,:) = 0.0 !1.4s
     end do
 
     ! *** INITIALIZE LOCAL ARRAYS ***
     locij_fatm = 0.0
     locij_focnatm = 0.0
-    locijk_ocn = 0.0
-    locijk_focn = 0.0
+    !locijk_ocn = 0.0   !1.6s (NEVER USED)
+    locijk_focn = 0.0  !0.9s must be 0 as as sum's up
     locij_fsedocn = 0.0
     locij_frokocn = 0.0
     locij_focnsed = 0.0
-    locijk_fpart = 0.0
+    locijk_fpart = 0.0 !1.13 s, must be 0 as sum's up
     ! initialize local tracer arrays
     loc_conv_ls_lo = 0.0
+
+#ifdef INTEL_PROFILE
+               call itt_profile_begin(task_biogem_step)
+#endif
 
     ! *** CALCULATE GEM TIME ***
     ! update model time
@@ -1787,18 +1796,32 @@ CONTAINS
           loc_i = vocn(n)%i
           loc_j = vocn(n)%j
           loc_k1 = vocn(n)%k1
-          DO k=n_k,loc_k1,-1
-             DO l=1,n_l_ocn
-                io = conv_iselected_io(l)
-                vdocn(n)%mk(l,k) = bio_remin(io,loc_i,loc_j,k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
-                vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
-             end do
-             DO l=1,n_l_sed
+         
+          ! original 
+!          DO k=n_k,loc_k1,-1 !(why is this -1 reverse order, there is no aparent data dependence on order)
+!             DO l=1,n_l_ocn
+!                io = conv_iselected_io(l)
+!                vdocn(n)%mk(l,k) = bio_remin(io,loc_i,loc_j,k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
+!                vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
+!             end do
+!             DO l=1,n_l_sed
+!                is = conv_iselected_is(l)
+!                vdbio_part(n)%mk(l,k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,k)
+!                vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
+!             end do
+!          end DO
+
+          DO l=1,n_l_ocn
+            io = conv_iselected_io(l)
+            vdocn(n)%mk(l,loc_k1:n_k) = bio_remin(io,loc_i,loc_j,loc_k1:n_k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,loc_k1:n_k)*locijk_focn(io,loc_i,loc_j,loc_k1:n_k)
+            vocn(n)%mk(l,loc_k1:n_k) = ocn(io,loc_i,loc_j,loc_k1:n_k)
+          END DO
+
+          DO l=1,n_l_sed
                 is = conv_iselected_is(l)
-                vdbio_part(n)%mk(l,k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,k)
-                vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
-             end do
-          end DO
+                vdbio_part(n)%mk(l,loc_k1:n_k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,loc_k1:n_k)
+                vbio_part(n)%mk(l,loc_k1:n_k) = bio_part(is,loc_i,loc_j,loc_k1:n_k)
+          END DO
        end do
 
     END IF if_go
@@ -1827,6 +1850,11 @@ CONTAINS
        CALL end_biogem()
        CALL write_status('ERRORED')
     END IF
+
+#ifdef INTEL_PROFILE
+               call itt_profile_end()
+#endif
+
   END SUBROUTINE step_biogem
 
 
