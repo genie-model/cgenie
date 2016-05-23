@@ -1,25 +1,33 @@
 import platform
 import os
 # Fortran 90 platform definitions.
-print('platform called')
+print('platform called newblue-ifort')
 print(platform.python_version())
 
 f90 = {
     # Compiler name.
-    'compiler': 'gfortran',
+    'compiler': 'ifort',
 
     # Default flags.
-    'baseflags': [
-                  '-x', 'f95-cpp-input', '-ffree-line-length-none',
-                  '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-msse', '-Wall',
-                  ],
-
+    #'baseflags': ['/fpp', '/heap-arrays:0',
+    #              '/warn:declarations', '/real-size:64'],
+    'baseflags': ['-fpp', '-no-heap-arrays',
+                  '-Wall', '-r8'],
+	
+    #'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
+				  
     # Debug flags.
-    'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', '-mtune=native' ],
+    'debug_link': ['-g'],
 
     # Optimisation flags.
-    'ship': ['-O3', '-funroll-loops'],
+    'optimise': ['-O3', '-funroll-loops'],
+				  
+    # Debug flags.
+    #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
+    
+    # Optimisation flags.
+    'ship': ['-O3', '-funroll-loops', '-mtune=native'],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],
@@ -34,7 +42,7 @@ f90 = {
 
     # Miscellaneous flags.
     'include': '-I',         # Include files.
-    'module_dir': '-J',      # Module file output directory.
+    'module_dir': '-module ',      # Module file output directory.
     'define': '-D',          # Preprocessor definitions.
 
     # the following 3 lines are for vtune instrumentation
@@ -43,7 +51,7 @@ f90 = {
     'debug_link': [ '/panfs/panasas01/geog/td14281/cgenie/src/profile_api/api_fortran_itt.o'],
 
     # required for blue crystal
-    'ld_library_path':'/cm/shared/languages/GCC-5.3/lib'
+    #'ld_library_path':'/cm/shared/languages/GCC-5.3/lib'
     # later gets set into the environment
 # env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
 # env['ENV']['LD_LIBRARY_PATH'] = '/cm/shared/languages/GCC-5.3/lib'
@@ -67,7 +75,7 @@ runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
 
 # NetCDF platform definitions.
 
-poss_netcdf = ['/usr', '/usr/local', '/opt' , '/panfs/panasas01/geog/td14281/local_gcc5.3' ]
+poss_netcdf = ['/usr', '/usr/local', '/opt' , '/panfs/panasas01/geog/td14281/local.ifort15']
 netcdf_base = None
 for poss in poss_netcdf:
     if (os.path.exists(os.path.join(poss, 'include', 'netcdf.mod')) and
@@ -100,3 +108,4 @@ netcdf = {
     # 'netcdff' if the F90 library is split).
     'libs': netcdf_libs
 }
+
