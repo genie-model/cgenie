@@ -313,6 +313,13 @@ def clean(clean_model):
 def build(cont):
     model_config.setup()
     model_dir = model_config.directory()
+    if os.path.exists(os.path.join('config','platform-name')):
+        print('manual platform file has been set by set-platform')
+        if not os.path.exists(os.path.join(model_dir,'config')):
+            os.makedirs(os.path.join(model_dir,'config'))
+        if not os.path.exists(os.path.join(model_dir,'config','platform-name')):
+            print('manual platform does not have platform-name file, copying')
+            shutil.copy(os.path.join('config','platform-name'), os.path.join(model_dir,'config'))
     with open(os.devnull, 'w') as sink:
         cmd = [scons, '-q', '-C', model_dir]
         cmd = [sys.executable] + cmd
