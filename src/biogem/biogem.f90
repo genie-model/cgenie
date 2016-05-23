@@ -1797,31 +1797,18 @@ CONTAINS
           loc_j = vocn(n)%j
           loc_k1 = vocn(n)%k1
          
-          ! original 
-!          DO k=n_k,loc_k1,-1 !(why is this -1 reverse order, there is no aparent data dependence on order)
-!             DO l=1,n_l_ocn
-!                io = conv_iselected_io(l)
-!                vdocn(n)%mk(l,k) = bio_remin(io,loc_i,loc_j,k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
-!                vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
-!             end do
-!             DO l=1,n_l_sed
-!                is = conv_iselected_is(l)
-!                vdbio_part(n)%mk(l,k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,k)
-!                vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
-!             end do
-!          end DO
-
-          DO l=1,n_l_ocn
-            io = conv_iselected_io(l)
-            vdocn(n)%mk(l,loc_k1:n_k) = bio_remin(io,loc_i,loc_j,loc_k1:n_k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,loc_k1:n_k)*locijk_focn(io,loc_i,loc_j,loc_k1:n_k)
-            vocn(n)%mk(l,loc_k1:n_k) = ocn(io,loc_i,loc_j,loc_k1:n_k)
-          END DO
-
-          DO l=1,n_l_sed
+          DO k=n_k,loc_k1,-1 !(why is this -1 reverse order, there is no aparent data dependence on order)
+             DO l=1,n_l_ocn
+                io = conv_iselected_io(l)
+               vdocn(n)%mk(l,k) = bio_remin(io,loc_i,loc_j,k) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
+                vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
+             end do
+             DO l=1,n_l_sed
                 is = conv_iselected_is(l)
-                vdbio_part(n)%mk(l,loc_k1:n_k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,loc_k1:n_k)
-                vbio_part(n)%mk(l,loc_k1:n_k) = bio_part(is,loc_i,loc_j,loc_k1:n_k)
-          END DO
+                vdbio_part(n)%mk(l,k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_fpart(is,loc_i,loc_j,k)
+                vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
+             end do
+          end DO
        end do
 
     END IF if_go
