@@ -1154,9 +1154,12 @@ CONTAINS
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_ocnTOvocn !
     ! local variables
-    integer::i,j,k,n
+    integer::i,j,n
     integer::l,io
     integer::loc_n,loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! allocate result variable size
     ALLOCATE(fun_lib_conv_ocnTOvocn(1:n_vocn))
     do n=1,n_vocn
@@ -1174,12 +1177,19 @@ CONTAINS
              fun_lib_conv_ocnTOvocn(loc_n)%k1 = loc_k1
              ! initialize, because not all 'k' depths are valid
              fun_lib_conv_ocnTOvocn(loc_n)%mk(:,:) = 0.0
+#ifdef OLD_K_LOOP
              DO k=n_k,loc_k1,-1
                 DO l=1,n_l_ocn
                    io = conv_iselected_io(l)
                    fun_lib_conv_ocnTOvocn(loc_n)%mk(l,k) = dum_ocn(io,i,j,k)
                 end DO
              end DO
+#else
+             DO l=1,n_l_ocn
+                io = conv_iselected_io(l)
+                fun_lib_conv_ocnTOvocn(loc_n)%mk(l,loc_k1:n_k) = dum_ocn(io,i,j,loc_k1:n_k)
+             end DO
+#endif
           end if
        end do
     end do
@@ -1195,9 +1205,12 @@ CONTAINS
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_sedTOvsed !
     ! local variables
-    integer::i,j,k,n
+    integer::i,j,n
     integer::l,is
     integer::loc_n,loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! allocate result variable size
     ALLOCATE(fun_lib_conv_sedTOvsed(1:n_vocn))
     do n=1,n_vocn
@@ -1215,12 +1228,19 @@ CONTAINS
              fun_lib_conv_sedTOvsed(loc_n)%k1 = loc_k1
              ! initialize, because not all 'k' depths are valid
              fun_lib_conv_sedTOvsed(loc_n)%mk(:,:) = 0.0
+#ifdef OLD_K_LOOP
              DO k=n_k,loc_k1,-1
                 DO l=1,n_l_sed
                    is = conv_iselected_is(l)
                    fun_lib_conv_sedTOvsed(loc_n)%mk(l,k) = dum_sed(is,i,j,k)
                 end DO
              end DO
+#else
+             DO l=1,n_l_sed
+                is = conv_iselected_is(l)
+                fun_lib_conv_sedTOvsed(loc_n)%mk(l,loc_k1:n_k) = dum_sed(is,i,j,loc_k1:n_k)
+             end DO
+#endif
           end if
        end do
     end do
@@ -1236,9 +1256,12 @@ CONTAINS
     ! result variable
     REAL,DIMENSION(n_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOocn    !
     ! local variables
-    integer::loc_i,loc_j,k,n
+    integer::loc_i,loc_j,n
     integer::l,io
     integer::loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! initialize results variable, becasue not all grid points or 'k' depths are valid
     fun_lib_conv_vocnTOocn(:,:,:,:) = 0.0
     !
@@ -1246,12 +1269,19 @@ CONTAINS
        loc_i = dum_vocn(n)%i
        loc_j = dum_vocn(n)%j
        loc_k1 = dum_vocn(n)%k1
+#ifdef OLD_K_LOOP
        DO k=n_k,loc_k1,-1
           DO l=1,n_l_ocn
              io = conv_iselected_io(l)
              fun_lib_conv_vocnTOocn(io,loc_i,loc_j,k) = dum_vocn(n)%mk(l,k)
           end DO
        end DO
+#else
+       DO l=1,n_l_ocn
+          io = conv_iselected_io(l)
+          fun_lib_conv_vocnTOocn(io,loc_i,loc_j,loc_k1:n_k) = dum_vocn(n)%mk(l,loc_k1:n_k)
+       end DO
+#endif
     end do
   END function fun_lib_conv_vocnTOocn
   ! ****************************************************************************************************************************** !
@@ -1265,23 +1295,37 @@ CONTAINS
     ! result variable
     REAL,DIMENSION(n_sed,n_i,n_j,n_k)::fun_lib_conv_vsedTOsed    !
     ! local variables
-    integer::loc_i,loc_j,k,n
+    integer::loc_i,loc_j,n
     integer::l,is
     integer::loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! initialize results variable, becasue not all grid points or 'k' depths are valid
     fun_lib_conv_vsedTOsed(:,:,:,:) = 0.0
-    !
+    ! in test case, this array is 12MB
+    ! the actual writes are only ~10% of this
+
     do n=1,n_vocn
        loc_i = dum_vsed(n)%i
        loc_j = dum_vsed(n)%j
        loc_k1 = dum_vsed(n)%k1
+#ifdef OLD_K_LOOP
        DO k=n_k,loc_k1,-1
           DO l=1,n_l_sed
              is = conv_iselected_is(l)
              fun_lib_conv_vsedTOsed(is,loc_i,loc_j,k) = dum_vsed(n)%mk(l,k)
           end DO
        end DO
+#else
+       ! Change operation to row vector copy
+       DO l=1,n_l_sed
+           is = conv_iselected_is(l)
+           fun_lib_conv_vsedTOsed(is,loc_i,loc_j,loc_k1:n_k) = dum_vsed(n)%mk(l,loc_k1:n_k)
+       end DO
+#endif
     end do
+
   END function fun_lib_conv_vsedTOsed
   ! ****************************************************************************************************************************** !
 
@@ -1294,8 +1338,11 @@ CONTAINS
     ! result variable
     type(fieldocn),DIMENSION(:),ALLOCATABLE::fun_lib_conv_tsTOvocn !
     ! local variables
-    integer::i,j,k,n
+    integer::i,j,n
     integer::loc_n,loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! allocate result variable size
     ALLOCATE(fun_lib_conv_tsTOvocn(1:n_vocn))
     do n=1,n_vocn
@@ -1313,9 +1360,13 @@ CONTAINS
              fun_lib_conv_tsTOvocn(loc_n)%k1 = loc_k1
              ! initialize, becasue not all 'k' depths are valid
              fun_lib_conv_tsTOvocn(loc_n)%mk(:,:) = 0.0
+#ifdef OLD_K_LOOP
              DO k=n_k,loc_k1,-1
                 fun_lib_conv_tsTOvocn(loc_n)%mk(:,k) = dum_ts(:,i,j,k)
              end DO
+#else
+             fun_lib_conv_tsTOvocn(loc_n)%mk(:,loc_k1:n_k) = dum_ts(:,i,j,loc_k1:n_k)
+#endif
           end if
        end do
     end do
@@ -1331,9 +1382,12 @@ CONTAINS
     ! result variable
     REAL,DIMENSION(n_l_ocn,n_i,n_j,n_k)::fun_lib_conv_vocnTOts   !
     ! local variables
-    integer::loc_i,loc_j,k,n
+    integer::loc_i,loc_j,n
     integer::l
     integer::loc_k1
+#ifdef OLD_K_LOOP
+    integer :: k
+#endif
     ! initialize, becasue not all grid points or 'k' depths are valid
     fun_lib_conv_vocnTOts(:,:,:,:) = 0.0
     !
@@ -1341,11 +1395,17 @@ CONTAINS
        loc_i = dum_vocn(n)%i
        loc_j = dum_vocn(n)%j
        loc_k1 = dum_vocn(n)%k1
+#ifdef OLD_K_LOOP
        DO k=n_k,loc_k1,-1
           DO l=1,n_l_ocn
              fun_lib_conv_vocnTOts(l,loc_i,loc_j,k) = dum_vocn(n)%mk(l,k)
           end DO
        end DO
+#else
+       DO l=1,n_l_ocn
+          fun_lib_conv_vocnTOts(l,loc_i,loc_j,loc_k1:n_k) = dum_vocn(n)%mk(l,loc_k1:n_k)
+       end DO
+#endif
     end do
   END function fun_lib_conv_vocnTOts
   ! ****************************************************************************************************************************** !

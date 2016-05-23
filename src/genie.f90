@@ -33,7 +33,7 @@ PROGRAM GENIE
   PRINT *, '  *** Welcome to cGENIE -- version: ', TRIM(genie_version)
   PRINT *, '*******************************************************'
   PRINT *
-  PRINT *, 'MODIFIED IN JOB SRC'
+  PRINT *, 'MODIFIED IN JOB SRC test'
 #ifdef INTEL_PROFILE
   print *, 'Intel Profile API enabled'
   call itt_profile_init()
