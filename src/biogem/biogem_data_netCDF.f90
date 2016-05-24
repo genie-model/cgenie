@@ -2111,11 +2111,11 @@ CONTAINS
                    DO k=goldstein_k1(i,j),n_k
                       SELECT CASE (ocn_type(io))
                       CASE (0,1)
-                         loc_ijk(i,j,k) = int_bio_remin_timeslice(io,i,j,k)/int_t_timeslice
+                         loc_ijk(i,j,k) = int_bio_remin_timeslice2(k,j,i,io)/int_t_timeslice
                          loc_unitsname = 'mol yr-1'
                       case (n_itype_min:n_itype_max)
-                         loc_tot  = int_bio_remin_timeslice(ocn_dep(io),i,j,k)/int_t_timeslice
-                         loc_frac = int_bio_remin_timeslice(io,i,j,k)/int_t_timeslice
+                         loc_tot  = int_bio_remin_timeslice2(k,j,i,ocn_dep(io))/int_t_timeslice
+                         loc_frac = int_bio_remin_timeslice2(k,j,i,io)/int_t_timeslice
                          loc_standard = const_standards(ocn_type(io))
                          loc_ijk(i,j,k) = fun_calc_isotope_delta(loc_tot,loc_frac,loc_standard,.FALSE.,const_real_null)
                          loc_unitsname = 'o/oo'

@@ -789,7 +789,8 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_solconst
   ! 'biology'
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part        ! ocean tracer particle field (NOTE: <n_sed> tracers)
-  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
+  !REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin2       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_settle      ! ocean tracer particle settling field (NOTE: <n_sed> tracers)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part_red    ! 'Redfield' ratios
   ! 'physics'
@@ -856,6 +857,7 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_part_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_settle_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_remin_timeslice
+  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_remin_timeslice2
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_phys_ocn_timeslice
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_phys_ocnatm_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_carb_timeslice
@@ -1254,6 +1256,34 @@ CONTAINS
        end DO
     end do
   END function fun_lib_conv_vocnTOocn
+  
+  function fun_lib_conv_vocnTOocn2(dum_vocn)
+    ! dummy valiables
+    type(fieldocn),DIMENSION(:)::dum_vocn                        !
+    ! result variable
+    REAL,DIMENSION(n_k,n_j,n_i,n_ocn)::fun_lib_conv_vocnTOocn2    !
+    ! local variables
+    integer::loc_i,loc_j,k,n
+    integer::l,io
+    integer::loc_k1
+    ! initialize results variable, becasue not all grid points or 'k' depths are valid
+    fun_lib_conv_vocnTOocn2(:,:,:,:) = 0.0
+    !
+    do n=1,n_vocn
+       loc_i = dum_vocn(n)%i
+       loc_j = dum_vocn(n)%j
+       loc_k1 = dum_vocn(n)%k1
+       DO k=n_k,loc_k1,-1
+          DO l=1,n_l_ocn
+             io = conv_iselected_io(l)
+             fun_lib_conv_vocnTOocn2(k,loc_j,loc_i,io) = dum_vocn(n)%mk(l,k)
+          end DO
+       end DO
+    end do
+  END function fun_lib_conv_vocnTOocn2
+
+
+
   ! ****************************************************************************************************************************** !
 
 
