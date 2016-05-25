@@ -1789,14 +1789,14 @@ CONTAINS
     integer::l,io,k
     real::loc_O2,loc_NH4,loc_r15N
     real::loc_NH4_oxidation
-    real,dimension(n_ocn,n_k)::loc_bio_remin
+    real,dimension(n_k,n_ocn)::loc_bio_remin2
     ! -------------------------------------------------------- !
     ! INITIALIZE VARIABLES
     ! -------------------------------------------------------- !
     ! initialize remineralization tracer arrays
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
+       loc_bio_remin2(:,io) = 0.0
     end do
     ! -------------------------------------------------------- !
     ! OXIDIZE NH4
@@ -1827,21 +1827,21 @@ CONTAINS
           loc_r15N = ocn(io_NH4_15N,dum_i,dum_j,k)/ocn(io_NH4,dum_i,dum_j,k)
           if (loc_NH4_oxidation > loc_NH4) then
              ! complete NH4 oxidation (no N fractionation)
-             loc_bio_remin(io_NH4,k) = -loc_NH4
-             loc_bio_remin(io_NO3,k) = loc_NH4
-             loc_bio_remin(io_O2,k)  = -2.0*loc_NH4
-             loc_bio_remin(io_ALK,k) = loc_bio_remin(io_NH4,k) - loc_bio_remin(io_NO3,k)
-             loc_bio_remin(io_NH4_15N,k) = -loc_r15N*loc_NH4
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NH4
+             loc_bio_remin2(k,io_NH4) = -loc_NH4
+             loc_bio_remin2(k,io_NO3) = loc_NH4
+             loc_bio_remin2(k,io_O2)  = -2.0*loc_NH4
+             loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_NH4) - loc_bio_remin2(k,io_NO3)
+             loc_bio_remin2(k,io_NH4_15N) = -loc_r15N*loc_NH4
+             loc_bio_remin2(k,io_NO3_15N) = loc_r15N*loc_NH4
           else
              ! partial NH4 oxidation (=> N isotope Rayleigh fractionation)
-             loc_bio_remin(io_NH4,k) = -loc_NH4_oxidation
-             loc_bio_remin(io_NO3,k) = loc_NH4_oxidation
-             loc_bio_remin(io_O2,k)  = -2.0*loc_NH4_oxidation
-             loc_bio_remin(io_ALK,k) = loc_bio_remin(io_NH4,k) - loc_bio_remin(io_NO3,k)
+             loc_bio_remin2(k,io_NH4) = -loc_NH4_oxidation
+             loc_bio_remin2(k,io_NO3) = loc_NH4_oxidation
+             loc_bio_remin2(k,io_O2)  = -2.0*loc_NH4_oxidation
+             loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_NH4) - loc_bio_remin2(k,io_NO3)
              ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO N FRACTIONATION ########################################################## !
-             loc_bio_remin(io_NH4_15N,k) = -loc_r15N*loc_NH4_oxidation
-             loc_bio_remin(io_NO3_15N,k) = loc_r15N*loc_NH4_oxidation
+             loc_bio_remin2(k,io_NH4_15N) = -loc_r15N*loc_NH4_oxidation
+             loc_bio_remin2(k,io_NO3_15N) = loc_r15N*loc_NH4_oxidation
              ! ################################################################################################################### !
           end if
        end if
@@ -1852,12 +1852,12 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! record diagnostics (mol kg-1)
-    diag_geochem(idiag_geochem_ammox_dNH4,dum_i,dum_j,:) = loc_bio_remin(io_NH4,:)
-    diag_geochem(idiag_geochem_ammox_dNO3,dum_i,dum_j,:) = loc_bio_remin(io_NO3,:)
+    diag_geochem(idiag_geochem_ammox_dNH4,dum_i,dum_j,:) = loc_bio_remin2(:,io_NH4)
+    diag_geochem(idiag_geochem_ammox_dNO3,dum_i,dum_j,:) = loc_bio_remin2(:,io_NO3)
     ! -------------------------------------------------------- !
     ! END
     ! -------------------------------------------------------- !
@@ -1879,14 +1879,14 @@ CONTAINS
     integer::l,io,k
     real::loc_O2,loc_NH4,loc_r15N
     real::loc_NH4_oxidation,loc_N2Ofrac
-    real,dimension(n_ocn,n_k)::loc_bio_remin
+    real,dimension(n_k,n_ocn)::loc_bio_remin2
     ! -------------------------------------------------------- !
     ! INITIALIZE VARIABLES
     ! -------------------------------------------------------- !
     ! initialize remineralization tracer arrays
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
+       loc_bio_remin2(:,io) = 0.0
     end do
     ! -------------------------------------------------------- !
     ! OXIDIZE NH4
@@ -1911,38 +1911,38 @@ CONTAINS
           end if
           if (loc_NH4_oxidation > loc_NH4) then
              ! complete NH4 oxidation (no N fractionation)
-             loc_bio_remin(io_NH4,k) = -(1.0 - loc_N2Ofrac)*loc_NH4
-             loc_bio_remin(io_NO2,k) = -loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_O2,k)  = (3.0/2.0)*loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_ALK,k) = loc_bio_remin(io_NH4,k) - loc_bio_remin(io_NO2,k)
-             loc_bio_remin(io_NH4_15N,k) = loc_r15N*loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_NO2_15N,k) = loc_r15N*loc_bio_remin(io_NO2,k)
+             loc_bio_remin2(k,io_NH4) = -(1.0 - loc_N2Ofrac)*loc_NH4
+             loc_bio_remin2(k,io_NO2) = -loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_O2)  = (3.0/2.0)*loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_NH4) - loc_bio_remin2(k,io_NO2)
+             loc_bio_remin2(k,io_NH4_15N) = loc_r15N*loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_NO2_15N) = loc_r15N*loc_bio_remin2(k,io_NO2)
              if (ocn_select(io_N2O)) then
-                loc_bio_remin(io_NH4,k) = loc_bio_remin(io_NH4,k) - loc_N2Ofrac*loc_NH4
-                loc_bio_remin(io_N2O,k) = loc_bio_remin(io_NO2,k) + 0.5*loc_N2Ofrac*loc_NH4
-                loc_bio_remin(io_O2,k)  = loc_bio_remin(io_O2,k) - loc_N2Ofrac*loc_NH4
-                loc_bio_remin(io_ALK,k) = loc_bio_remin(io_ALK,k) - loc_N2Ofrac*loc_NH4
-                loc_bio_remin(io_NH4_15N,k) = loc_bio_remin(io_NH4_15N,k) - loc_r15N*loc_N2Ofrac*loc_NH4
-                loc_bio_remin(io_N2O_15N,k) = loc_bio_remin(io_N2O_15N,k) + loc_r15N*0.5*loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_NH4) = loc_bio_remin2(k,io_NH4) - loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_N2O) = loc_bio_remin2(k,io_NO2) + 0.5*loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_O2)  = loc_bio_remin2(k,io_O2) - loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_ALK) - loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_NH4_15N) = loc_bio_remin2(k,io_NH4_15N) - loc_r15N*loc_N2Ofrac*loc_NH4
+                loc_bio_remin2(k,io_N2O_15N) = loc_bio_remin2(k,io_N2O_15N) + loc_r15N*0.5*loc_N2Ofrac*loc_NH4
              end if
           else
              ! partial NH4 oxidation (=> N isotope Rayleigh fractionation)
-             loc_bio_remin(io_NH4,k) = -(1.0 - loc_N2Ofrac)*loc_NH4_oxidation
-             loc_bio_remin(io_NO2,k) = -loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_O2,k)  = (3.0/2.0)*loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_ALK,k) = loc_bio_remin(io_NH4,k) - loc_bio_remin(io_NO2,k)
+             loc_bio_remin2(k,io_NH4) = -(1.0 - loc_N2Ofrac)*loc_NH4_oxidation
+             loc_bio_remin2(k,io_NO2) = -loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_O2)  = (3.0/2.0)*loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_NH4) - loc_bio_remin2(k,io_NO2)
              ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO N FRACTIONATION ########################################################## !
-             loc_bio_remin(io_NH4_15N,k) = loc_r15N*loc_bio_remin(io_NH4,k)
-             loc_bio_remin(io_NO2_15N,k) = loc_r15N*loc_bio_remin(io_NO2,k)
+             loc_bio_remin2(k,io_NH4_15N) = loc_r15N*loc_bio_remin2(k,io_NH4)
+             loc_bio_remin2(k,io_NO2_15N) = loc_r15N*loc_bio_remin2(k,io_NO2)
              ! ################################################################################################################### !
              if (ocn_select(io_N2O)) then
-                loc_bio_remin(io_NH4,k) = loc_bio_remin(io_NH4,k) - loc_N2Ofrac*loc_NH4_oxidation
-                loc_bio_remin(io_N2O,k) = loc_bio_remin(io_N2O,k) + 0.5*loc_N2Ofrac*loc_NH4_oxidation
-                loc_bio_remin(io_O2,k)  = loc_bio_remin(io_O2,k) - loc_N2Ofrac*loc_NH4_oxidation
-                loc_bio_remin(io_ALK,k) = loc_bio_remin(io_ALK,k) - loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_NH4) = loc_bio_remin2(k,io_NH4) - loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_N2O) = loc_bio_remin2(k,io_N2O) + 0.5*loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_O2)  = loc_bio_remin2(k,io_O2) - loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_ALK) = loc_bio_remin2(k,io_ALK) - loc_N2Ofrac*loc_NH4_oxidation
                 ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO N FRACTIONATION ####################################################### !
-                loc_bio_remin(io_NH4_15N,k) = loc_bio_remin(io_NH4_15N,k) - loc_r15N*loc_N2Ofrac*loc_NH4_oxidation
-                loc_bio_remin(io_N2O_15N,k) = loc_bio_remin(io_N2O_15N,k) + loc_r15N*0.5*loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_NH4_15N) = loc_bio_remin2(k,io_NH4_15N) - loc_r15N*loc_N2Ofrac*loc_NH4_oxidation
+                loc_bio_remin2(k,io_N2O_15N) = loc_bio_remin2(k,io_N2O_15N) + loc_r15N*0.5*loc_N2Ofrac*loc_NH4_oxidation
                 ! ################################################################################################################ !
              end if
           end if
@@ -1954,8 +1954,8 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
     ! END
@@ -1978,14 +1978,14 @@ CONTAINS
     integer::l,io,k
     real::loc_O2,loc_H2S,loc_r34S
     real::loc_H2S_oxidation_const,loc_H2S_oxidation
-    real,dimension(n_ocn,n_k)::loc_bio_remin
+    real,dimension(n_k,n_ocn)::loc_bio_remin2
     ! -------------------------------------------------------- !
     ! INITIALIZE VARIABLES
     ! -------------------------------------------------------- !
     ! initialize remineralization tracer arrays
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
+       loc_bio_remin2(:,io) = 0.0
     end do
     ! -------------------------------------------------------- !
     ! OXIDIZE H2S
@@ -2021,21 +2021,21 @@ CONTAINS
           if (loc_H2S_oxidation > loc_H2S) then
              ! complete H2S oxidation (no S fractionation)
              loc_H2S_oxidation = loc_H2S
-             loc_bio_remin(io_H2S,k) = -loc_H2S
-             loc_bio_remin(io_SO4,k) = loc_H2S
-             loc_bio_remin(io_O2,k)  = -2.0*loc_H2S
-             loc_bio_remin(io_ALK,k) = -2.0*loc_H2S
-             loc_bio_remin(io_H2S_34S,k) = -loc_r34S*loc_H2S
-             loc_bio_remin(io_SO4_34S,k) = loc_r34S*loc_H2S
+             loc_bio_remin2(k,io_H2S) = -loc_H2S
+             loc_bio_remin2(k,io_SO4) = loc_H2S
+             loc_bio_remin2(k,io_O2)  = -2.0*loc_H2S
+             loc_bio_remin2(k,io_ALK) = -2.0*loc_H2S
+             loc_bio_remin2(k,io_H2S_34S) = -loc_r34S*loc_H2S
+             loc_bio_remin2(k,io_SO4_34S) = loc_r34S*loc_H2S
           else
              ! partial H2S oxidation (=> S isotope Rayleigh fractionation)
-             loc_bio_remin(io_H2S,k) = -loc_H2S_oxidation
-             loc_bio_remin(io_SO4,k) = loc_H2S_oxidation
-             loc_bio_remin(io_O2,k)  = -2.0*loc_H2S_oxidation
-             loc_bio_remin(io_ALK,k) = -2.0*loc_H2S_oxidation
+             loc_bio_remin2(k,io_H2S) = -loc_H2S_oxidation
+             loc_bio_remin2(k,io_SO4) = loc_H2S_oxidation
+             loc_bio_remin2(k,io_O2)  = -2.0*loc_H2S_oxidation
+             loc_bio_remin2(k,io_ALK) = -2.0*loc_H2S_oxidation
              ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO S FRACTIONATION ########################################################## !
-             loc_bio_remin(io_H2S_34S,k) = -loc_r34S*loc_H2S_oxidation
-             loc_bio_remin(io_SO4_34S,k) = loc_r34S*loc_H2S_oxidation
+             loc_bio_remin2(k,io_H2S_34S) = -loc_r34S*loc_H2S_oxidation
+             loc_bio_remin2(k,io_SO4_34S) = loc_r34S*loc_H2S_oxidation
              ! ################################################################################################################### !
           end if
        end if
@@ -2046,8 +2046,8 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
     ! END
@@ -2068,14 +2068,14 @@ CONTAINS
     real::loc_CH4
     real::loc_r13C,loc_r14C
     real::loc_frac
-    real,dimension(n_ocn,n_k)::loc_bio_remin
+    real,dimension(n_k,n_ocn)::loc_bio_remin2
 
     ! *** INITIALIZE VARIABLES ***
     ! initialize local variables
     ! initialize remineralization tracer arrays
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
+       loc_bio_remin2(:,io) = 0.0
     end do
 
     ! *** OXIDIZE CH4 ***
@@ -2100,23 +2100,23 @@ CONTAINS
           loc_r14C = ocn(io_CH4_14C,dum_i,dum_j,k)/ocn(io_CH4,dum_i,dum_j,k)
           if (loc_CH4 <= 0.5*loc_potO2cap) then
              ! complete CH4 oxidation (no C fractionation)
-             loc_bio_remin(io_CH4,k) = -loc_CH4
-             loc_bio_remin(io_DIC,k) = loc_CH4
-             loc_bio_remin(io_O2,k)  = -2.0*loc_CH4
-             loc_bio_remin(io_CH4_13C,k) = -loc_r13C*loc_CH4
-             loc_bio_remin(io_CH4_14C,k) = -loc_r14C*loc_CH4
-             loc_bio_remin(io_DIC_13C,k) = loc_r13C*loc_CH4
-             loc_bio_remin(io_DIC_14C,k) = loc_r14C*loc_CH4
+             loc_bio_remin2(k,io_CH4) = -loc_CH4
+             loc_bio_remin2(k,io_DIC) = loc_CH4
+             loc_bio_remin2(k,io_O2)  = -2.0*loc_CH4
+             loc_bio_remin2(k,io_CH4_13C) = -loc_r13C*loc_CH4
+             loc_bio_remin2(k,io_CH4_14C) = -loc_r14C*loc_CH4
+             loc_bio_remin2(k,io_DIC_13C) = loc_r13C*loc_CH4
+             loc_bio_remin2(k,io_DIC_14C) = loc_r14C*loc_CH4
           else
              ! partial CH4 oxidation (=> C isotope Rayleigh fractionation)
-             loc_bio_remin(io_CH4,k) = -0.5*loc_potO2cap
-             loc_bio_remin(io_DIC,k) = 0.5*loc_potO2cap
-             loc_bio_remin(io_O2,k)  = -loc_potO2cap
+             loc_bio_remin2(k,io_CH4) = -0.5*loc_potO2cap
+             loc_bio_remin2(k,io_DIC) = 0.5*loc_potO2cap
+             loc_bio_remin2(k,io_O2)  = -loc_potO2cap
              ! ### INSERT ALTERNATIVE CODE FOR NON-ZERO C FRACTIONATION ########################################################## !
-             loc_bio_remin(io_CH4_13C,k) = -loc_r13C*0.5*loc_potO2cap
-             loc_bio_remin(io_CH4_14C,k) = -loc_r14C*0.5*loc_potO2cap
-             loc_bio_remin(io_DIC_13C,k) = loc_r13C*0.5*loc_potO2cap
-             loc_bio_remin(io_DIC_14C,k) = loc_r14C*0.5*loc_potO2cap
+             loc_bio_remin2(k,io_CH4_13C) = -loc_r13C*0.5*loc_potO2cap
+             loc_bio_remin2(k,io_CH4_14C) = -loc_r14C*0.5*loc_potO2cap
+             loc_bio_remin2(k,io_DIC_13C) = loc_r13C*0.5*loc_potO2cap
+             loc_bio_remin2(k,io_DIC_14C) = loc_r14C*0.5*loc_potO2cap
              ! ################################################################################################################### !
           end if
        end if
@@ -2126,11 +2126,11 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! record diagnostics (mol kg-1)
-    diag_geochem(idiag_geochem_dCH4,dum_i,dum_j,:) = loc_bio_remin(io_CH4,:)
+    diag_geochem(idiag_geochem_dCH4,dum_i,dum_j,:) = loc_bio_remin2(:,io_CH4)
 
   end SUBROUTINE sub_calc_bio_remin_oxidize_CH4
   ! ****************************************************************************************************************************** !
@@ -2258,7 +2258,7 @@ CONTAINS
     integer::l,io,k
     integer::loc_l_min,loc_l_max,loc_k
     real::loc_flux
-    real,dimension(n_ocn,n_k)::loc_bio_remin
+    real,dimension(n_k,n_ocn)::loc_bio_remin2
     ! -------------------------------------------------------- !
     ! INITIALIZE VARIABLES
     ! -------------------------------------------------------- !
@@ -2277,7 +2277,7 @@ CONTAINS
     ! initialize remineralization tracer arrays
     DO l=loc_l_min,loc_l_max
        io = conv_iselected_io(l)
-       loc_bio_remin(io,:) = 0.0
+       loc_bio_remin2(:,io) = 0.0
     end do
     ! -------------------------------------------------------- !
     ! GEOENGINEERING
@@ -2294,11 +2294,11 @@ CONTAINS
           if (loc_k < dum_k1) loc_k = dum_k1
           DO l=loc_l_min,loc_l_max
              io = conv_iselected_io(l)
-             loc_bio_remin(io,n_k) = loc_bio_remin(io,n_k) + &
+             loc_bio_remin2(n_k,io) = loc_bio_remin2(n_k,io) + &
                   & loc_flux*ocn(io,dum_i,dum_j,loc_k)/phys_ocn(ipo_V,dum_i,dum_j,n_k) - &
                   & loc_flux*ocn(io,dum_i,dum_j,n_k)/phys_ocn(ipo_V,dum_i,dum_j,n_k)
              DO k=n_k-1,loc_k,-1
-                loc_bio_remin(io,k) = loc_bio_remin(io,k) + &
+                loc_bio_remin2(k,io) = loc_bio_remin2(k,io) + &
                      & loc_flux*ocn(io,dum_i,dum_j,k+1)/phys_ocn(ipo_V,dum_i,dum_j,k) - &
                      & loc_flux*ocn(io,dum_i,dum_j,k)/phys_ocn(ipo_V,dum_i,dum_j,k)
              end do
@@ -2313,8 +2313,8 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=loc_l_min,loc_l_max
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
     ! END
@@ -2487,7 +2487,7 @@ CONTAINS
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_part_TMP
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_part_OLD
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_part
-    real,dimension(1:n_l_ocn,1:n_k)::loc_bio_remin
+    real,dimension(1:n_k,1:n_l_ocn)::loc_bio_remin2
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_settle
     real,dimension(1:n_l_sed)::loc_bio_part_remin
 
@@ -2518,7 +2518,7 @@ CONTAINS
     ! initialize local particulate tracer field array
     loc_bio_part(:,:) = 0.0
     ! initialize remineralization tracer array
-    loc_bio_remin(:,:) = 0.0
+    loc_bio_remin2(:,:) = 0.0
     !
     loc_bio_settle(:,:) = 0.0
     ! set water column particulate tracer loop limit and sinking rate
@@ -2829,7 +2829,7 @@ CONTAINS
                    do loc_m=1,loc_tot_m
                       lo = conv_ls_lo_i(loc_m,ls)
                       if (lo > 0) then
-                         loc_bio_remin(lo,kk) = loc_bio_remin(lo,kk) + loc_conv_ls_lo(lo,ls)*loc_bio_part_remin(ls)
+                         loc_bio_remin2(kk,lo) = loc_bio_remin2(kk,lo) + loc_conv_ls_lo(lo,ls)*loc_bio_part_remin(ls)
                       end if
                    end do
                 end DO
@@ -2845,7 +2845,7 @@ CONTAINS
                            & loc_bio_remin_dt_scav,        &
                            & dum_vocn%mk(io2l(io_Fe),kk),  &
                            & loc_bio_part_TMP(:,kk),       &
-                           & loc_bio_remin(:,kk)           &
+                           & loc_bio_remin2(kk,:)           &
                            & )
                    end if
                 end if
@@ -2858,7 +2858,7 @@ CONTAINS
                            & loc_bio_remin_dt_scav,        &
                            & dum_vocn%mk(io2l(io_H2S),kk), &
                            & loc_bio_part_TMP(:,kk),       &
-                           & loc_bio_remin(:,kk)           &
+                           & loc_bio_remin2(kk,:)           &
                            & )
                    end if
                 end if
@@ -2906,7 +2906,11 @@ CONTAINS
     ! write ocean tracer field and settling flux arrays (global array)
     dum_vbio_part%mk(:,:) = loc_bio_part(:,:)
     ! write ocean tracer remineralization field (global array)
-    dum_vbio_remin%mk(:,:) = dum_vbio_remin%mk(:,:) + loc_bio_remin(:,:)
+
+    ! copy and transpose
+    !toby: not ideal - however mk not in optimal order yet
+    ! original use if same order: dum_vbio_remin%mk(:,:) = dum_vbio_remin%mk(:,:) + loc_bio_remin2(:,:)
+    dum_vbio_remin%mk(:,:) = dum_vbio_remin%mk(:,:) + transpose(loc_bio_remin2(:,:))
 
     DO l=1,n_l_sed
        is = conv_iselected_is(l)
@@ -3163,7 +3167,7 @@ CONTAINS
     integer::l,io                                                  !
     integer::loc_k1                                                ! local topography
     real::loc_dV,loc_rM,loc_frac                                   !
-    real,dimension(n_ocn,n_k)::loc_bio_remin                       !
+    real,dimension(n_k,n_ocn)::loc_bio_remin2                       !
 
     ! *** BLAH ***
     ! set local constants
@@ -3173,7 +3177,7 @@ CONTAINS
     ! initialize variables
     dum_fT = 0.0
     dum_fS = 0.0
-    loc_bio_remin(:,:) = 0.0
+    loc_bio_remin2(:,:) = 0.0
 
     ! *** BLAH ***
     ! carry out brine transfer from surface to depth
@@ -3188,8 +3192,8 @@ CONTAINS
           ! calculate biogeochem tracer concentration changes
           DO l=3,n_l_ocn
              io = conv_iselected_io(l)
-             loc_bio_remin(io,n_k)    = -loc_frac*ocn(io,dum_i,dum_j,n_k)
-             loc_bio_remin(io,loc_k1) = -loc_rM*loc_bio_remin(io,n_k)
+             loc_bio_remin2(n_k,io)    = -loc_frac*ocn(io,dum_i,dum_j,n_k)
+             loc_bio_remin2(loc_k1,io) = -loc_rM*loc_bio_remin2(n_k,io)
           end DO
        end if
     end if
@@ -3198,8 +3202,8 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin(io,:)
-       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin(io,:)
+       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
+       bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
 
   end SUBROUTINE sub_calc_misc_brinerejection
