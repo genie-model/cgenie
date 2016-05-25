@@ -202,7 +202,7 @@ baselinkflags = []
 if 'baselinkflags' in f90:
     baselinkflags = f90['baselinkflags']
 extraf90libpaths = []
-if 'libpath' in f90: extraf90libpaths = f90['libpath']
+if 'libpath' in f90: extraf90libpaths = extraf90libpaths.append(f90['libpath'])
 target_vs_arch = 'linux'
 if 'TARGET_VS_ARCH' in os.environ:
     target_vs_arch = os.environ['TARGET_VS_ARCH']
@@ -314,7 +314,7 @@ baselinkflags = []
 if 'baselinkflags' in f90:
     baselinkflags = f90['baselinkflags']
 extraf90libpaths = []
-if 'libpath' in f90: extraf90libpaths = f90['libpath']
+if 'libpath' in f90: extraf90libpaths.append(f90['libpath'])
 target_vs_arch = 'linux'
 if 'TARGET_VS_ARCH' in os.environ:
     target_vs_arch = os.environ['TARGET_VS_ARCH']
