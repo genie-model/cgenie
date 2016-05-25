@@ -70,8 +70,6 @@ CONTAINS
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_part(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; bio_part = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    !ALLOCATE(bio_remin(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; bio_remin = 0.0
-    !CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_remin2(n_k,n_j,n_i,n_ocn),STAT=alloc_error)             ; bio_remin2 = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(bio_settle(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; bio_settle = 0.0
@@ -110,8 +108,6 @@ CONTAINS
     ALLOCATE(int_bio_part_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)              ; int_bio_part_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_bio_settle_timeslice(n_sed,n_i,n_j,n_k),STAT=alloc_error)            ; int_bio_settle_timeslice = 0.0
-    CALL check_iostat(alloc_error,__LINE__,__FILE__)
-    ALLOCATE(int_bio_remin_timeslice(n_ocn,n_i,n_j,n_k),STAT=alloc_error)             ; int_bio_remin_timeslice = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
     ALLOCATE(int_bio_remin_timeslice2(n_k,n_j,n_i,n_ocn),STAT=alloc_error)             ; int_bio_remin_timeslice2 = 0.0
     CALL check_iostat(alloc_error,__LINE__,__FILE__)
@@ -599,8 +595,7 @@ CONTAINS
     ! reset remin array
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,:,:,:) = 0.0 !1.4s
-       bio_remin2(:,:,:,io) = 0.0 !1.4s
+       bio_remin2(:,:,:,io) = 0.0
     end do
 
     ! *** INITIALIZE LOCAL ARRAYS ***
@@ -929,8 +924,6 @@ CONTAINS
                 end if
                 DO l=3,n_l_ocn
                    io = conv_iselected_io(l)
-                   !bio_remin(io,i,j,loc_k1) = bio_remin(io,i,j,loc_k1) + &
-                   !     & phys_ocn(ipo_rM,i,j,loc_k1)*locij_fsedocn(io,i,j)
                    bio_remin2(loc_k1,j,i,io) = bio_remin2(loc_k1,j,i,io) + &
                         & phys_ocn(ipo_rM,i,j,loc_k1)*locij_fsedocn(io,i,j)
                 end do
@@ -962,7 +955,6 @@ CONTAINS
 
        ! [temp code in retaining primary use of <bio_remin>] ************************************************************************
        bio_part(:,:,:,:) = fun_lib_conv_vsedTOsed(vbio_part(:))
-       !bio_remin(:,:,:,:) = bio_remin(:,:,:,:) + fun_lib_conv_vocnTOocn(vbio_remin(:))
        bio_remin2(:,:,:,:) = bio_remin2(:,:,:,:) + fun_lib_conv_vocnTOocn2(vbio_remin(:))
        ! ****************************************************************************************************************************
 
@@ -1651,7 +1643,6 @@ CONTAINS
                 end do
                 DO l=3,n_l_ocn
                    io = conv_iselected_io(l)
-                   !bio_remin(io,i,j,n_k) = bio_remin(io,i,j,n_k) + phys_ocn(ipo_rM,i,j,n_k)*locij_frokocn(io,i,j)
                    bio_remin2(n_k,j,i,io) = bio_remin2(n_k,j,i,io) + phys_ocn(ipo_rM,i,j,n_k)*locij_frokocn(io,i,j)
                 end do
 
@@ -1724,11 +1715,6 @@ CONTAINS
                    io = conv_iselected_io(l)
                    dum_sfcocn1(io,i,j) = ocn(io,i,j,loc_k1) + &
                         & bio_remin2(loc_k1,j,i,io) + loc_dtyr*phys_ocn(ipo_rM,i,j,loc_k1)*locijk_focn(io,i,j,loc_k1)
-
-!                   if( abs(bio_remin2(loc_k1,j,i,io) - bio_remin(io,i,j,loc_k1)) > 0.0001) then
-!                      print *, 'bio_remin and bio_remin2 differ'
-!                   endif
-
                 end do
                 IF (.NOT. ocn_select(io_Ca))    dum_sfcocn1(io_Ca,i,j) = fun_calc_Ca(dum_sfcocn1(io_S,i,j))
                 IF (.NOT. ocn_select(io_B))     dum_sfcocn1(io_B,i,j)  = fun_calc_Btot(dum_sfcocn1(io_S,i,j))
@@ -1815,12 +1801,6 @@ CONTAINS
              DO l=1,n_l_ocn
                 io = conv_iselected_io(l)
                 vdocn(n)%mk(l,k) = bio_remin2(k,loc_j,loc_i,io) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
-
-!                if(abs (bio_remin2(k,loc_j,loc_i,io) - bio_remin(io,loc_i,loc_j,k)) > 0.0001) then
-!                print *, 'bio_remin and bio_remin2 diff'
-!                endif
-
-
                 vocn(n)%mk(l,k) = ocn(io,loc_i,loc_j,k)
              end do
              DO l=1,n_l_sed
@@ -2566,7 +2546,6 @@ CONTAINS
              int_ocn_timeslice(:,:,:,:)        = int_ocn_timeslice(:,:,:,:)        + loc_dtyr*ocn(:,:,:,:)
              int_bio_part_timeslice(:,:,:,:)   = int_bio_part_timeslice(:,:,:,:)   + loc_dtyr*bio_part(:,:,:,:)
              int_bio_settle_timeslice(:,:,:,:) = int_bio_settle_timeslice(:,:,:,:) + bio_settle(:,:,:,:)
-             !int_bio_remin_timeslice(:,:,:,:)  = int_bio_remin_timeslice(:,:,:,:)  + bio_remin(:,:,:,:)
              int_bio_remin_timeslice2(:,:,:,:)  = int_bio_remin_timeslice2(:,:,:,:)  + bio_remin2(:,:,:,:)
              int_phys_ocn_timeslice(:,:,:,:)   = int_phys_ocn_timeslice(:,:,:,:)   + loc_dtyr*phys_ocn(:,:,:,:)
              int_carb_timeslice(:,:,:,:)       = int_carb_timeslice(:,:,:,:)       + loc_dtyr*carb(:,:,:,:)

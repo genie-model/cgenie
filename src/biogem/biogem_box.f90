@@ -1331,7 +1331,6 @@ CONTAINS
           ! calculate decrease in particulate fraction
           loc_bio_part_DOM(is,loc_k_mld:n_k) = loc_r_POM_DOM*loc_bio_red_DOMfrac*bio_part(is,dum_i,dum_j,loc_k_mld:n_k)
           ! create (and add) dissolved tracers
-          !bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) + loc_bio_part_DOM(is,loc_k_mld:n_k)
           bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) + loc_bio_part_DOM(is,loc_k_mld:n_k)
        end do
        ! create RDOM fraction
@@ -1350,7 +1349,6 @@ CONTAINS
           ! calculate decrease in particulate fraction
           loc_bio_part_RDOM(is,loc_k_mld:n_k) = loc_r_POM_RDOM*loc_bio_red_RDOMfrac*bio_part(is,dum_i,dum_j,loc_k_mld:n_k)
           ! create (and add) dissolved tracers
-          !bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) + loc_bio_part_RDOM(is,loc_k_mld:n_k)
           bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) + loc_bio_part_RDOM(is,loc_k_mld:n_k)
        end do
     end do
@@ -1429,12 +1427,6 @@ CONTAINS
                   & bio_part(:,dum_i,dum_j,k),                                       &
                   & bio_remin2(k,dum_j,dum_i,:)                                      &
                   & )
-			
-!        if(abs(      sum(   bio_remin(k,dum_j,dum_i,:) - bio_remin2(:,dum_i,dum_j,k) )) > 0.001) then
-!            print*,'bio_remin v bio_remin2'
-!        endif
-
-
           end if
        end DO
     end if
@@ -1444,7 +1436,6 @@ CONTAINS
     ! NOTE: depletion of dissolved species as a result of biological productivity is implimented as negative remineralization
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) - loc_bio_uptake(io,loc_k_mld:n_k)
        bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) - loc_bio_uptake(io,loc_k_mld:n_k)
     end do
     ! record diagnostics
@@ -1487,14 +1478,11 @@ CONTAINS
     if (ctrl_bio_preformed) then
        if (.not. ocn_select(io_col0)) then
           if (ocn_select(io_PO4) .AND. ocn_select(io_colr)) then
-             !bio_remin(io_colr,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_PO4) - ocn(io_colr,dum_i,dum_j,loc_k_mld:n_k)
              bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io_colr) = loc_ocn(io_PO4) - ocn(io_colr,dum_i,dum_j,loc_k_mld:n_k)
           end if
           if (ocn_select(io_NO3) .AND. ocn_select(io_colb)) then
-             !bio_remin(io_colb,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_NO3) - ocn(io_colb,dum_i,dum_j,loc_k_mld:n_k)
              bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io_colb) = loc_ocn(io_NO3) - ocn(io_colb,dum_i,dum_j,loc_k_mld:n_k)
           elseif (ocn_select(io_PO4) .AND. ocn_select(io_colb)) then
-             !bio_remin(io_colb,dum_i,dum_j,loc_k_mld:n_k) = -ocn(io_colb,dum_i,dum_j,loc_k_mld:n_k)
              bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io_colb) = -ocn(io_colb,dum_i,dum_j,loc_k_mld:n_k)
           end if
        else
@@ -1502,28 +1490,20 @@ CONTAINS
              if (ocn_select(io)) then
                 select case (io)
                 CASE (io_col0)
-                   !if (ocn_select(io_DIC)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_DIC) - loc_ocn(io)
                    if (ocn_select(io_DIC)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_DIC) - loc_ocn(io)
                 CASE (io_col1)
-                   !if (ocn_select(io_ALK)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_ALK) - loc_ocn(io)
                    if (ocn_select(io_ALK)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_ALK) - loc_ocn(io)
                 CASE (io_col2)
-                   !if (ocn_select(io_O2)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_O2) - loc_ocn(io)
                    if (ocn_select(io_O2)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_O2) - loc_ocn(io)
                 CASE (io_col3)
-                   !if (ocn_select(io_PO4)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_PO4) - loc_ocn(io)
                    if (ocn_select(io_PO4)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_PO4) - loc_ocn(io)
                 CASE (io_col4)
-                   !if (ocn_select(io_NO3)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_NO3) - loc_ocn(io)
                    if (ocn_select(io_NO3)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_NO3) - loc_ocn(io)
                 CASE (io_col5)
-                   !if (ocn_select(io_Ca)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_Ca) - loc_ocn(io)
                    if (ocn_select(io_Ca)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_Ca) - loc_ocn(io)
                 CASE (io_col6)
-                   !if (ocn_select(io_SiO2)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_SiO2) - loc_ocn(io)
                    if (ocn_select(io_SiO2)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_SiO2) - loc_ocn(io)
                 CASE (io_col7)
-                   !if (ocn_select(io_DIC_13C)) bio_remin(io,dum_i,dum_j,loc_k_mld:n_k) = loc_ocn(io_DIC_13C) - loc_ocn(io)
                    if (ocn_select(io_DIC_13C)) bio_remin2(loc_k_mld:n_k,dum_j,dum_i,io) = loc_ocn(io_DIC_13C) - loc_ocn(io)
                 end select
              end if
@@ -1673,7 +1653,6 @@ CONTAINS
     ! *** SET MODIFICATION OF TRACER CONCENTRATIONS ***
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) - loc_bio_uptake(io,:)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) - loc_bio_uptake(io,:)
     end do
 
@@ -1706,12 +1685,6 @@ CONTAINS
        loc_FeL = ocn(io_FeL,dum_i,dum_j,k) + bio_remin2(k,dum_j,dum_i,io_FeL)
        loc_L   = ocn(io_L,dum_i,dum_j,k) + bio_remin2(k,dum_j,dum_i,io_L)
        
-!       if(abs(bio_remin(io_Fe,dum_i,dum_j,k) - bio_remin2(k,dum_j,dum_i,io_Fe)) > 0.0001 &
-!       .or. abs(bio_remin(io_FeL,dum_i,dum_j,k) - bio_remin2(k,dum_j,dum_i,io_FeL)) > 0.0001 &
-!       .or. abs(bio_remin(io_L,dum_i,dum_j,k) - bio_remin2(k,dum_j,dum_i,io_L)) > 0.0001 ) then
-!        print *, 'remin different'
-!       endif
-
        loc_FeT = loc_FeL + loc_Fe
        loc_LT  = loc_FeL + loc_L
        ! solve Fe speciation equation:
@@ -1762,9 +1735,6 @@ CONTAINS
        end if
        ! re-calculate reminerlization arrays to give rise to calculated Fe speciation
        ! NOTE: subtract <dum_focnFe> again because it is added subsequently in the main BIOGEM loop through <locijk_focn>
-!       bio_remin(io_Fe,dum_i,dum_j,k)  = loc_Fe - ocn(io_Fe,dum_i,dum_j,k) - dum_focnFe(k)
-!       bio_remin(io_FeL,dum_i,dum_j,k) = loc_FeL - ocn(io_FeL,dum_i,dum_j,k)
-!       bio_remin(io_L,dum_i,dum_j,k)   = loc_L - ocn(io_L,dum_i,dum_j,k)
 
        bio_remin2(k,dum_j,dum_i,io_Fe)  = loc_Fe - ocn(io_Fe,dum_i,dum_j,k) - dum_focnFe(k)
        bio_remin2(k,dum_j,dum_i,io_FeL) = loc_FeL - ocn(io_FeL,dum_i,dum_j,k)
@@ -1852,7 +1822,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! record diagnostics (mol kg-1)
@@ -1954,7 +1923,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
@@ -2046,7 +2014,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
@@ -2085,9 +2052,6 @@ CONTAINS
     DO k=n_k,dum_k1,-1
        ! calculate potential oxidation capacity
        loc_potO2cap = ocn(io_O2,dum_i,dum_j,k) + bio_remin2(k,dum_j,dum_i,io_O2)
-!       if( abs(bio_remin2(k,dum_j,dum_i,io_O2) - bio_remin(io_O2,dum_i,dum_j,k)) > 0.001) then
-!        print *, 'diff OXIDIZE CH4'
-!        endif
 
        if ((ocn(io_CH4,dum_i,dum_j,k) > const_real_nullsmall) .AND. (loc_potO2cap > const_real_nullsmall)) then
           ! calculate CH4 oxidation
@@ -2126,7 +2090,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! record diagnostics (mol kg-1)
@@ -2313,7 +2276,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=loc_l_min,loc_l_max
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
     ! -------------------------------------------------------- !
@@ -3202,7 +3164,6 @@ CONTAINS
     ! write ocean tracer remineralization field (global array)
     DO l=3,n_l_ocn
        io = conv_iselected_io(l)
-       !bio_remin(io,dum_i,dum_j,:) = bio_remin(io,dum_i,dum_j,:) + loc_bio_remin2(:,io)
        bio_remin2(:,dum_j,dum_i,io) = bio_remin2(:,dum_j,dum_i,io) + loc_bio_remin2(:,io)
     end do
 

@@ -582,7 +582,6 @@ CONTAINS
 
     ! *** initialize global arrays ***
     bio_part(:,:,:,:)     = 0.0
-    !bio_remin(:,:,:,:)    = 0.0
     bio_remin2(:,:,:,:)   = 0.0
     bio_settle(:,:,:,:)   = 0.0
     bio_part_red(:,:,:,:) = 0.0
@@ -928,7 +927,6 @@ CONTAINS
     int_ocn_timeslice(:,:,:,:)        = 0.0
     int_bio_part_timeslice(:,:,:,:)   = 0.0
     int_bio_settle_timeslice(:,:,:,:) = 0.0
-    int_bio_remin_timeslice(:,:,:,:)  = 0.0
     int_bio_remin_timeslice2(:,:,:,:)  = 0.0
     int_phys_ocn_timeslice(:,:,:,:)   = 0.0
     int_carb_timeslice(:,:,:,:)       = 0.0

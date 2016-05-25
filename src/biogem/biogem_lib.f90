@@ -789,7 +789,6 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: ocnatm_airsea_solconst
   ! 'biology'
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part        ! ocean tracer particle field (NOTE: <n_sed> tracers)
-  !REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_remin2       ! ocean tracer particle remin. field (NOTE: <n_ocn> tracers)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_settle      ! ocean tracer particle settling field (NOTE: <n_sed> tracers)
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: bio_part_red    ! 'Redfield' ratios
@@ -856,7 +855,6 @@ MODULE biogem_lib
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_ocn_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_part_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_settle_timeslice
-  REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_remin_timeslice
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_bio_remin_timeslice2
   REAL, DIMENSION(:,:,:,:), ALLOCATABLE :: int_phys_ocn_timeslice
   REAL, DIMENSION(:,:,:), ALLOCATABLE :: int_phys_ocnatm_timeslice
