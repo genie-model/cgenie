@@ -2421,11 +2421,11 @@ CONTAINS
     END DO
 
     DO k = 1, maxk
-       DO j = 1, maxj
-          DO i = 1, maxi
-             DO l = 1, maxl
-                IF (k >= k1(i,j)) ts1(l,i,j,k) = ts(l,i,j,k)
-             END DO
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k >= k1(i,j))
+                ts1(1:maxl,i,j,k) = ts(1:maxl,i,j,k)
+             ENDIF
           END DO
        END DO
     END DO
@@ -2622,18 +2622,40 @@ CONTAINS
                    END IF
                 END IF
              END IF
-             DO l = 1, maxl
-                tv = 0
-                IF (k >= k1(i,j)) THEN
+
+             IF (k >= k1(i,j)) THEN
+                DO l = 1, maxl
+                   tv = 0
+
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
                         & (-tv + (fe(l) - fw(l)) * rdphi + &
                         & (fn(l) - fs(l,i)) * rds(j) + &
                         & (fa(l) - fb(l,i,j)) * rdz(k))
-                END IF
-                fw(l) = fe(l)
-                fs(l,i) = fn(l)
-                fb(l,i,j) = fa(l)
-             END DO
+
+                   fw(l) = fe(l)
+                   fs(l,i) = fn(l)
+                   fb(l,i,j) = fa(l)
+                END DO
+             ELSE
+                DO l = 1, maxl
+                   fw(l) = fe(l)
+                   fs(l,i) = fn(l)
+                   fb(l,i,j) = fa(l)
+                END DO
+             ENDIF
+
+!             DO l = 1, maxl
+!                tv = 0
+!                IF (k >= k1(i,j)) THEN
+!                   ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
+!                        & (-tv + (fe(l) - fw(l)) * rdphi + &
+!                        & (fn(l) - fs(l,i)) * rds(j) + &
+!                        & (fa(l) - fb(l,i,j)) * rdz(k))
+!                END IF
+!                fw(l) = fe(l)
+!                fs(l,i) = fn(l)
+!                fb(l,i,j) = fa(l)
+!             END DO
 
              CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), zro(k), ieos, rho(i,j,k))
           END DO
