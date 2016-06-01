@@ -2450,7 +2450,7 @@ CONTAINS
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_part_OLD
     real,dimension(1:n_l_sed,1:n_k)::loc_bio_part
     real,dimension(1:n_k,1:n_l_ocn)::loc_bio_remin2
-    real,dimension(1:n_l_sed,1:n_k)::loc_bio_settle
+    real,dimension(1:n_k,1:n_l_sed)::loc_bio_settle
     real,dimension(1:n_l_sed)::loc_bio_part_remin
 
     ! ### USER-DEFINABLE OPTIONS ################################################################################################# !
@@ -2847,9 +2847,9 @@ CONTAINS
                 is = conv_iselected_is(l)
                 SELECT CASE (sed_type(is))
                 case (par_sed_type_frac)
-                   loc_bio_settle(l,kk) = loc_bio_settle(l,kk) + loc_bio_part_TMP(l,kk)
+                   loc_bio_settle(kk,l) = loc_bio_settle(kk,l) + loc_bio_part_TMP(l,kk)
                 case default
-                   loc_bio_settle(l,kk) = loc_bio_settle(l,kk) + dum_vphys_ocn%mk(ipo_M,kk)*loc_bio_part_TMP(l,kk)
+                   loc_bio_settle(kk,l) = loc_bio_settle(kk,l) + dum_vphys_ocn%mk(ipo_M,kk)*loc_bio_part_TMP(l,kk)
                 end SELECT
              end do
           end do
@@ -2876,7 +2876,7 @@ CONTAINS
 
     DO l=1,n_l_sed
        is = conv_iselected_is(l)
-       bio_settle(is,dum_i,dum_j,:) = loc_bio_settle(l,:)
+       bio_settle(is,dum_i,dum_j,:) = loc_bio_settle(:,l)
     end do
 
   END SUBROUTINE sub_box_remin_part
@@ -3241,6 +3241,7 @@ CONTAINS
     !
     loc_l = conv_io_lselected(dum_io)
     ! calculate new forcing time series values
+
     CALL sub_update_sig(dum_t,force_restore_ocn_sig(dum_io,1,:),force_restore_ocn_sig_i(dum_io,:),loc_x)
     force_restore_ocn_sig_x(dum_io) = &
          & (1 - loc_x)*force_restore_ocn_sig(dum_io,2,force_restore_ocn_sig_i(dum_io,2)) + &
