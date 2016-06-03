@@ -2281,14 +2281,14 @@ CONTAINS
     IMPLICIT NONE
 
     REAL, PARAMETER :: ups0=0.0
-    INTEGER :: i, j, k, l
+    INTEGER :: i, j, k
 
     ! Mixed layer scheme needs:
     REAL :: mldtsold(maxl,maxi,maxj,maxk), mldrhoold(maxi,maxj,maxk)
     REAL :: mldrhonew(maxi,maxj,maxk), mldtstmp(2), mldrhotmp
     INTEGER :: mldpk(2,maxi,maxj)
 
-    REAL, DIMENSION(maxl,maxi,maxj,maxk) :: ts_t1, ts1_t1, ts_t2, ts1_t2
+    !REAL, DIMENSION(maxl,maxi,maxj,maxk) :: ts_t1, ts1_t1, ts_t2, ts1_t2
     REAL, DIMENSION(maxi,maxj,maxk) :: rho_t1, rho_t2
 
     IF (imld == 1) THEN
@@ -2308,10 +2308,10 @@ CONTAINS
        END DO
     END IF
 
-    ts_t1 = ts(:,1:maxi,1:maxj,1:maxk)
-    ts1_t1 = ts1(:,1:maxi,1:maxj,1:maxk)
-    ts_t2 = ts(:,1:maxi,1:maxj,1:maxk)
-    ts1_t2 = ts1(:,1:maxi,1:maxj,1:maxk)
+!    ts_t1 = ts(:,1:maxi,1:maxj,1:maxk)
+!    ts1_t1 = ts1(:,1:maxi,1:maxj,1:maxk)
+!    ts_t2 = ts(:,1:maxi,1:maxj,1:maxk)
+!    ts1_t2 = ts1(:,1:maxi,1:maxj,1:maxk)
     rho_t1 = rho(1:maxi,1:maxj,1:maxk)
     rho_t2 = rho(1:maxi,1:maxj,1:maxk)
     CALL tstepo_flux()
@@ -2423,7 +2423,7 @@ CONTAINS
     DO k = 1, maxk
        DO i = 1, maxi
           DO j = 1, maxj
-             IF (k >= k1(i,j))
+             IF (k >= k1(i,j)) then
                 ts1(1:maxl,i,j,k) = ts(1:maxl,i,j,k)
              ENDIF
           END DO
@@ -2436,7 +2436,7 @@ CONTAINS
   SUBROUTINE tstepo_flux
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec(3)
+    REAL :: tv, ups(3), pec
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
@@ -2445,7 +2445,7 @@ CONTAINS
     ! ediff calc needs
     REAL :: diffv
 
-    REAL :: tec, scc, dzrho, rdzrho, slim, tv1
+    REAL :: tec, scc, dzrho, rdzrho, dzrho_inv_sq, slim, tv1
     REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
     INTEGER :: ina, nnp, knp
 
@@ -2470,8 +2470,8 @@ CONTAINS
        DO j = 1, maxj
           ! western boundary fluxes
           i = 1
-          pec(1) = u(1,maxi,j,k) * dphi / diff(1)
-          ups(1) = pec(1) / (2.0 + ABS(pec(1)))
+          pec = u(1,maxi,j,k) * dphi / diff(1)
+          ups(1) = pec / (2.0 + ABS(pec))
           DO l = 1, maxl
              IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
                 ! western doorway
@@ -2498,6 +2498,7 @@ CONTAINS
                 ELSE
                    rdzrho = -1.0E12
                 END IF
+                dzrho_inv_sq = 1.0 / (dzrho * dzrho)
                 IF (iediff > 0 .AND. iediff < 3) THEN
                    ! Value of diffv fine for applying diffusivity, but
                    ! peclet number calc is a 1st order approximation
@@ -2514,13 +2515,13 @@ CONTAINS
                    IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
                 END IF
              END IF
-             pec(1) = u(1,i,j,k) * dphi / diff(1)
-             ups(1) = pec(1) / (2.0 + ABS(pec(1)))
+             pec = u(1,i,j,k) * dphi / diff(1)
+             ups(1) = pec / (2.0 + ABS(pec))
              ! rather untidy mask to avoid undefined dsv at maxj nre
-             pec(2) = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
-             ups(2) = pec(2) / (2.0 + ABS(pec(2)))
-             pec(3) = u(3,i,j,k) * dza(k) / diffv
-             ups(3) = pec(3) / (2.0 + ABS(pec(3)))
+             pec = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
+             ups(2) = pec / (2.0 + ABS(pec))
+             pec = u(3,i,j,k) * dza(k) / diffv
+             ups(3) = pec / (2.0 + ABS(pec))
              DO l = 1, maxl
                 ! flux to east
                 IF (i == maxi) THEN
@@ -2616,7 +2617,8 @@ CONTAINS
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
-                         tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+                         !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
                       END DO
                    END IF
