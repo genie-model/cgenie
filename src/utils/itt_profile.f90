@@ -28,6 +28,9 @@ module itt_profile
     type(c_ptr) task_biogem_step
 
     type(c_ptr) task_surfux_wrapper
+
+
+    type(c_ptr) task_goldstein_tstepo_flux
 #endif
 
 contains
@@ -67,6 +70,10 @@ contains
         task_biogem_step = FITT_STRING_HANDLE_CREATE(C_CHAR_"biogem_step"//C_NULL_CHAR)
 
         task_surfux_wrapper = FITT_STRING_HANDLE_CREATE(C_CHAR_"surfux_wrapper"//C_NULL_CHAR)
+
+
+        task_goldstein_tstepo_flux = FITT_STRING_HANDLE_CREATE(C_CHAR_"tstepo_flux"//C_NULL_CHAR)
+
 #endif
     end subroutine
 

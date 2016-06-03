@@ -2434,9 +2434,10 @@ CONTAINS
 
   ! Ocean flux calculation
   SUBROUTINE tstepo_flux
+    use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec
+    REAL :: tv, ups(3), pec, tv4(4)
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
@@ -2448,6 +2449,9 @@ CONTAINS
     REAL :: tec, scc, dzrho, rdzrho, dzrho_inv_sq, slim, tv1
     REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
     INTEGER :: ina, nnp, knp
+#ifdef INTEL_PROFILE
+    call itt_profile_begin(task_goldstein_tstepo_flux)
+#endif
 
     scc = 0.0
     rdzrho = 0.0
@@ -2472,19 +2476,21 @@ CONTAINS
           i = 1
           pec = u(1,maxi,j,k) * dphi / diff(1)
           ups(1) = pec / (2.0 + ABS(pec))
-          DO l = 1, maxl
-             IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
+
+          IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
+             DO l = 1, maxl
                 ! western doorway
                 fw(l) = u(1,maxi,j,k) * rc(j) * &
                      & ((1.0 - ups(1)) * ts1(l,1,j,k) + &
                      &  (1.0 + ups(1)) * ts1(l,maxi,j,k)) * 0.5
                 fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,maxi,j,k)) * &
                      & rc2(j) * diff(1)
-             ELSE
-                fw(l) = 0
-             END IF
-             fwsave(l) = fw(l)
-          END DO
+             END DO
+          ELSE
+             fw(1:maxl) = 0
+          END IF
+          fwsave(1:maxl) = fw(1:maxl)
+
           DO i = 1, maxi
              ! calculate local vertical diffusivity
              IF (k >= k1(i,j) .AND. k < maxk) THEN
@@ -2522,43 +2528,52 @@ CONTAINS
              ups(2) = pec / (2.0 + ABS(pec))
              pec = u(3,i,j,k) * dza(k) / diffv
              ups(3) = pec / (2.0 + ABS(pec))
-             DO l = 1, maxl
-                ! flux to east
-                IF (i == maxi) THEN
-                   ! eastern edge(doorway or wall)
-                   fe(l) = fwsave(l)
-                ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
-                   fe(l) = 0
-                ELSE
+
+
+             ! flux to east
+             IF (i == maxi) THEN
+                ! eastern edge(doorway or wall)
+                fe(1:maxl) = fwsave(1:maxl)
+             ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
+                fe(1:maxl) = 0
+             ELSE
+                DO l = 1, maxl
                    fe(l) = u(1,i,j,k) * rc(j) * &
                         & ((1.0 - ups(1)) * ts1(l,i+1,j,k) + &
                         &  (1.0 + ups(1)) * ts1(l,i,j,k)) * 0.5
                    fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
                         & rc2(j) * diff(1)
-                END IF
-                ! flux to north
-                IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
-                   fn(l) = 0
-                ELSE
+                END DO
+             END IF
+
+             ! flux to north
+             IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
+                fn(1:maxl) = 0
+             ELSE
+                DO l = 1, maxl
                    fn(l) = cv(j) * u(2,i,j,k) * &
-                        & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
-                        &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
+                     &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
                    fn(l) = fn(l) - cv2(j) * &
-                        & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
-                END IF
-                ! flux above
-                IF (k < k1(i,j)) THEN
-                   fa(l) = 0
-                ELSEIF (k == maxk) THEN
-                   fa(l) = ts(l,i,j,maxk+1)
-                ELSE
+                     & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
+                END DO
+             END IF
+
+             ! flux above
+             IF (k < k1(i,j)) THEN
+                fa(1:maxl) = 0
+             ELSEIF (k == maxk) THEN
+                fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
+             ELSE
+                DO l = 1, maxl
                    fa(l) = u(3,i,j,k) * &
-                        & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
-                        &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
+                     &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
                    fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
                         & rdza(k) * diffv
-                END IF
-             END DO
+                END DO
+             END IF
+
              IF (diso) THEN
                 ! isoneutral diffusion
                 IF (k >= k1(i,j) .AND. k < maxk) THEN
@@ -2569,22 +2584,25 @@ CONTAINS
                          DO nnp = 0, 1
                             ina = 1+nnp + 2 * knp
                             ! phi derivatives
-                            DO l = 1, maxl
-                               IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+                            IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+                               DO l = 1, maxl
                                   dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
                                        & ts1(l,i+nnp-1,j,k+knp)) * rc(j) * rdphi
-                               ELSE
-                                  dxts(l,ina) = 0.0
-                               END IF
-                               ! s-derivatives
-                               IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               END DO
+                            ELSE
+                               dxts(1:maxl,ina) = 0.0
+                            END IF
+                            ! s-derivatives
+                            IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               DO l = 1, maxl
                                   dyts(l,ina) = (ts1(l,i,j+nnp,k+knp) - &
                                        & ts1(l,i,j+nnp-1,k+knp)) * &
                                        & cv(j-1+nnp) * rdsv(j+nnp-1)
-                               ELSE
-                                  dyts(l,ina) = 0.0
-                               END IF
-                            END DO
+                               END DO
+                            ELSE
+                               dyts(1:maxl,ina) = 0.0
+                            END IF
+
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
@@ -2607,16 +2625,18 @@ CONTAINS
                       IF (tv > dmax) THEN
                          dmax = tv
                       END IF
+
+                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
-                         dzts(l) = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
                          ! add isoneutral vertical flux
-                         tv = 0
+                         !tv4 = 0
                          DO ina = 1, 4
-                            tv = tv + (2 * dzrho * dxts(l,ina) - &
+                            tv4(ina) = (2 * dzrho * dxts(l,ina) - &
                                  & dxrho(ina) * dzts(l)) * dxrho(ina) + &
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
+                         tv = sum(tv4)
                          !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
                          tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
@@ -2628,23 +2648,15 @@ CONTAINS
              IF (k >= k1(i,j)) THEN
                 DO l = 1, maxl
                    tv = 0
-
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
                         & (-tv + (fe(l) - fw(l)) * rdphi + &
                         & (fn(l) - fs(l,i)) * rds(j) + &
                         & (fa(l) - fb(l,i,j)) * rdz(k))
-
-                   fw(l) = fe(l)
-                   fs(l,i) = fn(l)
-                   fb(l,i,j) = fa(l)
-                END DO
-             ELSE
-                DO l = 1, maxl
-                   fw(l) = fe(l)
-                   fs(l,i) = fn(l)
-                   fb(l,i,j) = fa(l)
                 END DO
              ENDIF
+             fw(1:maxl) = fe(1:maxl)
+             fs(1:maxl,i) = fn(1:maxl)
+             fb(1:maxl,i,j) = fa(1:maxl)
 
 !             DO l = 1, maxl
 !                tv = 0
@@ -2663,6 +2675,9 @@ CONTAINS
           END DO
        END DO
     END DO
+#ifdef INTEL_PROFILE
+    call itt_profile_end()
+#endif
   END SUBROUTINE tstepo_flux
 
 
