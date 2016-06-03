@@ -2437,17 +2437,18 @@ CONTAINS
     use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec, tv4(4)
+    REAL :: tv, ups(3), pec, tv4(4), tvxy(8)
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
     REAL, PARAMETER :: ups0=0.0
+    REAL, PARAMETER :: tvparam=0.0
 
     ! ediff calc needs
     REAL :: diffv
 
     REAL :: tec, scc, dzrho, rdzrho, dzrho_inv_sq, slim, tv1
-    REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
+    REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts
     INTEGER :: ina, nnp, knp
 #ifdef INTEL_PROFILE
     call itt_profile_begin(task_goldstein_tstepo_flux)
@@ -2578,7 +2579,7 @@ CONTAINS
                 ! isoneutral diffusion
                 IF (k >= k1(i,j) .AND. k < maxk) THEN
                    IF (dzrho < -1.0E-12) THEN
-                      tv1 = 0.0
+                      !tv1 = 0.0
                       ! tracer loop
                       DO knp = 0, 1
                          DO nnp = 0, 1
@@ -2606,10 +2607,11 @@ CONTAINS
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
-                            tv1 = tv1 + dxrho(ina) * dxrho(ina) + &
+                            tv4(ina) = dxrho(ina) * dxrho(ina) + &
                                  & dyrho(ina) * dyrho(ina)
                          END DO
                       END DO
+                      tv1 = sum(tv4)
                       tv1 = 0.25 * tv1 * rdzrho * rdzrho
                       ! limit flux by factor slim for large slope
                       IF (tv1 > ssMAX(k)) THEN
@@ -2621,22 +2623,22 @@ CONTAINS
                       END IF
                       tv1 = tv1 * slim * diff(1) * rdza(k)
                       ! test vertical diffusion number
-                      tv = tv1 * dt(k) * rdza(k)
-                      IF (tv > dmax) THEN
-                         dmax = tv
+                      tv1 = tv1 * dt(k) * rdza(k)
+                      IF (tv1 > dmax) THEN
+                         dmax = tv1
                       END IF
 
-                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
                          ! add isoneutral vertical flux
-                         !tv4 = 0
-                         DO ina = 1, 4
-                            tv4(ina) = (2 * dzrho * dxts(l,ina) - &
-                                 & dxrho(ina) * dzts(l)) * dxrho(ina) + &
-                                 & (2 * dzrho * dyts(l,ina) - &
-                                 & dyrho(ina) * dzts(l)) * dyrho(ina)
-                         END DO
-                         tv = sum(tv4)
+                         dzts = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
+
+                         tvxy(1:4) = (2 * dzrho * dxts(l,1:4) - &
+                                 & dxrho(1:4) * dzts) * dxrho(1:4)
+                         tvxy(5:8) = (2 * dzrho * dyts(l,1:4) - &
+                                 & dyrho(1:4) * dzts) * dyrho(1:4)
+
+                         tv = sum(tvxy)
+
                          !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
                          tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
@@ -2647,9 +2649,8 @@ CONTAINS
 
              IF (k >= k1(i,j)) THEN
                 DO l = 1, maxl
-                   tv = 0
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
-                        & (-tv + (fe(l) - fw(l)) * rdphi + &
+                        & (-tvparam + (fe(l) - fw(l)) * rdphi + &
                         & (fn(l) - fs(l,i)) * rds(j) + &
                         & (fa(l) - fb(l,i,j)) * rdz(k))
                 END DO
