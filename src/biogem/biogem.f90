@@ -595,7 +595,6 @@ CONTAINS
     ! reset remin array
     DO l=1,n_l_ocn
        io = conv_iselected_io(l)
-       print *, 'io', io
        bio_remin(io,:,:,:) = 0.0 !1.4s
     end do
 
