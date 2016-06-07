@@ -2527,88 +2527,50 @@ CONTAINS
              ups(2) = pec / (2.0 + ABS(pec))
              pec = u(3,i,j,k) * dza(k) / diffv
              ups(3) = pec / (2.0 + ABS(pec))
-             DO l = 1, maxl
-                ! flux to east
-                IF (i == maxi) THEN
-                   ! eastern edge(doorway or wall)
-                   fe(l) = fwsave(l)
-                ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
-                   fe(l) = 0
-                ELSE
+!!!!!!!!!!!!!!! new
+             ! flux to east
+             IF (i == maxi) THEN
+                ! eastern edge(doorway or wall)
+                fe(1:maxl) = fwsave(1:maxl)
+             ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
+                fe(1:maxl) = 0
+             ELSE
+                DO l = 1, maxl
                    fe(l) = u(1,i,j,k) * rc(j) * &
                         & ((1.0 - ups(1)) * ts1(l,i+1,j,k) + &
                         &  (1.0 + ups(1)) * ts1(l,i,j,k)) * 0.5
                    fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
                         & rc2(j) * diff(1)
-                END IF
-                ! flux to north
-                IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
-                   fn(l) = 0
-                ELSE
+                END DO
+             END IF
+
+             ! flux to north
+             IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
+                fn(1:maxl) = 0
+             ELSE
+                DO l = 1, maxl
                    fn(l) = cv(j) * u(2,i,j,k) * &
-                        & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
-                        &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
+                     &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
                    fn(l) = fn(l) - cv2(j) * &
-                        & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
-                END IF
-                ! flux above
-                IF (k < k1(i,j)) THEN
-                   fa(l) = 0
-                ELSEIF (k == maxk) THEN
-                   fa(l) = ts(l,i,j,maxk+1)
-                ELSE
+                     & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
+                END DO
+             END IF
+
+             ! flux above
+             IF (k < k1(i,j)) THEN
+                fa(1:maxl) = 0
+             ELSEIF (k == maxk) THEN
+                fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
+             ELSE
+                DO l = 1, maxl
                    fa(l) = u(3,i,j,k) * &
-                        & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
-                        &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
+                     &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
                    fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
                         & rdza(k) * diffv
-                END IF
-             END DO
-
-!!!!!!!!!!!!!!! new 
-!             ! flux to east
-!             IF (i == maxi) THEN
-!                ! eastern edge(doorway or wall)
-!                fe(1:maxl) = fwsave(1:maxl)
-!             ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
-!                fe(1:maxl) = 0
-!             ELSE
-!                DO l = 1, maxl
-!                   fe(l) = u(1,i,j,k) * rc(j) * &
-!                        & ((1.0 - ups(1)) * ts1(l,i+1,j,k) + &
-!                        &  (1.0 + ups(1)) * ts1(l,i,j,k)) * 0.5
-!                   fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
-!                        & rc2(j) * diff(1)
-!                END DO
-!             END IF
-!
-!             ! flux to north
-!             IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
-!                fn(1:maxl) = 0
-!             ELSE
-!                DO l = 1, maxl
-!                   fn(l) = cv(j) * u(2,i,j,k) * &
-!                     & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
-!                     &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
-!                   fn(l) = fn(l) - cv2(j) * &
-!                     & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
-!                END DO
-!             END IF
-!
-!             ! flux above
-!             IF (k < k1(i,j)) THEN
-!                fa(1:maxl) = 0
-!             ELSEIF (k == maxk) THEN
-!                fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
-!             ELSE
-!                DO l = 1, maxl
-!                   fa(l) = u(3,i,j,k) * &
-!                     & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
-!                     &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
-!                   fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
-!                        & rdza(k) * diffv
-!                END DO
-!             END IF
+                END DO
+             END IF
              !!!!!!!!!!!!! end new
 
              IF (diso) THEN
