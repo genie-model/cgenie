@@ -2583,41 +2583,25 @@ CONTAINS
                          DO nnp = 0, 1
                             ina = 1+nnp + 2 * knp
                             ! phi derivatives
-                            DO l = 1, maxl
-                               IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+!!!!!!!!!!!new
+                            IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+                               DO l = 1, maxl
                                   dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
                                        & ts1(l,i+nnp-1,j,k+knp)) * rc(j) * rdphi
-                               ELSE
-                                  dxts(l,ina) = 0.0
-                               END IF
-                               ! s-derivatives
-                               IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               END DO
+                            ELSE
+                               dxts(1:maxl,ina) = 0.0
+                            END IF
+                            ! s-derivatives
+                            IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               DO l = 1, maxl
                                   dyts(l,ina) = (ts1(l,i,j+nnp,k+knp) - &
                                        & ts1(l,i,j+nnp-1,k+knp)) * &
                                        & cv(j-1+nnp) * rdsv(j+nnp-1)
-                               ELSE
-                                  dyts(l,ina) = 0.0
-                               END IF
-                            END DO
-!!!!!!!!!!!new
-!                            IF (k+knp >= k1(i-1+2*nnp,j)) THEN
-!                               DO l = 1, maxl
-!                                  dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
-!                                       & ts1(l,i+nnp-1,j,k+knp)) * rc(j) * rdphi
-!                               END DO
-!                            ELSE
-!                               dxts(1:maxl,ina) = 0.0
-!                            END IF
-!                            ! s-derivatives
-!                            IF (k+knp >= k1(i,j-1+2*nnp)) THEN
-!                               DO l = 1, maxl
-!                                  dyts(l,ina) = (ts1(l,i,j+nnp,k+knp) - &
-!                                       & ts1(l,i,j+nnp-1,k+knp)) * &
-!                                       & cv(j-1+nnp) * rdsv(j+nnp-1)
-!                               END DO
-!                            ELSE
-!                               dyts(1:maxl,ina) = 0.0
-!                            END IF
+                               END DO
+                            ELSE
+                               dyts(1:maxl,ina) = 0.0
+                            END IF
 !!!!!!!!!!!new                            
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
