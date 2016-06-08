@@ -2625,37 +2625,22 @@ CONTAINS
                       IF (tv > dmax) THEN
                          dmax = tv
                       END IF
+                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
-                         dzts(l) = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
                          ! add isoneutral vertical flux
                          tv = 0
                          DO ina = 1, 4
-                            tv = tv + (2 * dzrho * dxts(l,ina) - &
+                            !tv4(ina) =
+                            tv = tv  + (2 * dzrho * dxts(l,ina) - &
                                  & dxrho(ina) * dzts(l)) * dxrho(ina) + &
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
+                         !tv = sum(tv4)
                          tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
                          !tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
                       END DO
-!!!!!!!!!!!!! new
-!                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
-!                      DO l = 1, maxl
-!                         ! add isoneutral vertical flux
-!                         !tv4 = 0
-!                         DO ina = 1, 4
-!                            tv4(ina) = (2 * dzrho * dxts(l,ina) - &
-!                                 & dxrho(ina) * dzts(l)) * dxrho(ina) + &
-!                                 & (2 * dzrho * dyts(l,ina) - &
-!                                 & dyrho(ina) * dzts(l)) * dyrho(ina)
-!                         END DO
-!                         tv = sum(tv4)
-!                         tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
-!                         !tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
-!                         fa(l) = fa(l) + tv
-!                      END DO
-!!!!!!!!!!!!! new                      
                    END IF
                 END IF
              END IF
