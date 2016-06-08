@@ -2448,7 +2448,7 @@ CONTAINS
     REAL :: diffv
 
     REAL :: tec, scc, dzrho, rdzrho, dzrho_inv_sq, slim, tv1
-    REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts
+    REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
     INTEGER :: ina, nnp, knp
 #ifdef INTEL_PROFILE
     call itt_profile_begin(task_goldstein_tstepo_flux)
@@ -2477,7 +2477,6 @@ CONTAINS
           i = 1
           pec = u(1,maxi,j,k) * dphi / diff(1)
           ups(1) = pec / (2.0 + ABS(pec))
-
           IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
              DO l = 1, maxl
                 ! western doorway
@@ -2529,8 +2528,6 @@ CONTAINS
              ups(2) = pec / (2.0 + ABS(pec))
              pec = u(3,i,j,k) * dza(k) / diffv
              ups(3) = pec / (2.0 + ABS(pec))
-
-
              ! flux to east
              IF (i == maxi) THEN
                 ! eastern edge(doorway or wall)
@@ -2579,7 +2576,7 @@ CONTAINS
                 ! isoneutral diffusion
                 IF (k >= k1(i,j) .AND. k < maxk) THEN
                    IF (dzrho < -1.0E-12) THEN
-                      !tv1 = 0.0
+                      tv1 = 0.0
                       ! tracer loop
                       DO knp = 0, 1
                          DO nnp = 0, 1
@@ -2603,15 +2600,16 @@ CONTAINS
                             ELSE
                                dyts(1:maxl,ina) = 0.0
                             END IF
-
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
-                            tv4(ina) = dxrho(ina) * dxrho(ina) + &
+                            !tv4(ina) = dxrho(ina) * dxrho(ina) + &
+                            !     & dyrho(ina) * dyrho(ina)
+                            tv1 = tv1 + dxrho(ina) * dxrho(ina) + &
                                  & dyrho(ina) * dyrho(ina)
                          END DO
                       END DO
-                      tv1 = sum(tv4)
+                      !tv1 = sum(tv4)
                       tv1 = 0.25 * tv1 * rdzrho * rdzrho
                       ! limit flux by factor slim for large slope
                       IF (tv1 > ssMAX(k)) THEN
@@ -2627,20 +2625,33 @@ CONTAINS
                       IF (tv1 > dmax) THEN
                          dmax = tv1
                       END IF
-
+!                      DO l = 1, maxl
+!                         ! add isoneutral vertical flux
+!                         dzts = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
+!
+!                         tvx(1:4) = (2 * dzrho * dxts(l,1:4) - &
+!                                 & dxrho(1:4) * dzts) * dxrho(1:4)
+!                         tvy(1:4) = (2 * dzrho * dyts(l,1:4) - &
+!                                 & dyrho(1:4) * dzts) * dyrho(1:4)
+!
+!                         tv = sum(tvx) + sum(tvy)
+!
+!                         !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+!                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
+                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
                          ! add isoneutral vertical flux
-                         dzts = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
-
-                         tvx(1:4) = (2 * dzrho * dxts(l,1:4) - &
-                                 & dxrho(1:4) * dzts) * dxrho(1:4)
-                         tvy(1:4) = (2 * dzrho * dyts(l,1:4) - &
-                                 & dyrho(1:4) * dzts) * dyrho(1:4)
-
-                         tv = sum(tvx) + sum(tvy)
-
-                         !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
-                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
+                         tv = 0
+                         DO ina = 1, 4
+                            !tv4(ina) =
+                            tv = tv  + (2 * dzrho * dxts(l,ina) - &
+                                 & dxrho(ina) * dzts(l)) * dxrho(ina) + &
+                                 & (2 * dzrho * dyts(l,ina) - &
+                                 & dyrho(ina) * dzts(l)) * dyrho(ina)
+                         END DO
+                         !tv = sum(tv4)
+                         tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+                         !tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
                       END DO
                    END IF
@@ -2658,19 +2669,6 @@ CONTAINS
              fw(1:maxl) = fe(1:maxl)
              fs(1:maxl,i) = fn(1:maxl)
              fb(1:maxl,i,j) = fa(1:maxl)
-
-!             DO l = 1, maxl
-!                tv = 0
-!                IF (k >= k1(i,j)) THEN
-!                   ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
-!                        & (-tv + (fe(l) - fw(l)) * rdphi + &
-!                        & (fn(l) - fs(l,i)) * rds(j) + &
-!                        & (fa(l) - fb(l,i,j)) * rdz(k))
-!                END IF
-!                fw(l) = fe(l)
-!                fs(l,i) = fn(l)
-!                fb(l,i,j) = fa(l)
-!             END DO
 
              CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), zro(k), ieos, rho(i,j,k))
           END DO
