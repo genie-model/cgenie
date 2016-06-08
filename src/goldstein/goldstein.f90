@@ -2527,7 +2527,6 @@ CONTAINS
              ups(2) = pec / (2.0 + ABS(pec))
              pec = u(3,i,j,k) * dza(k) / diffv
              ups(3) = pec / (2.0 + ABS(pec))
-!!!!!!!!!!!!!!! new
              ! flux to east
              IF (i == maxi) THEN
                 ! eastern edge(doorway or wall)
@@ -2571,7 +2570,6 @@ CONTAINS
                         & rdza(k) * diffv
                 END DO
              END IF
-             !!!!!!!!!!!!! end new
 
              IF (diso) THEN
                 ! isoneutral diffusion
@@ -2583,7 +2581,6 @@ CONTAINS
                          DO nnp = 0, 1
                             ina = 1+nnp + 2 * knp
                             ! phi derivatives
-!!!!!!!!!!!new
                             IF (k+knp >= k1(i-1+2*nnp,j)) THEN
                                DO l = 1, maxl
                                   dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
@@ -2602,7 +2599,6 @@ CONTAINS
                             ELSE
                                dyts(1:maxl,ina) = 0.0
                             END IF
-!!!!!!!!!!!new                            
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
@@ -2648,51 +2644,15 @@ CONTAINS
              IF (k >= k1(i,j)) THEN
                 DO l = 1, maxl
                    tv = 0
-
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
                         & (-tv + (fe(l) - fw(l)) * rdphi + &
                         & (fn(l) - fs(l,i)) * rds(j) + &
                         & (fa(l) - fb(l,i,j)) * rdz(k))
-
-                   fw(l) = fe(l)
-                   fs(l,i) = fn(l)
-                   fb(l,i,j) = fa(l)
-                END DO
-             ELSE
-                DO l = 1, maxl
-                   fw(l) = fe(l)
-                   fs(l,i) = fn(l)
-                   fb(l,i,j) = fa(l)
                 END DO
              ENDIF
-!!!!!!!!!!!!!! new
-!             IF (k >= k1(i,j)) THEN
-!                DO l = 1, maxl
-!                   tv = 0
-!                   ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
-!                        & (-tv + (fe(l) - fw(l)) * rdphi + &
-!                        & (fn(l) - fs(l,i)) * rds(j) + &
-!                        & (fa(l) - fb(l,i,j)) * rdz(k))
-!                END DO
-!             ENDIF
-!             fw(1:maxl) = fe(1:maxl)
-!             fs(1:maxl,i) = fn(1:maxl)
-!             fb(1:maxl,i,j) = fa(1:maxl)
-!!!!!!!! new             
-
-!             original
-!             DO l = 1, maxl
-!                tv = 0
-!                IF (k >= k1(i,j)) THEN
-!                   ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
-!                        & (-tv + (fe(l) - fw(l)) * rdphi + &
-!                        & (fn(l) - fs(l,i)) * rds(j) + &
-!                        & (fa(l) - fb(l,i,j)) * rdz(k))
-!                END IF
-!                fw(l) = fe(l)
-!                fs(l,i) = fn(l)
-!                fb(l,i,j) = fa(l)
-!             END DO
+             fw(1:maxl) = fe(1:maxl)
+             fs(1:maxl,i) = fn(1:maxl)
+             fb(1:maxl,i,j) = fa(1:maxl)
 
              CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), zro(k), ieos, rho(i,j,k))
           END DO
