@@ -134,9 +134,9 @@ CONTAINS
              mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
              tv3 = tv3 + mldketau(i,j)
           END DO
-          DO i = 1, maxi
-             IF (j <= 2 .OR. j >= maxj-1) mldketau(i,j) = tv3 / maxi
-          END DO
+          IF (j <= 2 .OR. j >= maxj-1) then
+              mldketau(1:maxi,j) = tv3 / maxi
+          END IF
        END DO
     END IF
 
@@ -2437,7 +2437,7 @@ CONTAINS
     use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec, tv4(4), tvx(4), tvy(4)
+    REAL :: tv, ups(3), pec(3), tv4(4), tvx(4), tvy(4)
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
@@ -2475,8 +2475,8 @@ CONTAINS
        DO j = 1, maxj
           ! western boundary fluxes
           i = 1
-          pec = u(1,maxi,j,k) * dphi / diff(1)
-          ups(1) = pec / (2.0 + ABS(pec))
+          pec(1) = u(1,maxi,j,k) * dphi / diff(1)
+          ups(1) = pec(1) / (2.0 + ABS(pec(1)))
           IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
              DO l = 1, maxl
                 ! western doorway
@@ -2521,13 +2521,12 @@ CONTAINS
                    IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
                 END IF
              END IF
-             pec = u(1,i,j,k) * dphi / diff(1)
-             ups(1) = pec / (2.0 + ABS(pec))
+             pec(1) = u(1,i,j,k) * dphi / diff(1)
              ! rather untidy mask to avoid undefined dsv at maxj nre
-             pec = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
-             ups(2) = pec / (2.0 + ABS(pec))
-             pec = u(3,i,j,k) * dza(k) / diffv
-             ups(3) = pec / (2.0 + ABS(pec))
+             pec(2) = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
+             pec(3) = u(3,i,j,k) * dza(k) / diffv
+             ups(1:3) = pec(1:3) / (2.0 + ABS(pec(1:3)))
+
              ! flux to east
              IF (i == maxi) THEN
                 ! eastern edge(doorway or wall)
@@ -2600,6 +2599,7 @@ CONTAINS
                             ELSE
                                dyts(1:maxl,ina) = 0.0
                             END IF
+!<<<<<<< Updated upstream
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
@@ -2610,6 +2610,16 @@ CONTAINS
                          END DO
                       END DO
                       !tv1 = sum(tv4)
+!=======
+!                        END DO
+!                     END DO
+!                     dxrho(1:4) = scc * dxts(2,1:4) - tec * dxts(1,1:4)
+!                     dyrho(1:4) = scc * dyts(2,1:4) - tec * dyts(1,1:4)
+!                     ! calculate diagonal part
+!                     tv4(1:4) = dxrho(1:4) * dxrho(1:4) + &
+!                          & dyrho(1:4) * dyrho(1:4)
+!                     tv1 = sum(tv4)
+!>>>>>> Stashed changes
                       tv1 = 0.25 * tv1 * rdzrho * rdzrho
                       ! limit flux by factor slim for large slope
                       IF (tv1 > ssMAX(k)) THEN
