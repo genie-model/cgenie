@@ -77,23 +77,25 @@ contains
 #endif
     end subroutine
 
+#ifdef INTEL_PROFILE
     subroutine itt_profile_begin(task)
         USE, INTRINSIC :: ISO_C_BINDING
         use itt_fortran
         implicit none
         type(c_ptr) :: task
-#ifdef INTEL_PROFILE
-        call FITT_TASK_BEGIN(itt_domain, task)
-#endif
-    end subroutine
 
+        call FITT_TASK_BEGIN(itt_domain, task)
+    end subroutine
+#endif
+#ifdef INTEL_PROFILE
     subroutine itt_profile_end()
         USE, INTRINSIC :: ISO_C_BINDING
         use itt_fortran
         implicit none
-#ifdef INTEL_PROFILE
+
         call FITT_TASK_END(itt_domain)
-#endif
+
     end subroutine
+#endif
 
 end module itt_profile
