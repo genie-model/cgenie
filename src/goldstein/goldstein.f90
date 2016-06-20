@@ -2653,14 +2653,19 @@ CONTAINS
                          ! add isoneutral vertical flux
                          tv = 0
                          DO ina = 1, 4
-                            !tv4(ina) =
+                            !tv4(ina) = (2 * dzrho * dxts(l,ina) - &
+                            !     & dxrho(ina) * dzts(l)) * dxrho(ina) + &
+                            !     & (2 * dzrho * dyts(l,ina) - &
+                            !     & dyrho(ina) * dzts(l)) * dyrho(ina)
                             tv = tv  + (2 * dzrho * dxts(l,ina) - &
                                  & dxrho(ina) * dzts(l)) * dxrho(ina) + &
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
-                         !tv = sum(tv4)
+                         !tv1 = sum(tv4)
+                         !print *, 'diff' , tv, tv1, tv-tv1
                          tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+
                          !tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
                       END DO
