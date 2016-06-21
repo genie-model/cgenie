@@ -360,7 +360,7 @@ CONTAINS
     REAL:: dfplus(nzmax), dfzero(nzmax), dfmins(nzmax)
     REAL:: a(nzmax,nzmax),b(nzmax,1),r(nzmax)
 
-    INTEGER::j,k
+    INTEGER::j
 
     DO j=2,kmax-1
       r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) )
@@ -387,11 +387,7 @@ CONTAINS
     dfplus(j) = 0.
     dfzero(j) = -domin(j)
     dfmins(j) = domin(j)
-    DO j=1,kmax-1
-      DO k=1,kmax-1
-        a(j,k) = 0.
-      END DO
-    END DO
+    a(1:kmax-1,1:kmax-1) = 0.    
     DO j=1,kmax-2
       a(j,j+1) = dfplus(j+1)
       a(j,j) = dfzero(j+1)
