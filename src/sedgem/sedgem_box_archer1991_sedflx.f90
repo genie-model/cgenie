@@ -12,6 +12,7 @@ MODULE sedgem_box_archer1991_sedflx
   IMPLICIT NONE
   SAVE
 
+  EXTERNAL         DGESV
 
   INTEGER,PARAMETER::nzmax     = 10
   INTEGER,PARAMETER::kmax      = 7
@@ -19,6 +20,8 @@ MODULE sedgem_box_archer1991_sedflx
   INTEGER,PARAMETER::nmax      = 300
   REAL,PARAMETER,DIMENSION(nzmax)::delz = (/0.0,0.5,0.5,1.0,2.0,3.0,3.0,5.0,5.0,5.0/)
 
+  !needs to be set to the largest size solve can be called with
+  integer :: IPIV(nzmax_co3)
 
 CONTAINS
 
@@ -293,7 +296,7 @@ CONTAINS
 ! want dres(3,3) in a(2,1), dres(4,3) in a(3,2) etc
     END DO
 
-    CALL gaussj(a,kmax-1,b,1)
+    CALL solve(a,kmax-1,b,1)
 
 ! update the concentration array
     rmserr = 0
@@ -402,7 +405,7 @@ CONTAINS
       b(j,1) = - r(j+1)
     END DO
 
-    CALL gaussj(a,kmax-1,b,1)
+    CALL solve(a,kmax-1,b,1)
 
     smrct = 0.
     DO j=2,kmax
@@ -559,6 +562,7 @@ CONTAINS
        END DO
        r(k,1) = r(k,1) + resp_c(k,1) / pore(k) + resp_c(k,2) / pore(k) + resp_c(k,3) / pore(k)
        ! units of moles / l *porewater* sec
+
        IF(carb(k,3).LT.csat) THEN
           r(k,1) = r(k,1) + dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k)) / pore(k)*calgg(k)*(2.5*1000)/(100)
        ENDIF
@@ -684,7 +688,7 @@ CONTAINS
        END DO
     END DO
 
-    CALL gaussj(a,(kmax-1)*3,b,1)
+    CALL solve(a,(kmax-1)*3,b,1)
 
     weight = 1.0
     DO k=2,kmax
@@ -844,6 +848,26 @@ CONTAINS
 
   END SUBROUTINE diag
 
+  subroutine solve(a,n,b,m)
+    INTEGER,INTENT(in)::n,m ! size of data contained within the larger allocated arrays
+    REAL,INTENT(inout),DIMENSION(:,:)::a
+    REAL,INTENT(inout),DIMENSION(:,:)::b
+
+    !integer,allocatable,dimension(:) :: IPIV
+    integer :: INFO
+    integer :: LDA ! size of data structure (stride)
+    integer :: LDB ! size of data structure (stride)
+    !integer :: NRHS = m
+
+    !allocate (IPIV(N))
+
+    LDA = size(a,1)
+    LDB = size(b,1)
+
+    ! solve using LU decomposition
+    call DGESV( n, m, a, LDA, IPIV, b, LDB, INFO )
+
+  end subroutine solve
 
 ! *************************************************************************************************
 ! *** gaussj **************************************************************************************
