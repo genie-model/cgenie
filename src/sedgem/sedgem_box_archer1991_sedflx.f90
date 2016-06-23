@@ -360,7 +360,7 @@ CONTAINS
     REAL:: dfplus(nzmax), dfzero(nzmax), dfmins(nzmax)
     REAL:: a(nzmax,nzmax),b(nzmax,1),r(nzmax)
 
-    INTEGER::j,k
+    INTEGER::j
 
     DO j=2,kmax-1
       r(j) = (   dopls(j)*(o2(j+1)-o2(j)) - domin(j)*(o2(j)-o2(j-1)) )
@@ -387,11 +387,7 @@ CONTAINS
     dfplus(j) = 0.
     dfzero(j) = -domin(j)
     dfmins(j) = domin(j)
-    DO j=1,kmax-1
-      DO k=1,kmax-1
-        a(j,k) = 0.
-      END DO
-    END DO
+    a(1:kmax-1,1:kmax-1) = 0.    
     DO j=1,kmax-2
       a(j,j+1) = dfplus(j+1)
       a(j,j) = dfzero(j+1)
@@ -542,6 +538,7 @@ CONTAINS
     REAL,DIMENSION(3,3,3,nzmax_co3)::dr
     REAL,DIMENSION(nzmax_co3,nzmax_co3)::a
     REAL,DIMENSION(nzmax_co3,1)::b
+    REAL,DIMENSION(nzmax_co3):: power
 
     DO i=1,3
        carb(kmax+1, i) = carb(kmax, i)
@@ -550,6 +547,16 @@ CONTAINS
 
     ! the residual terms: array (depth; tc, alk, ph)
 
+    ! precompute the power, it is used twice in the subsequent loop
+    ! the power (**) function is expensive
+    DO k=2,kmax
+      IF(carb(k,3).LT.csat) THEN
+         power(k) = dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k)) / pore(k)*calgg(k)*(2.5*1000)/(100)
+      ELSE
+         power(k) = 0.
+      ENDIF
+    END DO
+
     DO k = 2, kmax
        ! total co2 equation
        r(k,1) = 0.
@@ -557,11 +564,11 @@ CONTAINS
           r(k,1) = r(k,1) + (dplus(k,i) * (carb(k+1,i)-carb(k,i)) - dminus(k,i) * (carb(k,i)-carb(k-1,i)))
           ! units of moles / l *porewater* sec
        END DO
+    END DO
+    DO k = 2, kmax
        r(k,1) = r(k,1) + resp_c(k,1) / pore(k) + resp_c(k,2) / pore(k) + resp_c(k,3) / pore(k)
        ! units of moles / l *porewater* sec
-       IF(carb(k,3).LT.csat) THEN
-          r(k,1) = r(k,1) + dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k)) / pore(k)*calgg(k)*(2.5*1000)/(100)
-       ENDIF
+       r(k,1) = r(k,1) + power(k)
 
        ! alkalinity equation
        r(k,2) = dplus(k,3) * (carb(k+1,3)-carb(k,3)) &
@@ -569,9 +576,9 @@ CONTAINS
             & + 0.5 * dplus(k,2) * (carb(k+1,2)-carb(k,2)) &
             & - 0.5 * dminus(k,2) * (carb(k,2)-carb(k-1,2))
        r(k,2) = r(k,2) + resp_c(k,3) / pore(k) + 0.5 * resp_c(k,2) / pore(k)
-       IF(carb(k,3).LT.csat) THEN
-          r(k,2) = r(k,2) + dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k)) / pore(k)*calgg(k)*(2.5*1000)/(100)
-       ENDIF
+
+       r(k,2) = r(k,2) + power(k)
+
        r(k,3) = carb(k,1) * carb(k,3) / carb(k,2)**2 - disoc2 / disoc1
     END DO
 
@@ -652,6 +659,8 @@ CONTAINS
           a(k,l)=0.
        END DO
     END DO
+
+
     DO k=2,kmax
        ! depth level
        DO l=1,3
@@ -702,24 +711,36 @@ CONTAINS
        END DO
     END DO
 
+    ! precompute the power, it is used twice in the subsequent loop
+    ! the power (**) function is expensive
+     DO k=2,kmax-1
+      IF(carb(k,3).LT.csat) THEN
+         power(k) = dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k))*calgg(k)*(2.5*1000)/(100)
+      ELSE
+         power(k) = 0.
+      ENDIF
+    END DO
+
     ! the error terms, after the iteration
     DO k=2,kmax-1
        r(k,1) = 0.
        DO i=1,3
           r(k,1) = r(k,1) + dplus(k,i) * (carb(k+1,i)-carb(k,i)) - dminus(k,i) * (carb(k,i)-carb(k-1,i))
        END DO
+    END DO
+    DO k=2,kmax-1
        r(k,1) = r(k,1) + resp_c(k,1) / pore(k) + resp_c(k,2) / pore(k) + resp_c(k,3) / pore(k)
-       IF(carb(k,3).LT.csat) THEN
-          r(k,1) = r(k,1) + dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k))*calgg(k)*(2.5*1000)/(100)
-       ENDIF
+
+       r(k,1) = r(k,1) + power(k)
+
        r(k,2) = dplus(k,3) * (carb(k+1,3)-carb(k,3)) &
             &           - dminus(k,3) * (carb(k,3)-carb(k-1,3)) &
             &     + (0.5) * dplus(k,2) * (carb(k+1,2)-carb(k,2)) &
             &     - (0.5) * dminus(k,2) * (carb(k,2)-carb(k-1,2))
        r(k,2) = r(k,2) + 0.5 * resp_c(k,2) / pore(k) + resp_c(k,3) / pore(k)
-       IF(carb(k,3).LT.csat) THEN
-          r(k,2) = r(k,2) + dissc*((1-(carb(k,3)/csat))**dissn)*(1-pore(k))*calgg(k)*(2.5*1000)/(100)
-       ENDIF
+
+       r(k,2) = r(k,2) + power(k)
+
        r(k,3) = carb(k,1) * carb(k,3) / carb(k,2)**2 - disoc2 / disoc1
     END DO
 
