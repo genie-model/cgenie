@@ -1,3 +1,15 @@
+SUBROUTINE getscalari_data_nc(ncid, varname, scalarout,ifail)
+  IMPLICIT NONE
+  INTEGER, INTENT(IN)          :: ncid      ! netCDF dataset ID
+  CHARACTER(LEN=*), INTENT(IN) :: varname   ! name of variable to collect
+  INTEGER, INTENT(OUT)    :: scalarout ! the output scalar
+  INTEGER, INTENT(OUT)         :: ifail
+
+  INTEGER tmp_array(1)
+  call get1di_data_nc(ncid, varname, 1, tmp_array, ifail)
+  scalarout = tmp_array(1)
+END SUBROUTINE
+
 ! Integer version of above code. Any changes in above should also be
 ! reflected here
 SUBROUTINE get1di_data_nc(ncid, varname, dim1, arrayout,ifail)

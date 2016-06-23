@@ -12,12 +12,14 @@ f90 = {
     #'baseflags': ['/fpp', '/heap-arrays:0',
     #              '/warn:declarations', '/real-size:64'],
     'baseflags': ['-fpp', '-no-heap-arrays', '-mtune=native',
-                  '-Wall', '-r8'],
+                  '-r8'],
 	
     #'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
 				  
     # Debug flags.
-    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', ],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', 
+              '-warn', 'all'
+             ],
     'debug_link': ['-g'],
 
     # Optimisation flags.

@@ -39,11 +39,11 @@ CONTAINS
 
     CALL open_file_nc(TRIM(fnamein), ncid)
     IF (gui_restart) &
-         & CALL get1di_data_nc(ncid, 'istep_sic', 1, istep_sic, ifail)
-    CALL get1di_data_nc(ncid,'ioffset', 1, ioffset_rest, ifail)
-    CALL get1di_data_nc(ncid,'iyear',   1, iyear_rest,   ifail)
-    CALL get1di_data_nc(ncid,'imonth',  1, imonth_rest,  ifail)
-    CALL get1di_data_nc(ncid,'iday',    1, iday,         ifail)
+         & CALL getscalari_data_nc(ncid, 'istep_sic', istep_sic, ifail)
+    CALL getscalari_data_nc(ncid,'ioffset', ioffset_rest, ifail)
+    CALL getscalari_data_nc(ncid,'iyear',   iyear_rest,   ifail)
+    CALL getscalari_data_nc(ncid,'imonth',  imonth_rest,  ifail)
+    CALL getscalari_data_nc(ncid,'iday',    iday,         ifail)
     CALL get2d_data_nc(ncid,'sic_height', maxi, maxj, hght_read, ifail)
     CALL get2d_data_nc(ncid,'sic_cover',  maxi, maxj, frac_read, ifail)
     CALL get2d_data_nc(ncid,'sic_temp',   maxi, maxj, temp_read, ifail)
