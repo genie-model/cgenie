@@ -11,13 +11,13 @@ f90 = {
     # Default flags.
     #'baseflags': ['/fpp', '/heap-arrays:0',
     #              '/warn:declarations', '/real-size:64'],
-    'baseflags': ['-fpp', '-no-heap-arrays',
+    'baseflags': ['-fpp', '-no-heap-arrays', '-mtune=native',
                   '-Wall', '-r8'],
 	
     #'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
 				  
     # Debug flags.
-    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', '-mtune=native' ],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', ],
     'debug_link': ['-g'],
 
     # Optimisation flags.
@@ -27,7 +27,7 @@ f90 = {
     #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
     
     # Optimisation flags.
-    'ship': ['-O3', '-funroll-loops', '-mtune=native'],
+    'ship': ['-O3', '-funroll-loops', ],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],
