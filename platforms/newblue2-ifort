@@ -24,11 +24,10 @@ f90 = {
 
     # Optimisation flags.
     'optimise': ['-O3', '-funroll-loops'],
-				  
     
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops', ],
-    'ship_link': ['-O3']
+    'ship_link': ['-O3'],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],
