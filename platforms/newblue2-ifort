@@ -20,16 +20,15 @@ f90 = {
     'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', 
               '-warn', 'all'
              ],
-    'debug_link': ['-g'],
+    'debug_link': ['-g', '-O3'],
 
     # Optimisation flags.
     'optimise': ['-O3', '-funroll-loops'],
 				  
-    # Debug flags.
-    #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
     
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops', ],
+    'ship_link': ['-O3']
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],
