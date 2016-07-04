@@ -2437,7 +2437,7 @@ CONTAINS
     use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec(3), tv4(4), tvx(4), tvy(4)
+    REAL :: tv, ups, pec, tv4(4), tvx(4), tvy(4)
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
@@ -2474,15 +2474,15 @@ CONTAINS
        fs = 0
        DO j = 1, maxj
           ! western boundary fluxes
-          i = 1
-          pec(1) = u(1,maxi,j,k) * dphi / diff(1)
-          ups(1) = pec(1) / (2.0 + ABS(pec(1)))
+          !i = 1
+          pec = u(1,maxi,j,k) * dphi / diff(1)
+          ups = pec / (2.0 + ABS(pec))
           IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
              DO l = 1, maxl
                 ! western doorway
                 fw(l) = u(1,maxi,j,k) * rc(j) * &
-                     & ((1.0 - ups(1)) * ts1(l,1,j,k) + &
-                     &  (1.0 + ups(1)) * ts1(l,maxi,j,k)) * 0.5
+                     & ((1.0 - ups) * ts1(l,1,j,k) + &
+                     &  (1.0 + ups) * ts1(l,maxi,j,k)) * 0.5
                 fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,maxi,j,k)) * &
                      & rc2(j) * diff(1)
              END DO
@@ -2521,11 +2521,8 @@ CONTAINS
                    IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
                 END IF
              END IF
-             pec(1) = u(1,i,j,k) * dphi / diff(1)
-             ! rather untidy mask to avoid undefined dsv at maxj nre
-             pec(2) = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
-             pec(3) = u(3,i,j,k) * dza(k) / diffv
-             ups(1:3) = pec(1:3) / (2.0 + ABS(pec(1:3)))
+
+
 
              ! flux to east
              IF (i == maxi) THEN
@@ -2534,10 +2531,12 @@ CONTAINS
              ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
                 fe(1:maxl) = 0
              ELSE
+                pec = u(1,i,j,k) * dphi / diff(1)
+                ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
                    fe(l) = u(1,i,j,k) * rc(j) * &
-                        & ((1.0 - ups(1)) * ts1(l,i+1,j,k) + &
-                        &  (1.0 + ups(1)) * ts1(l,i,j,k)) * 0.5
+                        & ((1.0 - ups) * ts1(l,i+1,j,k) + &
+                        &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
                         & rc2(j) * diff(1)
                 END DO
@@ -2547,10 +2546,13 @@ CONTAINS
              IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
                 fn(1:maxl) = 0
              ELSE
+               ! rather untidy mask to avoid undefined dsv at maxj nre
+                pec = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
+                ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
                    fn(l) = cv(j) * u(2,i,j,k) * &
-                     & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
-                     &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups) * ts1(l,i,j+1,k) + &
+                     &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fn(l) = fn(l) - cv2(j) * &
                      & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
                 END DO
@@ -2562,10 +2564,12 @@ CONTAINS
              ELSEIF (k == maxk) THEN
                 fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
              ELSE
+                pec = u(3,i,j,k) * dza(k) / diffv
+                ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
                    fa(l) = u(3,i,j,k) * &
-                     & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
-                     &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
+                     & ((1.0 - ups) * ts1(l,i,j,k+1) + &
+                     &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
                         & rdza(k) * diffv
                 END DO
@@ -3621,12 +3625,12 @@ CONTAINS
   SUBROUTINE velc
     IMPLICIT NONE
 
-    REAL :: tv, tv1, tv2, tv4, tv5, sum(2)
+    REAL :: tv, tv1, tv2, tv4, tv5, sum_val(2)
     INTEGER :: i, j, k, l
 
     DO j = 1, maxj
        DO i = 1, maxi
-          sum = 0
+          sum_val = 0
           ! u calc
           DO k = k1(i,j), maxk
              IF (k1(i+1,j) > k) THEN
@@ -3684,25 +3688,25 @@ CONTAINS
 
              dzu(1,k) = -(s(j) * tv1 + drag(1,i,j) * tv2) * rtv(i,j)
              dzu(2,k) = -(drag(2,i,j) * tv4 - sv(j) * tv5) * rtv3(i,j)
-             DO l = 1, 2
-                IF (k == k1(i,j)) THEN
-                   u(l,i,j,k) = 0
-                ELSE
-                   u(l,i,j,k) = u(l,i,j,k-1) + &
-                        & dza(k-1) * (dzu(l,k) + dzu(l,k-1)) * 0.5
-                   sum(l) = sum(l) + dz(k) * u(l,i,j,k)
-                END IF
-             END DO
+             IF (k == k1(i,j)) THEN
+               u(1:2,i,j,k) = 0
+             ELSE
+               DO l = 1, 2
+                 u(l,i,j,k) = u(l,i,j,k-1) + &
+                   & dza(k-1) * (dzu(l,k) + dzu(l,k-1)) * 0.5
+                 sum_val(l) = sum_val(l) + dz(k) * u(l,i,j,k)
+               END DO
+             END IF
           END DO
           DO k = k1(i,j), maxk
              ! add barotropic part and relax
              IF (k1(i+1,j) <= k) THEN
-                u(1,i,j,k) = u(1,i,j,k) - sum(1) * rh(1,i,j) + ub(1,i,j)
+                u(1,i,j,k) = u(1,i,j,k) - sum_val(1) * rh(1,i,j) + ub(1,i,j)
                 u(1,i,j,k) = rel * u1(1,i,j,k) + (1.0 - rel) * u(1,i,j,k)
                 u1(1,i,j,k) = u(1,i,j,k)
              END IF
              IF (k1(i,j+1) <= k) THEN
-                u(2,i,j,k) = u(2,i,j,k) - sum(2) * rh(2,i,j) + ub(2,i,j)
+                u(2,i,j,k) = u(2,i,j,k) - sum_val(2) * rh(2,i,j) + ub(2,i,j)
                 u(2,i,j,k) = rel * u1(2,i,j,k) + (1.0 - rel) * u(2,i,j,k)
                 u1(2,i,j,k) = u(2,i,j,k)
              END IF
