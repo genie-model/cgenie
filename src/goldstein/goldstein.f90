@@ -1,5 +1,5 @@
 MODULE goldstein
-
+#define ALLOW_DIFF_RESULT 1
   USE genie_util, ONLY: check_unit, check_iostat
   USE goldstein_lib
   USE goldstein_netcdf
@@ -38,7 +38,7 @@ CONTAINS
     REAL, INTENT(INOUT) :: go_rho(maxi,maxj,maxk)
 
     LOGICAL, PARAMETER :: flag_igcmatmos=.FALSE.
-    INTEGER :: i, j, k, isl, itv, iout, ios
+    INTEGER :: i, j, k, isl, itv, iout, ios, i_next, j_next
     REAL :: time, avn, avs, sums(8*maxl), rms, tv4, tv2, tv3
 
     ! Stream function variables
@@ -116,24 +116,35 @@ CONTAINS
        ! but min(j,maxj-1): avoids effect of N Pole singularity
        DO j = 1, maxj
           tv3 = 0.0
-          DO i = 1, maxi
-             IF (i == 1) THEN
-                tv4 = (tau(1,i,j) + tau(1,maxi,j)) * 0.5
-             ELSE
-                tv4 = (tau(1,i,j) + tau(1,i-1,j)) * 0.5
-             END IF
-             IF (j == 1) THEN
+          IF(j == 1) THEN
+             ! j==1 separate as the looping arount calculation is different
+             DO i = 1, maxi
+                !creates boundary wrapping on 'i' without the if check
+                i_next = MOD(i-2,maxi)+1
+                tv4 = (tau(1,i,j) + tau(1,i_next,j)) * 0.5
                 tv2 = tau(2,i,j) * 0.5
-             ELSE
-                tv2 = (tau(2,i,MIN(j, maxj-1)) + tau(2,i,j-1)) * 0.5
-             END IF
+                ! Wind stress used for mld calcs is consistent with that
+                ! for ocean advection, NOT for surface heat fluxes.  Only
+                ! matters if physically interpreting mldketaucoeff
+                mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
+                tv3 = tv3 + mldketau(i,j)
+             END DO
+          ELSE
+             !creates boundary wrapping on 'j' without the if check
+             j_next = MOD(j-2,maxi)+1
+             DO i = 1, maxi
+                !creates boundary wrapping without the if check
+                i_next = MOD(i-2,maxi)+1
+                tv4 = (tau(1,i,j) + tau(1,i_next,j)) * 0.5
+                tv2 = (tau(2,i,MIN(j, maxj-1)) + tau(2,i,j_next)) * 0.5
 
-             ! Wind stress used for mld calcs is consistent with that
-             ! for ocean advection, NOT for surface heat fluxes.  Only
-             ! matters if physically interpreting mldketaucoeff
-             mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
-             tv3 = tv3 + mldketau(i,j)
-          END DO
+                ! Wind stress used for mld calcs is consistent with that
+                ! for ocean advection, NOT for surface heat fluxes.  Only
+                ! matters if physically interpreting mldketaucoeff
+                mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
+                tv3 = tv3 + mldketau(i,j)
+             END DO
+          END IF
           IF (j <= 2 .OR. j >= maxj-1) then
               mldketau(1:maxi,j) = tv3 / maxi
           END IF
@@ -2437,7 +2448,11 @@ CONTAINS
     use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups, pec, tv4(4), tvx(4), tvy(4)
+    REAL :: tv, ups, pec, u_tmp
+#if ALLOW_DIFF_RESULT
+    REAL :: tv4(4)
+    REAL :: dzrho_inv_sq
+#endif
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
@@ -2447,7 +2462,7 @@ CONTAINS
     ! ediff calc needs
     REAL :: diffv
 
-    REAL :: tec, scc, dzrho, rdzrho, dzrho_inv_sq, slim, tv1
+    REAL :: tec, scc, dzrho, rdzrho, slim, tv1
     REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
     INTEGER :: ina, nnp, knp
 #ifdef INTEL_PROFILE
@@ -2475,12 +2490,13 @@ CONTAINS
        DO j = 1, maxj
           ! western boundary fluxes
           !i = 1
-          pec = u(1,maxi,j,k) * dphi / diff(1)
+          u_tmp = u(1,maxi,j,k)
+          pec = u_tmp * dphi / diff(1)
           ups = pec / (2.0 + ABS(pec))
           IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
              DO l = 1, maxl
                 ! western doorway
-                fw(l) = u(1,maxi,j,k) * rc(j) * &
+                fw(l) = u_tmp * rc(j) * &
                      & ((1.0 - ups) * ts1(l,1,j,k) + &
                      &  (1.0 + ups) * ts1(l,maxi,j,k)) * 0.5
                 fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,maxi,j,k)) * &
@@ -2499,30 +2515,31 @@ CONTAINS
                 CALL eosd(ec, ts1(1,i,j,k), ts1(1,i,j,k+1), &
                      & ts1(2,i,j,k), ts1(2,i,j,k+1), &
                      & zw(k), rdza(k), ieos, dzrho, tec)
-                IF (dzrho < -1.0E-12) THEN
-                   rdzrho = 1.0 / dzrho
-                ELSE
-                   rdzrho = -1.0E12
-                END IF
-                dzrho_inv_sq = 1.0 / (dzrho * dzrho)
+
                 IF (iediff > 0 .AND. iediff < 3) THEN
                    ! Value of diffv fine for applying diffusivity, but
                    ! peclet number calc is a 1st order approximation
                    ! if diffusivity is variable.
                    IF (ediffpow2i == 0) THEN
                       diffv = ediff0 + ediff1(i,j,k)
-                   ELSEIF (ediffpow2i == 1) THEN
-                      diffv = ediff0 + ediff1(i,j,k) * (-rdzrho)
-                   ELSEIF (ediffpow2i == 2) THEN
-                      diffv = ediff0 + ediff1(i,j,k) * SQRT(-rdzrho)
                    ELSE
-                      diffv = ediff0 + ediff1(i,j,k) * ((-rdzrho)**ediffpow2)
+                      IF (dzrho < -1.0E-12) THEN
+                         rdzrho = 1.0 / dzrho
+                      ELSE
+                         rdzrho = -1.0E12
+                      END IF
+                      IF (ediffpow2i == 1) THEN
+                         diffv = ediff0 + ediff1(i,j,k) * (-rdzrho)
+                      ELSEIF (ediffpow2i == 2) THEN
+                         diffv = ediff0 + ediff1(i,j,k) * SQRT(-rdzrho)
+                      ELSE
+                         diffv = ediff0 + ediff1(i,j,k) * ((-rdzrho)**ediffpow2)
+                      END IF
                    END IF
-                   IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
+                   diffv = MIN(diffv, diffmax(k+1))
+                   !IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
                 END IF
              END IF
-
-
 
              ! flux to east
              IF (i == maxi) THEN
@@ -2531,13 +2548,14 @@ CONTAINS
              ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
                 fe(1:maxl) = 0
              ELSE
-                pec = u(1,i,j,k) * dphi / diff(1)
+                u_tmp = u(1,i,j,k)
+                pec = u_tmp * dphi / diff(1)
                 ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
-                   fe(l) = u(1,i,j,k) * rc(j) * &
+                   fe(l) = u_tmp * rc(j) * &
                         & ((1.0 - ups) * ts1(l,i+1,j,k) + &
-                        &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
-                   fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
+                        &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5 &
+                        & - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
                         & rc2(j) * diff(1)
                 END DO
              END IF
@@ -2546,11 +2564,12 @@ CONTAINS
              IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
                 fn(1:maxl) = 0
              ELSE
+                u_tmp = u(2,i,j,k)
                ! rather untidy mask to avoid undefined dsv at maxj nre
                 pec = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
                 ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
-                   fn(l) = cv(j) * u(2,i,j,k) * &
+                   fn(l) = cv(j) * u_tmp * &
                      & ((1.0 - ups) * ts1(l,i,j+1,k) + &
                      &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fn(l) = fn(l) - cv2(j) * &
@@ -2564,10 +2583,11 @@ CONTAINS
              ELSEIF (k == maxk) THEN
                 fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
              ELSE
-                pec = u(3,i,j,k) * dza(k) / diffv
+                u_tmp = u(3,i,j,k)
+                pec = u_tmp * dza(k) / diffv
                 ups = pec / (2.0 + ABS(pec))
                 DO l = 1, maxl
-                   fa(l) = u(3,i,j,k) * &
+                   fa(l) = u_tmp * &
                      & ((1.0 - ups) * ts1(l,i,j,k+1) + &
                      &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
@@ -2579,7 +2599,10 @@ CONTAINS
                 ! isoneutral diffusion
                 IF (k >= k1(i,j) .AND. k < maxk) THEN
                    IF (dzrho < -1.0E-12) THEN
+#if ALLOW_DIFF_RESULT
+#else
                       tv1 = 0.0
+#endif
                       ! tracer loop
                       DO knp = 0, 1
                          DO nnp = 0, 1
@@ -2603,17 +2626,29 @@ CONTAINS
                             ELSE
                                dyts(1:maxl,ina) = 0.0
                             END IF
-!<<<<<<< Updated upstream
+
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
-                            !tv4(ina) = dxrho(ina) * dxrho(ina) + &
-                            !     & dyrho(ina) * dyrho(ina)
+#if ALLOW_DIFF_RESULT
+                            tv4(ina) = dxrho(ina) * dxrho(ina) + &
+                                 & dyrho(ina) * dyrho(ina)
+#else
                             tv1 = tv1 + dxrho(ina) * dxrho(ina) + &
                                  & dyrho(ina) * dyrho(ina)
+#endif
                          END DO
                       END DO
-                      !tv1 = sum(tv4)
+#if ALLOW_DIFF_RESULT
+                      !
+                      tv1 = sum(tv4)
+                      ! precompute inverse square reuse later
+                      dzrho_inv_sq = 1.0 / (dzrho * dzrho)
+                      tv1 = 0.25 * tv1 * dzrho_inv_sq
+#else
+                      rdzrho = 1.0 / dzrho
+                      tv1 = 0.25 * tv1 * rdzrho * rdzrho
+#endif
 !=======
 !                        END DO
 !                     END DO
@@ -2623,8 +2658,8 @@ CONTAINS
 !                     tv4(1:4) = dxrho(1:4) * dxrho(1:4) + &
 !                          & dyrho(1:4) * dyrho(1:4)
 !                     tv1 = sum(tv4)
-!>>>>>> Stashed changes
-                      tv1 = 0.25 * tv1 * rdzrho * rdzrho
+!
+
                       ! limit flux by factor slim for large slope
                       IF (tv1 > ssMAX(k)) THEN
                          slim = ssMAX(k) * ssMAX(k) / (tv1 * tv1)
@@ -2639,38 +2674,33 @@ CONTAINS
                       IF (tv1 > dmax) THEN
                          dmax = tv1
                       END IF
-!                      DO l = 1, maxl
-!                         ! add isoneutral vertical flux
-!                         dzts = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
-!
-!                         tvx(1:4) = (2 * dzrho * dxts(l,1:4) - &
-!                                 & dxrho(1:4) * dzts) * dxrho(1:4)
-!                         tvy(1:4) = (2 * dzrho * dyts(l,1:4) - &
-!                                 & dyrho(1:4) * dzts) * dyrho(1:4)
-!
-!                         tv = sum(tvx) + sum(tvy)
-!
-!                         !tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
-!                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
+
                       dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
                          ! add isoneutral vertical flux
+
+#if ALLOW_DIFF_RESULT
+                         DO ina = 1, 4
+                            tv4(ina) = (2 * dzrho * dxts(l,ina) - &
+                                 & dxrho(ina) * dzts(l)) * dxrho(ina) + &
+                                 & (2 * dzrho * dyts(l,ina) - &
+                                 & dyrho(ina) * dzts(l)) * dyrho(ina)
+                         END DO
+                         tv = sum(tv4)
+                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
+
+#else
                          tv = 0
                          DO ina = 1, 4
-                            !tv4(ina) = (2 * dzrho * dxts(l,ina) - &
-                            !     & dxrho(ina) * dzts(l)) * dxrho(ina) + &
-                            !     & (2 * dzrho * dyts(l,ina) - &
-                            !     & dyrho(ina) * dzts(l)) * dyrho(ina)
                             tv = tv  + (2 * dzrho * dxts(l,ina) - &
                                  & dxrho(ina) * dzts(l)) * dxrho(ina) + &
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
-                         !tv1 = sum(tv4)
-                         !print *, 'diff' , tv, tv1, tv-tv1
                          tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+#endif
+                         !print *, 'diff' , tv, tv1, tv-tv1
 
-                         !tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
                          fa(l) = fa(l) + tv
                       END DO
                    END IF
