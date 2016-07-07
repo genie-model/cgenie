@@ -12,7 +12,7 @@ f90 = {
     'baseflags': [ '-x', 'f95-cpp-input', '-ffree-line-length-none', '-m64',
                  # '-msse2avx',
                  #'-fopt-info-all',
-                  '-mtune=native',
+                  '-mtune=native', '-march=native',
                  #'-msse'
                   '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
                   '-Wall', ],
