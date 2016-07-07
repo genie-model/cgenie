@@ -11,7 +11,9 @@ f90 = {
     # Default flags.
     #'baseflags': ['/fpp', '/heap-arrays:0',
     #              '/warn:declarations', '/real-size:64'],
-    'baseflags': ['-fpp', '-no-heap-arrays', '-mtune=native',
+    'baseflags': ['-fpp', '-no-heap-arrays', 
+                  '-mtune=native', '-march=native',
+                  '-align', 'array64byte',
                   '-r8'],
 	
     #'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
