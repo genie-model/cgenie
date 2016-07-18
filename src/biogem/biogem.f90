@@ -1,3 +1,4 @@
+#define xOLD_K_LOOP 1
 MODULE biogem
 
   USE biogem_lib
@@ -827,19 +828,30 @@ CONTAINS
                 DO l=3,n_l_ocn
                    io = conv_iselected_io(l)
                    IF (abs(const_lambda_ocn(io)).gt.const_real_nullsmall) THEN
+#ifdef OLD_K_LOOP
                       DO k=loc_k1,n_k
                          locijk_focn(io,i,j,k) = locijk_focn(io,i,j,k) - &
                               & phys_ocn(ipo_M,i,j,k)*(1.0 - loc_fracdecay_ocn(io))*ocn(io,i,j,k)/loc_dtyr
                       END DO
+#else
+! convert to row vector copy
+                       locijk_focn(io,i,j,loc_k1:n_k) = locijk_focn(io,i,j,loc_k1:n_k) - &
+                           & phys_ocn(ipo_M,i,j,loc_k1:n_k)*(1.0 - loc_fracdecay_ocn(io))*ocn(io,i,j,loc_k1:n_k)/loc_dtyr
+#endif
                    end IF
                 end do
                 ! SEDIMENT TRACERS
                 DO l=1,n_l_sed
                    is = conv_iselected_is(l)
                    IF (abs(const_lambda_sed(is)).gt.const_real_nullsmall) THEN
+#ifdef OLD_K_LOOP
                       DO k=loc_k1,n_k
                          bio_part(is,i,j,k) = loc_fracdecay_sed(is)*bio_part(is,i,j,k)
                       END DO
+#else
+!                     convert to row vector copy
+                      bio_part(is,i,j,loc_k1:n_k) = loc_fracdecay_sed(is)*bio_part(is,i,j,loc_k1:n_k)
+#endif
                    end if
                 END DO
 
@@ -1214,9 +1226,13 @@ CONTAINS
                 DO l=1,n_l_ocn
                    io = conv_iselected_io(l)
                    IF (force_flux_ocn_select(io)) THEN
+#ifdef OLD_K_LOOP
                       DO k=loc_k1,n_k
                          locijk_focn(io,i,j,k) = locijk_focn(io,i,j,k) + force_flux_locn(l,i,j,k)
                       END DO
+#else
+                      locijk_focn(io,i,j,loc_k1:n_k) = locijk_focn(io,i,j,loc_k1:n_k) + force_flux_locn(l,i,j,loc_k1:n_k)
+#endif
                    END IF
                 END DO
                 ! SEDIMENT TRACERS #1
@@ -1318,7 +1334,7 @@ CONTAINS
                             end if
                          end If
                       end IF
-                      !
+! toby: candadite to move the if's out of loop
                       DO k=loc_k1,n_k
                          locijk_focn(io_ALK,i,j,k) = loc_force_sign*force_flux_locn(io2l(io_ALK),i,j,k)
                          IF (force_flux_ocn_select(io_DIC)) then
@@ -1501,6 +1517,7 @@ CONTAINS
                       ! calculate flux of Ca to ocean with specified d44Ca to approach atmospheric d44Ca target
                       ! NOTE: units of (mol yr-1)
                       ! NOTE: extend capabilities to full ocean depth not just surface
+! toby: convert to simd reduce?
                       DO k=n_k,loc_k1,-1
                          locijk_focn(io_Ca,i,j,k)      = loc_force_sign*force_flux_locn(io2l(io_Ca),i,j,k)
                          locijk_focn(io_Ca_44Ca,i,j,k) = loc_frac*locijk_focn(io_Ca,i,j,k)
@@ -1797,7 +1814,9 @@ CONTAINS
           loc_j = vocn(n)%j
           loc_k1 = vocn(n)%k1
          
-          DO k=n_k,loc_k1,-1 !(why is this -1 reverse order, there is no aparent data dependence on order)
+
+#ifdef OLD_K_LOOP
+          DO k=n_k,loc_k1,-1
              DO l=1,n_l_ocn
                 io = conv_iselected_io(l)
                 vdocn(n)%mk(l,k) = bio_remin2(k,loc_j,loc_i,io) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,k)*locijk_focn(io,loc_i,loc_j,k)
@@ -1809,6 +1828,20 @@ CONTAINS
                 vbio_part(n)%mk(l,k) = bio_part(is,loc_i,loc_j,k)
              end do
           end DO
+#else
+          DO l=1,n_l_ocn
+            io = conv_iselected_io(l)
+            vdocn(n)%mk(l,loc_k1:n_k) = bio_remin2(loc_k1:n_k,loc_j,loc_i,io) + loc_dtyr*vphys_ocn(n)%mk(ipo_rM,loc_k1:n_k)*locijk_focn(io,loc_i,loc_j,loc_k1:n_k)
+            vocn(n)%mk(l,loc_k1:n_k) = ocn(io,loc_i,loc_j,loc_k1:n_k)
+          END DO
+
+          DO l=1,n_l_sed
+                is = conv_iselected_is(l)
+                vdbio_part(n)%mk(l,loc_k1:n_k) = loc_dtyr*vphys_ocn(n)%mk(ipo_rM,loc_k1:n_k)*locijk_fpart(is,loc_i,loc_j,loc_k1:n_k)
+                vbio_part(n)%mk(l,loc_k1:n_k) = bio_part(is,loc_i,loc_j,loc_k1:n_k)
+          END DO
+#endif
+
        end do
 
     END IF if_go

@@ -3348,6 +3348,9 @@ CONTAINS
     REAL::loc_force_restore_atm
     real::loc_tot,loc_standard
     ! calculate new atmosphere forcing time series values
+! toby note: ifort with runtime checks
+! In call to SUB_UPDATE_SIG, an array temporary was created for argument #3
+! performance - a copy of array was made
     CALL sub_update_sig(dum_t,force_restore_atm_sig(dum_ia,1,:),force_restore_atm_sig_i(dum_ia,:),loc_x)
     force_restore_atm_sig_x(dum_ia) = &
          & (1 - loc_x)*force_restore_atm_sig(dum_ia,2,force_restore_atm_sig_i(dum_ia,2)) + &

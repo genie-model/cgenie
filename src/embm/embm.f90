@@ -2073,21 +2073,23 @@ CONTAINS
              cie(i,j) = cie(i,j) * (1 - ups) - tv
              ! Flux to north
              cin(i,j) = cv(j) * betam(l) * uatm(2,i,j) * 0.5
-             diffpp = diffa(l,2,j) + &
-                  & (2-l) * diffmod0 * MAX(0.0, MIN(1.0, &
-                  & (pptn(i,j) - ppmin) / (ppmax - ppmin)))
-             ! cv(maxj) = 0 but dsv not defined so mask needed
-             IF (j < maxj) THEN
-                tv = cv(j) * cv(j) * rdsv(j) * diffa(l,2,j)
+          END DO
+          IF (j < maxj) THEN
+             tv = cv(j) * cv(j) * rdsv(j) * diffa(l,2,j)
+             DO i = 1, maxi
+                 diffpp = diffa(l,2,j) + &
+                     & (2-l) * diffmod0 * MAX(0.0, MIN(1.0, &
+                     & (pptn(i,j) - ppmin) / (ppmax - ppmin)))
+                ! cv(maxj) = 0 but dsv not defined so mask needed
                 pec = betam(l) * uatm(2,i,j) * dsv(j) / diffpp
                 ups = pec / (2.0 + ABS(pec))
-             ELSE
-                tv = 0.0
-                ups = 0.0
-             END IF
-             cis(i,j) = cin(i,j) * (1 + ups) + tv
-             cin(i,j) = cin(i,j) * (1 - ups) - tv
-          END DO
+                cis(i,j) = cin(i,j) * (1 + ups) + tv
+                cin(i,j) = cin(i,j) * (1 - ups) - tv
+             END DO
+          ELSE
+             cis(1:maxi,j) = cin(1:maxi,j)
+             !cin(1:maxi,j) = cin(1:maxi,j)
+          END IF
        END DO
        cie(0,1:maxj) = cie(maxi,1:maxj)
        ciw(0,1:maxj) = ciw(maxi,1:maxj)

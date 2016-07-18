@@ -42,11 +42,11 @@ CONTAINS
 
     CALL open_file_nc(TRIM(fnamein), ncid)
     IF (gui_restart) &
-         & CALL get1di_data_nc(ncid, 'istep_atm', 1, istep_atm, ifail)
-    CALL get1di_data_nc(ncid, 'ioffset', 1, ioffset_rest, ifail)
-    CALL get1di_data_nc(ncid, 'iyear', 1, iyear_rest, ifail)
-    CALL get1di_data_nc(ncid, 'imonth', 1, imonth_rest, ifail)
-    CALL get1di_data_nc(ncid, 'iday', 1, iday, ifail)
+         & CALL getscalari_data_nc(ncid, 'istep_atm', istep_atm, ifail)
+    CALL getscalari_data_nc(ncid, 'ioffset', ioffset_rest, ifail)
+    CALL getscalari_data_nc(ncid, 'iyear', iyear_rest, ifail)
+    CALL getscalari_data_nc(ncid, 'imonth', imonth_rest, ifail)
+    CALL getscalari_data_nc(ncid, 'iday', iday, ifail)
     CALL get2d_data_nc(ncid, 'air_temp', maxi, maxj, temp_read, ifail)
     CALL get2d_data_nc(ncid, 'humidity', maxi, maxj, shum_read, ifail)
     CALL close_file_nc(TRIM(filenetin), ncid)
