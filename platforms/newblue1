@@ -16,10 +16,11 @@ f90 = {
                   ],
 
     # Debug flags.
-    'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
+    #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', '-mtune=native' ],
 
     # Optimisation flags.
-    'ship': ['-O3', '-funroll-loops'],
+    'ship': ['-O3', '-funroll-loops', '-mtune=native'],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],

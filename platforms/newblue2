@@ -9,18 +9,21 @@ f90 = {
     'compiler': 'gfortran',
 
     # Default flags.
-    'baseflags': [ '-x', 'f95-cpp-input', '-ffree-line-length-none', '-msse2avx', '-m64',
-#'-fopt-info-all',
+    'baseflags': [ '-x', 'f95-cpp-input', '-ffree-line-length-none', '-m64',
+                 # '-msse2avx',
+                 #'-fopt-info-all',
+                  '-mtune=native', '-march=native',
+                 #'-msse'
                   '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-msse', '-Wall', ],
+                  '-Wall', ],
 
     # Debug flags.
     #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
-    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', '-mtune=native' ],
-    'debug_link': ['-g', '-O3',  '-mtune=native'],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE' ],
+    'debug_link': ['-g', '-O3'],
 
     # Optimisation flags.
-    'ship': ['-O3', '-funroll-loops', '-mtune=native'],
+    'ship': ['-O3', '-funroll-loops'],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],
@@ -38,7 +41,7 @@ f90 = {
     'module_dir': '-J',      # Module file output directory.
     'define': '-D',          # Preprocessor definitions.
 
-    # the following 3 lines are for vtune instrumentation
+    # the following 3 lines are for vtune instrumentation (profiling)
     'libpath': '/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/',
     'libs': ['dl', 'pthread'],
     'debug_link': [ '/panfs/panasas01/geog/td14281/cgenie/src/profile_api/api_fortran_itt.o'],
@@ -50,17 +53,19 @@ f90 = {
 # env['ENV']['LD_LIBRARY_PATH'] = '/cm/shared/languages/GCC-5.3/lib'
 
 }
+
 try:
     f90['libs'].append(File('/panfs/panasas01/geog/td14281/make_local/lapack-3.6.0/liblapack.a'))
     f90['libs'].append(File('/panfs/panasas01/geog/td14281/make_local/lapack-3.6.0/libtmglib.a'))
     f90['libs'].append(File('/panfs/panasas01/geog/td14281/make_local/lapack-3.6.0/librefblas.a'))
-
-    # only required in profile mode
+    # this is only required for vtune instrumentation (profiling)
     f90['libs'].append(File('/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/libittnotify.a'))
+    print(f90['libs'])
 except NameError:
-    #this happens when called by go.py, when not needed anyway.
-    #Succeeds in scons presumably File is defined when scons makes the call
+    #this happens when called by go.py, in this case is is not needed.
+    #Succeeds in scons (where it is actually used). Presumably 'File' is defined when scons makes the call
     print('Add libittnotify.a fail (not important when called by go.py)')
+
 
 
 # Platform runtime environment variables.
