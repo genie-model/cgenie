@@ -11,14 +11,18 @@ f90 = {
     # Default flags.
     #'baseflags': ['/fpp', '/heap-arrays:0',
     #              '/warn:declarations', '/real-size:64'],
-    'baseflags': ['-fpp', '-no-heap-arrays',
-                  '-Wall', '-r8'],
+    'baseflags': ['-fpp', '-no-heap-arrays', 
+                  '-mtune=native', '-march=native',
+                  '-align', 'array64byte',
+                  '-r8'],
 	
     #'baselinkflags': ['/SUBSYSTEM:CONSOLE', '/STACK:33554432'],
 				  
     # Debug flags.
-    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', '-mtune=native' ],
-    'debug_link': ['-g'],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE', 
+              '-warn', 'all'
+             ],
+    'debug_link': ['-g', '-O3', '-funroll-loops'],
 
     # Optimisation flags.
     'optimise': ['-O3', '-funroll-loops'],
@@ -27,7 +31,8 @@ f90 = {
     #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
     
     # Optimisation flags.
-    'ship': ['-O3', '-funroll-loops', '-mtune=native'],
+    'ship': ['-O3', '-funroll-loops', ],
+    'ship_link': ['-O3'],
 
     # Profiling flags ("profile" build type).
     'profile':      ['-O3', '-pg'],

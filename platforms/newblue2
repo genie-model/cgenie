@@ -1,17 +1,26 @@
+import platform
+import os
 # Fortran 90 platform definitions.
+print('platform called')
+print(platform.python_version())
 
 f90 = {
     # Compiler name.
     'compiler': 'gfortran',
 
     # Default flags.
-    'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
+    'baseflags': [ '-x', 'f95-cpp-input', '-ffree-line-length-none', '-m64',
+                 # '-msse2avx',
+                 #'-fopt-info-all',
+                  '-mtune=native', '-march=native',
+                 #'-msse'
                   '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
-                  '-mtune=native',
-                  '-Wall' ],
+                  '-Wall', ],
 
     # Debug flags.
-    'debug': ['-g', '-ffpe-trap=invalid,overflow'],
+    #'debug': ['-g', '-ffpe-trap=invalid,overflow', '-DINTEL_PROFILE'],
+    'debug': ['-g', '-O3', '-funroll-loops', '-DINTEL_PROFILE' ],
+    'debug_link': ['-g', '-O3'],
 
     # Optimisation flags.
     'ship': ['-O3', '-funroll-loops'],
@@ -30,8 +39,29 @@ f90 = {
     # Miscellaneous flags.
     'include': '-I',         # Include files.
     'module_dir': '-J',      # Module file output directory.
-    'define': '-D'           # Preprocessor definitions.
+    'define': '-D',          # Preprocessor definitions.
+
+    # the following 3 lines are for vtune instrumentation
+    'libpath': '/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/',
+    'libs': ['dl', 'pthread'],
+    'debug_link': [ '/panfs/panasas01/geog/td14281/cgenie/src/profile_api/api_fortran_itt.o'],
+
+    # required for blue crystal
+    'ld_library_path':'/cm/shared/languages/GCC-5.3/lib'
+    # later gets set into the environment
+# env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
+# env['ENV']['LD_LIBRARY_PATH'] = '/cm/shared/languages/GCC-5.3/lib'
+
 }
+
+try:
+    f90['libs'].append(File('/cm/shared/apps/intel-cluster-studio/vtune_amplifier_xe_2015/lib64/libittnotify.a'))
+    print(f90['libs'])
+except NameError:
+    #this happens when called by go.py, when not needed anyway.
+    #Succeeds in scons (where it is actually used). Presumably 'File' is defined when scons makes the call
+    print('Add libittnotify.a fail (not important when called by go.py)')
+
 
 
 # Platform runtime environment variables.
@@ -41,7 +71,7 @@ runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
 
 # NetCDF platform definitions.
 
-poss_netcdf = ['/usr', '/usr/local', '/opt']
+poss_netcdf = ['/usr', '/usr/local', '/opt' , '/panfs/panasas01/geog/td14281/local_gcc5.3' ]
 netcdf_base = None
 for poss in poss_netcdf:
     if (os.path.exists(os.path.join(poss, 'include', 'netcdf.mod')) and

@@ -52,11 +52,11 @@ CONTAINS
 
     call open_file_nc(TRIM(fnamein), ncid)
     IF (gui_restart) &
-         & CALL get1di_data_nc(ncid, 'istep_ocn', 1, istep_ocn, ifail)
-    call get1di_data_nc(ncid, 'ioffset', 1, ioffset_rest, ifail)
-    call get1di_data_nc(ncid, 'iyear', 1, iyear_rest, ifail)
-    call get1di_data_nc(ncid, 'imonth', 1, imonth_rest, ifail)
-    call get1di_data_nc(ncid, 'iday', 1, iday, ifail)
+         & CALL getscalari_data_nc(ncid, 'istep_ocn', istep_ocn, ifail)
+    call getscalari_data_nc(ncid, 'ioffset', ioffset_rest, ifail)
+    call getscalari_data_nc(ncid, 'iyear', iyear_rest, ifail)
+    call getscalari_data_nc(ncid, 'imonth', imonth_rest, ifail)
+    call getscalari_data_nc(ncid, 'iday', iday, ifail)
     call get3d_data_nc(ncid, 'temp', maxi, maxj, maxk, temp_read, ifail)
     call get3d_data_nc(ncid, 'salinity', maxi, maxj, maxk, salinity_read, ifail)
     call get3d_data_nc(ncid, 'uvel', maxi, maxj, maxk, uvel_read, ifail)
