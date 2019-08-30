@@ -1,5 +1,5 @@
 MODULE goldstein
-
+#define ALLOW_DIFF_RESULT 1
   USE genie_util, ONLY: check_unit, check_iostat
   USE goldstein_lib
   USE goldstein_netcdf
@@ -38,7 +38,7 @@ CONTAINS
     REAL, INTENT(INOUT) :: go_rho(maxi,maxj,maxk)
 
     LOGICAL, PARAMETER :: flag_igcmatmos=.FALSE.
-    INTEGER :: i, j, k, isl, itv, iout, ios
+    INTEGER :: i, j, k, isl, itv, iout, ios, i_next, j_next
     REAL :: time, avn, avs, sums(8*maxl), rms, tv4, tv2, tv3
 
     ! Stream function variables
@@ -116,27 +116,38 @@ CONTAINS
        ! but min(j,maxj-1): avoids effect of N Pole singularity
        DO j = 1, maxj
           tv3 = 0.0
-          DO i = 1, maxi
-             IF (i == 1) THEN
-                tv4 = (tau(1,i,j) + tau(1,maxi,j)) * 0.5
-             ELSE
-                tv4 = (tau(1,i,j) + tau(1,i-1,j)) * 0.5
-             END IF
-             IF (j == 1) THEN
+          IF(j == 1) THEN
+             ! j==1 separate as the looping arount calculation is different
+             DO i = 1, maxi
+                !creates boundary wrapping on 'i' without the if check
+                i_next = MOD(i-2,maxi)+1
+                tv4 = (tau(1,i,j) + tau(1,i_next,j)) * 0.5
                 tv2 = tau(2,i,j) * 0.5
-             ELSE
-                tv2 = (tau(2,i,MIN(j, maxj-1)) + tau(2,i,j-1)) * 0.5
-             END IF
+                ! Wind stress used for mld calcs is consistent with that
+                ! for ocean advection, NOT for surface heat fluxes.  Only
+                ! matters if physically interpreting mldketaucoeff
+                mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
+                tv3 = tv3 + mldketau(i,j)
+             END DO
+          ELSE
+             !creates boundary wrapping on 'j' without the if check
+             j_next = MOD(j-2,maxi)+1
+             DO i = 1, maxi
+                !creates boundary wrapping without the if check
+                i_next = MOD(i-2,maxi)+1
+                tv4 = (tau(1,i,j) + tau(1,i_next,j)) * 0.5
+                tv2 = (tau(2,i,MIN(j, maxj-1)) + tau(2,i,j_next)) * 0.5
 
-             ! Wind stress used for mld calcs is consistent with that
-             ! for ocean advection, NOT for surface heat fluxes.  Only
-             ! matters if physically interpreting mldketaucoeff
-             mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
-             tv3 = tv3 + mldketau(i,j)
-          END DO
-          DO i = 1, maxi
-             IF (j <= 2 .OR. j >= maxj-1) mldketau(i,j) = tv3 / maxi
-          END DO
+                ! Wind stress used for mld calcs is consistent with that
+                ! for ocean advection, NOT for surface heat fluxes.  Only
+                ! matters if physically interpreting mldketaucoeff
+                mldketau(i,j) = mldketaucoeff * (SQRT(SQRT(tv4**2 + tv2**2)))**3
+                tv3 = tv3 + mldketau(i,j)
+             END DO
+          END IF
+          IF (j <= 2 .OR. j >= maxj-1) then
+              mldketau(1:maxi,j) = tv3 / maxi
+          END IF
        END DO
     END IF
 
@@ -2281,14 +2292,14 @@ CONTAINS
     IMPLICIT NONE
 
     REAL, PARAMETER :: ups0=0.0
-    INTEGER :: i, j, k, l
+    INTEGER :: i, j, k
 
     ! Mixed layer scheme needs:
     REAL :: mldtsold(maxl,maxi,maxj,maxk), mldrhoold(maxi,maxj,maxk)
     REAL :: mldrhonew(maxi,maxj,maxk), mldtstmp(2), mldrhotmp
     INTEGER :: mldpk(2,maxi,maxj)
 
-    REAL, DIMENSION(maxl,maxi,maxj,maxk) :: ts_t1, ts1_t1, ts_t2, ts1_t2
+    !REAL, DIMENSION(maxl,maxi,maxj,maxk) :: ts_t1, ts1_t1, ts_t2, ts1_t2
     REAL, DIMENSION(maxi,maxj,maxk) :: rho_t1, rho_t2
 
     IF (imld == 1) THEN
@@ -2308,10 +2319,10 @@ CONTAINS
        END DO
     END IF
 
-    ts_t1 = ts(:,1:maxi,1:maxj,1:maxk)
-    ts1_t1 = ts1(:,1:maxi,1:maxj,1:maxk)
-    ts_t2 = ts(:,1:maxi,1:maxj,1:maxk)
-    ts1_t2 = ts1(:,1:maxi,1:maxj,1:maxk)
+!    ts_t1 = ts(:,1:maxi,1:maxj,1:maxk)
+!    ts1_t1 = ts1(:,1:maxi,1:maxj,1:maxk)
+!    ts_t2 = ts(:,1:maxi,1:maxj,1:maxk)
+!    ts1_t2 = ts1(:,1:maxi,1:maxj,1:maxk)
     rho_t1 = rho(1:maxi,1:maxj,1:maxk)
     rho_t2 = rho(1:maxi,1:maxj,1:maxk)
     CALL tstepo_flux()
@@ -2421,11 +2432,11 @@ CONTAINS
     END DO
 
     DO k = 1, maxk
-       DO j = 1, maxj
-          DO i = 1, maxi
-             DO l = 1, maxl
-                IF (k >= k1(i,j)) ts1(l,i,j,k) = ts(l,i,j,k)
-             END DO
+       DO i = 1, maxi
+          DO j = 1, maxj
+             IF (k >= k1(i,j)) then
+                ts1(1:maxl,i,j,k) = ts(1:maxl,i,j,k)
+             ENDIF
           END DO
        END DO
     END DO
@@ -2434,13 +2445,19 @@ CONTAINS
 
   ! Ocean flux calculation
   SUBROUTINE tstepo_flux
+    use itt_profile
     IMPLICIT NONE
 
-    REAL :: tv, ups(3), pec(3)
+    REAL :: tv, ups, pec, u_tmp
+#if ALLOW_DIFF_RESULT
+    REAL :: tv4(4)
+    REAL :: dzrho_inv_sq
+#endif
     REAL, DIMENSION(maxl) :: fe, fw, fn, fa, fwsave
     REAL :: fs(maxl,maxi), fb(maxl,maxi,maxj)
     INTEGER :: i, j, k, l
     REAL, PARAMETER :: ups0=0.0
+    REAL, PARAMETER :: tvparam=0.0
 
     ! ediff calc needs
     REAL :: diffv
@@ -2448,6 +2465,9 @@ CONTAINS
     REAL :: tec, scc, dzrho, rdzrho, slim, tv1
     REAL :: dxrho(4), dxts(maxl,4), dyrho(4), dyts(maxl,4), dzts(maxl)
     INTEGER :: ina, nnp, knp
+#ifdef INTEL_PROFILE
+    call itt_profile_begin(task_goldstein_tstepo_flux)
+#endif
 
     scc = 0.0
     rdzrho = 0.0
@@ -2469,22 +2489,24 @@ CONTAINS
        fs = 0
        DO j = 1, maxj
           ! western boundary fluxes
-          i = 1
-          pec(1) = u(1,maxi,j,k) * dphi / diff(1)
-          ups(1) = pec(1) / (2.0 + ABS(pec(1)))
-          DO l = 1, maxl
-             IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
+          !i = 1
+          u_tmp = u(1,maxi,j,k)
+          pec = u_tmp * dphi / diff(1)
+          ups = pec / (2.0 + ABS(pec))
+          IF (k >= MAX(k1(maxi,j), k1(1,j))) THEN
+             DO l = 1, maxl
                 ! western doorway
-                fw(l) = u(1,maxi,j,k) * rc(j) * &
-                     & ((1.0 - ups(1)) * ts1(l,1,j,k) + &
-                     &  (1.0 + ups(1)) * ts1(l,maxi,j,k)) * 0.5
+                fw(l) = u_tmp * rc(j) * &
+                     & ((1.0 - ups) * ts1(l,1,j,k) + &
+                     &  (1.0 + ups) * ts1(l,maxi,j,k)) * 0.5
                 fw(l) = fw(l) - (ts1(l,1,j,k) - ts1(l,maxi,j,k)) * &
                      & rc2(j) * diff(1)
-             ELSE
-                fw(l) = 0
-             END IF
-             fwsave(l) = fw(l)
-          END DO
+             END DO
+          ELSE
+             fw(1:maxl) = 0
+          END IF
+          fwsave(1:maxl) = fw(1:maxl)
+
           DO i = 1, maxi
              ! calculate local vertical diffusivity
              IF (k >= k1(i,j) .AND. k < maxk) THEN
@@ -2493,105 +2515,151 @@ CONTAINS
                 CALL eosd(ec, ts1(1,i,j,k), ts1(1,i,j,k+1), &
                      & ts1(2,i,j,k), ts1(2,i,j,k+1), &
                      & zw(k), rdza(k), ieos, dzrho, tec)
-                IF (dzrho < -1.0E-12) THEN
-                   rdzrho = 1.0 / dzrho
-                ELSE
-                   rdzrho = -1.0E12
-                END IF
+
                 IF (iediff > 0 .AND. iediff < 3) THEN
                    ! Value of diffv fine for applying diffusivity, but
                    ! peclet number calc is a 1st order approximation
                    ! if diffusivity is variable.
                    IF (ediffpow2i == 0) THEN
                       diffv = ediff0 + ediff1(i,j,k)
-                   ELSEIF (ediffpow2i == 1) THEN
-                      diffv = ediff0 + ediff1(i,j,k) * (-rdzrho)
-                   ELSEIF (ediffpow2i == 2) THEN
-                      diffv = ediff0 + ediff1(i,j,k) * SQRT(-rdzrho)
                    ELSE
-                      diffv = ediff0 + ediff1(i,j,k) * ((-rdzrho)**ediffpow2)
+                      IF (dzrho < -1.0E-12) THEN
+                         rdzrho = 1.0 / dzrho
+                      ELSE
+                         rdzrho = -1.0E12
+                      END IF
+                      IF (ediffpow2i == 1) THEN
+                         diffv = ediff0 + ediff1(i,j,k) * (-rdzrho)
+                      ELSEIF (ediffpow2i == 2) THEN
+                         diffv = ediff0 + ediff1(i,j,k) * SQRT(-rdzrho)
+                      ELSE
+                         diffv = ediff0 + ediff1(i,j,k) * ((-rdzrho)**ediffpow2)
+                      END IF
                    END IF
-                   IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
+                   diffv = MIN(diffv, diffmax(k+1))
+                   !IF (diffv > diffmax(k+1)) diffv = diffmax(k+1)
                 END IF
              END IF
-             pec(1) = u(1,i,j,k) * dphi / diff(1)
-             ups(1) = pec(1) / (2.0 + ABS(pec(1)))
-             ! rather untidy mask to avoid undefined dsv at maxj nre
-             pec(2) = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
-             ups(2) = pec(2) / (2.0 + ABS(pec(2)))
-             pec(3) = u(3,i,j,k) * dza(k) / diffv
-             ups(3) = pec(3) / (2.0 + ABS(pec(3)))
-             DO l = 1, maxl
-                ! flux to east
-                IF (i == maxi) THEN
-                   ! eastern edge(doorway or wall)
-                   fe(l) = fwsave(l)
-                ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
-                   fe(l) = 0
-                ELSE
-                   fe(l) = u(1,i,j,k) * rc(j) * &
-                        & ((1.0 - ups(1)) * ts1(l,i+1,j,k) + &
-                        &  (1.0 + ups(1)) * ts1(l,i,j,k)) * 0.5
-                   fe(l) = fe(l) - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
+
+             ! flux to east
+             IF (i == maxi) THEN
+                ! eastern edge(doorway or wall)
+                fe(1:maxl) = fwsave(1:maxl)
+             ELSEIF (k < MAX(k1(i,j), k1(i+1,j))) THEN
+                fe(1:maxl) = 0
+             ELSE
+                u_tmp = u(1,i,j,k)
+                pec = u_tmp * dphi / diff(1)
+                ups = pec / (2.0 + ABS(pec))
+                DO l = 1, maxl
+                   fe(l) = u_tmp * rc(j) * &
+                        & ((1.0 - ups) * ts1(l,i+1,j,k) + &
+                        &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5 &
+                        & - (ts1(l,i+1,j,k) - ts1(l,i,j,k)) * &
                         & rc2(j) * diff(1)
-                END IF
-                ! flux to north
-                IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
-                   fn(l) = 0
-                ELSE
-                   fn(l) = cv(j) * u(2,i,j,k) * &
-                        & ((1.0 - ups(2)) * ts1(l,i,j+1,k) + &
-                        &  (1.0 + ups(2)) * ts1(l,i,j,k)) * 0.5
+                END DO
+             END IF
+
+             ! flux to north
+             IF (k < MAX(k1(i,j), k1(i,j+1))) THEN
+                fn(1:maxl) = 0
+             ELSE
+                u_tmp = u(2,i,j,k)
+               ! rather untidy mask to avoid undefined dsv at maxj nre
+                pec = u(2,i,j,k) * dsv(MIN(j, maxj-1)) / diff(1)
+                ups = pec / (2.0 + ABS(pec))
+                DO l = 1, maxl
+                   fn(l) = cv(j) * u_tmp * &
+                     & ((1.0 - ups) * ts1(l,i,j+1,k) + &
+                     &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fn(l) = fn(l) - cv2(j) * &
-                        & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
-                END IF
-                ! flux above
-                IF (k < k1(i,j)) THEN
-                   fa(l) = 0
-                ELSEIF (k == maxk) THEN
-                   fa(l) = ts(l,i,j,maxk+1)
-                ELSE
-                   fa(l) = u(3,i,j,k) * &
-                        & ((1.0 - ups(3)) * ts1(l,i,j,k+1) + &
-                        &  (1.0 + ups(3)) * ts1(l,i,j,k)) * 0.5
+                     & (ts1(l,i,j+1,k) -ts1(l,i,j,k)) * diff(1)
+                END DO
+             END IF
+
+             ! flux above
+             IF (k < k1(i,j)) THEN
+                fa(1:maxl) = 0
+             ELSEIF (k == maxk) THEN
+                fa(1:maxl) = ts(1:maxl,i,j,maxk+1)
+             ELSE
+                u_tmp = u(3,i,j,k)
+                pec = u_tmp * dza(k) / diffv
+                ups = pec / (2.0 + ABS(pec))
+                DO l = 1, maxl
+                   fa(l) = u_tmp * &
+                     & ((1.0 - ups) * ts1(l,i,j,k+1) + &
+                     &  (1.0 + ups) * ts1(l,i,j,k)) * 0.5
                    fa(l) = fa(l) - (ts1(l,i,j,k+1) - ts1(l,i,j,k)) * &
                         & rdza(k) * diffv
-                END IF
-             END DO
+                END DO
+             END IF
+
              IF (diso) THEN
                 ! isoneutral diffusion
                 IF (k >= k1(i,j) .AND. k < maxk) THEN
                    IF (dzrho < -1.0E-12) THEN
+#if ALLOW_DIFF_RESULT
+#else
                       tv1 = 0.0
+#endif
                       ! tracer loop
                       DO knp = 0, 1
                          DO nnp = 0, 1
                             ina = 1+nnp + 2 * knp
                             ! phi derivatives
-                            DO l = 1, maxl
-                               IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+                            IF (k+knp >= k1(i-1+2*nnp,j)) THEN
+                               DO l = 1, maxl
                                   dxts(l,ina) = (ts1(l,i+nnp,j,k+knp) - &
                                        & ts1(l,i+nnp-1,j,k+knp)) * rc(j) * rdphi
-                               ELSE
-                                  dxts(l,ina) = 0.0
-                               END IF
-                               ! s-derivatives
-                               IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               END DO
+                            ELSE
+                               dxts(1:maxl,ina) = 0.0
+                            END IF
+                            ! s-derivatives
+                            IF (k+knp >= k1(i,j-1+2*nnp)) THEN
+                               DO l = 1, maxl
                                   dyts(l,ina) = (ts1(l,i,j+nnp,k+knp) - &
                                        & ts1(l,i,j+nnp-1,k+knp)) * &
                                        & cv(j-1+nnp) * rdsv(j+nnp-1)
-                               ELSE
-                                  dyts(l,ina) = 0.0
-                               END IF
-                            END DO
+                               END DO
+                            ELSE
+                               dyts(1:maxl,ina) = 0.0
+                            END IF
+
                             dxrho(ina) = scc * dxts(2,ina) - tec * dxts(1,ina)
                             dyrho(ina) = scc * dyts(2,ina) - tec * dyts(1,ina)
                             ! calculate diagonal part
+#if ALLOW_DIFF_RESULT
+                            tv4(ina) = dxrho(ina) * dxrho(ina) + &
+                                 & dyrho(ina) * dyrho(ina)
+#else
                             tv1 = tv1 + dxrho(ina) * dxrho(ina) + &
                                  & dyrho(ina) * dyrho(ina)
+#endif
                          END DO
                       END DO
+#if ALLOW_DIFF_RESULT
+                      !
+                      tv1 = sum(tv4)
+                      ! precompute inverse square reuse later
+                      dzrho_inv_sq = 1.0 / (dzrho * dzrho)
+                      tv1 = 0.25 * tv1 * dzrho_inv_sq
+#else
+                      rdzrho = 1.0 / dzrho
                       tv1 = 0.25 * tv1 * rdzrho * rdzrho
+#endif
+!=======
+!                        END DO
+!                     END DO
+!                     dxrho(1:4) = scc * dxts(2,1:4) - tec * dxts(1,1:4)
+!                     dyrho(1:4) = scc * dyts(2,1:4) - tec * dyts(1,1:4)
+!                     ! calculate diagonal part
+!                     tv4(1:4) = dxrho(1:4) * dxrho(1:4) + &
+!                          & dyrho(1:4) * dyrho(1:4)
+!                     tv1 = sum(tv4)
+!
+
                       ! limit flux by factor slim for large slope
                       IF (tv1 > ssMAX(k)) THEN
                          slim = ssMAX(k) * ssMAX(k) / (tv1 * tv1)
@@ -2602,43 +2670,62 @@ CONTAINS
                       END IF
                       tv1 = tv1 * slim * diff(1) * rdza(k)
                       ! test vertical diffusion number
-                      tv = tv1 * dt(k) * rdza(k)
-                      IF (tv > dmax) THEN
-                         dmax = tv
+                      tv1 = tv1 * dt(k) * rdza(k)
+                      IF (tv1 > dmax) THEN
+                         dmax = tv1
                       END IF
+
+                      dzts(1:maxl) = (ts1(1:maxl,i,j,k+1)- ts1(1:maxl,i,j,k)) * rdza(k)
                       DO l = 1, maxl
-                         dzts(l) = (ts1(l,i,j,k+1)- ts1(l,i,j,k)) * rdza(k)
                          ! add isoneutral vertical flux
+
+#if ALLOW_DIFF_RESULT
+                         DO ina = 1, 4
+                            tv4(ina) = (2 * dzrho * dxts(l,ina) - &
+                                 & dxrho(ina) * dzts(l)) * dxrho(ina) + &
+                                 & (2 * dzrho * dyts(l,ina) - &
+                                 & dyrho(ina) * dzts(l)) * dyrho(ina)
+                         END DO
+                         tv = sum(tv4)
+                         tv = 0.25 * slim * diff(1) * tv * dzrho_inv_sq
+
+#else
                          tv = 0
                          DO ina = 1, 4
-                            tv = tv + (2 * dzrho * dxts(l,ina) - &
+                            tv = tv  + (2 * dzrho * dxts(l,ina) - &
                                  & dxrho(ina) * dzts(l)) * dxrho(ina) + &
                                  & (2 * dzrho * dyts(l,ina) - &
                                  & dyrho(ina) * dzts(l)) * dyrho(ina)
                          END DO
                          tv = 0.25 * slim * diff(1) * tv / (dzrho * dzrho)
+#endif
+                         !print *, 'diff' , tv, tv1, tv-tv1
+
                          fa(l) = fa(l) + tv
                       END DO
                    END IF
                 END IF
              END IF
-             DO l = 1, maxl
-                tv = 0
-                IF (k >= k1(i,j)) THEN
+
+             IF (k >= k1(i,j)) THEN
+                DO l = 1, maxl
                    ts(l,i,j,k) = ts1(l,i,j,k) - dt(k) * &
-                        & (-tv + (fe(l) - fw(l)) * rdphi + &
+                        & (-tvparam + (fe(l) - fw(l)) * rdphi + &
                         & (fn(l) - fs(l,i)) * rds(j) + &
                         & (fa(l) - fb(l,i,j)) * rdz(k))
-                END IF
-                fw(l) = fe(l)
-                fs(l,i) = fn(l)
-                fb(l,i,j) = fa(l)
-             END DO
+                END DO
+             ENDIF
+             fw(1:maxl) = fe(1:maxl)
+             fs(1:maxl,i) = fn(1:maxl)
+             fb(1:maxl,i,j) = fa(1:maxl)
 
              CALL eos(ec, ts(1,i,j,k), ts(2,i,j,k), zro(k), ieos, rho(i,j,k))
           END DO
        END DO
     END DO
+#ifdef INTEL_PROFILE
+    call itt_profile_end()
+#endif
   END SUBROUTINE tstepo_flux
 
 
@@ -3568,12 +3655,12 @@ CONTAINS
   SUBROUTINE velc
     IMPLICIT NONE
 
-    REAL :: tv, tv1, tv2, tv4, tv5, sum(2)
+    REAL :: tv, tv1, tv2, tv4, tv5, sum_val(2)
     INTEGER :: i, j, k, l
 
     DO j = 1, maxj
        DO i = 1, maxi
-          sum = 0
+          sum_val = 0
           ! u calc
           DO k = k1(i,j), maxk
              IF (k1(i+1,j) > k) THEN
@@ -3631,25 +3718,25 @@ CONTAINS
 
              dzu(1,k) = -(s(j) * tv1 + drag(1,i,j) * tv2) * rtv(i,j)
              dzu(2,k) = -(drag(2,i,j) * tv4 - sv(j) * tv5) * rtv3(i,j)
-             DO l = 1, 2
-                IF (k == k1(i,j)) THEN
-                   u(l,i,j,k) = 0
-                ELSE
-                   u(l,i,j,k) = u(l,i,j,k-1) + &
-                        & dza(k-1) * (dzu(l,k) + dzu(l,k-1)) * 0.5
-                   sum(l) = sum(l) + dz(k) * u(l,i,j,k)
-                END IF
-             END DO
+             IF (k == k1(i,j)) THEN
+               u(1:2,i,j,k) = 0
+             ELSE
+               DO l = 1, 2
+                 u(l,i,j,k) = u(l,i,j,k-1) + &
+                   & dza(k-1) * (dzu(l,k) + dzu(l,k-1)) * 0.5
+                 sum_val(l) = sum_val(l) + dz(k) * u(l,i,j,k)
+               END DO
+             END IF
           END DO
           DO k = k1(i,j), maxk
              ! add barotropic part and relax
              IF (k1(i+1,j) <= k) THEN
-                u(1,i,j,k) = u(1,i,j,k) - sum(1) * rh(1,i,j) + ub(1,i,j)
+                u(1,i,j,k) = u(1,i,j,k) - sum_val(1) * rh(1,i,j) + ub(1,i,j)
                 u(1,i,j,k) = rel * u1(1,i,j,k) + (1.0 - rel) * u(1,i,j,k)
                 u1(1,i,j,k) = u(1,i,j,k)
              END IF
              IF (k1(i,j+1) <= k) THEN
-                u(2,i,j,k) = u(2,i,j,k) - sum(2) * rh(2,i,j) + ub(2,i,j)
+                u(2,i,j,k) = u(2,i,j,k) - sum_val(2) * rh(2,i,j) + ub(2,i,j)
                 u(2,i,j,k) = rel * u1(2,i,j,k) + (1.0 - rel) * u(2,i,j,k)
                 u1(2,i,j,k) = u(2,i,j,k)
              END IF
