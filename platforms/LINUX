@@ -40,6 +40,14 @@ runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
 
 
 # NetCDF platform definitions.
+#
+# The Ubuntu package libnetcdff-dev installs into:
+# /usr/include/netcdf.mod, and
+# /usr/lib/x86_64-linux-gnu/libntecdff.a
+# Whereas the EPEL package netcdf-fortran-devel.x86_64 installs into:
+# /usr/lib64/gfortran/modules/netcdf.mod, and
+# /usr/lib64/libnetcdff.so
+#
 
 poss_netcdf = ['/usr', '/usr/local', '/opt']
 netcdf_base = None
