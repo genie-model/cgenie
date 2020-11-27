@@ -41,35 +41,31 @@ runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
 
 # NetCDF platform definitions.
 #
-# The Ubuntu package libnetcdff-dev installs into:
-# /usr/include/netcdf.mod, and
-# /usr/lib/x86_64-linux-gnu/libntecdff.a
-# Whereas the EPEL package netcdf-fortran-devel.x86_64 installs into:
-# /usr/lib64/gfortran/modules/netcdf.mod, and
-# /usr/lib64/libnetcdff.so
+# The Ubuntu package 'libnetcdff-dev' installs into:
+# - /usr/include/netcdf.mod, and
+# - /usr/lib/x86_64-linux-gnu/libntecdff.a
+# Whereas the EPEL package 'netcdf-fortran-devel.x86_64' installs into:
+# - /usr/lib64/gfortran/modules/netcdf.mod, and
+# - /usr/lib64/libnetcdff.so
 #
+netcdf_base = None  # Store as a pair (tuple) of include and lib paths as distros subvert a simple tree
+#
+# Add any additional paths in the form [('includepath','libpath')]
+# For example if you have installed the NetCDF libraries yourself under /home/youruser/netcdf
+# you should add ('home/youruser/netcdf/include','/home/youruser/netcdf/lib') to the list below:
+#
+poss_netcdf = [('/usr/include','/usr/lib/x86_64-linux-gnu'), ('/usr/lib64/gfortran/modules','/usr/lib64')]
 
-poss_netcdf = ['/usr', '/usr/local', '/opt']
-netcdf_base = None
 for poss in poss_netcdf:
-    if (os.path.exists(os.path.join(poss, 'include', 'netcdf.mod')) and
-        glob.glob(os.path.join(poss, 'lib', 'libnetcdf.*'))):
+    if (os.path.exists(os.path.join(poss[0], 'netcdf.mod')) and
+        glob.glob(os.path.join(poss[1], 'libnetcdf.*'))):
         netcdf_base = poss
         break
 if not netcdf_base:
-    for poss in poss_netcdf:
-        for cand in glob.iglob(os.path.join(poss, 'netcdf*')):
-            if (os.path.exists(os.path.join(cand, 'include')) and
-                os.path.exists(os.path.join(cand, 'lib'))):
-                netcdf_base = cand
-                break
-        if netcdf_base: break
-
-if not netcdf_base:
     sys.exit('Could not find a valid NetCDF installation')
 
-if (glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdff*')) and
-    glob.glob(os.path.join(netcdf_base, 'lib', 'libnetcdf*'))):
+if (glob.glob(os.path.join(netcdf_base[1], 'libnetcdff*')) and
+    glob.glob(os.path.join(netcdf_base[1], 'libnetcdf*'))):
     netcdf_libs = ['netcdf', 'netcdff']
 else:
     netcdf_libs = ['netcdf']

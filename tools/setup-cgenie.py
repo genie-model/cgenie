@@ -106,7 +106,8 @@ except Exception as e:
     setup_error('PLATFORM SETUP FAILED!' + str(e))
 
 print('    Fortran compiler:      ' + f90['compiler'])
-print('    NetCDF base directory: ' + netcdf['base'])
+print('    NetCDF include directory: ' + netcdf['base'][0])
+print('    NetCDF lib directory: ' + netcdf['base'][1])
 
 # Test Git version.
 
@@ -318,10 +319,10 @@ if 'libpath' in f90: extraf90libpaths.append(f90['libpath'])
 target_vs_arch = 'linux'
 if 'TARGET_VS_ARCH' in os.environ:
     target_vs_arch = os.environ['TARGET_VS_ARCH']
-netcdfinc = os.path.join(netcdf['base'], 'include')
-if not os.path.exists(netcdfinc): netcdfinc = netcdf['base']
-netcdflib = os.path.join(netcdf['base'], 'lib')
-if not os.path.exists(netcdflib): netcdflib = netcdf['base']
+
+netcdfinc = netcdf['base'][0]
+netcdflib = netcdf['base'][1]
+
 env = Environment(ENV = envcopy,
                   TOOLS = ['default', f90['compiler']],
                   HOST_ARCH = target_vs_arch,
