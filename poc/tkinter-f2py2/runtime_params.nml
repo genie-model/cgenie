@@ -1,0 +1,5 @@
+&runtime_params
+nx=72
+ny=72
+koverall=6
+&end

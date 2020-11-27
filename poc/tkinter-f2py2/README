@@ -1,0 +1,7 @@
+make
+python gui.py
+
+Some notes:
+A straightforward guide to tkinter basics is at:
+https://realpython.com/python-gui-tkinter/
+
