@@ -1,3 +1,8 @@
+On Ubuntu 18.04 I needed to install the packages 'python-devel' and 'python-pandas':
+- sudo apt-get install python-dev
+- sudo apt-get install python-pandas
+
+To run, type:
 make
 python gui.py
 
