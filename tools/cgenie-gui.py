@@ -459,6 +459,12 @@ class Application(AfterHandler, ttk.Frame):
         # The job tree is populated by the creation of the JobFolder
         # object in the application constructor.  Here we just set it
         # up as an empty tree and put it into the paned view.
+        #
+        # Setting the rowheight attribute in the global Treeview style
+        # May be better to configure a style specific to this filetreeview?
+        s = ttk.Style()
+        s.configure('Treeview', rowheight=int(self.bold_font.cget('size')*2.0))
+        #
         self.tree = FileTreeview(self.pane, selectmode='browse')
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.pane.add(self.tree)
