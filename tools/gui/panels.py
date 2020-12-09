@@ -4,6 +4,7 @@ import ttk
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from gui.tailer import *
@@ -449,6 +450,8 @@ class PlotPanel(Panel):
             self.plot.set_ydata(self.ts_file.data[self.var_var.get()])
             self.ax.relim()
             self.ax.autoscale_view()
+            self.ax.xaxis.set_major_locator(ticker.LinearLocator(numticks=10))
+            self.ax.yaxis.set_major_locator(ticker.LinearLocator(numticks=10))
             self.canvas.draw()
 
 
