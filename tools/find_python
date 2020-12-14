@@ -3,12 +3,16 @@
 if [ ! -z "$CGENIE_PYTHON" ]; then
     export PYTHON=$CGENIE_PYTHON
 else
+    export PYTHON=`which python`
+fi
+
+if [ -z "$PYTHON" ]; then
     echo
     echo 'NO SUITABLE PYTHON SETUP FOUND!'
     echo
     echo 'The CGENIE_PYTHON environment variable needs to be set to'
     echo 'point to the Python interpreter executable (which must be'
-    echo 'Python 2.7.9).'
+    echo 'Python 2.7.9 or newer).'
     echo
     exit 0
 fi
