@@ -1,2 +1,2 @@
-# cgenie
-cgenie Earth system model -- cupcake release
+# cTOASTER
+carbon Turnover in Ocean, Atmosphere, Sediment, and Terrestrial Exchangeable Reservoirs model
