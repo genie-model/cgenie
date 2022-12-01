@@ -4,5 +4,5 @@ if [ -f ~/.cgenierc ]; then
     exit 0
 fi
 #source tools/find_python
-alias python='/usr/bin/python3'
-exec $python tools/setup-cgenie.py
+#alias python='/usr/bin/python3'
+exec python3 tools/setup-cgenie.py
