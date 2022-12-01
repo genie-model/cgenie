@@ -1,9 +1,8 @@
 #!/bin/bash
 if [ -f ~/.cgenierc ]; then
-    echo 'GENIE already set up -- if you want to start over, remove ~/.cgenierc'
+    echo 'cTOASTER is already set up -- if you want to start over, remove ~/.cgenierc ($ rm ~/.cgenierc)'
     exit 0
 fi
 #source tools/find_python
-export python=/usr/bin/python3
+alias python='/usr/bin/python3'
 exec $python tools/setup-cgenie.py
-

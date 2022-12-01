@@ -36,12 +36,12 @@ config = U.read_cgenie_config()
 if config:
     print('Already set up...')
 else:
-    root = ask('Root directory', os.path.expanduser('~/ctoaster))
+    root = ask('Root directory', os.path.expanduser('~/ctoaster'))
     base = os.path.abspath(os.path.join(root, os.pardir))
     data = ask('Data directory', os.path.join(base, 'cgenie-data'))
     test = ask('Test directory', os.path.join(base, 'cgenie-test'))
     jobs = ask('Jobs directory', os.path.join(base, 'cgenie-jobs'))
-    vers = ask('Default version', default_version.decode('utf8'), str(versions))
+    vers = ask('Default version', default_version, str(versions))
     with open(U.genie_cfgfile, 'w') as fp:
         print('cgenie_root: ' + root, file=fp)
         print('cgenie_data: ' + data, file=fp)
@@ -239,6 +239,7 @@ except Exception as e:
 # Check for existence of executable, run executable and check result.
 
 if os.path.exists(os.path.join(tmpdir, 'f90test.exe')):
+    print('  Basic executable output:')
     try:
         fres = sp.check_output([os.path.join(tmpdir, 'f90test.exe')]).decode('utf8')
         print(fres)
@@ -372,7 +373,8 @@ else:
 
 # Final message.
 
-print('\n\nEverything seems to be OK!')
+print('\nEverything seems to be OK!')
 print('\nCheck that the compiler and NetCDF settings ' +
       'above are what you expect.')
+print('\n')
 

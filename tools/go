@@ -1,5 +1,6 @@
 #!/bin/bash
 cgenie_root=`grep ^cgenie_root ~/.cgenierc | cut -d' ' -f2-`
-source $cgenie_root/tools/find_python
-export PATH=$cgenie_root/tools/python-local-2.7.9/bin:$PATH
-exec $PYTHON $cgenie_root/tools/go.py $*
+#source $cgenie_root/tools/find_python
+#export PATH=$cgenie_root/tools/python-local-2.7.9/bin:$PATH
+alias python='/usr/bin/python3'
+exec $python $cgenie_root/tools/go.py $*

@@ -11,13 +11,19 @@ for sd in subdirs:
     res = env.SConscript(consFile)
     allobjs += res['objs']
     allsrcs += res['srcs']
-allsrcs = map(str, Glob('genie.f90')) + map(str, allsrcs)
+allsrcs = list(map(str, Glob('genie.f90'))) + list(map(str, allsrcs))
+
+print(allobjs)
 
 Execute(Mkdir(subdirs))
 
-objs = filter(lambda o: str(o)[-4:] != '.mod', allobjs)
+objs = list(filter(lambda o: str(o)[-4:] != '.mod', allobjs))
+
+print(objs)
 
 env.Program('nccompare.exe', [os.path.join('tools', 'nccompare.f90')])
+
+print('***')
 
 if P.system() != 'Windows':
     env.Program('genie.exe', ['genie.f90'] + objs)

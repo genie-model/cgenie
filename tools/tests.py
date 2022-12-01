@@ -14,7 +14,8 @@ import config_utils as C
 
 if not U.read_cgenie_config():
     sys.exit('GENIE not set up: run the setup-cgenie script!')
-scons = [os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+###scons = [os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+scons = 'scons'
 if plat.system() == 'Windows': scons = ['python'] + scons
 nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
 test_version = U.cgenie_version
@@ -135,7 +136,8 @@ reltol = 35
 
 def ensure_nccompare():
     if os.path.exists(nccompare): return
-    cmd = scons + ['-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
+    cmd = [scons, '-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
+    sp.call(cmd)
     with open(os.devnull, 'w') as sink:
         status = sp.call(cmd, stdout=sink, stderr=sink)
     if status != 0:
@@ -212,7 +214,7 @@ def file_compare(f1, f2, logfp):
         print('File missing: ' + f2)
         print('File missing: ' + f2, file=logfp)
         return True
-    with open(f1) as tstfp: chk = tstfp.read(4)
+    with open(f1, encoding="latin-1") as tstfp: chk = tstfp.read(4)
     if chk == 'CDF\x01':
         return compare_nc(f1, f2, logfp)
     else:
@@ -247,6 +249,8 @@ def do_run(t, rdir, logfp, i, n):
     logfp.flush()
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to configure test job')
+
+    print(cmd)
 
     # Build and run job.
     os.chdir(os.path.join(rdir, t))

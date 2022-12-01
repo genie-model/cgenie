@@ -208,7 +208,8 @@ if not U.read_cgenie_config():
         sys.exit()
     else:
         sys.exit('GENIE not set up: run the setup-cgenie script!')
-scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+###scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+scons = 'scons'
 
 def console_message(s):
     print(79 * '*')
@@ -235,7 +236,7 @@ def console_manage(cmd, logfp, cont, *rest):
     signal.signal(signal.SIGTERM, cleanup)
     runner = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
     while True:
-        line = runner.stdout.readline()
+        line = runner.stdout.readline().decode('utf8')
         if not line: break
         logfp.write(line)
         logfp.flush()
@@ -334,7 +335,7 @@ def build(cont):
     logfp = open(os.path.join(model_dir, 'build.log'), 'w')
     rev = 'rev=' + model_config.display_model_version
     cmd = [scons, '-C', model_dir, rev]
-    cmd = [sys.executable, '-u'] + cmd
+    #cmd = [sys.executable, '-u'] + cmd
     cmd.append('progress=' + ('1' if progress else '0'))
     manage(cmd, logfp, build2, cont)
 
@@ -359,9 +360,9 @@ def run(cont=None):
     global tstart
     message('RUNNING: ' + model_config.display_model_version)
     platform = U.discover_platform()
-    execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+    exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
     if 'runtime_env' in locals():
-        for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
+        for k, v in locals()['runtime_env'].items(): os.environ[k] = v
     logfp = open('run.log', 'w')
     tstart = dt.datetime.now()
     manage(os.path.join('.', exe_name), logfp, run2, cont)
