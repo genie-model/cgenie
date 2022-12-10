@@ -209,7 +209,7 @@ def extract_mod_flags(c, os):
 mod_flags = map(extract_mod_flags, configs, mod_opts)
 merged_mod_flags = C.merge_flags(mod_flags)
 mod_flags = [k for k in merged_mod_flags.keys() if merged_mod_flags[k]]
-modules = map(C.module_from_flagname, mod_flags)
+modules = list(map(C.module_from_flagname, mod_flags))
 
 
 # Set up job directory and per-module sub-directories.
