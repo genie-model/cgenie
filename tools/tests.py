@@ -250,7 +250,7 @@ def do_run(t, rdir, logfp, i, n):
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to configure test job')
 
-    print(cmd)
+    ###print(cmd)
 
     # Build and run job.
     os.chdir(os.path.join(rdir, t))

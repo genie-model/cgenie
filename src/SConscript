@@ -13,17 +13,17 @@ for sd in subdirs:
     allsrcs += res['srcs']
 allsrcs = list(map(str, Glob('genie.f90'))) + list(map(str, allsrcs))
 
-print(allobjs)
+###print(allobjs)
 
 Execute(Mkdir(subdirs))
 
 objs = list(filter(lambda o: str(o)[-4:] != '.mod', allobjs))
 
-print(objs)
+###print(objs)
 
 env.Program('nccompare.exe', [os.path.join('tools', 'nccompare.f90')])
 
-print('***')
+###print('***')
 
 if P.system() != 'Windows':
     env.Program('genie.exe', ['genie.f90'] + objs)
