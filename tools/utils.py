@@ -3,6 +3,8 @@ import errno, os, sys, shutil, platform, string
 import re, hashlib, glob
 import subprocess as sp
 
+# NOTE: The platform module in Python includes tools to see the platform's hardware, operating system , and interpreter version information where the program is running.
+
 
 # Read cGENIE configuration.
 
@@ -44,8 +46,8 @@ def discover_platform():
         return os.path.exists(os.path.join(cgenie_root, 'platforms', p))
 
     def discover():
-        host = platform.node()
-        os = platform.system().upper()
+        host = platform.node()					# platform.node() returns the computer's network name.
+        os = platform.system().upper()				# Returns the system/OS name. The upper() method returns a string where all characters are in upper case.
         plat = platform.platform().split('-')[0].upper()
         if exists(host): return host
         if exists(os): return os
