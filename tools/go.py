@@ -209,9 +209,10 @@ if not U.read_cgenie_config():
     else:
         sys.exit('GENIE not set up: run the setup-cgenie script!')
 ###scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
-scons = 'scons'
+scons = 'scons'	# [replaced the included scons v.2 distribution with what is hopefully installed scons v.3 ...]
 
 def console_message(s):
+    print('')
     print(79 * '*')
     print('')
     print('    ' + s)
@@ -256,6 +257,7 @@ Usage: go <command>
 Commands:
   clean                                 Clean results
   cleaner                               Clean results and model build
+  clean-build                           Just clean model build
   build [<build-type>] [--no-progress]  Build model
   run [<build-type>] [--no-progress]    Build and run model
   set-platform <platform>               Set explicit build platform
@@ -268,7 +270,7 @@ progress = True
 if not gui:
     if len(sys.argv) < 2: usage()
     action = sys.argv[1]
-    if action in ['clean', 'cleaner', 'clear-platform']:
+    if action in ['clean', 'cleaner', 'clear-platform', 'clean-build']:
         if len(sys.argv) != 2: usage()
     elif action == 'set-platform':
         if len(sys.argv) != 3: usage()
@@ -301,12 +303,17 @@ def clean(clean_model):
     message('CLEANING MODEL RESULTS' +
             (' AND BUILD' if clean_model else '') + '...')
     if clean_model:
-        model_config.clean()
-        for exe in glob.iglob('genie-*.exe'): os.remove(exe)
-        if os.path.exists('build.log'): os.remove('build.log')
-    if os.path.exists('run.log'): os.remove('run.log')
+        model_config.clean()					# calls method 'clean' for class ModelConfig [utils.py]
+        for exe in glob.iglob('genie-*.exe'): os.remove(exe)	# finds instances of 'genie-*.exe' in the current [cgenie-jobs] directory (and recursively in all subdirectories)
+        if os.path.exists('build.log'): os.remove('build.log')	# (remove 'build.log' if it exists)
+    if os.path.exists('run.log'): os.remove('run.log')		# (remove 'run.log' if it exists)
     for d, ds, fs in os.walk('output'):
         for f in fs: os.remove(os.path.join(d, f))
+
+def clean_build():
+    message('REMOVING BUILD' + '...')
+    if os.path.exists(model_dir):
+        model_config.clean()
 
 
 # Build model.
@@ -400,6 +407,8 @@ else:
         clean(False)
     elif action == 'cleaner':
         clean(True)
+    elif action == 'clean-build':
+        clean_build()
     elif action == 'build':
         build(None)
     elif action == 'run':

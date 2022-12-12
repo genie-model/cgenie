@@ -77,7 +77,7 @@ class ModelConfig:
     # Assumes current working directory is the job directory.
     def __init__(self, build_type, dir=None):
         if not build_type: build_type = 'normal'
-        vfile = os.path.join('config', 'model-version')
+        vfile = os.path.join('config', 'model-version')	# ('model-version' is a file in the config subdirectory of the job directory)
         if dir: vfile = os.path.join(dir, vfile)
         with open(vfile) as fp:
             self.model_version = fp.readline().strip()

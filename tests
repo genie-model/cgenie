@@ -4,7 +4,4 @@ if [ ! -f ~/.cgenierc ]; then
     exit 0
 fi
 cgenie_root=`grep cgenie_root ~/.cgenierc | cut -d: -f2 | sed -e 's/^ *//'`
-#source $cgenie_root/tools/find_python
-#exec $python $cgenie_root/tools/tests.py $*
 python3 $cgenie_root/tools/tests.py $*
-
