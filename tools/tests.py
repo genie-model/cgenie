@@ -12,13 +12,13 @@ import config_utils as C
 
 # GENIE configuration
 
-if not U.read_cgenie_config():
-    sys.exit('GENIE not set up: run the setup-cgenie script!')
-###scons = [os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+if not U.read_ctoaster_config():
+    sys.exit('GENIE not set up: run the setup-ctoaster script!')
+###scons = [os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')]
 scons = 'scons'
 if plat.system() == 'Windows': scons = ['python'] + scons
-nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
-test_version = U.cgenie_version
+nccompare = os.path.join(U.ctoaster_root, 'build', 'nccompare.exe')
+test_version = U.ctoaster_version
 
 
 #----------------------------------------------------------------------
@@ -28,9 +28,9 @@ test_version = U.cgenie_version
 
 def list(list_base):
     tests = []
-    for d, ds, fs in os.walk(U.cgenie_test):
+    for d, ds, fs in os.walk(U.ctoaster_test):
         if os.path.exists(os.path.join(d, 'test_info')):
-            tests.append(os.path.relpath(d, U.cgenie_test))
+            tests.append(os.path.relpath(d, U.ctoaster_test))
     for t in sorted(tests):
         if not list_base or list_base and t.startswith(list_base):
             print(t)
@@ -62,16 +62,16 @@ def add_test(test_job, test_name, restart):
         return False
 
     # Check for existence of required jobs, tests and directories.
-    job_dir = os.path.join(U.cgenie_jobs, test_job)
+    job_dir = os.path.join(U.ctoaster_jobs, test_job)
     if not has_job_output(job_dir):
         sys.exit('Need to run job "' + test_job +
                  '" before adding it as a test')
-    test_dir = os.path.join(U.cgenie_test, test_name)
+    test_dir = os.path.join(U.ctoaster_test, test_name)
     if not os.path.exists(job_dir):
         sys.exit('Job "' + test_job + '" does not exist')
     if os.path.exists(test_dir): sys.exit('Test already exists!')
     if restart:
-        restart_test_dir = os.path.join(U.cgenie_test, restart)
+        restart_test_dir = os.path.join(U.ctoaster_test, restart)
         if not os.path.exists(restart_test_dir):
             sys.exit('Restart test "' + restart + '" does not exist')
 
@@ -136,7 +136,7 @@ reltol = 35
 
 def ensure_nccompare():
     if os.path.exists(nccompare): return
-    cmd = [scons, '-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
+    cmd = [scons, '-C', U.ctoaster_root, os.path.join('build', 'nccompare.exe')]
     sp.call(cmd)
     with open(os.devnull, 'w') as sink:
         status = sp.call(cmd, stdout=sink, stderr=sink)
@@ -226,12 +226,12 @@ def file_compare(f1, f2, logfp):
 # by hand!
 
 def do_run(t, rdir, logfp, i, n):
-    os.chdir(U.cgenie_root)
+    os.chdir(U.ctoaster_root)
     print('Running test "' + t + '" [' + str(i) + '/' + str(n) + ']')
     print('Running test "' + t + '"', file=logfp)
     t = t.replace('\\', '\\\\')
 
-    test_dir = os.path.join(U.cgenie_test, t)
+    test_dir = os.path.join(U.ctoaster_test, t)
     if plat.system() == 'Windows':
         cmd = ['cmd', '/c', os.path.join(os.curdir, 'new-job.bat')]
     else:
@@ -295,7 +295,7 @@ def restart_map(tests):
     while len(check) != 0:
         for t in check:
             r = None
-            ifile = os.path.join(U.cgenie_test, t, 'test_info')
+            ifile = os.path.join(U.ctoaster_test, t, 'test_info')
             if not os.path.exists(ifile):
                 sys.exit('Test "' + t + '" does not exist')
             with open(ifile) as fp:
@@ -329,22 +329,22 @@ def run_tests(tests):
 
     # Set up test jobs directory.
     label = dt.datetime.today().strftime('%Y%m%d-%H%M%S')
-    rdir = os.path.join(U.cgenie_jobs, 'test-' + label)
+    rdir = os.path.join(U.ctoaster_jobs, 'test-' + label)
     print('Test output in ' + rdir + '\n')
     os.makedirs(rdir)
 
     # Deal with "ALL" case.
     if tests == ['ALL']:
-        tests = [os.path.relpath(p, U.cgenie_test)
-                 for p in glob.glob(os.path.join(U.cgenie_test, '*'))
+        tests = [os.path.relpath(p, U.ctoaster_test)
+                 for p in glob.glob(os.path.join(U.ctoaster_test, '*'))
                  if os.path.isdir(p)]
 
     # Determine leaf tests.
     ltests = []
     for tin in tests:
-        for d, ds, fs in os.walk(os.path.join(U.cgenie_test, tin)):
+        for d, ds, fs in os.walk(os.path.join(U.ctoaster_test, tin)):
             if os.path.exists(os.path.join(d, 'test_info')):
-                ltests.append(os.path.relpath(d, U.cgenie_test))
+                ltests.append(os.path.relpath(d, U.ctoaster_test))
 
     # Determine restart prerequisites for tests in list.
     restarts = restart_map(ltests)

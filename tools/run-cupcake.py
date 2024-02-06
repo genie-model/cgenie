@@ -5,10 +5,10 @@ import subprocess as sp
 import utils as U
 
 
-# GENIE configuration
+# cTOASTER configuration
 
-if not U.read_cgenie_config():
-    sys.exit("GENIE not set up: run the setup.py script!")
+if not U.read_ctoaster_config():
+    sys.exit("cTOASTER not set up: run the setup.py script!")
 
 
 # Command line arguments.
@@ -30,7 +30,7 @@ if len(sys.argv) == 6: restart = sys.argv[5]
 
 # Configure job.
 
-os.chdir(U.cgenie_root)
+os.chdir(U.ctoaster_root)
 user_config = os.path.join(config_dir, run_id)
 cmd = [os.path.join(os.curdir, 'new-job'),
        '-O',
@@ -46,7 +46,7 @@ if sp.check_call(cmd) != 0: sys.exit('Failed to configure job')
 
 # Build and run job.
 
-os.chdir(os.path.join(U.cgenie_jobs, run_id))
+os.chdir(os.path.join(U.ctoaster_jobs, run_id))
 print('')
 print('')
 print('Building and running job...')

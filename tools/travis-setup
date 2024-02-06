@@ -1,7 +1,7 @@
 #!/bin/bash
 root=`pwd`
-echo "cgenie_root: ${root}" > ~/.cgenierc
-echo "cgenie_data: ${root/cgenie/cgenie-data}" >> ~/.cgenierc
-echo "cgenie_test: ${root/cgenie/cgenie-test}" >> ~/.cgenierc
-echo "cgenie_jobs: ${root/cgenie/cgenie-jobs}" >> ~/.cgenierc
-echo "cgenie_version: DEVELOPMENT" >> ~/.cgenierc
+echo "ctoaster_root: ${root}" > ~/.ctoasterrc
+echo "ctoaster_data: ${root/ctoaster/ctoaster-data}" >> ~/.ctoasterrc
+echo "ctoaster_test: ${root/ctoaster/ctoaster-test}" >> ~/.ctoasterrc
+echo "ctoaster_jobs: ${root/ctoaster/ctoaster-jobs}" >> ~/.ctoasterrc
+echo "ctoaster_version: DEVELOPMENT" >> ~/.ctoasterrc

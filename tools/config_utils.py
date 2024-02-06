@@ -315,7 +315,7 @@ def copy_data_files(m, nml, outdir, extras):
     if extras: cands += extras
 
     # Look for exact file matches in module data directory.
-    checkdir = os.path.join(U.cgenie_root, 'data', m)
+    checkdir = os.path.join(U.ctoaster_root, 'data', m)
     def exact(f):
         try:
             shutil.copy(os.path.join(checkdir, f), outdir)
@@ -324,7 +324,7 @@ def copy_data_files(m, nml, outdir, extras):
     cands = [f for f in cands if not exact(f)]
 
     # Look for exact file matches in forcings directory.
-    checkdir = os.path.join(U.cgenie_data, 'forcings')
+    checkdir = os.path.join(U.ctoaster_data, 'forcings')
     def forcing(f):
         try:
             shutil.copytree(os.path.join(checkdir, f), os.path.join(outdir, f))
@@ -336,7 +336,7 @@ def copy_data_files(m, nml, outdir, extras):
     ###for f in cands: print(forcing(f))
 
     # Look for partial matches.
-    checkdir = os.path.join(U.cgenie_root, 'data', m)
+    checkdir = os.path.join(U.ctoaster_root, 'data', m)
     def partial(f):
         ret = False
         try:
@@ -348,8 +348,8 @@ def copy_data_files(m, nml, outdir, extras):
     cands = [f for f in cands if not partial(f)]
 
 
-# Copy restart files: if restarting from an old cGENIE job, assume
-# that the job is in ~/cgenie_output.
+# Copy restart files: if restarting from an old ctoaster job, assume
+# that the job is in ~/ctoaster_output.
 
 def copy_restart_files(m, nml, outdir, restart_path):
     indir = os.path.join(restart_path, m)

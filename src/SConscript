@@ -11,7 +11,7 @@ for sd in subdirs:
     res = env.SConscript(consFile)
     allobjs += res['objs']
     allsrcs += res['srcs']
-allsrcs = list(map(str, Glob('genie.f90'))) + list(map(str, allsrcs))
+allsrcs = list(map(str, Glob('cupcake.f90'))) + list(map(str, allsrcs))
 
 ###print(allobjs)
 
@@ -26,13 +26,13 @@ env.Program('nccompare.exe', [os.path.join('tools', 'nccompare.f90')])
 ###print('***')
 
 if P.system() != 'Windows':
-    env.Program('genie.exe', ['genie.f90'] + objs)
+    env.Program('cupcake.exe', ['cupcake.f90'] + objs)
 else:
-    if build_type == 'debug': env.Replace(PDB='genie-debug.pdb')
-    exe = env.Program('genie.exe', ['genie.f90'] + objs)
+    if build_type == 'debug': env.Replace(PDB='cupcake-debug.pdb')
+    exe = env.Program('cupcake.exe', ['cupcake.f90'] + objs)
     if len(exe) > 1: exe = exe[0]
     var = 'Debug' if build_type == 'debug' else 'Release'
-    env.MSVSProject(target = 'cgenie-scons' + env['MSVSPROJECTSUFFIX'],
+    env.MSVSProject(target = 'ctoaster-scons' + env['MSVSPROJECTSUFFIX'],
                     srcs = allsrcs,
                     buildtarget = exe,
                     variant = var)

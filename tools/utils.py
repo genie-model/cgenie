@@ -6,23 +6,23 @@ import subprocess as sp
 # NOTE: The platform module in Python includes tools to see the platform's hardware, operating system , and interpreter version information where the program is running.
 
 
-# Read cGENIE configuration.
+# Read ctoaster configuration.
 
-genie_cfgfile = os.path.expanduser(os.path.join('~', '.cgenierc'))
+genie_cfgfile = os.path.expanduser(os.path.join('~', '.ctoasterrc'))
 
-def read_cgenie_config():
-    global cgenie_root, cgenie_data, cgenie_test, cgenie_jobs, cgenie_version
+def read_ctoaster_config():
+    global ctoaster_root, ctoaster_data, ctoaster_test, ctoaster_jobs, ctoaster_version
     try:
         with open(genie_cfgfile) as fp:
             for line in fp:
                 fs = line.strip().split(':')
                 k = fs[0]
                 v = ':'.join(fs[1:]).strip()
-                if   k == 'cgenie_root':    cgenie_root = v
-                elif k == 'cgenie_data':    cgenie_data = v
-                elif k == 'cgenie_test':    cgenie_test = v
-                elif k == 'cgenie_jobs':    cgenie_jobs = v
-                elif k == 'cgenie_version': cgenie_version = v
+                if   k == 'ctoaster_root':    ctoaster_root = v
+                elif k == 'ctoaster_data':    ctoaster_data = v
+                elif k == 'ctoaster_test':    ctoaster_test = v
+                elif k == 'ctoaster_jobs':    ctoaster_jobs = v
+                elif k == 'ctoaster_version': ctoaster_version = v
             return True
     except IOError as e:
         if e.errno == errno.ENOENT: return False
@@ -34,7 +34,7 @@ def read_cgenie_config():
 # could be: subprocess.Popen(cmd) instead
 
 def fixe(file):
-    cmd = [os.path.join(cgenie_root, 'tools', 'fix-exceptions.py'), file]
+    cmd = [os.path.join(ctoaster_root, 'tools', 'fix-exceptions.py'), file]
     #os.system(cmd)
     sp.Popen(cmd)
 
@@ -43,7 +43,7 @@ def fixe(file):
 
 def discover_platform():
     def exists(p):
-        return os.path.exists(os.path.join(cgenie_root, 'platforms', p))
+        return os.path.exists(os.path.join(ctoaster_root, 'platforms', p))
 
     def discover():
         host = platform.node()					# platform.node() returns the computer's network name.
@@ -91,9 +91,9 @@ class ModelConfig:
         self.build_type = build_type
 
     # Determine the model directory for this configuration: these all
-    # live under cgenie_jobs/MODELS.
+    # live under ctoaster_jobs/MODELS.
     def directory(self):
-        return os.path.join(cgenie_jobs, 'MODELS',
+        return os.path.join(ctoaster_jobs, 'MODELS',
                             self.model_version, self.platform, self.build_type)
 
     # Clean out model builds for a given model configuration -- this
@@ -113,13 +113,13 @@ class ModelConfig:
         vfile = os.path.join(d, 'version.py')
         if not os.path.exists(vfile):
             if self.model_version == 'DEVELOPMENT':
-                scons_dir = cgenie_root
+                scons_dir = ctoaster_root
             else:
-                scons_dir = os.path.join(cgenie_jobs, 'MODELS', 'REPOS',
+                scons_dir = os.path.join(ctoaster_jobs, 'MODELS', 'REPOS',
                                          self.model_version)
             scons_srcdir = os.path.join(scons_dir, 'src')
             scons_srcdir = scons_srcdir.replace('\\', '\\\\')
-            scriptdir = os.path.join(cgenie_root, 'tools')
+            scriptdir = os.path.join(ctoaster_root, 'tools')
             scriptdir = scriptdir.replace('\\', '\\\\')
             with open(vfile, 'w') as fp:
                 print('# Model source directory', file=fp)
@@ -146,7 +146,7 @@ def setup_version_repo(ver):
     if ver == 'DEVELOPMENT': return
     if ver not in available_versions():
         sys.exit('Invalid model version "' + ver + '"')
-    dst = os.path.join(cgenie_jobs, 'MODELS', 'REPOS', ver)
+    dst = os.path.join(ctoaster_jobs, 'MODELS', 'REPOS', ver)
     if os.path.exists(dst): return dst
     with open(os.devnull, 'w') as sink:
         if sp.call(['git', 'clone', '-l', '--single-branch', '--branch', ver,

@@ -1,6 +1,6 @@
 #!/bin/bash
-if [ -f ~/.cgenierc ]; then
-    echo 'cTOASTER is already set up -- if you want to start over, remove ~/.cgenierc ($ rm ~/.cgenierc)'
+if [ -f ~/.ctoasterrc ]; then
+    echo 'cTOASTER is already set up -- if you want to start over, remove ~/.ctoasterrc ($ rm ~/.ctoasterrc)'
     exit 0
 fi
-python3 tools/setup-cgenie.py
+python3 tools/setup-ctoaster.py

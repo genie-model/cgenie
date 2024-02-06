@@ -1,8 +1,8 @@
 #!/bin/bash
-if [ ! -f ~/.cgenierc ]; then
-    echo 'GENIE not set up: run the setup-cgenie script!'
+if [ ! -f ~/.ctoasterrc ]; then
+    echo 'cTOASTER not set up: run the setup-ctoaster script!'
     exit 0
 fi
-cgenie_root=`grep cgenie_root ~/.cgenierc | cut -d: -f2 | sed -e 's/^ *//'`
-source $cgenie_root/tools/find_python
-exec $PYTHON $cgenie_root/tools/cgenie-gui.py $*
+ctoaster_root=`grep ctoaster_root ~/.ctoasterrc | cut -d: -f2 | sed -e 's/^ *//'`
+source $ctoaster_root/tools/find_python
+exec $PYTHON $ctoaster_root/tools/ctoaster-gui.py $*
