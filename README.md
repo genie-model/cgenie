@@ -1,3 +1,2 @@
-# cupcake
-(cGENIE varient)
-(also known as cTOASTER -- the carbon Turnover in Ocean, Atmosphere, Sediment, and Terrestrial Exchangeable Reservoirs model)
+# ctoaster.cupcake
+The cupcake release of the carbon Turnover in Ocean, Atmosphere, Sediment, and Terrestrial Exchangeable Reservoirs model (forked from genie.cupcake).
