@@ -65,6 +65,7 @@ PROGRAM nccompare
 
 CONTAINS
 
+
   SUBROUTINE parse_options()
     IMPLICIT NONE
 
@@ -249,18 +250,19 @@ CONTAINS
   END FUNCTION do_comparison
 
 
-  ELEMENTAL FUNCTION float_compare(x, y)
+  IMPURE ELEMENTAL FUNCTION float_compare(x, y)
     IMPLICIT NONE
     INTEGER :: float_compare
     REAL, INTENT(IN) :: x, y
 
     REAL(KIND=4) :: x4, y4
-
+        
     x4 = REAL(x, KIND=4)
     y4 = REAL(y, KIND=4)
-    float_compare = ABS((TRANSFER(z'80000000', 1) - TRANSFER(x4, 1)) - &
-                      & (TRANSFER(z'80000000', 1) - TRANSFER(y4, 1)))
+    float_compare = ABS((TRANSFER(real(z'80000000', KIND=4), 1) - TRANSFER(x4, 1)) - &
+                      & (TRANSFER(real(z'80000000', KIND=4), 1) - TRANSFER(y4, 1)))
   END FUNCTION float_compare
+
 
   SUBROUTINE usage()
     IMPLICIT NONE

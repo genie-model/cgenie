@@ -86,7 +86,7 @@ def lookup_module(modname):
 def extract_defines(maps):
     res = { }
     for m in maps:
-        for k, v in m.iteritems():
+        for k, v in m.items():
             if v.startswith('$(DEFINE)'):
                 ckv = v[9:].split('=')
                 res[ckv[0]] = int(ckv[1])
@@ -95,7 +95,7 @@ def extract_defines(maps):
 
 def make_coordinates(defs):
     res = { }
-    for k, v in defs.iteritems():
+    for k, v in defs.items():
         res['ma_dim_' + k] = v
     return res
 
@@ -331,6 +331,9 @@ def copy_data_files(m, nml, outdir, extras):
             return True
         except: return False
     cands = [f for f in cands if not forcing(f)]
+    ###print(cands)
+    ###for f in cands: print(f+ ' = ' + str(forcing(f)))
+    ###for f in cands: print(forcing(f))
 
     # Look for partial matches.
     checkdir = os.path.join(U.cgenie_root, 'data', m)

@@ -1,0 +1,41 @@
+# Fortran 90 platform definitions.
+f90 = {
+    # Compiler name.
+    'compiler': 'gfortran',
+
+    # Default flags.
+    'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none',
+                  '-fno-automatic', '-fimplicit-none', '-fdefault-real-8',
+                  '-msse' ],
+
+    # Debug flags.
+    'debug': ['-g'],
+
+    # Optimisation flags.
+    'ship': ['-O3', '-funroll-loops'],
+
+    # Profiling flags ("profile" build type).
+    'profile':      ['-O3', '-pg'],
+    'profile_link': ['-pg'],
+
+    # Bounds checking flags ("bounds" build type).
+    'bounds': ['-fbounds-check'],
+
+    # Miscellaneous flags.
+    'include': '-I',         # Include files.
+    'module_dir': '-J',      # Module file output directory.
+    'define': '-D'           # Preprocessor definitions.
+}
+
+# Platform runtime environment variables.
+runtime_env = { 'GFORTRAN_UNBUFFERED_PRECONNECTED': '1' }
+
+# NetCDF platform definitions.
+netcdf = {
+    # NetCDF base directory.
+    'base': [('/usr/local/include'), ('/usr/local/lib')],
+
+    # NetCDF libraries (either a single 'netcdf', or 'netcdf' and
+    # 'netcdff' if the F90 library is split).
+    'libs': ['netcdf', 'netcdff']
+}

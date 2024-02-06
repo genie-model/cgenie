@@ -17,7 +17,7 @@ testrepo = 'https://github.com/genie-model/cgenie-test'
 
 def ask(prompt, default, options=None):
     while True:
-        res = raw_input(prompt + ' [' + default + ']: ') or default
+        res = input(prompt + ' [' + default + ']: ') or default
         if not options or res in options:
             return res
         else:
@@ -25,7 +25,7 @@ def ask(prompt, default, options=None):
 
 def yesno(prompt, default):
     opts = 'Yn' if default else 'yN'
-    return raw_input(prompt + ' [' + opts + ']: ') or default
+    return input(prompt + ' [' + opts + ']: ') or default
 
 
 # Get options from user.
@@ -36,12 +36,12 @@ config = U.read_cgenie_config()
 if config:
     print('Already set up...')
 else:
-    root = ask('Root directory', os.path.expanduser('~/cgenie'))
+    root = ask('Root directory', os.path.expanduser('~/ctoaster'))
     base = os.path.abspath(os.path.join(root, os.pardir))
     data = ask('Data directory', os.path.join(base, 'cgenie-data'))
     test = ask('Test directory', os.path.join(base, 'cgenie-test'))
     jobs = ask('Jobs directory', os.path.join(base, 'cgenie-jobs'))
-    vers = ask('Default version', default_version, versions)
+    vers = ask('Default version', default_version, str(versions))
     with open(U.genie_cfgfile, 'w') as fp:
         print('cgenie_root: ' + root, file=fp)
         print('cgenie_data: ' + data, file=fp)
@@ -82,8 +82,7 @@ def setup_error(msg):
     print('   ' + msg)
     print('')
     print('    IN THIS SITUATION, GENIE IS UNLIKELY TO WORK!')
-    print('    CONTACT ANDY (andy@seao2.org) OR ' +
-          'IAN (ian@skybluetrades.net) FOR HELP...')
+    print('    CONTACT ANDY (andy@seao2.org) FOR HELP...')
     print('')
     print(79 * '*')
     sys.exit(1)
@@ -101,13 +100,12 @@ if platform == 'LINUX' or platform == 'WINDOWS':
 else:
     print('  Using platform "' + platform + '"')
 try:
-    execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+    exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
 except Exception as e:
     setup_error('PLATFORM SETUP FAILED!' + str(e))
 
 print('    Fortran compiler:      ' + f90['compiler'])
-print('    NetCDF include directory: ' + netcdf['base'][0])
-print('    NetCDF lib directory: ' + netcdf['base'][1])
+print('    NetCDF base directory: ' + " ".join(netcdf['base']))
 
 # Test Git version.
 
@@ -224,7 +222,8 @@ env.Program('f90test.exe', ['f90test.f90'])
 
 # Run SCons in test directory.
 
-scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+###scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+scons = 'scons'
 try:
     cmd = [scons, '-C', tmpdir]
     if plat.system() == 'Windows': cmd = ['python'] + cmd
@@ -233,23 +232,25 @@ try:
         #if sp.call(cmd, stdout=sink, stderr=sink) == 0:
             print('  Basic executable build OK')
         else:
-            setup_error('BASIC FORTRAN BUILD FAILED! [1]')
+            setup_error('BASIC FORTRAN BUILD FAILED! [1.1]')
 except Exception as e:
-    setup_error('BASIC FORTRAN BUILD FAILED! [2]' + str(e))
+    setup_error('BASIC FORTRAN BUILD FAILED! [1.2]' + str(e))
 
 # Check for existence of executable, run executable and check result.
 
 if os.path.exists(os.path.join(tmpdir, 'f90test.exe')):
+    print('  Basic executable output:')
     try:
-        fres = sp.check_output([os.path.join(tmpdir, 'f90test.exe')])
+        fres = sp.check_output([os.path.join(tmpdir, 'f90test.exe')]).decode('utf8')
+        print(fres)
         if fres.strip() == 'OK':
             print('  Basic executable run OK')
         else:
-            setup_error('BASIC FORTRAN BUILD FAILED! [3]')
+            setup_error('BASIC FORTRAN BUILD FAILED! [1.3]')
     except Exception as e:
-        setup_error('BASIC FORTRAN BUILD FAILED! [4]')
+        setup_error('BASIC FORTRAN BUILD FAILED! [1.4]')
 else:
-    setup_error('BASIC FORTRAN BUILD FAILED! [5]')
+    setup_error('BASIC FORTRAN BUILD FAILED! [1.5]')
 
 
 # Fortran NetCDF setup.
@@ -319,10 +320,10 @@ if 'libpath' in f90: extraf90libpaths.append(f90['libpath'])
 target_vs_arch = 'linux'
 if 'TARGET_VS_ARCH' in os.environ:
     target_vs_arch = os.environ['TARGET_VS_ARCH']
-
-netcdfinc = netcdf['base'][0]
-netcdflib = netcdf['base'][1]
-
+netcdfinc = os.path.join(str(netcdf['base']), 'include')
+if not os.path.exists(netcdfinc): netcdfinc = netcdf['base']
+netcdflib = os.path.join(str(netcdf['base']), 'lib')
+if not os.path.exists(netcdflib): netcdflib = netcdf['base']
 env = Environment(ENV = envcopy,
                   TOOLS = ['default', f90['compiler']],
                   HOST_ARCH = target_vs_arch,
@@ -349,29 +350,31 @@ try:
         if sp.call(cmd) == 0:
             print('  NetCDF executable build OK')
         else:
-            setup_error('NETCDF FORTRAN BUILD FAILED! [1]')
+            setup_error('NETCDF FORTRAN BUILD FAILED! [2.1]')
 except Exception as e:
-    setup_error('NETCDF FORTRAN BUILD FAILED! [2]')
+    setup_error('NETCDF FORTRAN BUILD FAILED! [2.2]')
 
 # Check for existence of executable, run executable and check result.
 
 if os.path.exists(os.path.join(tmpdir, 'f90nctest.exe')):
     try:
         os.chdir(tmpdir)
-        fres = sp.check_output([os.path.join(os.curdir, 'f90nctest.exe')])
+        fres = sp.check_output([os.path.join(os.curdir, 'f90nctest.exe')]).decode('utf8')
         os.chdir(os.pardir)
         if fres.strip() == 'OK':
             print('  NetCDF executable run OK')
         else:
-            setup_error('NETCDF FORTRAN BUILD FAILED! [3]')
+            setup_error('NETCDF FORTRAN BUILD FAILED! [2.3]')
     except Exception as e:
-        setup_error('NETCDF FORTRAN BUILD FAILED! [4]')
+        setup_error('NETCDF FORTRAN BUILD FAILED! [2.4]')
 else:
-    setup_error('NETCDF FORTRAN BUILD FAILED! [5]')
+    setup_error('NETCDF FORTRAN BUILD FAILED! [2.5]')
 
 
 # Final message.
 
-print('\n\nEverything seems to be OK!')
+print('\nEverything seems to be OK!')
 print('\nCheck that the compiler and NetCDF settings ' +
       'above are what you expect.')
+print('\n')
+

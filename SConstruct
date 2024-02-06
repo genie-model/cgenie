@@ -9,7 +9,7 @@ import platform as P
 # directory).
 
 if os.path.exists('version.py'):
-    execfile('version.py')
+    exec(open('version.py').read())
     sys.path.append(scriptdir)
 else:
     srcdir = 'src'
@@ -32,7 +32,7 @@ if not U.read_cgenie_config():
 
 platform = U.discover_platform()
 print('Using platform "' + platform + '"')
-execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
 
 
 # NetCDF paths.
@@ -62,7 +62,7 @@ subdirs = modules + utils
 
 # F90 module search paths.
 
-modpath = map(lambda d: os.path.join('#/build', d), subdirs)
+modpath = list(map(lambda d: os.path.join('#/build', d), subdirs))
 
 
 # Set up model version marker.

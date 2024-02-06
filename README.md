@@ -1,2 +1,2 @@
-# cgenie
-cgenie Earth system model -- cupcake release
+# ctoaster.cupcake
+The cupcake release of the carbon Turnover in Ocean, Atmosphere, Sediment, and Terrestrial Exchangeable Reservoirs model (forked from genie.cupcake).
