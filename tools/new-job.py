@@ -10,13 +10,13 @@ import config_utils as C
 # GENIE configuration
 
 if not U.read_ctoaster_config():
-    sys.exit('GENIE not set up: run the setup-ctoaster script!')
+    sys.exit('cTOASTER not set up: run the setup-ctoaster script!')
 
 
 # Command line arguments.
 
 parser = optparse.OptionParser(usage='new-job [options] job-name run-length',
-                               description='Configure GENIE jobs')
+                               description='Configure cTOASTER jobs')
 parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
                   action='store_true')
 parser.add_option('-b', '--base-config',   help='Base configuration name')
@@ -56,6 +56,8 @@ old_restart = True if opts.old_restart else False
 t100 = True if opts.t100 else False
 job_dir_base = opts.job_dir
 model_version = opts.model_version
+
+
 if model_version not in U.available_versions():
     sys.exit('Model version "' + model_version + '" does not exist')
 

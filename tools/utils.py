@@ -8,12 +8,12 @@ import subprocess as sp
 
 # Read ctoaster configuration.
 
-genie_cfgfile = os.path.expanduser(os.path.join('~', '.ctoasterrc'))
+ctoaster_cfgfile = os.path.expanduser(os.path.join('~', '.ctoasterrc'))
 
 def read_ctoaster_config():
     global ctoaster_root, ctoaster_data, ctoaster_test, ctoaster_jobs, ctoaster_version
     try:
-        with open(genie_cfgfile) as fp:
+        with open(ctoaster_cfgfile) as fp:
             for line in fp:
                 fs = line.strip().split(':')
                 k = fs[0]
@@ -134,9 +134,14 @@ class ModelConfig:
 
 
 # Determine list of available model versions.
+# NOTE: decode (bytes into a str) the result of $ git tag -l
+#       (apparently, "Subprocesses output bytes, not characters" --  who knew?)
 
 def available_versions():
-    return ['DEVELOPMENT'] + sp.check_output(['git', 'tag', '-l']).splitlines()
+    git_versions = sp.check_output(['git', 'tag', '-l']).splitlines()
+    str_git_versions = [x.decode("utf-8") for x in git_versions]
+    return ['DEVELOPMENT'] + str_git_versions
+    ###return ['DEVELOPMENT'] + sp.check_output(['git', 'tag', '-l']).splitlines()
 
 
 # Set up repository clone for building model at explicitly

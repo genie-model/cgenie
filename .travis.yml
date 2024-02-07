@@ -8,8 +8,8 @@ before_install:
 
 install:
  - sudo apt-get install -qq libnetcdf-dev gfortran
- - git clone git://github.com/genie-model/cgenie-data.git $TRAVIS_BUILD_DIR/../cgenie-data
- - git clone git://github.com/genie-model/cgenie-test.git $TRAVIS_BUILD_DIR/../cgenie-test
+ - git clone git://github.com/derpycode/ctoaster.cupcake-data.git $TRAVIS_BUILD_DIR/../ctoaster.cupcake-data
+ - git clone git://github.com/derpycode/ctoaster.cupcake-test.git $TRAVIS_BUILD_DIR/../ctoaster.cupcake-test
  - cd $TRAVIS_BUILD_DIR
  - ./tools/travis-setup
 

@@ -10,10 +10,10 @@ import utils as U
 import config_utils as C
 
 
-# GENIE configuration
+# cTOASTER configuration
 
 if not U.read_ctoaster_config():
-    sys.exit('GENIE not set up: run the setup-ctoaster script!')
+    sys.exit('cTOASTER not set up: run the setup-ctoaster script!')
 ###scons = [os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')]
 scons = 'scons'
 if plat.system() == 'Windows': scons = ['python'] + scons
@@ -242,15 +242,13 @@ def do_run(t, rdir, logfp, i, n):
 
     # Set up other options for "new-job".
     cmd += ['-j', rdir]
-
+    
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')
     print('  Configuring job...', file=logfp)
     logfp.flush()
     if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
         sys.exit('Failed to configure test job')
-
-    ###print(cmd)
 
     # Build and run job.
     os.chdir(os.path.join(rdir, t))
@@ -409,7 +407,7 @@ elif action == 'run':
     if len(sys.argv) < 3: usage()
     if sys.argv[2] == '-v':
         if len(sys.argv) < 4: usage()
-        test_version = sys.argv[3]
+        test_version = sys.argv[3]        
         if test_version not in U.available_versions():
             sys.exit('Model version "' + test_version + '" does not exist')
         tests = sys.argv[4:]

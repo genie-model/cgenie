@@ -36,13 +36,13 @@ config = U.read_ctoaster_config()
 if config:
     print('Already set up...')
 else:
-    root = ask('Root directory', os.path.expanduser('~/ctoaster'))
+    root = ask('Root directory', os.path.expanduser('~/ctoaster.cupcake'))
     base = os.path.abspath(os.path.join(root, os.pardir))
-    data = ask('Data directory', os.path.join(base, 'ctoaster-data'))
-    test = ask('Test directory', os.path.join(base, 'ctoaster-test'))
-    jobs = ask('Jobs directory', os.path.join(base, 'ctoaster-jobs'))
+    data = ask('Data directory', os.path.join(base, 'ctoaster.cupcake-data'))
+    test = ask('Test directory', os.path.join(base, 'ctoaster.cupcake-test'))
+    jobs = ask('Jobs directory', os.path.join(base, 'ctoaster.cupcake-jobs'))
     vers = ask('Default version', default_version, str(versions))
-    with open(U.genie_cfgfile, 'w') as fp:
+    with open(U.ctoaster_cfgfile, 'w') as fp:
         print('ctoaster_root: ' + root, file=fp)
         print('ctoaster_data: ' + data, file=fp)
         print('ctoaster_test: ' + test, file=fp)
