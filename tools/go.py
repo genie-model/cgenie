@@ -94,7 +94,7 @@ if gui_available:
 
         def createWidgets(self):
             self.job_label_font = tkFont.Font(weight='bold')
-            job = os.path.relpath(os.curdir, U.cgenie_jobs)
+            job = os.path.relpath(os.curdir, U.ctoaster_jobs)
             self.job_label = ttk.Label(self, text='Job: ' + job,
                                        font=self.job_label_font)
             self.button_frame = ttk.Frame(self)
@@ -198,17 +198,17 @@ if gui and not gui_available:
     sys.exit('GUI operation is not available!')
 
 
-# GENIE configuration.
+# cTOASTER configuration.
 
-if not U.read_cgenie_config():
+if not U.read_ctoaster_config():
     if gui:
         tk.Tk().withdraw()
-        tkMessageBox.showerror('GENIE not set up',
-                               'GENIE not set up: run the setup-cgenie script!')
+        tkMessageBox.showerror('cTOASTER not set up',
+                               'cTOASTER not set up: run the setup-ctoaster script!')
         sys.exit()
     else:
-        sys.exit('GENIE not set up: run the setup-cgenie script!')
-###scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
+        sys.exit('cTOASTER not set up: run the setup-ctoaster script!')
+###scons = os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')
 scons = 'scons'	# [replaced the included scons v.2 distribution with what is hopefully installed scons v.3 ...]
 
 def console_message(s):
@@ -293,7 +293,7 @@ if not gui:
 
 model_config = U.ModelConfig(build_type)
 model_dir = model_config.directory()
-exe_name = 'genie-' + build_type + '.exe' if build_type else 'genie.exe'
+exe_name = 'cupcake-' + build_type + '.exe' if build_type else 'cupcake.exe'
 
 
 # Clean up output directories for this job and (optionally) build
@@ -304,7 +304,7 @@ def clean(clean_model):
             (' AND BUILD' if clean_model else '') + '...')
     if clean_model:
         model_config.clean()					# calls method 'clean' for class ModelConfig [utils.py]
-        for exe in glob.iglob('genie-*.exe'): os.remove(exe)	# finds instances of 'genie-*.exe' in the current [cgenie-jobs] directory (and recursively in all subdirectories)
+        for exe in glob.iglob('cupcake-*.exe'): os.remove(exe)	# finds instances of 'cupcake-*.exe' in the current [ctoaster-jobs] directory (and recursively in all subdirectories)
         if os.path.exists('build.log'): os.remove('build.log')	# (remove 'build.log' if it exists)
     if os.path.exists('run.log'): os.remove('run.log')		# (remove 'run.log' if it exists)
     for d, ds, fs in os.walk('output'):
@@ -334,7 +334,7 @@ def build(cont):
         need_build = sp.call(cmd, stdout=sink, stderr=sink)
     if not need_build:
         message('Build is up to date')
-        shutil.copy(os.path.join(model_dir, 'genie.exe'),
+        shutil.copy(os.path.join(model_dir, 'cupcake.exe'),
                     os.path.join(os.curdir, exe_name))
         if cont: cont()
         else: return
@@ -351,7 +351,7 @@ def build2(result, cont):
     if result == 0:
         line('')
         message('Build OK')
-        shutil.copy(os.path.join(model_dir, 'genie.exe'),
+        shutil.copy(os.path.join(model_dir, 'cupcake.exe'),
                     os.path.join(os.curdir, exe_name))
         if cont: cont()
     else:
@@ -367,7 +367,7 @@ def run(cont=None):
     global tstart
     message('RUNNING: ' + model_config.display_model_version)
     platform = U.discover_platform()
-    exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
+    exec(open(os.path.join(U.ctoaster_root, 'platforms', platform)).read())
     if 'runtime_env' in locals():
         for k, v in locals()['runtime_env'].items(): os.environ[k] = v
     logfp = open('run.log', 'w')

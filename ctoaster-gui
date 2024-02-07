@@ -5,4 +5,4 @@ if [ ! -f ~/.ctoasterrc ]; then
 fi
 ctoaster_root=`grep ctoaster_root ~/.ctoasterrc | cut -d: -f2 | sed -e 's/^ *//'`
 source $ctoaster_root/tools/find_python
-exec $PYTHON $ctoaster_root/tools/coverage.py $*
+exec $PYTHON $ctoaster_root/tools/ctoaster-gui.py $*

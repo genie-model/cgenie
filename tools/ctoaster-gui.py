@@ -26,15 +26,15 @@ from gui.util import *
 
 # GENIE configuration
 
-if not U.read_cgenie_config():
-    sys.exit('GENIE not set up: run the setup-cgenie script!')
+if not U.read_ctoaster_config():
+    sys.exit('GENIE not set up: run the setup-ctoaster script!')
 
 
 # Platform setup, including any runtime environment variables needed
 # to control model output buffering.
 
 platform = U.discover_platform()
-execfile(os.path.join(U.cgenie_root, 'platforms', platform))
+execfile(os.path.join(U.ctoaster_root, 'platforms', platform))
 if 'runtime_env' in locals():
     for k, v in locals()['runtime_env'].iteritems(): os.environ[k] = v
 
@@ -72,7 +72,7 @@ class Application(AfterHandler, ttk.Frame):
 
         # Creating this JobFolder object populates the job tree in the
         # UI.
-        self.job_folder = JobFolder(U.cgenie_jobs, 'My Jobs', self.tree, self)
+        self.job_folder = JobFolder(U.ctoaster_jobs, 'My Jobs', self.tree, self)
 
         # Find jobs suitable for use as restarts and update the setup
         # panel to use them.
@@ -135,7 +135,7 @@ class Application(AfterHandler, ttk.Frame):
         folder_name = tkSD.askstring("New folder", "Name for new folder")
         if not folder_name: return
         folder = os.path.join(loc, folder_name)
-        p = os.path.join(U.cgenie_jobs, folder)
+        p = os.path.join(U.ctoaster_jobs, folder)
         if os.path.exists(p):
             tkMB.showerror('Error', folder_name + ' already exists!')
             return
@@ -148,7 +148,7 @@ class Application(AfterHandler, ttk.Frame):
             return
 
         # Add folder entry to tree and select.
-        self.job_folder.add_folder(os.relpath(folder, U.cgenie_jobs), True)
+        self.job_folder.add_folder(os.relpath(folder, U.ctoaster_jobs), True)
         self.tree.selection_set(p)
 
 
@@ -273,7 +273,7 @@ class Application(AfterHandler, ttk.Frame):
 
         # Check for existence of genie-ship.exe executable and build
         # if necessary.
-        exe = os.path.join(U.cgenie_jobs, 'MODELS', U.cgenie_version,
+        exe = os.path.join(U.ctoaster_jobs, 'MODELS', U.ctoaster_version,
                            platform, 'ship', 'genie.exe')
         runexe = os.path.join(self.job.jobdir, 'genie-ship.exe')
         if not os.path.exists(exe):
@@ -479,7 +479,7 @@ class Application(AfterHandler, ttk.Frame):
         # (e.g. "new_job") refer both to the methods that are called
         # when the buttons are pressed and to the image files that are
         # used to make the buttons (which live in
-        # <cgenie_root>/tools/images).  Each of the buttons has
+        # <ctoaster_root>/tools/images).  Each of the buttons has
         # floating tooltip help, implemented using a helper class.
         self.toolbar = ttk.Frame(self.main_frame)
         self.tool_buttons = { }
@@ -497,7 +497,7 @@ class Application(AfterHandler, ttk.Frame):
                 f = ttk.Frame(self.toolbar, height=16)
                 f.pack()
             else:
-                img = tk.PhotoImage(file=os.path.join(U.cgenie_root, 'tools',
+                img = tk.PhotoImage(file=os.path.join(U.ctoaster_root, 'tools',
                                                       'images', t + '.gif'))
                 b = ttk.Button(self.toolbar, image=img,
                                command=getattr(self, t))
@@ -567,7 +567,7 @@ class Application(AfterHandler, ttk.Frame):
         """Find all base and user configuration files"""
 
         # Base configuration files -- all in one directory.
-        bs = os.listdir(os.path.join(U.cgenie_data, 'base-configs'))
+        bs = os.listdir(os.path.join(U.ctoaster_data, 'base-configs'))
         bs = filter(lambda s: s.endswith('.config'), bs)
         self.base_configs = map(lambda s: s.rpartition('.')[0], bs)
         self.base_configs.sort()
@@ -575,7 +575,7 @@ class Application(AfterHandler, ttk.Frame):
         # User configuration files -- need to walk the directory
         # hierarchy here.
         us = []
-        udir = os.path.join(U.cgenie_data, 'user-configs')
+        udir = os.path.join(U.ctoaster_data, 'user-configs')
         for d, ds, fs in os.walk(udir):
             for f in fs:
                 us.append(os.path.relpath(os.path.join(d, f), udir))
@@ -615,7 +615,7 @@ class Application(AfterHandler, ttk.Frame):
 
 root = tk.Tk()
 app = Application(root)
-app.master.title("cGENIE GUI")
+app.master.title("ctoaster GUI")
 app.master.geometry("1024x768")
 root.protocol("WM_DELETE_WINDOW", app.quit)
 app.mainloop()

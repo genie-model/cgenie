@@ -11,13 +11,13 @@ with open(sys.argv[1]) as fp:
         k = ss[0].strip()
         v = ':'.join(ss[1:]).strip()
         if k == 'full_config':
-            print('full_config_dir: /home/iross/cgenie-data/full-configs')
+            print('full_config_dir: /home/iross/ctoaster-data/full-configs')
             print('full_config:', os.path.basename(v).replace('.config', ''))
         elif k == 'base_config':
-            print('base_config_dir: /home/iross/cgenie-data/base-configs')
+            print('base_config_dir: /home/iross/ctoaster-data/base-configs')
             print('base_config:', os.path.basename(v).replace('.config', ''))
         elif k == 'user_config':
-            print('user_config_dir: /home/iross/cgenie-data/user-configs')
+            print('user_config_dir: /home/iross/ctoaster-data/user-configs')
             print('user_config:', os.path.basename(v).replace('.config', ''))
         else:
             print(k + ': ' + v)

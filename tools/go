@@ -1,3 +1,3 @@
 #!/bin/bash
-cgenie_root=`grep ^cgenie_root ~/.cgenierc | cut -d' ' -f2-`
-python3 $cgenie_root/tools/go.py $*
+ctoaster_root=`grep ^ctoaster_root ~/.ctoasterrc | cut -d' ' -f2-`
+python3 $ctoaster_root/tools/go.py $*

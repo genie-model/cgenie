@@ -12,11 +12,11 @@ import config_utils as C
 
 # GENIE configuration
 
-if not U.read_cgenie_config():
-    sys.exit('GENIE not set up: run the setup-cgenie script!')
-scons = [os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+if not U.read_ctoaster_config():
+    sys.exit('GENIE not set up: run the setup-ctoaster script!')
+scons = [os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')]
 if plat.system() == 'Windows': scons = ['python'] + scons
-test_version = U.cgenie_version
+test_version = U.ctoaster_version
 
 
 #----------------------------------------------------------------------
@@ -27,12 +27,12 @@ test_version = U.cgenie_version
 # Run a single coverage test job.
 
 def do_run(t, rdir, logfp):
-    os.chdir(U.cgenie_root)
+    os.chdir(U.ctoaster_root)
     print('Running test "' + t + '"')
     print('Running test "' + t + '"', file=logfp)
     t = t.replace('\\', '\\\\')
 
-    test_dir = os.path.join(U.cgenie_test, t)
+    test_dir = os.path.join(U.ctoaster_test, t)
     if plat.system() == 'Windows':
         cmd = ['cmd', '/c', os.path.join(os.curdir, 'new-job.bat')]
     else:
@@ -61,7 +61,7 @@ def do_run(t, rdir, logfp):
     cmd += ['-j', rdir]
     if 't100' in config and config['t100'] == 'True':
         cmd += ['--t100']
-    if test_version != U.cgenie_version:
+    if test_version != U.ctoaster_version:
         cmd += ['-v', test_version]
     if os.path.exists(os.path.join(test_dir, 'restart')):
         cmd += ['-r', os.path.join(test_dir, 'restart')]
@@ -100,7 +100,7 @@ def restart_map(tests):
     while len(check) != 0:
         for t in check:
             r = None
-            ifile = os.path.join(U.cgenie_test, t, 'test_info')
+            ifile = os.path.join(U.ctoaster_test, t, 'test_info')
             if not os.path.exists(ifile):
                 sys.exit('Test "' + t + '" does not exist')
             with open(ifile) as fp:
@@ -132,22 +132,22 @@ def topological_sort(g):
 def run_coverage(tests):
     # Set up coverage jobs directory.
     label = dt.datetime.today().strftime('%Y%m%d-%H%M%S')
-    rdir = os.path.join(U.cgenie_jobs, 'coverage-' + label)
+    rdir = os.path.join(U.ctoaster_jobs, 'coverage-' + label)
     print('Coverage output in ' + rdir + '\n')
     os.makedirs(rdir)
 
     # Deal with "ALL" case.
     if tests == ['ALL']:
-        tests = [os.path.relpath(p, U.cgenie_test)
-                 for p in glob.glob(os.path.join(U.cgenie_test, '*'))
+        tests = [os.path.relpath(p, U.ctoaster_test)
+                 for p in glob.glob(os.path.join(U.ctoaster_test, '*'))
                  if os.path.isdir(p)]
 
     # Determine leaf tests.
     ltests = []
     for tin in tests:
-        for d, ds, fs in os.walk(os.path.join(U.cgenie_test, tin)):
+        for d, ds, fs in os.walk(os.path.join(U.ctoaster_test, tin)):
             if os.path.exists(os.path.join(d, 'test_info')):
-                ltests.append(os.path.relpath(d, U.cgenie_test))
+                ltests.append(os.path.relpath(d, U.ctoaster_test))
 
     # Determine restart prerequisites for tests in list.
     restarts = restart_map(ltests)
@@ -168,8 +168,8 @@ def run_coverage(tests):
 # Remove all pre-existing coverage builds.
 
 def clear_gcov():
-    if os.path.exists(os.path.join(U.cgenie_jobs, 'MODELS')):
-        os.chdir(os.path.join(U.cgenie_jobs, 'MODELS'))
+    if os.path.exists(os.path.join(U.ctoaster_jobs, 'MODELS')):
+        os.chdir(os.path.join(U.ctoaster_jobs, 'MODELS'))
         for cov in glob.iglob('*/*/*/coverage'):
             shutil.rmtree(cov, ignore_errors=True)
             if glob.glob(os.path.join(cov, os.pardir, '*')) == []:
@@ -181,13 +181,13 @@ def clear_gcov():
 def collect_gcov(rdir, logfp):
     os.makedirs(os.path.join(rdir, 'gcov-results'))
 
-    # Walk all "coverage" directories under ~/cgenie-jobs/MODELS
-    os.chdir(os.path.join(U.cgenie_jobs, 'MODELS'))
+    # Walk all "coverage" directories under ~/ctoaster-jobs/MODELS
+    os.chdir(os.path.join(U.ctoaster_jobs, 'MODELS'))
     covs = glob.glob('*/*/*/coverage')
     icov = 0
     for cov in covs:
         icov += 1
-        os.chdir(os.path.join(U.cgenie_jobs, 'MODELS', cov, 'build'))
+        os.chdir(os.path.join(U.ctoaster_jobs, 'MODELS', cov, 'build'))
 
         # Run gcov on all object files.
         objs = glob.glob('*.o') + glob.glob('*/*.o')

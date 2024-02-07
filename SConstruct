@@ -3,7 +3,7 @@ import os, os.path, sys, glob
 import platform as P
 
 # Set up model source and tools directory (the "srcdir='src'" thing is
-# there to allow us to run SCons in the root cgenie directory for
+# there to allow us to run SCons in the root ctoaster directory for
 # development purposes -- normal job builds will pick up an explicit
 # job configuration and model source directory file in their build
 # directory).
@@ -22,17 +22,17 @@ else:
 import utils as U
 
 
-# Read GENIE configuration.
+# Read cTOASTER configuration.
 
-if not U.read_cgenie_config():
-    sys.exit('GENIE not set up: run the setup.py script!')
+if not U.read_ctoaster_config():
+    sys.exit('cTOASTER not set up: run the setup.py script!')
 
 
 # Load platform configuration.
 
 platform = U.discover_platform()
 print('Using platform "' + platform + '"')
-exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
+exec(open(os.path.join(U.ctoaster_root, 'platforms', platform)).read())
 
 
 # NetCDF paths.
@@ -41,7 +41,7 @@ netcdfinc = netcdf['base'][0]
 netcdflib = netcdf['base'][1]
 
 
-# GENIE modules to build.
+# cTOASTER modules to build.
 
 modules = Split("""atchem
                    biogem
@@ -112,7 +112,7 @@ env = Environment(ENV = envcopy,
 if 'ld_library_path' in f90:
     env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
 
-print('SConstruct from cgenie called')
+print('SConstruct from ctoaster called')
 
 # Set up prompt progress reporting.
 
@@ -133,4 +133,4 @@ print('SConstruct from cgenie called')
 Export('env', 'subdirs', 'build_type')
 SConscript(os.path.join(srcdir, 'SConscript'),
            variant_dir='#build', duplicate=0)
-Install('.', 'build/genie.exe')
+Install('.', 'build/cupcake.exe')
