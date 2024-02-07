@@ -154,7 +154,7 @@ def setup_version_repo(ver):
     dst = os.path.join(ctoaster_jobs, 'MODELS', 'REPOS', ver)
     if os.path.exists(dst): return dst
     with open(os.devnull, 'w') as sink:
-        # hard-coded branch specification
+        # alternative hard-coded branch specification
         ###if sp.call(['git', 'clone', '-l', '--single-branch', '--branch', '_DEV_install',
         ###            os.curdir, dst], stdout=sink, stderr=sink) != 0:
         if sp.call(['git', 'clone', '-l', '--single-branch', '--branch', ver,
