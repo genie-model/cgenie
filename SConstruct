@@ -41,7 +41,7 @@ netcdfinc = netcdf['base'][0]
 netcdflib = netcdf['base'][1]
 
 
-# GENIE modules to build.
+# cTOASTER modules to build.
 
 modules = Split("""atchem
                    biogem
@@ -133,4 +133,4 @@ print('SConstruct from ctoaster called')
 Export('env', 'subdirs', 'build_type')
 SConscript(os.path.join(srcdir, 'SConscript'),
            variant_dir='#build', duplicate=0)
-Install('.', 'build/genie.exe')
+Install('.', 'build/cupcake.exe')
