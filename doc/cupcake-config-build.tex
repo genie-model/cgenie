@@ -29,9 +29,9 @@
 \newfloat{listing}{tbp}{lop}
 \floatname{listing}{Listing}
 
-\title{GENIE \texttt{cupcake} Configuration and Build System}
-\author{Ian~Ross}
-\date{4 March 2015}
+\title{(cTOASTER) \texttt{cupcake} Configuration and Build System}
+\author{Ian Ross (+ Andy Ridgwell)}
+\date{\today}
 
 \begin{document}
 
@@ -40,37 +40,32 @@
 
 \maketitle
 
-This document describes the new configuration and build system
-developed for the \texttt{cupcake} version of the GENIE model.
-Documentation is divided into three sections, one for users of the
-model, one for those who wish to modify the model and one for those
-concerned with maintaining and extending the configuration and build
+\noindent This document\footnote{\emph{Throughout this document, shell commands are shown in 
+\texttt{typewriter} font.  Commands that extend over several lines 
+are marked with lines ending \texttt{...} with the following line 
+beginning \texttt{...}.}}  describes the new configuration and build system 
+developed for the \texttt{cupcake} release of the \textbf{cTOASTER} model. 
+Documentation is divided into three sections, one for users of the 
+model, one for those who wish to modify the model and one for those 
+concerned with maintaining and extending the configuration and build 
 system infrastructure.
 
-\emph{Throughout this document, shell commands are shown in
-  \texttt{typewriter} font.  Commands that extend over several lines
-  are marked with lines ending \texttt{...} with the following line
-  beginning \texttt{...}.}
 
 %======================================================================
-\chapter{For GENIE users}
+\chapter{For users}
 
 %----------------------------------------------------------------------
 \section{Quick start}
 
-Open a shell in your home directory and do this (this is based on the
-current repository setup, which will probably change a little soon):
+Open a shell in your home directory and do this (this is based on the current repository setup, which will probably change a little soon):
 \begin{verbatim}
-  git clone https://github.com/genie-model/cgenie.git
-  cd ~/cgenie
-  git checkout cgenie.cupcake
-  ./setup-cgenie
+  git clone https://github.com/derpycode/ctoaster.cupcake.git
+  cd ~/ctoaster.cupcake
+  ./setup-ctoaster
 \end{verbatim}
-Once the setup script has installed Python (if it needs to), accept
-the defaults for all the questions it asks (just hit return at each
-prompt to accept the default).
+(Accept the defaults for all the questions it asks -- just hit return at each prompt to accept the default.)
 
-Once everything is done, you can run some basic tests with:
+\noindent Once everything is done, you can run some basic tests with:
 \begin{verbatim}
   ./tests run basic
 \end{verbatim}
@@ -78,7 +73,7 @@ and you can configure and run jobs as:
 \begin{verbatim}
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
             ... -u LABS/LAB_0.snowball snowball 10
-  cd ~/cgenie-jobs/snowball
+  cd ~/ctoaster.cupcake-jobs/snowball
   ./go run
 \end{verbatim}
 The job results appear in the \texttt{output} directory in the job
@@ -87,87 +82,71 @@ directory.
 %----------------------------------------------------------------------
 \section{Installation and setup}
 
-To install GENIE, first choose a location for the installation.  On
-Linux machines, it's probably best just to install GENIE in your home
-directory.  Just clone the main \texttt{cgenie} repository from GitHub
-using the command
+To install \textbf{cTOASTER}, first choose a location for the installation. (On linux machines, it's probably best just to install \textbf{cTOASTER} in your home directory.) Then clone the main \texttt{ctoaster.cupcake} repository from GitHub
+using the command:
 \begin{verbatim}
-  git clone https://github.com/genie-model/cgenie.git
+  git clone https://github.com/derpycode/ctoaster.cupcake.git
 \end{verbatim}
-This will produce a new directory called \texttt{cgenie} containing
-the model source code and build scripts.
+This will produce a new directory called \texttt{ctoaster.cupcake} containing the model source code and build scripts.
 
 Before using the model, it's necessary to do a little bit of setup.
-Go into the new \texttt{cgenie} directory and run the
-\texttt{setup-cgenie} script:
+Go into the new \texttt{ctoaster.cupcake} directory and run the
+\texttt{setup-ctoaster} script:
 \begin{verbatim}
-  cd ~/cgenie
-  ./setup-cgenie
+  cd ~/ctoaster.cupcake
+  ./setup-ctoaster
 \end{verbatim}
-Depending on the machine you're doing this on, the script may need to
-download and install a local copy of the Python programming language,
-which can take a little while.  Once this is done, the script will ask
-where you want to put a number of things -- it's usually find to just
-take the defaults (just hit enter at each of the prompts).  In all of
-what follows below, we'll assume that you chose the defaults.  The
-things the script asks for are:
+The script will ask where you want to put a number of things -- it's usually find to just take the defaults (just hit enter at each of the prompts).  In all of what follows below, we'll assume that you chose the defaults. The
+info the script asks for are:
 \begin{itemize}
-  \item{The GENIE root installation directory: unless you know what
-    you're doing, accept the \texttt{~/cgenie} default for this.}
-  \item{The GENIE data directory (default \texttt{~/cgenie-data})
+  \item{The \textbf{cTOASTER} root installation directory: unless you know what
+    you're doing, 
+    \\accept the \texttt{~/ctoaster.cupcake} default for this.}
+  \item{The \textbf{cTOASTER} data directory (default \texttt{~/ctoaster.cupcake-data})
     where base and user model configurations are stored, along with
     forcing files.}
-  \item{The GENIE test directory (default \texttt{~/cgenie-test})
-    where GENIE jobs with known good outputs can be stored for use as
+  \item{The \textbf{cTOASTER} test directory (default \texttt{~/ctoaster.cupcake-test})
+    where \textbf{cTOASTER} jobs with known good outputs can be stored for use as
     tests -- it's possible to run sets of tests and compare their
     results with the known good values with a single command, which is
     useful for making sure that the model is working.}
-  \item{The GENIE jobs directory (default \texttt{~/cgenie-jobs})
-    where new GENIE jobs are set up -- the \texttt{new-job} script
+  \item{The \textbf{cTOASTER} jobs directory (default \texttt{~/ctoaster.cupcake-jobs})
+    where new \textbf{cTOASTER} jobs are set up -- the \texttt{new-job} script
     (see next section) sets jobs up here by default.}
-  \item{The default model version to use for running jobs.  By
-    default, the most recent released version is selected, but you can
-    type another version if necessary.  You can also set jobs up to
-    use any model version later on.}
+  \item{The default model version to use for running jobs. 
+    By default, the most recent released version is selected, 
+    but you can  type another version if necessary. 
+    You can also set jobs up to  use any model version later on.}
 \end{itemize}
-After providing this information, the setup script will ask whether
-you want to download the data and test repositories.  It's usually
-best to say yes.
+After providing this information, the setup script will ask whether you want to download the data and test repositories. It's usually best to say yes.
 
-Once the data and test repositories have been downloaded, GENIE is
-ready to use.  The setup information is written to a
-\texttt{.cgenierc} file in your home directory.  If you ever want to
-set the model up afresh, just remove this file and run the
-\texttt{setup-cgenie} script again.
+Once the data and test repositories have been downloaded, \textbf{cTOASTER} is ready to use.  The setup information is written to a \texttt{.ctoasterrc} file in your home directory. If you ever want to set the model up afresh, just remove this file and run the \texttt{setup-ctoaster} script again.
 
-To check that the installation has been successful and that the model
-works on your machine, you can run some basic test jobs -- in the
-\texttt{~/cgenie} directory, just type
+To check that the installation has been successful and that the model works on your machine, you can run some basic test jobs -- in the \texttt{~/ctoaster.cupcake} directory, just type:
 \begin{verbatim}
   ./tests run basic
 \end{verbatim}
-This runs an ocean-atmosphere simulation and an ocean biogeochemistry
-simulation using the default model version selected at setup time.
+This runs an ocean-atmosphere simulation and an ocean biogeochemistry simulation using the default model version selected at setup time.
 
-\emph{If you are the first person to use GENIE on your machine, you
-  will need to set up a platform file to tell GENIE where to find a
-  Fortran compiler, what compilation flags to use, and where to find
-  NetCDF libraries -- see Section~\ref{sec:platforms}.}
+\emph{If you are the first person to use \textbf{cTOASTER} on your machine, you
+  will need to set up a platform file to tell \textbf{cTOASTER} where to find a
+  \textbf{FORTRAN} compiler, what compilation flags to use, and where to find
+  \textbf{NetCDF} libraries -- see Section~\ref{sec:platforms}.}
 
 %----------------------------------------------------------------------
 \section{Creating new jobs}
 
-New GENIE jobs are configured using the \texttt{new-job} script in
-\texttt{~/cgenie}.  This takes a number of arguments that describe the
+New \textbf{cTOASTER} jobs are configured using the \texttt{new-job} script in
+\texttt{~/ctoaster.cupcake}. This takes a number of arguments that describe the
 job to be set up and produces a job directory under
-\texttt{~/cgenie-jobs} containing everything needed to build and run
+\\\texttt{~/ctoaster.cupcake-jobs} containing everything needed to build and run
 the model with the selected configuration.  The \texttt{new-job}
 script should be run as:
 \begin{verbatim}
   new-job [options] job-name run-length
 \end{verbatim}
 where \texttt{job-name} is the name to be used for the job directory
-to be created under \texttt{~/cgenie-jobs} and \texttt{run-length} is
+to be created under \texttt{~/ctoaster.cupcake-jobs} and \texttt{run-length} is
 the length of the model run in years.  The possible options for
 \texttt{new-job} are as follows (in each case given in both short and
 long forms where these exist).  First, there are three options that
@@ -180,21 +159,21 @@ configuration may also be used (the \texttt{-c} option).
   -b BASE_CONFIG   --base-config=BASE_CONFIG
 \end{verbatim}
 The base model configuration to use -- these are stored in the
-\texttt{~/cgenie-data/base-configs} directory.
+\texttt{~/ctoaster.cupcake-data/base-configs} directory.
 
 \begin{verbatim}
   -u USER_CONFIG   --user-config=USER_CONFIG
 \end{verbatim}
 The user model configuration to apply on top of the base configuration
 -- model user configurations are stored in the
-\texttt{~/cgenie-data/user-configs} directory.
+\texttt{~/ctoaster.cupcake-data/user-configs} directory.
 
 \begin{verbatim}
   -c CONFIG        --config=CONFIG
 \end{verbatim}
 Full configuration name (this is mostly used for conversions of
 pre-\texttt{cupcake} tests) -- full configurations are stored in the
-\texttt{~/cgenie-data/full-configs} directory.
+\texttt{~/ctoaster.cupcake-data/full-configs} directory.
 
 In addition to the configuration file options, the following
 additional options may be supplied to \texttt{new-job}:
@@ -210,7 +189,7 @@ requested name.
 \begin{verbatim}
   -r RESTART    --restart=RESTART
 \end{verbatim}
-One GENIE job can be \emph{restarted} from the end of another.  This
+One \textbf{cTOASTER} job can be \emph{restarted} from the end of another.  This
 option allows for a restart job to be specified.  This must be a job
 that has already been run (so that there is output data to use for
 restarting the model).
@@ -220,8 +199,9 @@ restarting the model).
 \end{verbatim}
 It may sometimes be useful to restart from an old pre-\texttt{cupcake}
 job.  This flag indicates that the job name supplied to the
-\texttt{-r} flag is the name of an old GENIE job whose output can be
-found in the \texttt{~/cgenie\_output} directory.
+\texttt{-r} flag is the name of an old \textbf{cTOASTER} job whose output can be
+found in the 
+\\\texttt{~/ctoaster.cupcake\_output} directory.
 
 \begin{verbatim}
   --t100
@@ -233,8 +213,8 @@ the default model resolution instead of 96).
 \begin{verbatim}
   -j JOB_DIR     --job-dir=JOB_DIR
 \end{verbatim}
-It can sometimes be useful to put GENIE jobs somewhere other than
-\texttt{~/cgenie-jobs}.  This flag allows an alternative job directory
+It can sometimes be useful to put cTOASTER jobs somewhere other than
+\texttt{~/ctoaster.cupcake-jobs}.  This flag allows an alternative job directory
 to be specified.
 
 \begin{verbatim}
@@ -242,7 +222,7 @@ to be specified.
 \end{verbatim}
 Normally, \texttt{new-job} will generate a job set up to use the
 default model version which was selected when the
-\texttt{setup-cgenie} script was run.  This flag allows for a
+\texttt{setup-ctoaster.cupcake} script was run.  This flag allows for a
 different model version to be selected.
 
 \subsection*{Examples}
@@ -253,7 +233,7 @@ different model version to be selected.
 \end{verbatim}
 This configures the first example job in the workshop handout.  After
 running this invocation of \texttt{new-job}, a new
-\texttt{~/cgenie-jobs/snowball} job directory will have been created
+\texttt{~/ctoaster.cupcake-jobs/snowball} job directory will have been created
 from which the job can be executed.
 
 \begin{verbatim}
@@ -271,10 +251,10 @@ Once a job has been set up using the \texttt{new-job} script, it can
 be run from the newly created job directory using a ``\texttt{go}''
 script.  Configuring and running a job is as simple as:
 \begin{verbatim}
-  cd ~/cgenie
+  cd ~/ctoaster.cupcake
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
             ... -u LABS/LAB_0.snowball snowball 10
-  cd ~/cgenie-jobs/snowball
+  cd ~/ctoaster.cupcake-jobs/snowball
   ./go run
 \end{verbatim}
 The \texttt{go} script has three main options and two advanced
@@ -306,25 +286,25 @@ machine, for which a \texttt{set-platform} option is provided by the
 %----------------------------------------------------------------------
 \section{Managing configuration files}
 
-Configuration files are all kept in \texttt{~/cgenie-data}, base
+Configuration files are all kept in \texttt{~/ctoaster.cupcake-data}, base
 configurations in the \texttt{base-configs} directory and user
 configurations in \texttt{user-configs}.  All of this configuration
-data is held in a Git repository on GitHub, so if you want to add user
+data is held in a git repository on \textbf{GitHub}, so if you want to add user
 or base configurations to share with other users, ask someone about
-how to set yourself up to use GitHub.
+how to set yourself up to use \textbf{GitHub}.
 
 %----------------------------------------------------------------------
 \section{Managing tests}
 
 It is possible to save job configurations and results as test jobs
 with ``known good'' data.  This has two main uses -- first, for
-testing a GENIE installation to make sure that it's working; second,
+testing a \textbf{cTOASTER} installation to make sure that it's working; second,
 to test that changes to the model don't inadvertently affect
 simulation results.  The second application is of more interest for
-people changing the GENIE model code, but it can still be useful to
+people changing the \textbf{cTOASTER} model code, but it can still be useful to
 save jobs as tests.
 
-The \texttt{tests} script in \texttt{~/cgenie} is used to manage and
+The \texttt{tests} script in \texttt{~/ctoaster.cupcake} is used to manage and
 run test jobs.  To list the available tests, do
 \begin{verbatim}
   ./tests list
@@ -336,7 +316,8 @@ and to run an individual test or a set of tests, do
 where \texttt{<test>} is either a single test name (e.g.
 \texttt{basic/biogem}), a set of tests (e.g. \texttt{basic}) or
 \texttt{ALL}, which runs \emph{all} available tests.  The tests are
-run as normal GENIE jobs in a subdirectory of \texttt{~/cgenie-jobs}
+run as normal cTOASTER jobs in a sub-directory of \
+\\texttt{~/ctoaster.cupcake-jobs}
 with a name of the form \texttt{test-YYYYMMDD-HHMMSS} based on the
 current date and time.  As well as full test job output, build and run
 logs, a \texttt{test.log} file is produced in this test directory,
@@ -348,7 +329,7 @@ An existing job can be added as a test using a command like
   ./tests add <job-name>
 \end{verbatim}
 where \texttt{<job-name>} is the name of an existing job in
-\texttt{~/cgenie-jobs}.  Note that you need to run the job before you
+\texttt{~/ctoaster.cupcake-jobs}.  Note that you need to run the job before you
 can add it as a test!  The test script will ask you which output files
 you want to use for comparison for each model component -- there are
 sensible defaults in most cases, but you can select individual files
@@ -389,17 +370,17 @@ and the test script will figure out that it needs to run
 \section{Managing model versions}
 
 For most users, it makes sense to run jobs using the most recent
-available version of the GENIE model code.  This is the option chosen
+available version of the \textbf{cTOASTER} model code.  This is the option chosen
 by default when the model is initially set up.  However, it can
 sometimes be useful to run jobs with earlier model versions (or with a
-development version of the model -- see the next section).  The GENIE
+development version of the model -- see the next section).  The \textbf{cTOASTER}
 configuration and build system provides a simple mechanism to permit
 this, hiding most of the (rather complex) details of managing multiple
 model versions from users.
 
-Model versions are indicated by Git ``tags''.  In order to see a list
+Model versions are indicated by git 'tags'.  In order to see a list
 of available model versions, use the following command in the
-\texttt{~/cgenie} directory:
+\texttt{~/ctoaster.cupcake} directory:
 \begin{verbatim}
   git tag -l
 \end{verbatim}
@@ -416,27 +397,30 @@ following command:
 Within a job directory, you can see what model version the job was
 configured with by looking at the contents of the
 \texttt{config/model-version} file -- in non-development cases, this
-will just contain the Git tag of the model version.
+will just contain the git tag of the model version.
 
+%----------------------------------------------------------------------
+\newpage
+%----------------------------------------------------------------------
 
 %======================================================================
-\chapter{For GENIE developers}
+\chapter{For cTOASTER developers}
 \label{sec:genie-devs}
 
-For developers of GENIE, there are a few extra things to know beyond
+For developers of \textbf{cTOASTER}, there are a few extra things to know beyond
 what's needed to run the model.
 
 %----------------------------------------------------------------------
 \section{Installation and setup for development}
 
 Installation and setup for developers goes almost the same as for
-users, except that when the \texttt{setup-cgenie} script asks for the
+users, except that when the \texttt{setup-ctoaster} script asks for the
 default model version to use, you should answer
 ``\texttt{DEVELOPMENT}''.  This causes model executables for all jobs
 to be built by default from the source code currently in
-\texttt{~/cgenie/src}, rather than from a specified past model
+\texttt{~/ctoaster.cupcake/src}, rather than from a specified past model
 version.  In this way, you can make changes to the model source code
-under \texttt{~/cgenie/src} and doing a \texttt{./go run} in a job
+under \texttt{~/ctoaster.cupcake/src} and doing a \texttt{./go run} in a job
 directory will trigger a build and execution of the model based on the
 changed code.  (For a simpler way to check for successful model
 compilation, see below in Section~\ref{sec:build-system}.)
@@ -444,16 +428,16 @@ compilation, see below in Section~\ref{sec:build-system}.)
 %----------------------------------------------------------------------
 \section{Model source organisation}
 
-The model source lives in \texttt{~/cgenie/src}, with one subdirectory
+The model source lives in \texttt{~/ctoaster.cupcake/src}, with one subdirectory
 for each model component (\texttt{embm}, \texttt{biogem}, etc.), the
-main \texttt{genie.f90} program, plus a couple of extra subdirectories
-for utility routines.  All of the code is Fortran 90 and all source
+main \texttt{cupcake.f90} program, plus a couple of extra sub-directories
+for utility routines.  All of the code is FORTRAN 90 and all source
 files accordingly have a \texttt{.f90} extension.
 
-As well as Fortran source files, the per-module and base \texttt{src}
+As well as FORTRAN source files, the per-module and base \texttt{src}
 directories also contain default namelist definitions for each module
 and ``exceptions'' files giving mappings from ``old'' to ``new''
-parameter names that appear in GENIE configuration files and
+parameter names that appear in \textbf{cTOASTER} configuration files and
 namelists.  All of these things are used by the model configuration
 system to construct valid namelists from user-specified configuration
 files.
@@ -466,12 +450,10 @@ to manage model compilation, described in the next section.
 \section{Build system}
 \label{sec:build-system}
 
-The build system uses SCons, a ``Make replacement'' written in
-Python.  You don't need to worry about installing SCons yourself since
-a suitable local version is included in the \texttt{cgenie}
-repository.  The rest of the build system is also written in Python
-and lives in \texttt{~/cgenie/scripts}.  In the normal course of
-things, it shouldn't be necessary for GENIE model developers to touch
+The build system uses \textbf{SCons}, a 'Make replacement' written in
+\textbf{•}.  The rest of the build system is also written in Python
+and lives in \texttt{~/ctoaster.cupcake/scripts}.  In the normal course of
+things, it shouldn't be necessary for \textbf{cTOASTER} model developers to touch
 this stuff -- it should just work.  (There are cases where this isn't
 quite true, mostly to do with major changes in the layout or naming of
 model input and output files or model parameters, but the scripts have
@@ -484,21 +466,21 @@ correct model version is built from the correct sources (taking
 account of the model version requested) and again, should just work.
 
 The scripts perform builds in directories under
-\texttt{~/cgenie-jobs/MODELS} -- after running a few jobs, you'll see
+\texttt{~/ctoaster.cupcake-jobs/MODELS} -- after running a few jobs, you'll see
 one directory under there for each model version you've used.  The
-directories all ultimately have the form
+directories all ultimately have the form:
 \begin{verbatim}
-  ~/cgenie-jobs/MODELS/<version>/<platform>/<hash>/<build-type>
+  ~/ctoaster.cupcake-jobs/MODELS/<version>/<platform>/<hash>/<build-type>
 \end{verbatim}
 where the different components have the following meanings:
 \begin{description}
   \item[\texttt{<version>}]{The model version for this build.  If you
     run jobs with a non-\texttt{DEVELOPMENT} model version, you'll
-    also see a directory called \texttt{~/cgenie-jobs/MODELS/REPOS}
+    also see a directory called \texttt{~/ctoaster.cupcake-jobs/MODELS/REPOS}
     holding repository copies at fixed versions -- when a build is
     required for a non-\texttt{DEVELOPMENT} model version, the source
     code is accessed from one of these \texttt{REPOS} directories
-    rather than from \texttt{~/cgenie/src}.}
+    rather than from \texttt{~/ctoaster.cupcake/src}.}
   \item[\texttt{<platform>}]{A ``platform'' is basically a combination
     of a machine name or type and a compiler/NetCDF directory
     combination -- see Section~\ref{sec:platforms}.  Having this level
@@ -506,7 +488,7 @@ where the different components have the following meanings:
     directories NFS-mounted across machines with different compiler or
     NetCDF path requirements.}
   \item[\texttt{<hash>}]{One rather undesirable aspect of the current
-    GENIE setup is that a number of array sizes (mostly coordinate
+    \textbf{cTOASTER} setup is that a number of array sizes (mostly coordinate
     dimension sizes) are compiled into the model as preprocessor
     constants.  This means that jobs using different model grid sizes
     must use different executables compiled with different
@@ -516,15 +498,15 @@ where the different components have the following meanings:
     unique representation of each model coordinate setup that can be
     used to segregate model builds.}
   \item[\texttt{<build-type>}]{Finally, we distinguish between
-    \texttt{ship} (optimised), \texttt{debug} and \texttt{profile}
+    \texttt{ship} (optimised), \texttt{debug}, and \texttt{profile}
     builds of the model.}
 \end{description}
 As an example, here's a path to a build directory on my machine
 (called \texttt{seneca}), for an optimised (\texttt{ship}) executable
-for a job with preprocessor definitions \texttt{GENIENX=36},
-\texttt{GENIENY=36}:
+for a job with preprocessor definitions \texttt{cTOASTERNX=36},
+\texttt{cTOASTERNY=36}:
 \begin{verbatim}
-  /home/iross/cgenie-jobs/MODELS/DEVELOPMENT/seneca/...
+  /home/iross/ctoaster.cupcake-jobs/MODELS/DEVELOPMENT/seneca/...
             ...50b3ce7f3162a0f783e4424c9a294de0061e0cdc/ship
 \end{verbatim}
 
@@ -542,30 +524,30 @@ Although this is really pretty neat for managing model executables for
 running jobs, it's not very convenient for day-to-day development,
 where you often just want to check that the model compiles.  In order
 to make this convenient, the SCons scripts are set up so that it's
-possible to just run \texttt{scons} in the \texttt{~/cgenie} directory
+possible to just run \texttt{scons} in the \texttt{~/ctoaster.cupcake} directory
 and have \emph{a} version of the model built right there (actually
-into a \texttt{~/cgenie/build} directory).  What this means is that
-you can set up your editor compilation command (if you use Emacs, the
+into a \texttt{~/ctoaster.cupcake/build} directory).  What this means is that
+you can set up your editor compilation command (if you use \textbf{Emacs}, the
 thing that gets run when you type \texttt{C-c m}) to be
-``\texttt{scons -C ~/cgenie}'' and all your usual compiler error
+``\texttt{scons -C ~/ctoaster.cupcake}'' and all your usual compiler error
 message chasing commands will work just right.  (The \texttt{-C}
 argument to the \texttt{scons} program is the same as that for
 \texttt{make}: it tells SCons to change to a particular directory
 before running.)  If you don't have SCons installed on your machine,
 you can just run the local version in
-\texttt{~/cgenie/scripts/scons/scons.py}, which should just work.
+\\\texttt{~/ctoaster.cupcake/scripts/scons/scons.py}, which should just work.
 
 %----------------------------------------------------------------------
 \section{Primary workflow}
 
 Given the above description, here's the primary workflow I'd recommend
-for working on GENIE development (the things to do with Git are
+for working on \textbf{cTOASTER} development (the things to do with git are
 described in more detail in Section~\ref{sec:git-practices}):
 \begin{enumerate}
-  \item{Do \texttt{git checkout -b <new-branch-name>} to create a Git
+  \item{Do \texttt{git checkout -b <new-branch-name>} to create a git
     topic branch to work on.}
-  \item{Edit files under \texttt{~/cgenie/src}.}
-  \item{Test model build by running \texttt{scons -C ~/cgenie}.}
+  \item{Edit files under \texttt{~/ctoaster.cupcake/src}.}
+  \item{Test model build by running \texttt{scons -C ~/ctoaster.cupcake}.}
   \item{Set up test jobs using \texttt{new-job}.}
   \item{Run jobs in their job directories using \texttt{./go run}
     (uses development code).}
@@ -579,14 +561,18 @@ described in more detail in Section~\ref{sec:git-practices}):
     testing on the Travis continuous integration system.  \emph{The
       Travis stuff isn't set up yet, but it will be!}}
   \item{If the commit passed Travis testing, make a GitHub pull
-    request to have your changes incorporated into the main GENIE
+    request to have your changes incorporated into the main \textbf{cTOASTER}
     repository.}
 \end{enumerate}
 
 %----------------------------------------------------------------------
+\newpage
+%----------------------------------------------------------------------
+
+%----------------------------------------------------------------------
 \section{Model input parameter handling}
 
-The GENIE executable reads a number of Fortran namelists to pick up
+The \textbf{cTOASTER} executable reads a number of FORTRAN namelists to pick up
 model parameters.  These namelists all have names like
 \texttt{data\_EMBM}, \texttt{data\_BIOGEM}, etc., live in the top
 level of each job directory and are produced by the \texttt{new-job}
@@ -598,9 +584,9 @@ problems with old, no longer used, parameter names appearing in
 configuration files and with configuration files that do not specify
 values for newly introduced parameter names.  The way that this works
 is that the default namelists for each module
-(e.g. \texttt{~/cgenie/src/embm/embm-defaults.nml}) contain a default
+(e.g. \texttt{~/ctoaster.cupcake/src/embm/embm-defaults.nml}) contain a default
 value for every parameter appearing in the relevant namelist in the
-Fortran code.  The \emph{new-job} script then ignores any parameters
+FORTRAN code.  The \emph{new-job} script then ignores any parameters
 appearing in configuration files whose names do not occur in the
 default namelist and uses default values for any parameters in the
 default namelist that do not appear in the configuration
@@ -608,24 +594,24 @@ files\footnote{Slight lie: there are some parameters that are set via
   other mechanisms than the configuration files, notably parameters to
   do with timestepping and restart files.}.  This means that if you
 introduce a new parameter or remove an existing parameter from a
-namelist in the Fortran code, you \emph{must} also modify the default
+namelist in the FORTRAN code, you \emph{must} also modify the default
 namelist file.
 
 %----------------------------------------------------------------------
 \section{Recommended Git working practices}
 \label{sec:git-practices}
 
-There are lots of ways of working with Git and GitHub.  Here are some
-recommendations based on having used Git quite a bit for open source
+There are lots of ways of working with git and GitHub.  Here are some
+recommendations based on having used git quite a bit for open source
 work:
 \begin{description}
   \item[Branches are cheap.  Use them!]{Branches work differently in
-    Git than in older version control systems.  A branch is just a
+    git than in older version control systems.  A branch is just a
     named state of the repository: switching from one branch to
     another is very quick and creating new branches costs almost
     nothing.  This enables a different workflow than in a system like
     Subversion, where branching is a more expensive operation.  When
-    using Git, you can create branches for \emph{everything}.  If you
+    using git, you can create branches for \emph{everything}.  If you
     need to make a few small changes to fix a bug, create a branch to
     do it and merge the changes into the main branch when you're done.
     If you're working on some more extensive changes, do them on a
@@ -640,7 +626,7 @@ work:
     work on something else.  This ``one repository, many branches''
     style of working is very powerful.}
   \item[Repository forks and pull requests]{Instead of just cloning
-    the \texttt{cgenie} repository and pushing changes directly to it
+    the \texttt{ctoaster.cupcake} repository and pushing changes directly to it
     (which is only possible if you're one of the owners of the
     repository), create a personal \emph{fork} of the repository on
     GitHub and do your work in that.  You set up the main repository
@@ -668,10 +654,10 @@ work:
     submits isn't quite right!)}
   \item[Releases as tags]{When the maintainer of a repository wants to
     create a new official release of a package, they can just create a
-    Git tag on the repository.  The GENIE configuration and build
+    git tag on the repository.  The \textbf{cTOASTER} configuration and build
     system uses these tags to identify the available model versions,
     and they can also be listed and browsed in the GitHub interface.
-    (In Git, a ``tag'' is just a name for a particular version of the
+    (In git, a ``tag'' is just a name for a particular version of the
     repository so, like branches, they're very lightweight.)}
 \end{description}
 
@@ -680,11 +666,11 @@ work:
 \label{sec:platforms}
 
 The build system has a simple facility for managing compiler paths and
-options and the location of NetCDF libraries for building GENIE on
+options and the location of NetCDF libraries for building \textbf{cTOASTER} on
 different platforms.  This mechanism is based on ``platform files'' in
-this directory \texttt{~/cgenie/platforms}, each of which is named
+this directory \texttt{~/ctoaster.cupcake/platforms}, each of which is named
 after the hostname of the machine it's for, or the host and compiler
-combination (e.g. for my machine, \texttt{seneca} or something like
+combination (e.g. for my machine \texttt{seneca}, something like
 \texttt{seneca-gfortran} or \texttt{seneca-ifort}).  (There is also a
 default \texttt{LINUX} platform file that uses the GNU Fortran
 compiler and tries to find NetCDF libraries in some ``conventional''
@@ -692,11 +678,11 @@ places, but that's really not all that likely to work in most
 cases...)
 
 Platform files are read when the \texttt{go} script for a job needs to
-build the GENIE executable.  By default, the platform file named after
+build the \textbf{cTOASTER} executable.  By default, the platform file named after
 the machine name is used.  If you want to use an alternative compiler,
 use the \texttt{set-platform} and \texttt{clear-platform} options to
 the \texttt{go} script.  For example, on \texttt{seneca}, to switch to
-using the Intel Fortran compiler to run a job, do the following:
+using the Intel FORTRAN compiler to run a job, do the following:
 \begin{verbatim}
   ./go set-platform seneca-ifort
   ./go run
@@ -709,7 +695,7 @@ and to switch back to using the default for the machine, do:
 Platform files are just Python scripts that set up a few variables.
 Each platform script must provide definitions for the following names:
 \begin{description}
-  \item[\texttt{f90}]{Fortran 90 compiler and flag setup.  Contains
+  \item[\texttt{f90}]{FORTRAN 90 compiler and flag setup.  Contains
     the fields:
     \begin{description}
       \item[\texttt{compiler}]{The name of the compiler executable.}
@@ -738,12 +724,12 @@ Each platform script must provide definitions for the following names:
     \begin{description}
       \item[\texttt{base}]{The base directory of the NetCDF
         installation.  Should contain an \texttt{include} subdirectory
-        containing a Fortran 90 \texttt{netcdf.mod} module file
+        containing a cTOASTER 90 \texttt{netcdf.mod} module file
         suitable for the compiler being used and a \texttt{lib}
         subdirectory containing the NetCDF libraries.}
       \item[\texttt{libs}]{A list of NetCDF library names to link the
-        GENIE executable with.  Recent NetCDF installations split the
-        Fortran 90 library from the C library, so that one needs to
+        \textbf{cTOASTER} executable with.  Recent NetCDF installations split the
+        \textbf{Fortran} 90 library from the C library, so that one needs to
         link with both \texttt{libnetcdf.a} and \texttt{libnetcdff.a}
         -- in this case, this field should have the value
         \texttt{['netcdf', 'netcdff']}; otherwise it should just be
@@ -751,21 +737,21 @@ Each platform script must provide definitions for the following names:
     \end{description}}
 \end{description}
 
-Porting GENIE to a new platform should require little more than making
+Porting \textbf{cTOASTER} to a new platform should require little more than making
 a new platform file: just copy an existing one, ideally one that uses
 the same compiler, and edit the locations of the NetCDF libraries.
-(The platform file should live in \texttt{~/cgenie/platforms} and its
+(The platform file should live in \texttt{~/ctoaster.cupcake/platforms} and its
 name should be whatever is returned from the Linux \texttt{hostname}
 command.)  It you want to use different compilers on the same
 platform, just create multiple platform files called
 \texttt{<hostname>-<compiler>} -- you'll probably also want to have a
 default platform with just the hostname so that you can do builds
 without setting the platform explicitly.  If you want to do builds
-directly in the \texttt{~/cgenie} directory using a non-default
+directly in the \texttt{~/ctoaster.cupcake} directory using a non-default
 compiler, you can either just move the platform files around in
-\texttt{~/cgenie/platforms} so that the default file for your platform
+\texttt{~/ctoaster.cupcake/platforms} so that the default file for your platform
 uses the compiler you want, or (not really recommended) you can create
-a file called \texttt{~/cgenie/config/platform-name} containing the
+a file called \texttt{~/ctoaster.cupcake/config/platform-name} containing the
 name of the platform you want to use\footnote{This suborns the
   platform selection method used in builds as run from the \texttt{go}
   script, and the reason it's not really recommended is that it will
@@ -773,6 +759,9 @@ name of the platform you want to use\footnote{This suborns the
   do builds on a machine different than the one for which you've made
   the \texttt{platform-name} file.}.
 
+%----------------------------------------------------------------------
+\newpage
+%----------------------------------------------------------------------
 
 %======================================================================
 \chapter{For infrastructure developers}
@@ -785,36 +774,16 @@ extra explanation.
 
 \section{Python installation and shell script wrappers}
 
-All the configuration and build scripts require Python 2.7.9 (they
-might work with slightly earlier versions, but I'm being
-conservative).  The \texttt{~/cgenie/scripts/find\_python} shell
-script is used to figure out where a suitable Python version lives (if
-it's installed globally, it will be called either \texttt{python} or
-\texttt{python2} and you can check the version by doing \texttt{python
-  -V}).
+All the configuration and build scripts require Python 3 (and called as
+\texttt{python3}).
 
-If no suitable version of Python is installed globally, a local
-installation of Python 2.7.9 is performed.  This should work on more
-or less any Linux platform -- you really do just need a working C
-compiler and basic libraries.  In more or less all cases, this
-installation step should happen the first time that the user runs the
-\texttt{setup-cgenie} script and after that, all of the main
-configuration and build scripts will pick up the right version of
-Python.
-
-The main Python scripts all live in \texttt{~/cgenie/scripts}.  The
-\texttt{setup-cgenie}, \texttt{new-job}, \texttt{go} and
-\texttt{tests} programs are all shell scripts that deal with making
-sure that the corresponding Python scripts are invoked using the right
-version of Python.
-
-This may look a little baroque, but it's a very robust way of
-insulating GENIE from problems related to old versions of Python on
-poorly maintained platforms.  It seems to work well.
+The main Python scripts all live in \texttt{~/ctoaster.cupcake/tools}.  
+\\The \texttt{setup-ctoaster}, \texttt{new-job}, \texttt{go} and
+\texttt{tests} programs are all shell scripts that invoke \texttt{python3}.
 
 \section{Model versions, repositories and development code}
 
-The whole story with the \texttt{~/cgenie-jobs/MODELS} directory
+The whole story with the \texttt{~/ctoaster.cupcake-jobs/MODELS} directory
 hierarchy for model builds is a little complicated, but it solves a
 number of related problems:
 \begin{enumerate}
@@ -831,10 +800,10 @@ number of related problems:
 \end{enumerate}
 
 When a specific model version is required for a job, the
-\texttt{cgenie} source repository is unpacked into a directory under
-\texttt{~/cgenie-jobs/MODELS/REPOS} at exactly that version and the
+\texttt{ctoaster.cupcake} source repository is unpacked into a directory under
+\texttt{~/ctoaster.cupcake-jobs/MODELS/REPOS} at exactly that version and the
 source tree and configuration scripts for that model version are used
--- this means that even if your main \texttt{~/cgenie} directory, for
+-- this means that even if your main \texttt{~/ctoaster.cupcake} directory, for
 example, is at version \texttt{cupcake-3.5}, if you run the
 \texttt{new-job} script telling it to use version \texttt{cupcake-1.0}
 for the new job, \emph{all of the configuration and build steps} for
@@ -844,22 +813,22 @@ reproducibility of jobs between model versions.
 
 The same principle of segregation is applied to platform dependencies
 and ``job hashing''.  The best way to explain this is with an
-example.  Suppose that you're working on one of the modules of GENIE
+example.  Suppose that you're working on one of the modules of \textbf{cTOASTER}
 making science changes that potentially have platform-dependent
 effects and that also have effects that depend on model resolution.
 You've set up a bunch of test jobs with different model resolutions
 and other characteristics that you use to make sure you don't break
-things as you make changes.  If you change a single Fortran file and
+things as you make changes.  If you change a single FORTRAN file and
 want to rerun all your tests, how many files need to be recompiled?
 If you make a new test with a different model resolution, how many
-Fortran files need to be recompiled?  In the first case, the answer
+FORTRAN files need to be recompiled?  In the first case, the answer
 should be ``one, or possibly a few if the file I changed is
 \texttt{USE}d in other files''.  In the second case, the answer should
 be ``all of them, unless I've already built a model for that
 resolution recently''.
 
 By keeping model builds for different model versions, platforms and
-model resolutions completely seperate, we can make sure that only
+model resolutions completely separate, we can make sure that only
 \emph{exactly} the files that need to be recompiled \emph{are}
 recompiled in every case.  You should never need to ``clean'' all of
 the build directories for a model (although the \texttt{go} script
@@ -873,10 +842,10 @@ more below.
 \section{Job hashing}
 
 Because of the way that coordinate sizes for arrays are currently
-defined in GENIE (via preprocessor constants), different executables
+defined in \textbf{cTOASTER} (via preprocessor constants), different executables
 are needed for different grid sizes (and for different numbers of
 tracers).  A simple hashing approach based on the coordinate
-definitions in each job is used to keep this organised.
+definitions in each job is used to keep this organized.
 
 Each job directory has a \texttt{job.py} file in its \texttt{config}
 subdirectory.  The \texttt{job.py} file defines the preprocessor
@@ -885,39 +854,40 @@ this file is read as part of the build process to set up the required
 preprocessor definitions.
 
 When the \texttt{go} script needs to work out which directory to use
-under \texttt{~/cgenie-jobs/MODELS} to use for the model for the
+under 
+\\\texttt{~/ctoaster.cupcake-jobs/MODELS} to use for the model for the
 current job, it reads the \texttt{jobs.py} file and turns the
 coordinate definitions into a canonical form (basically just by
 stripping whitespace and line endings, and sorting the variable names,
 producing a string something like
-``\texttt{'GENIENX':36,'GENIENY':36}'').  The SHA1 hash of this string
+``\texttt{'cTOASTERNX':36,'cTOASTERNY':36}'').  The SHA1 hash of this string
 is then computed (giving a long string of hex digits and this can then
 be used as a unique identifier of the job coordinate definition.
 
 \section{SConstruct organisation}
 
-The way that the GENIE build system using SConstruct is a little bit
+The way that the \textbf{cTOASTER} build system using SConstruct is a little bit
 complicated, mostly in order to manage the segregation of different
 model builds as described above.  The main
-\texttt{~/cgenie/SConstruct} SCons file depends on reading some
+\texttt{~/ctoaster.cupcake/SConstruct} SCons file depends on reading some
 supporting files from the model build directory (which is either one
-of the directories under \texttt{~/cgenie-jobs/MODELS} or, for the
-degenerate case of testing model compilation, \texttt{~/cgenie}).
+of the directories under \texttt{~/ctoaster.cupcake-jobs/MODELS} or, for the
+degenerate case of testing model compilation, \texttt{~/ctoaster.cupcake}).
 
 Those supporting files are the \texttt{job.py} file that defines the
 model coordinate sizes, described in the previous section, and a file
 called \texttt{version.py} that tells the \texttt{SConstruct} script
-where to find the model source code (\texttt{~/cgenie/src} for
+where to find the model source code (\texttt{~/ctoaster.cupcake/src} for
 development builds, or a directory under
-\texttt{~/cgenie-jobs/MODELS/REPOS} for builds using a specified model
+\\\texttt{~/ctoaster.cupcake-jobs/MODELS/REPOS} for builds using a specified model
 version) and build scripts and the type of build to perform
 (e.g. \texttt{ship} or \texttt{debug}).
 
 If you look in one of the model build directories under
-\texttt{~/cgenie-jobs/MODELS}, you'll find that that's more or less
+\texttt{~/ctoaster.cupcake-jobs/MODELS}, you'll find that that's more or less
 all there is there, apart from the \texttt{SConstruct} file, the
 \texttt{build} directory where compilation output goes, a
-\texttt{build.log} file and the \texttt{genie.exe} executable output.
+\texttt{build.log} file and the \texttt{cupcake.exe} executable output.
 Setting things up this way means that model source code and build
 results are always kept seperate and there should never be any
 confusion.
@@ -926,7 +896,7 @@ That said, here's a \textbf{warning}: the \texttt{SConstruct} file
 uses an SCons feature called ``variant directory builds'' to pull off
 the feat of building different model versions in all sorts of
 different places from the same source tree.  The interaction between
-this feature and SCons's automatic scanning of Fortran 90 inter-module
+this feature and SCons's automatic scanning of FORTRAN 90 inter-module
 dependencies is very very delicate -- if you change this in \emph{any}
 way, I can almost guarantee that you will break it!
 
@@ -934,11 +904,12 @@ way, I can almost guarantee that you will break it!
 
 This is possibly the nastiest and most uncertain part of the model
 configuration scripts.  Because of the way that the namelist
-parameters are defined for some of the GENIE model components, it's
+parameters are defined for some of the \textbf{cTOASTER} model components, it's
 not possible to determine exactly which model input files (from
-\texttt{~/cgenie/data} or from \texttt{~/cgenie-data/forcings}) are
+\texttt{~/ctoaster.cupcake/data} or from 
+\\\texttt{~/ctoaster.cupcake-data/forcings}) are
 required to run a particular job.  That's a bit of a problem, since
-the idea is that each job directory under \texttt{~/cgenie-jobs}
+the idea is that each job directory under \texttt{~/ctoaster.cupcake-jobs}
 should be self-contained so that you could tar them up and send them
 to someone else for them to duplicate the job you were running, or for
 archiving purposes.  This is also important for producing
@@ -948,20 +919,20 @@ to run the job live.  Getting the required files into that directory
 requires a little bit of ingenuity.
 
 The \texttt{copy\_data\_files} routine (in
-\texttt{~/cgenie/scripts/config\_utils.py}) uses some simple
+\texttt{~/ctoaster.cupcake/scripts/config\_utils.py}) uses some simple
 heuristics to figure out what input files might be needed.  For each
-GENIE component, it extracts a list of candidate filenames from the
+\textbf{cTOASTER} component, it extracts a list of candidate filenames from the
 namelist for that component -- basically all string-link parameters
 that aren't obviously not filenames.  It then does three things in
 order, eliminating candidates that are successfully located before
 going on to the next step -- in each case, if a candidate is matched,
 the match is copied to the job's \texttt{input} directory:
 \begin{enumerate}
-  \item{Look in the \texttt{~/cgenie/data} subdirectory for the
+  \item{Look in the \texttt{~/ctoaster.cupcake/data} sub-directory for the
     relevant model component for an exact match to the candidate.}
-  \item{Look in \texttt{~/cgenie-data/forcings} for an exact match to
+  \item{Look in \texttt{~/ctoaster.cupcake-data/forcings} for an exact match to
     the candidate.}
-  \item{Look in the \texttt{~/cgenie/data} subdirectory for the
+  \item{Look in the \texttt{~/ctoaster.cupcake/data} sub-directory for the
     relevant model component for partial matches to the candidate,
     i.e. files whose name contain the string we're looking for but
     aren't an exact match.}
@@ -976,9 +947,12 @@ Now, this is pretty ugly and prone to breakage, and is close to the
 top of my list of candidates for ``a better way''.  The solution I
 have in mind requires some significant changes to the way that model
 configurations are set up though, and should probably wait until we
-have a GUI for configuring GENIE jobs.  In the meantime, this end of
+have a GUI for configuring \textbf{cTOASTER} jobs.  In the meantime, this end of
 things just needs to be tested carefully...
 
+%----------------------------------------------------------------------
+\newpage
+%----------------------------------------------------------------------
 
 %======================================================================
 \appendix
@@ -986,16 +960,16 @@ things just needs to be tested carefully...
 
 A few configuration and data files needed some fixups for these things
 to work -- these changes have all been committed to the
-\texttt{cgenie-data} repository.
+\texttt{ctoaster.cupcake-data} repository.
 
 \section{Session \#0000}
 
 \subsection*{Section 1}
 
 \begin{verbatim}
-  git clone https://github.com/genie-model/cgenie.git
-  cd ~/cgenie
-  ./setup-cgenie
+  git clone https://github.com/genie-model/ctoaster.cupcake.git
+  cd ~/ctoaster.cupcake
+  ./setup-ctoaster.cupcake
   ./tests run basic
 \end{verbatim}
 
@@ -1004,7 +978,7 @@ to work -- these changes have all been committed to the
 \begin{verbatim}
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE -u LABS/LAB_0.snowball ...
             ... LAB_0.snowball 10
-  cd ~/cgenie-jobs/LAB_0.snowball
+  cd ~/ctoaster.cupcake-jobs/LAB_0.snowball
   ./go run
   cd output/biogem
   cat biogem_series_ocn_temp.res
@@ -1013,22 +987,22 @@ to work -- these changes have all been committed to the
 \subsection*{Section 7}
 
 \begin{verbatim}
-  cd ~/cgenie_output
-  wget http://www.seao2.info/cgenie/labs/UoB.2013/...
+  cd ~/ctoaster.cupcake_output
+  wget http://www.seao2.info/ctoaster.cupcake/labs/UoB.2013/...
             ...130328.p0650e.LiCa.OHM10.SPIN0.tar.gz
   tar xzf 130328.p0650e.LiCa.OHM10.SPIN0.tar.gz
-  cd ~/cgenie
+  cd ~/ctoaster.cupcake
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE -u LABS/LAB_0.snowball ...
             ... LAB_0.snowball-from-restart 100 ...
             ... -r 130328.p0650e.LiCa.OHM10.SPIN0 --old-restart
-  cd ~/cgenie-jobs/LAB_0.snowball-from-restart
+  cd ~/ctoaster.cupcake-jobs/LAB_0.snowball-from-restart
   ./go run
 \end{verbatim}
 
 \subsection*{Section 8}
 
 \begin{verbatim}
-  cd ~/cgenie-data/user-configs
+  cd ~/ctoaster.cupcake-data/user-configs
   cp LAB_0.snowball LAB_0.snowball-experiment
 \end{verbatim}
 
@@ -1036,23 +1010,23 @@ Then edit the \texttt{LAB\_0.snowball-experiment} configuraton file to
 change the \texttt{ea\_radfor\_scl\_co2} variable (to 10.0, say).
 
 \begin{verbatim}
-  cd ~/cgenie
+  cd ~/ctoaster.cupcake
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
             ... -u LABS/LAB_0.snowball-experiment ...
             ... LAB_0.snowball-experiment-1 100
-  cd ~/cgenie-jobs/LAB_0.snowball-experiment-1
+  cd ~/ctoaster.cupcake-jobs/LAB_0.snowball-experiment-1
   ./go run
 \end{verbatim}
 
 It's easy to make another job to extend this simulation -- just
 restart from the end of the last job:
 \begin{verbatim}
-  cd ~/cgenie
+  cd ~/ctoaster.cupcake
   ./new-job -b cgenie.eb_go_gs_ac_bg.p0650e.NONE ...
             ... -u LABS/LAB_0.snowball-experiment ...
             ... LAB_0.snowball-experiment-1-extend 100 ...
             ... -r LAB_0.snowball-experiment-1
-  cd ~/cgenie-jobs/LAB_0.snowball-experiment-1-extend
+  cd ~/ctoaster.cupcake-jobs/LAB_0.snowball-experiment-1-extend
   ./go run
 \end{verbatim}
 You can do this indefinitely...
@@ -1062,11 +1036,11 @@ You can do this indefinitely...
 \subsection*{Section 1.3}
 
 \begin{verbatim}
-  cd ~/cgenie_output
-  wget http://www.seao2.info/cgenie/labs/UoB.2013/...
+  cd ~/ctoaster.cupcake_output
+  wget http://www.seao2.info/ctoaster.cupcake/labs/UoB.2013/...
             ...EXAMPLE.worjh2.PO4Fe.SPIN.tar.gz
   tar xzf EXAMPLE.worjh2.PO4Fe.SPIN.tar.gz
-  cd ~/cgenie-data/user-configs/LABS
+  cd ~/ctoaster.cupcake-data/user-configs/LABS
   cp LAB_1.colorinjection LAB_1.colorinjection-experiment
 \end{verbatim}
 
@@ -1078,7 +1052,7 @@ in the lab script.
             ... -u LABS/LAB_1.colorinjection-experiment ...
             ... LAB_1.colorinjection 20 ...
             ... -r EXAMPLE.worjh2.PO4Fe.SPIN --old-restart
-  cd ~/cgenie-jobs/LAB_1.colorinjection
+  cd ~/ctoaster.cupcake-jobs/LAB_1.colorinjection
   ./go run
 \end{verbatim}
 
@@ -1088,7 +1062,7 @@ in the lab script.
   ./new-job -b cgenie.eb_go_gs_ac_bg.worjh2.rb ...
             ... -u LABS/LAB_1.hosing LAB_1.hosing 20 ...
             ... -r EXAMPLE.worjh2.PO4Fe.SPIN --old-restart
-  cd ~/cgenie-jobs/LAB_1.hosing
+  cd ~/ctoaster.cupcake-jobs/LAB_1.hosing
   ./go run
 \end{verbatim}
 
@@ -1100,7 +1074,7 @@ in the lab script.
   ./new-job -O -b cgenie.eb_go_gs_ac_bg.worjh2.BASEFe ...
             ... -u LABS/LAB_2.CO2emissions LAB_2.CO2emissions 20 ...
             ...  -r EXAMPLE.worjh2.PO4Fe.SPIN --old-restart
-  cd ~/cgenie-jobs/LAB_2.CO2emissions
+  cd ~/ctoaster.cupcake-jobs/LAB_2.CO2emissions
   ./go run
 \end{verbatim}
 
@@ -1110,7 +1084,7 @@ in the lab script.
   ./new-job -O -b cgenie.eb_go_gs_ac_bg.worjh2.BASEFe ...
             ... -u LABS/LAB_2.CONTROL LAB_2.CONTROL 20 ...
             ...  -r EXAMPLE.worjh2.PO4Fe.SPIN --old-restart
-  cd ~/cgenie-jobs/LAB_2.CONTROL
+  cd ~/ctoaster.cupcake-jobs/LAB_2.CONTROL
   ./go run
 \end{verbatim}
 
