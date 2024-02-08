@@ -4,4 +4,4 @@ if [ ! -f ~/.ctoasterrc ]; then
     exit 0
 fi
 ctoaster_root=`grep ctoaster_root ~/.ctoasterrc | cut -d: -f2 | sed -e 's/^ *//'`
-python3 tools/setup-ctoaster.py $*
+python3 $ctoaster_root/tools/run-cupcake.py $*
