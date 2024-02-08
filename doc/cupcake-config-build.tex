@@ -30,7 +30,7 @@
 \floatname{listing}{Listing}
 
 \title{(cTOASTER) \texttt{cupcake} Configuration and Build System}
-\author{Ian Ross (+ Andy Ridgwell)}
+\author{Ian Ross, with contributions from:\\Andy Ridgwell}
 \date{\today}
 
 \begin{document}
@@ -49,7 +49,6 @@ Documentation is divided into three sections, one for users of the
 model, one for those who wish to modify the model and one for those 
 concerned with maintaining and extending the configuration and build 
 system infrastructure.
-
 
 %======================================================================
 \chapter{For users}
@@ -78,6 +77,25 @@ and you can configure and run jobs as:
 \end{verbatim}
 The job results appear in the \texttt{output} directory in the job
 directory.
+
+There is also a facility to configure and run experiments in the same way as for \textbf{cgenie.muffin}:
+\begin{verbatim}
+  ./run-cupcake <base-config> <config-dir> <run-id> <run-length> [<restart>]
+\end{verbatim}
+which for the example above, would be:
+\begin{verbatim}
+  ./run-cupcake cgenie.eb_go_gs_ac_bg.p0650e.NONE LABS LAB_0.snowball 10
+\end{verbatim}
+In this, \texttt{run-cupcake.py} first configures a new job using \texttt{./new-job},
+seamlessly changes directory, and then automatically runs it using \texttt{./go run}
+
+%----------------------------------------------------------------------
+\vspace{1mm}\noindent\rule{4cm}{0.5pt}\vspace{2mm}
+%----------------------------------------------------------------------
+
+%----------------------------------------------------------------------
+\newpage
+%----------------------------------------------------------------------
 
 %----------------------------------------------------------------------
 \section{Installation and setup}
@@ -398,6 +416,20 @@ Within a job directory, you can see what model version the job was
 configured with by looking at the contents of the
 \texttt{config/model-version} file -- in non-development cases, this
 will just contain the git tag of the model version.
+
+%----------------------------------------------------------------------
+\section{Legacy (cGENIE) work-flow}
+
+The example experiment above can also be configured and run via a single command\footnote{Usage: \texttt{run-cupcake <base-config> <config-dir> <run-id> <run-length> [<restart>]}} :
+\begin{verbatim}
+  ./run-cupcake cgenie.eb_go_gs_ac_bg.p0650e.NONE LABS LAB_0.snowball 10
+\end{verbatim}
+This employs \texttt{run-cupcake.py}, which first configures a new job using \texttt{./new-job},
+automatically changes to the corresponding job directory, and then runs it using \texttt{./go run}.
+
+%----------------------------------------------------------------------
+%\vspace{1mm}\noindent\rule{4cm}{0.5pt}\vspace{2mm}
+%----------------------------------------------------------------------
 
 %----------------------------------------------------------------------
 \newpage
