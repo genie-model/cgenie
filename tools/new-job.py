@@ -1,4 +1,4 @@
-import os, os.path, sys, errno, shutil, datetime
+import os, sys, errno, shutil, datetime
 import optparse
 import subprocess as sp
 
@@ -8,14 +8,14 @@ import config_utils as C
 
 # GENIE configuration
 
-if not U.read_cgenie_config():
-    sys.exit('GENIE not set up: run the setup-cgenie script!')
+if not U.read_ctoaster_config():
+    sys.exit('cTOASTER not set up: run the setup-ctoaster script!')
 
 
 # Command line arguments.
 
 parser = optparse.OptionParser(usage='new-job [options] job-name run-length',
-                               description='Configure GENIE jobs')
+                               description='Configure cTOASTER jobs')
 parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
                   action='store_true')
 parser.add_option('-b', '--base-config',   help='Base configuration name')
@@ -23,18 +23,18 @@ parser.add_option('-u', '--user-config',   help='User configuration name')
 parser.add_option('-m', '--config-mods',   help='Configuration mods filename')
 parser.add_option('-c', '--config',        help='Full configuration name')
 parser.add_option('-r', '--restart',       help='Restart name')
-parser.add_option('--old-restart',         help='Restart from old cGENIE job',
+parser.add_option('--old-restart',         help='Restart from old ctoaster job',
                   action='store_true')
 parser.add_option('--t100',                help='Use "T100" timestepping',
                   action='store_true')
 parser.add_option('-t', '--test-job',      help='Set up from test')
 parser.add_option('-j', '--job-dir',       help='Alternative job directory',
-                  default=U.cgenie_jobs)
+                  default=U.ctoaster_jobs)
 parser.add_option('-v', '--model-version', help='Model version to use',
-                  default = U.cgenie_version)
+                  default = U.ctoaster_version)
 parser.add_option('-g', '--gui', action='store_true',
                   help=optparse.SUPPRESS_HELP)
-opts, args = parser.parse_args() 
+opts, args = parser.parse_args()
 if not opts.test_job and len(args) != 2 or opts.test_job and len(args) != 0:
     parser.print_help()
     sys.exit()
@@ -101,7 +101,7 @@ if nset > 1:
 # 
 
 if test_job:
-    test_dir = os.path.join(U.cgenie_test, test_job)
+    test_dir = os.path.join(U.ctoaster_test, test_job)
     with open(os.path.join(test_dir, 'test_info')) as fp:
         for line in fp:
             ss = line.split(':')
@@ -116,7 +116,7 @@ if test_job:
 
 if restart:
     if old_restart:
-        restart_path = os.path.join(os.path.expanduser('~/cgenie_output'),
+        restart_path = os.path.join(os.path.expanduser('~/ctoaster_output'),
                                     restart)
     elif os.path.exists(restart):
         restart_path = restart
@@ -124,7 +124,7 @@ if restart:
         restart_path = os.path.join(job_dir_base, restart, 'output')
     if not os.path.exists(restart_path):
         if old_restart:
-            error_exit('Old cGENIE restart job "' + restart +
+            error_exit('Old ctoaster restart job "' + restart +
                        '" does not exist')
         else:
             error_exit('Restart job "' + restart + '" does not exist')
@@ -148,7 +148,7 @@ if not running_from_gui:
 
 if (base_and_user_config):
     if not os.path.exists(base_config):
-        base_config_dir = os.path.join(U.cgenie_data, 'base-configs')
+        base_config_dir = os.path.join(U.ctoaster_data, 'base-configs')
         base_config_path = os.path.join(base_config_dir,
                                         base_config + '.config')
     else:
@@ -156,7 +156,7 @@ if (base_and_user_config):
         base_config_path = base_config
     base = C.read_config(base_config_path, 'Base configuration')
     if not os.path.exists(user_config):
-        user_config_dir = os.path.join(U.cgenie_data, 'user-configs')
+        user_config_dir = os.path.join(U.ctoaster_data, 'user-configs')
         user_config_path = os.path.join(user_config_dir, user_config)
     else:
         user_config_dir = os.getcwd()
@@ -168,7 +168,7 @@ if (base_and_user_config):
         configs.append(mods)
 elif full_config:
     if not os.path.exists(full_config):
-        full_config_dir = os.path.join(U.cgenie_data, 'full-configs')
+        full_config_dir = os.path.join(U.ctoaster_data, 'full-configs')
         full_config_path = os.path.join(full_config_dir,
                                         full_config + '.config')
     else:
@@ -319,11 +319,10 @@ with open(os.path.join(cfg_dir, 'model-version'), 'w') as fp:
         print(model_version, file=fp)
 
 
-
 # Create "go" script for job.
 
-shutil.copy(os.path.join(U.cgenie_root, 'tools', 'go'), job_dir)
-shutil.copy(os.path.join(U.cgenie_root, 'tools', 'go.bat'), job_dir)
+shutil.copy(os.path.join(U.ctoaster_root, 'tools', 'go'), job_dir)
+shutil.copy(os.path.join(U.ctoaster_root, 'tools', 'go.bat'), job_dir)
 
 
 # Set up per-module extra data files (these are files that don't
@@ -370,7 +369,7 @@ for m in modules + ['main', 'gem']:
 # Extra data files for main program.
 
 jobmaindatadir = os.path.join(job_dir, 'input', 'main')
-srcmaindatadir = os.path.join(U.cgenie_root, 'data', 'main')
+srcmaindatadir = os.path.join(U.ctoaster_root, 'data', 'main')
 for s in ['atm', 'ocn', 'sed']:
     shutil.copy(os.path.join(srcmaindatadir, 'tracer_define.' + s),
                 jobmaindatadir)
