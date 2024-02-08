@@ -1,6 +1,5 @@
-from __future__ import print_function
-import os, os.path, sys, errno, shutil, glob, re
-import optparse
+import os, sys, errno, shutil, glob, re
+import argparse  # Replacing optparse for Python 3
 import subprocess as sp
 import datetime as dt
 import ctypes as ct
@@ -9,16 +8,20 @@ import platform as plat
 import utils as U
 import config_utils as C
 
+# GENIE configuration
+if not U.read_cgenie_config():
+    sys.exit('GENIE not set up: run the setup-cgenie script!')
 
-# cTOASTER configuration
+# Adjusting scons command for cross-platform compatibility
+scons_command = 'scons'
+if plat.system() == 'Windows':
+    scons_command = ['python', os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')]
+else:
+    scons_command = [scons_command]
 
-if not U.read_ctoaster_config():
-    sys.exit('cTOASTER not set up: run the setup-ctoaster script!')
-###scons = [os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')]
-scons = 'scons'
-if plat.system() == 'Windows': scons = ['python'] + scons
-nccompare = os.path.join(U.ctoaster_root, 'build', 'nccompare.exe')
-test_version = U.ctoaster_version
+nccompare = os.path.join(U.cgenie_root, 'build', 'nccompare.exe')
+test_version = U.cgenie_version
+
 
 
 #----------------------------------------------------------------------
@@ -28,9 +31,9 @@ test_version = U.ctoaster_version
 
 def list(list_base):
     tests = []
-    for d, ds, fs in os.walk(U.ctoaster_test):
+    for d, ds, fs in os.walk(U.cgenie_test):
         if os.path.exists(os.path.join(d, 'test_info')):
-            tests.append(os.path.relpath(d, U.ctoaster_test))
+            tests.append(os.path.relpath(d, U.cgenie_test))
     for t in sorted(tests):
         if not list_base or list_base and t.startswith(list_base):
             print(t)
@@ -62,16 +65,16 @@ def add_test(test_job, test_name, restart):
         return False
 
     # Check for existence of required jobs, tests and directories.
-    job_dir = os.path.join(U.ctoaster_jobs, test_job)
+    job_dir = os.path.join(U.cgenie_jobs, test_job)
     if not has_job_output(job_dir):
         sys.exit('Need to run job "' + test_job +
                  '" before adding it as a test')
-    test_dir = os.path.join(U.ctoaster_test, test_name)
+    test_dir = os.path.join(U.cgenie_test, test_name)
     if not os.path.exists(job_dir):
         sys.exit('Job "' + test_job + '" does not exist')
     if os.path.exists(test_dir): sys.exit('Test already exists!')
     if restart:
-        restart_test_dir = os.path.join(U.ctoaster_test, restart)
+        restart_test_dir = os.path.join(U.cgenie_test, restart)
         if not os.path.exists(restart_test_dir):
             sys.exit('Restart test "' + restart + '" does not exist')
 
@@ -81,7 +84,7 @@ def add_test(test_job, test_name, restart):
                 os.path.join(test_dir, 'test_info'))
     if restart:
         with open(os.path.join(test_dir, 'test_info'), 'a') as fp:
-            print('restart_from: ' + restart, file=fp)
+            print(f'restart_from: {restart}', file=fp)
     for c in ['full_config', 'base_config', 'user_config']:
         if os.path.exists(os.path.join(job_dir, 'config', c)):
             shutil.copy(os.path.join(job_dir, 'config', c), test_dir)
@@ -98,8 +101,7 @@ def add_test(test_job, test_name, restart):
             fs = select_defaults[subd](subd)
         else:
             fs = nc_defaults(subd)
-        print('  ' + subd + ' defaults: ' +
-              ('NONE' if fs == [] else ' '.join(map(os.path.basename, fs))))
+        print(f'  {subd} defaults: {"NONE" if not fs else " ".join(map(os.path.basename, fs))}')
         accept_defaults = raw_input('    Accept defaults? [Yn]: ').strip()
         if accept_defaults != '' and accept_defaults.lower() != 'y':
             fs = []
@@ -133,22 +135,21 @@ reltol = 35
 
 
 # Make sure that the nccompare tool is available.
-
 def ensure_nccompare():
     if os.path.exists(nccompare): return
-    cmd = [scons, '-C', U.ctoaster_root, os.path.join('build', 'nccompare.exe')]
-    sp.call(cmd)
-    with open(os.devnull, 'w') as sink:
-        status = sp.call(cmd, stdout=sink, stderr=sink)
-    if status != 0:
+    cmd = ['scons', '-C', U.cgenie_root, os.path.join('build', 'nccompare.exe')]
+    result = sp.run(cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL, text=True)
+    if result.returncode != 0:
         sys.exit('Could not build nccompare.exe program')
 
 
-# Compare NetCDF files.
 
+# Compare NetCDF files.
 def compare_nc(f1, f2, logfp):
     cmd = [nccompare, '-v', '-a', str(abstol), '-r', str(reltol), f1, f2]
-    return sp.call(cmd, stdout=logfp, stderr=logfp)
+    result = sp.run(cmd, stdout=logfp, stderr=logfp, text=True)
+    return result.returncode
+
 
 
 # "Dawson" float comparison.
@@ -167,52 +168,40 @@ fpline_re_str = '^(' + fp_re_str + ')((\s*,\s*|\s+)' + fp_re_str + ')*$'
 fpline_re = re.compile(fpline_re_str)
 
 def compare_ascii(f1, f2, logfp):
-    with open(f1) as fp1, open(f2) as fp2:
-        l1 = 'dummy'
-        l2 = 'dummy'
-        while l1 != '' and l2 != '':
-            l1 = fp1.readline().strip()
-            l2 = fp2.readline().strip()
-            # If the lines match, carry on.
-            if l1 == l2: continue
-            # If both lines are comma or space seperated strings of
-            # floating point numbers, then extract the numbers for
-            # comparison.
-            m1 = fpline_re.match(l1)
-            m2 = fpline_re.match(l2)
-            if not m1 or not m2: break
-            xs1 = map(float, l1.replace(',', ' ').split())
-            xs2 = map(float, l2.replace(',', ' ').split())
-            if len(xs1) != len(xs2): break
-            max_absdiff = max(map(lambda x, y: abs(x - y), xs1, xs2))
-            max_reldiff = max(map(float_compare, xs1, xs2))
-            if max_absdiff > abstol:
-                if max_reldiff < reltol:
-                    print('Max abs. diff. = ' + str(max_absdiff) +
-                          ' but max. rel. diff. = ' + str(max_reldiff) +
-                          ' < ' + str(reltol),
-                          file=logfp)
-                else: break
-        if l1 == '' and l2 != '' or l1 != '' and l2 == '':
-            print('Files ' + f1 + ' and ' + f2 + ' differ in length',
-                  file=logfp)
-            return True
-        elif l1 != l2:
-            print('Files ' + f1 + ' and ' + f2 + ' are different', file=logfp)
-            return True
-        return False
+    with open(f1, encoding='utf-8') as fp1, open(f2, encoding='utf-8') as fp2:
+        for l1, l2 in zip(fp1, fp2):
+            l1, l2 = l1.strip(), l2.strip()
+            if l1 == l2:
+                continue
+            m1, m2 = fpline_re.match(l1), fpline_re.match(l2)
+            if not m1 or not m2 or len(m1.groups()) != len(m2.groups()):
+                break
+            xs1, xs2 = map(float, re.split(r',|\s+', l1)), map(float, re.split(r',|\s+', l2))
+            max_absdiff = max(abs(x - y) for x, y in zip(xs1, xs2))
+            max_reldiff = max(float_compare(x, y) for x, y in zip(xs1, xs2))
+            if max_absdiff > abstol and max_reldiff >= reltol:
+                break
+        else:
+            # Check for file length differences after loop completion
+            if not all((line == '' for line in fp1)) or not all((line == '' for line in fp2)):
+                print(f'Files {f1} and {f2} differ in length', file=logfp)
+                return True
+            return False
+        print(f'Files {f1} and {f2} are different', file=logfp)
+        return True
+
 
 
 # Compare files: might be NetCDF, might be ASCII.
 
 def file_compare(f1, f2, logfp):
     if not os.path.exists(f1):
-        print('File missing: ' + f1)
-        print('File missing: ' + f1, file=logfp)
+        print(f'File missing: {f1}')
+        print(f'File missing: {f1}', file=logfp)
         return True
     if not os.path.exists(f2):
-        print('File missing: ' + f2)
-        print('File missing: ' + f2, file=logfp)
+        print(f'File missing: {f2}')
+        print(f'File missing: {f2}', file=logfp)
         return True
     with open(f1, encoding="latin-1") as tstfp: chk = tstfp.read(4)
     if chk == 'CDF\x01':
@@ -226,12 +215,12 @@ def file_compare(f1, f2, logfp):
 # by hand!
 
 def do_run(t, rdir, logfp, i, n):
-    os.chdir(U.ctoaster_root)
+    os.chdir(U.cgenie_root)
     print('Running test "' + t + '" [' + str(i) + '/' + str(n) + ']')
     print('Running test "' + t + '"', file=logfp)
     t = t.replace('\\', '\\\\')
 
-    test_dir = os.path.join(U.ctoaster_test, t)
+    test_dir = os.path.join(U.cgenie_test, t)
     if plat.system() == 'Windows':
         cmd = ['cmd', '/c', os.path.join(os.curdir, 'new-job.bat')]
     else:
@@ -242,13 +231,17 @@ def do_run(t, rdir, logfp, i, n):
 
     # Set up other options for "new-job".
     cmd += ['-j', rdir]
-    
+
     # Do job configuration, copying restart files if necessary.
     print('  Configuring job...')
     print('  Configuring job...', file=logfp)
     logfp.flush()
-    if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
+    result = sp.run(cmd, stdout=logfp, stderr=logfp, text=True)
+    if result.returncode != 0:
         sys.exit('Failed to configure test job')
+
+
+    ###print(cmd)
 
     # Build and run job.
     os.chdir(os.path.join(rdir, t))
@@ -260,8 +253,10 @@ def do_run(t, rdir, logfp, i, n):
     else:
         go = [os.path.join(os.curdir, 'go')]
     cmd = go + ['run', '--no-progress']
-    if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
+    result = sp.run(cmd, stdout=logfp, stderr=logfp, text=True)
+    if result.returncode != 0:
         sys.exit('Failed to build and run test job')
+
 
     # Compare results, walking over all known good files in the test
     # directory.
@@ -277,11 +272,11 @@ def do_run(t, rdir, logfp, i, n):
             testf = os.path.join(rdir, t, 'output', relname)
             if file_compare(fullf, testf, logfp):
                 passed = False
-                print('    FAILED: ' + relname)
-                print('    FAILED: ' + relname, file=logfp)
+                print(f'    FAILED: {relname}')
+                print(f'    FAILED: {relname}', file=logfp)
             else:
-                print('    OK: ' + relname)
-                print('    OK: ' + relname, file=logfp)
+                print(f'    OK: {relname}')
+                print(f'    OK: {relname}', file=logfp)
     return passed
 
 
@@ -293,7 +288,7 @@ def restart_map(tests):
     while len(check) != 0:
         for t in check:
             r = None
-            ifile = os.path.join(U.ctoaster_test, t, 'test_info')
+            ifile = os.path.join(U.cgenie_test, t, 'test_info')
             if not os.path.exists(ifile):
                 sys.exit('Test "' + t + '" does not exist')
             with open(ifile) as fp:
@@ -327,22 +322,22 @@ def run_tests(tests):
 
     # Set up test jobs directory.
     label = dt.datetime.today().strftime('%Y%m%d-%H%M%S')
-    rdir = os.path.join(U.ctoaster_jobs, 'test-' + label)
+    rdir = os.path.join(U.cgenie_jobs, 'test-' + label)
     print('Test output in ' + rdir + '\n')
     os.makedirs(rdir)
 
     # Deal with "ALL" case.
     if tests == ['ALL']:
-        tests = [os.path.relpath(p, U.ctoaster_test)
-                 for p in glob.glob(os.path.join(U.ctoaster_test, '*'))
+        tests = [os.path.relpath(p, U.cgenie_test)
+                 for p in glob.glob(os.path.join(U.cgenie_test, '*'))
                  if os.path.isdir(p)]
 
     # Determine leaf tests.
     ltests = []
     for tin in tests:
-        for d, ds, fs in os.walk(os.path.join(U.ctoaster_test, tin)):
+        for d, ds, fs in os.walk(os.path.join(U.cgenie_test, tin)):
             if os.path.exists(os.path.join(d, 'test_info')):
-                ltests.append(os.path.relpath(d, U.ctoaster_test))
+                ltests.append(os.path.relpath(d, U.cgenie_test))
 
     # Determine restart prerequisites for tests in list.
     restarts = restart_map(ltests)
@@ -407,7 +402,7 @@ elif action == 'run':
     if len(sys.argv) < 3: usage()
     if sys.argv[2] == '-v':
         if len(sys.argv) < 4: usage()
-        test_version = sys.argv[3]        
+        test_version = sys.argv[3]
         if test_version not in U.available_versions():
             sys.exit('Model version "' + test_version + '" does not exist')
         tests = sys.argv[4:]

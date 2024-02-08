@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os, sys, glob, shutil
 import subprocess as sp
 import json
@@ -9,19 +8,24 @@ import utils as U
 
 # Data and test GitHub repositories.
 
-datarepo = 'https://github.com/derpycode/ctoaster.cupcake-data'
-testrepo = 'https://github.com/derpycode/ctoaster.cupcake-test'
+datarepo = 'https://github.com/genie-model/cgenie-data'
+testrepo = 'https://github.com/genie-model/cgenie-test'
 
 
 # Input helpers.
 
 def ask(prompt, default, options=None):
+    # Ensure default is a string, assuming UTF-8 encoding; adjust encoding as necessary.
+    if isinstance(default, bytes):
+        default = default.decode('utf-8')
+    
     while True:
         res = input(prompt + ' [' + default + ']: ') or default
         if not options or res in options:
             return res
         else:
             print('Input must be one of:', ' '.join(options))
+
 
 def yesno(prompt, default):
     opts = 'Yn' if default else 'yN'
@@ -32,22 +36,22 @@ def yesno(prompt, default):
 
 versions = U.available_versions()
 default_version = versions[-1]
-config = U.read_ctoaster_config()
+config = U.read_cgenie_config()
 if config:
     print('Already set up...')
 else:
-    root = ask('Root directory', os.path.expanduser('~/ctoaster.cupcake'))
+    root = ask('Root directory', os.path.expanduser('~/cupcake'))
     base = os.path.abspath(os.path.join(root, os.pardir))
-    data = ask('Data directory', os.path.join(base, 'ctoaster.cupcake-data'))
-    test = ask('Test directory', os.path.join(base, 'ctoaster.cupcake-test'))
-    jobs = ask('Jobs directory', os.path.join(base, 'ctoaster.cupcake-jobs'))
+    data = ask('Data directory', os.path.join(base, 'cgenie-data'))
+    test = ask('Test directory', os.path.join(base, 'cgenie-test'))
+    jobs = ask('Jobs directory', os.path.join(base, 'cgenie-jobs'))
     vers = ask('Default version', default_version, str(versions))
-    with open(U.ctoaster_cfgfile, 'w') as fp:
-        print('ctoaster_root: ' + root, file=fp)
-        print('ctoaster_data: ' + data, file=fp)
-        print('ctoaster_test: ' + test, file=fp)
-        print('ctoaster_jobs: ' + jobs, file=fp)
-        print('ctoaster_version: ' + vers, file=fp)
+    with open(U.genie_cfgfile, 'w') as fp:
+        print('cgenie_root: ' + root, file=fp)
+        print('cgenie_data: ' + data, file=fp)
+        print('cgenie_test: ' + test, file=fp)
+        print('cgenie_jobs: ' + jobs, file=fp)
+        print('cgenie_version: ' + vers, file=fp)
     try:
         if not os.path.exists(jobs): os.mkdir(jobs)
     except IOError:
@@ -64,13 +68,13 @@ if not os.path.exists(test):
     download_test = yesno('Test directory does not exist. Download?', True)
 
 if download_data:
-    print('Downloading ctoaster.cupcake-data repository...')
+    print('Downloading cgenie-data repository...')
     if sp.call(['git', 'clone', datarepo, data]) != 0:
-        print('FAILED TO CLONE ctoaster.cupcake-data REPOSITORY!')
+        print('FAILED TO CLONE cgenie-data REPOSITORY!')
 if download_test:
-    print('Downloading ctoaster.cupcake-test repository...')
+    print('Downloading cgenie-test repository...')
     if sp.call(['git', 'clone', testrepo, test]) != 0:
-        print('FAILED TO CLONE ctoaster.cupcake-test REPOSITORY!')
+        print('FAILED TO CLONE cgenie-test REPOSITORY!')
 
 
 # Test setup.
@@ -81,8 +85,8 @@ def setup_error(msg):
     print('')
     print('   ' + msg)
     print('')
-    print('    IN THIS SITUATION, cTOASTER IS UNLIKELY TO WORK!')
-    print('    CONTACT: andy@seao2.org')
+    print('    IN THIS SITUATION, GENIE IS UNLIKELY TO WORK!')
+    print('    CONTACT ANDY (andy@seao2.org) FOR HELP...')
     print('')
     print(79 * '*')
     sys.exit(1)
@@ -91,7 +95,7 @@ def setup_error(msg):
 # Test build platform discovery.
 
 print('\nChecking build platform...')
-if not U.read_ctoaster_config():
+if not U.read_cgenie_config():
     sys.exit('Internal error: GENIE set up failed!')
 
 platform = U.discover_platform()
@@ -100,7 +104,7 @@ if platform == 'LINUX' or platform == 'WINDOWS':
 else:
     print('  Using platform "' + platform + '"')
 try:
-    exec(open(os.path.join(U.ctoaster_root, 'platforms', platform)).read())
+    exec(open(os.path.join(U.cgenie_root, 'platforms', platform)).read())
 except Exception as e:
     setup_error('PLATFORM SETUP FAILED!' + str(e))
 
@@ -112,9 +116,9 @@ print('    NetCDF base directory: ' + " ".join(netcdf['base']))
 if platform == 'LINUX':
     print('\nTesting Git version...')
 
-    gitversion = sp.check_output(['git', '--version']).strip().split()[2]
-    gitversion = map(int, gitversion.split('.'))
-    if gitversion[0] < 2 or gitversion[1] < 3:
+    gitversion = sp.check_output(['git', '--version']).strip().decode('utf-8').split()[2]
+    gitversion = list(map(int, gitversion.split('.')))  # Convert map object to list for indexing
+    if gitversion[0] < 2 or (gitversion[0] == 2 and gitversion[1] < 3):
         setup_error('GIT VERSION IS TOO OLD!')
     else:
         print('  Git version OK')
@@ -161,14 +165,20 @@ else:
 # "gui" or "no-gui".
 
 try:
-    pyres = sp.check_output([sys.executable, os.path.join(tmpdir, 'pytest.py')])
+    completed_process = sp.run([sys.executable, os.path.join(tmpdir, 'pytest.py')],
+                               stdout=sp.PIPE,
+                               stderr=sp.PIPE,
+                               check=True,
+                               encoding='utf-8')
+    pyres = completed_process.stdout
     print('  Python install OK')
     if pyres.strip() == 'gui':
         print('  Python GUI available')
     else:
         print('  Python GUI not available')
-except:
+except sp.CalledProcessError:
     setup_error('BAD PYTHON INSTALLATION!')
+
 
 
 # Basic Fortran setup.
@@ -222,7 +232,7 @@ env.Program('f90test.exe', ['f90test.f90'])
 
 # Run SCons in test directory.
 
-###scons = os.path.join(U.ctoaster_root, 'tools', 'scons', 'scons.py')
+###scons = os.path.join(U.cgenie_root, 'tools', 'scons', 'scons.py')
 scons = 'scons'
 try:
     cmd = [scons, '-C', tmpdir]
