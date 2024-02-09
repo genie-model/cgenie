@@ -1,17 +1,16 @@
-from __future__ import print_function
 import os, os.path, sys, shutil, argparse, glob, signal
 import subprocess as sp
 import platform as plat
 import datetime as dt
 try:
-    import Queue as qu
+    import queue as qu
     import threading as thr
-    import Tkinter as tk
-    import tkFont
-    import tkMessageBox
-    import ttk
+    import tkinter as tk
+    from tkinter import font as tkFont
+    from tkinter import messagebox as tkMessageBox
+    from tkinter import ttk
     gui_available = True
-except:
+except ImportError:
     gui_available = False
 
 import utils as U
@@ -157,7 +156,7 @@ if gui_available:
         def manage(self, cmd, logfp, cont, *rest):
             self.cont = cont
             self.contrest = rest
-            self.proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+            self.proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT, encoding='utf-8')  # Added encoding
             q = qu.Queue()
             t = thr.Thread(target=self.reader_thread, args=[q, logfp]).start()
             self.update(q)
@@ -235,9 +234,9 @@ def console_manage(cmd, logfp, cont, *rest):
     global runner
     runner = None
     signal.signal(signal.SIGTERM, cleanup)
-    runner = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+    runner = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT, encoding='utf-8')  # Added encoding
     while True:
-        line = runner.stdout.readline().decode('utf8')
+        line = runner.stdout.readline()  # Removed .decode('utf8')
         if not line: break
         logfp.write(line)
         logfp.flush()
@@ -321,30 +320,32 @@ def clean_build():
 def build(cont):
     model_config.setup()
     model_dir = model_config.directory()
-    if os.path.exists(os.path.join('config','platform-name')):
-        print('manual platform file has been set by set-platform')
-        if not os.path.exists(os.path.join(model_dir,'config')):
-            os.makedirs(os.path.join(model_dir,'config'))
-        if not os.path.exists(os.path.join(model_dir,'config','platform-name')):
-            print('manual platform does not have platform-name file, copying')
-            shutil.copy(os.path.join('config','platform-name'), os.path.join(model_dir,'config'))
-    with open(os.devnull, 'w') as sink:
-        cmd = [scons, '-q', '-C', model_dir]
-        cmd = [sys.executable] + cmd
-        need_build = sp.call(cmd, stdout=sink, stderr=sink)
+    if os.path.exists(os.path.join('config', 'platform-name')):
+        print('Manual platform file has been set by set-platform')
+        if not os.path.exists(os.path.join(model_dir, 'config')):
+            os.makedirs(os.path.join(model_dir, 'config'))
+        if not os.path.exists(os.path.join(model_dir, 'config', 'platform-name')):
+            print('Manual platform does not have platform-name file, copying')
+            shutil.copy(os.path.join('config', 'platform-name'), os.path.join(model_dir, 'config'))
+    cmd = [scons, '-q', '-C', model_dir]
+    cmd = [sys.executable] + cmd
+    try:
+        result = sp.run(cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL, check=True)
+        need_build = False
+    except sp.CalledProcessError:
+        need_build = True
+
     if not need_build:
         message('Build is up to date')
-        shutil.copy(os.path.join(model_dir, 'cupcake.exe'),
-                    os.path.join(os.curdir, exe_name))
+        shutil.copy(os.path.join(model_dir, 'cupcake.exe'), os.path.join(os.curdir, exe_name))
         if cont: cont()
-        else: return
-    message('BUILDING: ' + model_config.display_model_version)
-    logfp = open(os.path.join(model_dir, 'build.log'), 'w')
-    rev = 'rev=' + model_config.display_model_version
-    cmd = [scons, '-C', model_dir, rev]
-    #cmd = [sys.executable, '-u'] + cmd
-    cmd.append('progress=' + ('1' if progress else '0'))
-    manage(cmd, logfp, build2, cont)
+        return
+
+    message(f'BUILDING: {model_config.display_model_version}')
+    with open(os.path.join(model_dir, 'build.log'), 'w') as logfp:
+        rev = f'rev={model_config.display_model_version}'
+        cmd = [scons, '-C', model_dir, rev, f'progress={"1" if progress else "0"}']
+        manage(cmd, logfp, build2, cont)
 
 def build2(result, cont):
     shutil.copy(os.path.join(model_dir, 'build.log'), os.curdir)
@@ -365,14 +366,15 @@ tend = None
 
 def run(cont=None):
     global tstart
-    message('RUNNING: ' + model_config.display_model_version)
+    message(f'RUNNING: {model_config.display_model_version}')
     platform = U.discover_platform()
     exec(open(os.path.join(U.ctoaster_root, 'platforms', platform)).read())
     if 'runtime_env' in locals():
-        for k, v in locals()['runtime_env'].items(): os.environ[k] = v
-    logfp = open('run.log', 'w')
-    tstart = dt.datetime.now()
-    manage(os.path.join('.', exe_name), logfp, run2, cont)
+        for k, v in locals()['runtime_env'].items():
+            os.environ[k] = v
+    with open('run.log', 'w') as logfp:
+        tstart = dt.datetime.now()
+        manage(os.path.join('.', exe_name), logfp, run2, cont)
 
 def run2(result, cont):
     global tstart
