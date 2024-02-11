@@ -19,7 +19,7 @@ def ask(prompt, default, options=None):
     if isinstance(default, bytes):
         default = default.decode('utf-8')
     while True:
-        res = input(prompt + ' [' + default + ']: ') or default
+        res = input(f'{prompt} [{default}]: ') or default
         if not options or res in options:
             return res
         else:
@@ -27,8 +27,7 @@ def ask(prompt, default, options=None):
 
 def yesno(prompt, default):
     opts = 'Yn' if default else 'yN'
-    return input(prompt + ' [' + opts + ']: ') or default
-
+    return input(f'{prompt} [{opts}]: ') or default
 
 # Get options from user.
 
@@ -45,11 +44,12 @@ else:
     jobs = ask('Jobs directory', os.path.join(base, 'ctoaster.cupcake-jobs'))
     vers = ask('Default version', default_version, str(versions))
     with open(U.ctoaster_cfgfile, 'w') as fp:
-        print('ctoaster_root: ' + root, file=fp)
-        print('ctoaster_data: ' + data, file=fp)
-        print('ctoaster_test: ' + test, file=fp)
-        print('ctoaster_jobs: ' + jobs, file=fp)
-        print('ctoaster_version: ' + vers, file=fp)
+        print(f'ctoaster_root: {root}', file=fp)
+        print(f'ctoaster_data: {data}', file=fp)
+        print(f'ctoaster_test: {test}', file=fp)
+        print(f'ctoaster_jobs: {jobs}', file=fp)
+        print(f'ctoaster_version: {vers}', file=fp)
+
     try:
         if not os.path.exists(jobs): os.mkdir(jobs)
     except IOError:
@@ -78,14 +78,9 @@ if download_test:
 # Test setup.
 
 def setup_error(msg):
-    print('')
-    print(79 * '*')
-    print('')
-    print('   ' + msg)
-    print('')
+    print('\n' + 79 * '*' + '\n\n' + f'   {msg}\n')
     print('    IN THIS SITUATION, cTOASTER IS UNLIKELY TO WORK!')
-    print('    CONTACT: andy@seao2.org')
-    print('')
+    print('    CONTACT: andy@seao2.org\n')
     print(79 * '*')
     sys.exit(1)
 
@@ -97,17 +92,17 @@ if not U.read_ctoaster_config():
     sys.exit('Internal error: cTOASTER set up failed!')
 
 platform = U.discover_platform()
-if platform == 'LINUX' or platform == 'WINDOWS':
-    print('  Using default ' + platform.capitalize() + ' platform')
+if platform in ['LINUX', 'WINDOWS']:
+    print(f'  Using default {platform.capitalize()} platform')
 else:
-    print('  Using platform "' + platform + '"')
+    print(f'  Using platform "{platform}"')
 try:
     exec(open(os.path.join(U.ctoaster_root, 'platforms', platform)).read())
 except Exception as e:
-    setup_error('PLATFORM SETUP FAILED!' + str(e))
+    setup_error(f'PLATFORM SETUP FAILED!{e}')
 
-print('    Fortran compiler:      ' + f90['compiler'])
-print('    NetCDF base directory: ' + " ".join(netcdf['base']))
+print(f'    Fortran compiler:      {f90["compiler"]}')
+print(f'    NetCDF base directory: {" ".join(netcdf["base"])}')
 
 ## Test Git version.
 #
@@ -137,19 +132,18 @@ atexit.register(remove_tmpdir)
 
 with open(os.path.join(tmpdir, 'pytest.py'), 'w') as pyfp:
     print("""
-from __future__ import print_function
 import os, os.path, sys, shutil, argparse, glob
 import subprocess as sp
 import platform as plat
 try:
-    import Queue as qu
+    import queue as qu
     import threading as thr
-    import Tkinter as tk
-    import tkFont
-    import tkMessageBox
-    import ttk
+    import tkinter as tk
+    from tkinter import font as tkFont
+    from tkinter import messagebox as tkMessageBox
+    from tkinter import ttk
     gui_available = True
-except:
+except ImportError:
     gui_available = False
 
 if gui_available:
@@ -194,12 +188,12 @@ END PROGRAM f90test
 # Write test SCons file.
 
 with open(os.path.join(tmpdir, 'SConstruct'), 'w') as sconsfp:
-    print("""
+    sconsfp.write("""
 import os
-""", file=sconsfp)
-    print('f90 =', f90, file=sconsfp)
-    print('netcdf =', netcdf, file=sconsfp)
-    print("""
+""")
+    sconsfp.write(f'f90 = {f90}\n')
+    sconsfp.write(f'netcdf = {netcdf}\n')
+    sconsfp.write("""
 envcopy = { }
 envcopy['PATH'] = os.environ['PATH']
 if 'TMP' in os.environ: envcopy['TMP'] = os.environ['TMP']
@@ -224,7 +218,7 @@ if 'ld_library_path' in f90:
     env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
 
 env.Program('f90test.exe', ['f90test.f90'])
-""", file=sconsfp)
+""")
 
 # Run SCons in test directory.
 
@@ -232,15 +226,15 @@ env.Program('f90test.exe', ['f90test.f90'])
 scons = 'scons'
 try:
     cmd = [scons, '-C', tmpdir]
-    if plat.system() == 'Windows': cmd = ['python'] + cmd
-    with open(os.devnull, 'w') as sink:
-        if sp.call(cmd) == 0:
-        #if sp.call(cmd, stdout=sink, stderr=sink) == 0:
-            print('  Basic executable build OK')
-        else:
-            setup_error('BASIC FORTRAN BUILD FAILED! [1.1]')
+    if plat.system() == 'Windows':
+        cmd = ['python'] + cmd
+    result = sp.run(cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+    if result.returncode == 0:
+        print('  Basic executable build OK')
+    else:
+        setup_error('BASIC FORTRAN BUILD FAILED! [1.1]')
 except Exception as e:
-    setup_error('BASIC FORTRAN BUILD FAILED! [1.2]' + str(e))
+    setup_error(f'BASIC FORTRAN BUILD FAILED! [1.2] {e}')
 
 # Check for existence of executable, run executable and check result.
 
@@ -309,11 +303,11 @@ END PROGRAM nf90test
 # Write test SCons file.
 
 with open(os.path.join(tmpdir, 'SConstruct'), 'w') as sconsfp:
-    print("""
+    sconsfp.write("""
 import os
-""", file=sconsfp)
-    print('f90 =', f90, file=sconsfp)
-    print('netcdf =', netcdf, file=sconsfp)
+""")
+    sconsfp.write(f'f90 = {f90}\n')
+    sconsfp.write(f'netcdf = {netcdf}\n')
     print("""
 envcopy = { }
 envcopy['PATH'] = os.environ['PATH']
@@ -351,14 +345,15 @@ env.Program('f90nctest.exe', ['f90nctest.f90'])
 
 try:
     cmd = [scons, '-C', tmpdir]
-    if plat.system() == 'Windows': cmd = ['python'] + cmd
-    with open(os.devnull, 'w') as sink:
-        if sp.call(cmd) == 0:
-            print('  NetCDF executable build OK')
-        else:
-            setup_error('NETCDF FORTRAN BUILD FAILED! [2.1]')
+    if plat.system() == 'Windows':
+        cmd = ['python'] + cmd
+    result = sp.run(cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+    if result.returncode == 0:
+        print('  NetCDF executable build OK')
+    else:
+        setup_error('NETCDF FORTRAN BUILD FAILED! [2.1]')
 except Exception as e:
-    setup_error('NETCDF FORTRAN BUILD FAILED! [2.2]')
+    setup_error(f'NETCDF FORTRAN BUILD FAILED! [2.2] {e}')
 
 # Check for existence of executable, run executable and check result.
 

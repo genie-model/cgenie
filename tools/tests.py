@@ -64,56 +64,63 @@ def add_test(test_job, test_name, restart):
             if fs != []: return True
         return False
 
-    # Check for existence of required jobs, tests and directories.
+    # Check for existence of required jobs, tests, and directories.
     job_dir = os.path.join(U.ctoaster_jobs, test_job)
-    if not has_job_output(job_dir):
-        sys.exit('Need to run job "' + test_job +
-                 '" before adding it as a test')
     test_dir = os.path.join(U.ctoaster_test, test_name)
+
+    # Check job directory existence and output
+    if not has_job_output(job_dir):
+        sys.exit(f'Need to run job "{test_job}" before adding it as a test')
     if not os.path.exists(job_dir):
-        sys.exit('Job "' + test_job + '" does not exist')
-    if os.path.exists(test_dir): sys.exit('Test already exists!')
+        sys.exit(f'Job "{test_job}" does not exist')
+    if os.path.exists(test_dir):
+        sys.exit('Test already exists!')
+
+    # Check restart test directory if restart is specified
     if restart:
         restart_test_dir = os.path.join(U.ctoaster_test, restart)
         if not os.path.exists(restart_test_dir):
-            sys.exit('Restart test "' + restart + '" does not exist')
+            sys.exit(f'Restart test "{restart}" does not exist')
 
     # Set up test directory and copy configuration files.
-    os.makedirs(test_dir)
-    shutil.copy(os.path.join(job_dir, 'config', 'config'),
-                os.path.join(test_dir, 'test_info'))
+    os.makedirs(test_dir, exist_ok=True)
+    shutil.copy(os.path.join(job_dir, 'config', 'config'), os.path.join(test_dir, 'test_info'))
+
     if restart:
         with open(os.path.join(test_dir, 'test_info'), 'a') as fp:
             print(f'restart_from: {restart}', file=fp)
     for c in ['full_config', 'base_config', 'user_config']:
-        if os.path.exists(os.path.join(job_dir, 'config', c)):
-            shutil.copy(os.path.join(job_dir, 'config', c), test_dir)
+        config_path = os.path.join(job_dir, 'config', c)
+        if os.path.exists(config_path):
+            shutil.copy(config_path, test_dir)
 
     # Ask user which output files to use for comparison and copy them
     # to the test "knowngood" directory.
     print('Selecting output files for test comparison:')
     srcdir = os.path.join(job_dir, 'output')
     dstdir = os.path.join(test_dir, 'knowngood')
-    os.chdir(srcdir)
-    for subd in glob.iglob('*'):
-        fs = []
-        if subd in select_defaults:
-            fs = select_defaults[subd](subd)
-        else:
-            fs = nc_defaults(subd)
-        print(f'  {subd} defaults: {"NONE" if not fs else " ".join(map(os.path.basename, fs))}')
-        accept_defaults = raw_input('    Accept defaults? [Yn]: ').strip()
-        if accept_defaults != '' and accept_defaults.lower() != 'y':
-            fs = []
-            for f in glob.iglob(os.path.join(subd, '*')):
-                yn = raw_input('    ' + f + ' [yN]: ').strip()
-                if yn.lower() == 'y': fs.append(f)
-        for f in fs:
-            src = os.path.join(srcdir, f)
-            dst = os.path.join(dstdir, f)
-            if not os.path.exists(os.path.dirname(dst)):
-                os.makedirs(os.path.dirname(dst))
-            shutil.copyfile(src, dst)
+    os.makedirs(dstdir, exist_ok=True)  # Ensure destination directory exists
+
+    for subd in glob.iglob(os.path.join(srcdir, '*')):
+        if os.path.isdir(subd):
+            subd_name = os.path.basename(subd)
+            fs = select_defaults[subd_name](subd_name) if subd_name in select_defaults else nc_defaults(subd_name)
+            print(f'  {subd_name} defaults: {"NONE" if not fs else " ".join(map(os.path.basename, fs))}')
+            
+            accept_defaults = input('    Accept defaults? [Y/n]: ').strip().lower()
+            if accept_defaults not in ('', 'y'):
+                fs = []
+                for f in glob.iglob(os.path.join(subd, '*')):
+                    yn = input(f'    Include {os.path.basename(f)}? [y/N]: ').strip().lower()
+                    if yn == 'y':
+                        fs.append(f)
+            
+            for f in fs:
+                dst_subdir = os.path.join(dstdir, os.path.relpath(os.path.dirname(f), srcdir))
+                os.makedirs(dst_subdir, exist_ok=True)
+                shutil.copy(f, dst_subdir)
+                print(f'Copied {f} to {dst_subdir}')
+
 
 
     # Copy restart files if they exist and we aren't restarting from
@@ -212,8 +219,9 @@ def file_compare(f1, f2, logfp):
 
 def do_run(t, rdir, logfp, i, n):
     os.chdir(U.ctoaster_root)
-    print('Running test "' + t + '" [' + str(i) + '/' + str(n) + ']')
-    print('Running test "' + t + '"', file=logfp)
+    print(f'Running test "{t}" [{i}/{n}]')
+    print(f'Running test "{t}"', file=logfp)
+
     t = t.replace('\\', '\\\\')
 
     test_dir = os.path.join(U.ctoaster_test, t)
@@ -281,7 +289,7 @@ def restart_map(tests):
             r = None
             ifile = os.path.join(U.ctoaster_test, t, 'test_info')
             if not os.path.exists(ifile):
-                sys.exit('Test "' + t + '" does not exist')
+                sys.exit(f'Test "{t}" does not exist')
             with open(ifile) as fp:
                 for line in fp:
                     if line.startswith('restart_from'):

@@ -299,15 +299,20 @@ exe_name = 'cupcake-' + build_type + '.exe' if build_type else 'cupcake.exe'
 # directories for model setup for this job.
 
 def clean(clean_model):
-    message('CLEANING MODEL RESULTS' +
-            (' AND BUILD' if clean_model else '') + '...')
+    clean_msg = "CLEANING MODEL RESULTS AND BUILD" if clean_model else "CLEANING MODEL RESULTS"
+    message(f'{clean_msg}...')
     if clean_model:
-        model_config.clean()					# calls method 'clean' for class ModelConfig [utils.py]
-        for exe in glob.iglob('cupcake-*.exe'): os.remove(exe)	# finds instances of 'cupcake-*.exe' in the current [ctoaster-jobs] directory (and recursively in all subdirectories)
-        if os.path.exists('build.log'): os.remove('build.log')	# (remove 'build.log' if it exists)
-    if os.path.exists('run.log'): os.remove('run.log')		# (remove 'run.log' if it exists)
-    for d, ds, fs in os.walk('output'):
-        for f in fs: os.remove(os.path.join(d, f))
+        model_config.clean()  # calls method 'clean' for class ModelConfig [utils.py]
+        for exe in glob.iglob('cupcake-*.exe'):
+            os.remove(exe)  # finds and removes 'cupcake-*.exe' files
+        if os.path.exists('build.log'):
+            os.remove('build.log')  # removes 'build.log' if it exists
+    if os.path.exists('run.log'):
+        os.remove('run.log')  # removes 'run.log' if it exists
+    for d, _, fs in os.walk('output'):
+        for f in fs:
+            os.remove(os.path.join(d, f))  # removes files in 'output' directory
+
 
 def clean_build():
     message('REMOVING BUILD' + '...')

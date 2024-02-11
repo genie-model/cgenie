@@ -56,12 +56,13 @@ t100 = True if opts.t100 else False
 job_dir_base = opts.job_dir
 model_version = opts.model_version
 if model_version not in U.available_versions():
-    sys.exit('Model version "' + model_version + '" does not exist')
+    sys.exit(f'Model version "{model_version}" does not exist')
+
 
 
 def error_exit(msg):
     if running_from_gui:
-        sys.exit('ERR:' + msg)
+        sys.exit(f'ERR:{msg}')
     else:
         sys.exit(msg)
 
@@ -84,18 +85,17 @@ if model_version != repo_version:
 
 base_and_user_config = base_config and user_config
 if not base_and_user_config and not full_config and not test_job:
-    error_exit('Either base and user, full configuration ' +
-               'or test must be specified')
+    error_exit('Either base and user, full configuration or test must be specified')
 if not base_and_user_config and config_mods:
-    error_exit('Configuration mods can only be specified if ' +
-               'using base and user configuration')
+    error_exit('Configuration mods can only be specified if using base and user configuration')
+
 nset = 0
 if base_and_user_config: nset += 1
 if full_config:          nset += 1
 if test_job:             nset += 1
 if nset > 1:
-    error_exit('Only one of base and user, full configuration ' +
-               'or test may be specified')
+    error_exit('Only one of base and user, full configuration, or test may be specified')
+
 
 
 # 
@@ -104,44 +104,47 @@ if test_job:
     test_dir = os.path.join(U.ctoaster_test, test_job)
     with open(os.path.join(test_dir, 'test_info')) as fp:
         for line in fp:
-            ss = line.split(':')
-            k = ss[0].strip()
-            v = ':'.join(ss[1:]).strip()
-            if k == 'restart_from': restart = v
-            elif k == 'run_length': run_length = int(v)
-            elif k == 't100': t100 = True if v == 'True' else False
+            k, _, v = line.partition(':')
+            k = k.strip()
+            v = v.strip()
+            if k == 'restart_from':
+                restart = v
+            elif k == 'run_length':
+                run_length = int(v)
+            elif k == 't100':
+                t100 = v == 'True'
+
 
 
 # Check for existence of any restart job.
 
 if restart:
     if old_restart:
-        restart_path = os.path.join(os.path.expanduser('~/ctoaster_output'),
-                                    restart)
+        restart_path = os.path.join(os.path.expanduser('~/ctoaster_output'), restart)
     elif os.path.exists(restart):
         restart_path = restart
     else:
         restart_path = os.path.join(job_dir_base, restart, 'output')
     if not os.path.exists(restart_path):
-        if old_restart:
-            error_exit('Old ctoaster restart job "' + restart +
-                       '" does not exist')
-        else:
-            error_exit('Restart job "' + restart + '" does not exist')
-
+        error_msg = f'Old ctoaster restart job "{restart}" does not exist' if old_restart else f'Restart job "{restart}" does not exist'
+        error_exit(error_msg)
 
 # All set up.  Off we go...
 
 if not running_from_gui:
-    print('   Job name:', job_name + (' [TEST]' if test_job else ''))
+    print(f'   Job name: {job_name} {" [TEST]" if test_job else ""}')
     if base_and_user_config:
-        print('Base config:', base_config)
-        print('User config:', user_config)
-    if config_mods: print('Config mods:', config_mods)
-    if full_config: print('Full config:', full_config)
-    if not test_job: print(' Run length:', run_length)
-    print('  Overwrite:', overwrite)
-    print('      Model:', model_version)
+        print(f'Base config: {base_config}')
+        print(f'User config: {user_config}')
+    if config_mods: 
+        print(f'Config mods: {config_mods}')
+    if full_config: 
+        print(f'Full config: {full_config}')
+    if not test_job: 
+        print(f' Run length: {run_length}')
+    print(f'  Overwrite: {overwrite}')
+    print(f'      Model: {model_version}')
+
 
 
 # Read and parse configuration files.
@@ -238,24 +241,30 @@ except Exception as e:
 
 cfg_dir = os.path.join(job_dir, 'config')
 if not running_from_gui:
-    os.mkdir(cfg_dir)
+    # Check if cfg_dir exists and overwrite flag is True, then remove it
+    if os.path.exists(cfg_dir) and overwrite:
+        shutil.rmtree(cfg_dir)
+    # Now, safely create the cfg_dir as it's either new or has been cleared
+    os.makedirs(cfg_dir, exist_ok=True)  # Use exist_ok to avoid error if the directory was just deleted and recreated
+
     if not test_job:
         with open(os.path.join(cfg_dir, 'config'), 'w') as fp:
             if base_config:
-                print('base_config_dir:', base_config_dir, file=fp)
-                print('base_config:', base_config, file=fp)
+                print(f'base_config_dir: {base_config_dir}', file=fp)
+                print(f'base_config: {base_config}', file=fp)
             if user_config:
-                print('user_config_dir:', user_config_dir, file=fp)
-                print('user_config:', user_config, file=fp)
+                print(f'user_config_dir: {user_config_dir}', file=fp)
+                print(f'user_config: {user_config}', file=fp)
             if full_config:
-                print('full_config_dir:', full_config_dir, file=fp)
-                print('full_config:', full_config, file=fp)
+                print(f'full_config_dir: {full_config_dir}', file=fp)
+                print(f'full_config: {full_config}', file=fp)
             if config_mods:
-                print('config_mods:', config_mods, file=fp)
-            print('config_date:', str(datetime.datetime.today()), file=fp)
-            print('run_length:', run_length, file=fp)
-            print('t100:', t100, file=fp)
-            if restart: print('restart:', restart, file=fp)
+                print(f'config_mods: {config_mods}', file=fp)
+            print(f'config_date: {datetime.datetime.today()}', file=fp)
+            print(f'run_length: {run_length}', file=fp)
+            print(f't100: {t100}', file=fp)
+            if restart: 
+                print(f'restart: {restart}', file=fp)
 
 if test_job:
     shutil.copyfile(os.path.join(test_dir, 'test_info'),
