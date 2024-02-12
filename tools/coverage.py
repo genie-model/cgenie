@@ -1,6 +1,5 @@
-from __future__ import print_function
 import os, os.path, sys, errno, shutil, glob, re
-import optparse
+import argparse 
 import subprocess as sp
 import datetime as dt
 import ctypes as ct
@@ -28,8 +27,9 @@ test_version = U.ctoaster_version
 
 def do_run(t, rdir, logfp):
     os.chdir(U.ctoaster_root)
-    print('Running test "' + t + '"')
-    print('Running test "' + t + '"', file=logfp)
+    print(f'Running test "{t}"')
+    print(f'Running test "{t}"', file=logfp)
+
     t = t.replace('\\', '\\\\')
 
     test_dir = os.path.join(U.ctoaster_test, t)
@@ -75,7 +75,7 @@ def do_run(t, rdir, logfp):
     print('  Configuring job...')
     print('  Configuring job...', file=logfp)
     logfp.flush()
-    if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
+    if sp.run(cmd, stdout=logfp, stderr=logfp).returncode != 0:
         sys.exit('Failed to configure test job')
 
     # Build and run job.
@@ -88,7 +88,7 @@ def do_run(t, rdir, logfp):
     else:
         go = [os.path.join(os.curdir, 'go')]
     cmd = go + ['run', 'coverage', '--no-progress']
-    if sp.check_call(cmd, stdout=logfp, stderr=logfp) != 0:
+    if sp.run(cmd, stdout=logfp, stderr=logfp).returncode != 0:
         sys.exit('Failed to build and run test job')
 
 
@@ -133,7 +133,8 @@ def run_coverage(tests):
     # Set up coverage jobs directory.
     label = dt.datetime.today().strftime('%Y%m%d-%H%M%S')
     rdir = os.path.join(U.ctoaster_jobs, 'coverage-' + label)
-    print('Coverage output in ' + rdir + '\n')
+    print(f'Coverage output in {rdir}\n')
+
     os.makedirs(rdir)
 
     # Deal with "ALL" case.
@@ -155,8 +156,7 @@ def run_coverage(tests):
     # Determine suitable execution order for tests from topological
     # sort of restart dependency graph.
     rtests = topological_sort(restarts)
-    if rtests == []: sys.exit('No tests specified!')
-
+    if not rtests: sys.exit('No tests specified!')
     # Clear coverage builds, run all jobs and collect gcov data.
     clear_gcov()
     with open(os.path.join(rdir, 'coverage.log'), 'w') as logfp:
@@ -172,8 +172,10 @@ def clear_gcov():
         os.chdir(os.path.join(U.ctoaster_jobs, 'MODELS'))
         for cov in glob.iglob('*/*/*/coverage'):
             shutil.rmtree(cov, ignore_errors=True)
-            if glob.glob(os.path.join(cov, os.pardir, '*')) == []:
-                os.removedirs(os.path.abspath(os.path.join(cov, os.pardir)))
+            parent_dir = os.path.abspath(os.path.join(cov, os.pardir))
+            if not os.listdir(parent_dir):
+                os.removedirs(parent_dir)
+
 
 
 # Collect coverage results.
@@ -190,7 +192,7 @@ def collect_gcov(rdir, logfp):
         os.chdir(os.path.join(U.ctoaster_jobs, 'MODELS', cov, 'build'))
 
         # Run gcov on all object files.
-        objs = glob.glob('*.o') + glob.glob('*/*.o')
+        objs = glob.glob('**/*.o', recursive=True)
         for o in objs:
             ps = o.split('/')
             if len(ps) == 2:
@@ -200,14 +202,18 @@ def collect_gcov(rdir, logfp):
                 d = None
                 f = ps[0]
             if d: os.chdir(d)
-            if sp.check_call(['gcov', f], stdout=logfp, stderr=logfp) != 0:
-                sys.exit('Failed processing ' + o + ' in ' + cov)
-            gc = os.path.splitext(f)[0] + '.f90.gcov'
-            gcto = gc + '-' + str(icov)
-            if d: gcto = d + '-' + gcto
+            try:
+                sp.run(['gcov', f], check=True, stdout=logfp, stderr=logfp)
+            except sp.CalledProcessError:
+                sys.exit(f'Failed processing {o} in {cov}')
+
+            gc = f"{os.path.splitext(f)[0]}.f90.gcov"
+            gcto = f"{gc}-{icov}"
+            if d: gcto = f"{d}-{gcto}"
             gcto = os.path.join(rdir, 'gcov-results', gcto)
             if os.path.exists(gc): shutil.move(gc, gcto)
             if d: os.chdir(os.pardir)
+
 
 
 # Merge coverage results.
@@ -239,8 +245,8 @@ def merge_gcov(rdir, logfp):
                     i += 1
             first = False
         with open(f90 + '.GCOV', 'w') as fpout:
-            for i in range(len(lines)):
-                print(counts[i] + ':' + lines[i], file=fpout)
+            for count, line in zip(counts, lines):
+                print(f"{count}:{line}", file=fpout)
     for gc in glob.iglob('*.f90.gcov-*'): os.remove(gc)
 
 
@@ -252,15 +258,21 @@ Usage: coverage [-v <version>] <test-name>...
 """)
     sys.exit()
 
-if len(sys.argv) < 2: usage()
-if sys.argv[1] == '-v':
-    if len(sys.argv) < 3: usage()
-    test_version = sys.argv[2]
-    if test_version not in U.available_versions():
-        sys.exit('Model version "' + test_version + '" does not exist')
-    tests = sys.argv[3:]
-else:
-    tests = sys.argv[1:]
-if 'ALL' in tests and len(tests) > 1:
+# Setup argparse for command line arguments
+parser = argparse.ArgumentParser(description='Run coverage on specified tests.')
+parser.add_argument('-v', '--version', help='Specify model version', default=None)
+parser.add_argument('tests', nargs='+', help='Test names or "ALL"')
+
+args = parser.parse_args()
+
+# Validate model version if specified
+if args.version and args.version not in U.available_versions():
+    sys.exit(f'Model version "{args.version}" does not exist')
+
+# Validate tests argument
+if 'ALL' in args.tests and len(args.tests) > 1:
     sys.exit('Must specify either "ALL" or a list of tests, not both')
-run_coverage(tests)
+
+# Run coverage with parsed arguments, without passing test_version
+run_coverage(args.tests)
+

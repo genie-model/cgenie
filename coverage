@@ -4,5 +4,5 @@ if [ ! -f ~/.ctoasterrc ]; then
     exit 0
 fi
 ctoaster_root=`grep ctoaster_root ~/.ctoasterrc | cut -d: -f2 | sed -e 's/^ *//'`
-source $ctoaster_root/tools/find_python
-exec $PYTHON $ctoaster_root/tools/coverage.py $*
+# Removed the line that sources find_python script
+exec python3 $ctoaster_root/tools/coverage.py $*
