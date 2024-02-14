@@ -247,45 +247,48 @@ def console_manage(cmd, logfp, cont, *rest):
     cont(res, *rest)
 
 
-# Command line arguments.
-
-def usage():
-    print("""
-Usage: go <command>
-
-Commands:
-  clean                                 Clean results
-  cleaner                               Clean results and model build
-  clean-build                           Just clean model build
-  build [<build-type>] [--no-progress]  Build model
-  run [<build-type>] [--no-progress]    Build and run model
-  set-platform <platform>               Set explicit build platform
-  clear-platform                        Clear explicit build platform
-""")
-    sys.exit()
+#Defining the default values for build_type and progress
 
 build_type = 'ship'
 progress = True
-if not gui:
-    if len(sys.argv) < 2: usage()
-    action = sys.argv[1]
-    if action in ['clean', 'cleaner', 'clear-platform', 'clean-build']:
-        if len(sys.argv) != 2: usage()
-    elif action == 'set-platform':
-        if len(sys.argv) != 3: usage()
-        platform = sys.argv[2]
-    elif action in ['build', 'run']:
-        if len(sys.argv) == 3:
-            if sys.argv[2] == '--no-progress': progress = False
-            else:                              build_type = sys.argv[2]
-        elif len(sys.argv) == 4:
-            build_type = sys.argv[2]
-            if sys.argv[3] == '--no-progress': progress = False
-            else:                              usage()
-        elif len(sys.argv) != 2: usage()
-        if build_type and build_type not in U.build_types:
-            sys.exit('Unrecognised build type: "' + build_type + '"')
-    else: usage()
+
+# Command line arguments.
+
+parser = argparse.ArgumentParser(description='Model build and run commands')
+subparsers = parser.add_subparsers(dest='command', help='Commands')
+
+# Subparser for clean commands
+clean_parser = subparsers.add_parser('clean', help='Clean results')
+cleaner_parser = subparsers.add_parser('cleaner', help='Clean results and model build')
+clean_build_parser = subparsers.add_parser('clean-build', help='Just clean model build')
+
+# Subparser for build and run commands
+for cmd in ['build', 'run']:
+    cmd_parser = subparsers.add_parser(cmd, help=f'{cmd.capitalize()} model')
+    cmd_parser.add_argument('build_type', nargs='?', default='ship', choices=U.build_types, help='Build type')
+    cmd_parser.add_argument('--no-progress', action='store_false', dest='progress', help='Disable progress output')
+
+# Subparser for platform commands
+set_platform_parser = subparsers.add_parser('set-platform', help='Set explicit build platform')
+set_platform_parser.add_argument('platform', help='Platform name')
+clear_platform_parser = subparsers.add_parser('clear-platform', help='Clear explicit build platform')
+
+args = parser.parse_args()
+
+# Handling commands based on parsed arguments
+if args.command in ['clean', 'cleaner', 'clear-platform', 'clean-build']:
+    # Handle cleaning commands
+    pass  # Implement the command-specific logic here
+elif args.command == 'set-platform':
+    platform = args.platform
+    # Implement platform setting logic here
+elif args.command in ['build', 'run']:
+    build_type = args.build_type
+    progress = args.progress
+    # Implement build or run logic here
+else:
+    parser.print_help()
+    sys.exit(1)
 
 
 # Model configuration for job.
@@ -406,19 +409,20 @@ else:
     message = console_message
     line = console_line
     manage = console_manage
-    if   action == 'clear-platform':
+    # Non-GUI command execution
+    if args.command == 'clear-platform':
         if os.path.exists(pfile): os.remove(pfile)
-    elif action == 'set-platform':
-        with open(pfile, 'w') as ofp: print(platform, file=ofp)
-    elif action == 'clean':
+    elif args.command == 'set-platform':
+        with open(pfile, 'w') as ofp: print(args.platform, file=ofp)
+    elif args.command == 'clean':
         clean(False)
-    elif action == 'cleaner':
+    elif args.command == 'cleaner':
         clean(True)
-    elif action == 'clean-build':
+    elif args.command == 'clean-build':
         clean_build()
-    elif action == 'build':
+    elif args.command == 'build':
+        # Assuming build function can handle None or specific build type and progress flag
         build(None)
-    elif action == 'run':
-        build(run)
-    else:
-        usage()
+    elif args.command == 'run':
+        # For the 'run' command, ensuring build function is called appropriately
+        build(run)  # Adjusted to match the original functionality

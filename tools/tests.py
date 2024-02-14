@@ -365,49 +365,55 @@ def run_tests(tests):
 
 # Command line arguments.
 
-def usage():
-    print("""
-Usage: tests <command>
+# def usage():
+#     print("""
+# Usage: tests <command>
 
-Commands:
-  list [<base>]                      List available tests
-  run [-v <version>] <test-name>...  Run test or group of tests
-  add <job>                          Add pre-existing job as test
-  add <test-name>=<job>              Add job as test with given name
-        [-r <test>]                  Restart from a pre-existing test
-""")
-    sys.exit()
+# Commands:
+#   list [<base>]                      List available tests
+#   run [-v <version>] <test-name>...  Run test or group of tests
+#   add <job>                          Add pre-existing job as test
+#   add <test-name>=<job>              Add job as test with given name
+#         [-r <test>]                  Restart from a pre-existing test
+# """)
+#     sys.exit()
 
-if len(sys.argv) < 2: usage()
-action = sys.argv[1]
-if action == 'list':
-    list_base = None
-    if len(sys.argv) == 3: list_base = sys.argv[2]
-    elif len(sys.argv) != 2: usage()
+
+# Setup argparse for command line arguments
+parser = argparse.ArgumentParser(description='Manage and run tests.')
+subparsers = parser.add_subparsers(dest='command', help='Available commands')
+
+# Parser for the "list" command
+list_parser = subparsers.add_parser('list', help='List available tests')
+list_parser.add_argument('base', nargs='?', help='Base for listing tests')
+
+# Parser for the "add" command
+add_parser = subparsers.add_parser('add', help='Add a new test')
+add_parser.add_argument('job', help='Job to add as a test')
+add_parser.add_argument('name', nargs='?', help='Name for the new test')
+add_parser.add_argument('-r', '--restart', help='Restart from a pre-existing test')
+
+# Parser for the "run" command
+run_parser = subparsers.add_parser('run', help='Run a test or group of tests')
+run_parser.add_argument('-v', '--version', help='Specify model version')
+run_parser.add_argument('tests', nargs='+', help='Test names or "ALL"')
+
+args = parser.parse_args()
+
+# Handle the commands
+if args.command == 'list':
+    list_base = args.base
     list(list_base)
-elif action == 'add':
-    if len(sys.argv) < 3: usage()
-    job = sys.argv[2]
-    if '=' in job:
-        name, job = job.split('=')
-    else:
-        name = job
-    restart = None
-    if len(sys.argv) == 5 and sys.argv[3] == '-r':
-        restart = sys.argv[4]
-    elif len(sys.argv) != 3: usage()
+elif args.command == 'add':
+    job = args.job
+    name = args.name if args.name else job
+    restart = args.restart
     add_test(job, name, restart)
-elif action == 'run':
-    if len(sys.argv) < 3: usage()
-    if sys.argv[2] == '-v':
-        if len(sys.argv) < 4: usage()
-        test_version = sys.argv[3]
-        if test_version not in U.available_versions():
-            sys.exit('Model version "' + test_version + '" does not exist')
-        tests = sys.argv[4:]
-    else:
-        tests = sys.argv[2:]
+elif args.command == 'run':
+    tests = args.tests
     if 'ALL' in tests and len(tests) > 1:
         sys.exit('Must specify either "ALL" or a list of tests, not both')
     run_tests(tests)
-else: usage()
+else:
+    parser.print_help()
+

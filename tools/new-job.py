@@ -1,5 +1,5 @@
 import os, sys, errno, shutil, datetime
-import optparse
+import argparse
 import subprocess as sp
 
 import utils as U
@@ -14,47 +14,47 @@ if not U.read_ctoaster_config():
 
 # Command line arguments.
 
-parser = optparse.OptionParser(usage='new-job [options] job-name run-length',
-                               description='Configure cTOASTER jobs')
-parser.add_option('-O', '--overwrite',     help='Overwrite existing job',
-                  action='store_true')
-parser.add_option('-b', '--base-config',   help='Base configuration name')
-parser.add_option('-u', '--user-config',   help='User configuration name')
-parser.add_option('-m', '--config-mods',   help='Configuration mods filename')
-parser.add_option('-c', '--config',        help='Full configuration name')
-parser.add_option('-r', '--restart',       help='Restart name')
-parser.add_option('--old-restart',         help='Restart from old ctoaster job',
-                  action='store_true')
-parser.add_option('--t100',                help='Use "T100" timestepping',
-                  action='store_true')
-parser.add_option('-t', '--test-job',      help='Set up from test')
-parser.add_option('-j', '--job-dir',       help='Alternative job directory',
-                  default=U.ctoaster_jobs)
-parser.add_option('-v', '--model-version', help='Model version to use',
-                  default = U.ctoaster_version)
-parser.add_option('-g', '--gui', action='store_true',
-                  help=optparse.SUPPRESS_HELP)
-opts, args = parser.parse_args()
-if not opts.test_job and len(args) != 2 or opts.test_job and len(args) != 0:
+parser = argparse.ArgumentParser(description='Configure cTOASTER jobs')
+parser.add_argument('job_name', nargs='?', help='Job name')
+parser.add_argument('run_length', nargs='?', type=int, help='Run length')
+parser.add_argument('-O', '--overwrite', action='store_true', help='Overwrite existing job')
+parser.add_argument('-b', '--base-config', help='Base configuration name')
+parser.add_argument('-u', '--user-config', help='User configuration name')
+parser.add_argument('-m', '--config-mods', help='Configuration mods filename')
+parser.add_argument('-c', '--config', help='Full configuration name')
+parser.add_argument('-r', '--restart', help='Restart name')
+parser.add_argument('--old-restart', action='store_true', help='Restart from old ctoaster job')
+parser.add_argument('--t100', action='store_true', help='Use "T100" timestepping')
+parser.add_argument('-t', '--test-job', help='Set up from test')
+parser.add_argument('-j', '--job-dir', help='Alternative job directory', default=U.ctoaster_jobs)
+parser.add_argument('-v', '--model-version', help='Model version to use', default=U.ctoaster_version)
+parser.add_argument('-g', '--gui', action='store_true', help=argparse.SUPPRESS)
+
+args = parser.parse_args()
+
+# Validate the number of positional arguments based on whether test_job is specified
+if not args.test_job and not (args.job_name and args.run_length is not None) or \
+   args.test_job and (args.job_name or args.run_length is not None):
     parser.print_help()
     sys.exit()
-if len(args) == 2:
-    job_name = args[0]
-    run_length = int(args[1])
-else:
-    job_name = opts.test_job
-running_from_gui = opts.gui
-overwrite = opts.overwrite
-base_config = opts.base_config
-user_config = opts.user_config
-config_mods = opts.config_mods
-full_config = opts.config
-restart = opts.restart
-test_job = opts.test_job
-old_restart = True if opts.old_restart else False
-t100 = True if opts.t100 else False
-job_dir_base = opts.job_dir
-model_version = opts.model_version
+
+# Assign values from args
+job_name = args.job_name if not args.test_job else args.test_job
+run_length = args.run_length
+running_from_gui = args.gui
+overwrite = args.overwrite
+base_config = args.base_config
+user_config = args.user_config
+config_mods = args.config_mods
+full_config = args.config
+restart = args.restart
+test_job = args.test_job
+old_restart = args.old_restart
+t100 = args.t100
+job_dir_base = args.job_dir
+model_version = args.model_version
+
+# Check if the model version exists
 if model_version not in U.available_versions():
     sys.exit(f'Model version "{model_version}" does not exist')
 

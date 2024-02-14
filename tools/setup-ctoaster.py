@@ -67,11 +67,13 @@ if not os.path.exists(test):
 
 if download_data:
     print('Downloading ctoaster.cupcake-data repository...')
-    if sp.call(['git', 'clone', datarepo, data]) != 0:
+    result = sp.run(['git', 'clone', datarepo, data], check=False)
+    if result.returncode != 0:
         print('FAILED TO CLONE ctoaster.cupcake-data REPOSITORY!')
 if download_test:
     print('Downloading ctoaster.cupcake-test repository...')
-    if sp.call(['git', 'clone', testrepo, test]) != 0:
+    result = sp.run(['git', 'clone', testrepo, test], check=False)
+    if result.returncode != 0:
         print('FAILED TO CLONE ctoaster.cupcake-test REPOSITORY!')
 
 
