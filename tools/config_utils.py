@@ -1,46 +1,40 @@
-from __future__ import print_function
 import json, csv
-import errno, os, sys, shutil, glob
+import os, sys, shutil, glob
 import re
 
 import utils as U
 
-
 # Regex for matching floating point values.
-
 fp_re = '[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
 
-
 # Read and parse a GENIE configuration file.
-
 def read_config(f, msg):
     # Clean string quotes and comments from parameter value.
     def clean(s):
-        if   (s[0] == '"'): return s[1:].partition('"')[0]
+        if (s[0] == '"'): return s[1:].partition('"')[0]
         elif (s[0] == "'"): return s[1:].partition("'")[0]
-        else:               return s.partition('#')[0].strip()
+        else: return s.partition('#')[0].strip()
     try:
-        res = { }
-        with (open(f)) as fp:
+        res = {}
+        with open(f) as fp:
             for line in fp:
                 if re.match('^\s*#', line): continue
                 m = re.search('([a-zA-Z0-9_]+)=(.*)', line)
                 if m: res[m.group(1)] = clean(m.group(2).strip())
             return res
-    except IOError as e:
-        if e.errno == errno.ENOENT: sys.exit(msg + ' not found: ' + f)
-        else: raise
+    except FileNotFoundError:
+        sys.exit(f'{msg} not found: {f}')  # Modernized message using f-string
+    except Exception as e:
+        raise e
 
 
 # Merge module flags from base and user configurations.
 
 def merge_flags(dicts):
-    res = { }
+    res = {}
     for d in dicts:
-        for k in d.keys():
-            if d[k].lower() == '.true.': v = 1
-            else: v = 0
-            res[k] = v
+        for k, v in d.items():
+            res[k] = 1 if v.lower() == '.true.' else 0
     return res
 
 
@@ -61,18 +55,19 @@ flagname_to_mod = { }
 def load_module_info():
     try:
         with open(os.path.join(srcdir, 'module-info.csv')) as fp:
-            for row in csv.reader(fp, skipinitialspace=True):
-                if row[0] == '#': next
-                flag = ('ma_flag_' + row[1]) if row[1] != 'NONE' else row[1]
-                module_info[row[0]] = { 'flag_name': flag, 'prefix': row[2],
-                                        'nml_file': row[3], 'nml_name': row[4] }
+            reader = csv.reader(fp, skipinitialspace=True)
+            for row in reader:
+                if row[0].startswith('#'):
+                    continue  # Correctly skip comment lines
+                flag = f'ma_flag_{row[1]}' if row[1] != 'NONE' else row[1]
+                module_info[row[0]] = {'flag_name': flag, 'prefix': row[2],
+                                       'nml_file': row[3], 'nml_name': row[4]}
                 flagname_to_mod[flag] = row[0]
-    except:
+    except Exception as e:  # Catch and handle exceptions more specifically
+        error_msg = "Couldn't open module info file " + os.path.join(srcdir, 'module-info.csv')
         if not srcdir:
-            sys.exit("Internal error: source directory not set!")
-        else:
-            sys.exit("Couldn't open module info file " +
-                     os.path.join(srcdir, 'module-info.csv'))
+            error_msg = "Internal error: source directory not set!"
+        sys.exit(error_msg)
 
 def module_from_flagname(flagname):
     if not flagname_to_mod: load_module_info()
@@ -84,7 +79,10 @@ def lookup_module(modname):
 
 
 def extract_defines(maps):
-    res = { }
+    """
+    Extracts and converts DEFINE values from a list of mapping dictionaries.
+    """
+    res = {}
     for m in maps:
         for k, v in m.items():
             if v.startswith('$(DEFINE)'):
@@ -123,8 +121,8 @@ def timestepping_options(runlen, coords, t100, quiet=False):
             nsteps = chk[4] if t100 else chk[2]
             dbio = chk[5] if t100 else chk[3]
     if not quiet:
-        print("Setting time-stepping [GOLDSTEIN, BIOGEM:GOLDSTEIN]: ",
-              nsteps, dbio)
+        if not quiet:
+            print(f"Setting time-stepping [GOLDSTEIN, BIOGEM:GOLDSTEIN]: {nsteps} {dbio}")
 
     # Define primary model time step.
     dstp = 3600.0 * 24.0 * 365.25 / 5.0 / nsteps
@@ -134,10 +132,10 @@ def timestepping_options(runlen, coords, t100, quiet=False):
     res['ma_genie_timestep'] = dstp
 
     # Relative time-stepping.
-    for k in ['ma_ksic_loop', 'ma_kocn_loop', 'ma_klnd_loop']: res[k] = 5
-    for k in ['ma_conv_kocn_katchem', 'ma_conv_kocn_kbiogem',
-              'ma_conv_kocn_krokgem']: res[k] = dbio
-    for k in ['ma_conv_kocn_ksedgem', 'ma_kgemlite']: res[k] = nsteps
+    res.update({k: 5 for k in ['ma_ksic_loop', 'ma_kocn_loop', 'ma_klnd_loop']})
+    res.update({k: dbio for k in ['ma_conv_kocn_katchem', 'ma_conv_kocn_kbiogem', 'ma_conv_kocn_krokgem']})
+    res.update({k: nsteps for k in ['ma_conv_kocn_ksedgem', 'ma_kgemlite']})
+
 
     # BIOGEM run length and SEDGEM sediment age.
     for k in ['bg_par_misc_t_runtime', 'sg_par_misc_t_runtime']: res[k] = runlen
@@ -153,12 +151,11 @@ def timestepping_options(runlen, coords, t100, quiet=False):
     #     (*) A '+1' in effect disables this feature
     ###===> WHAT DOES "a '+1' in effect disables this feature" MEAN?
     ps = ['ea', 'go', 'gs', 'ents']
-    for p in ps: res[p + '_npstp'] = runlen * nsteps
-    for p in ps: res[p + '_iwstp'] = runlen * nsteps
-    for p in ps: res[p + '_itstp'] = runlen * nsteps + 1
-    for p in ps: res[p + '_ianav'] = runlen * nsteps + 1
-    for k in ['ea_nyear', 'go_nyear', 'gs_nyear']: res[k] = nsteps
-
+    res.update({f"{p}_npstp": runlen * nsteps for p in ps})
+    res.update({f"{p}_iwstp": runlen * nsteps for p in ps})
+    res.update({f"{p}_itstp": runlen * nsteps + 1 for p in ps})
+    res.update({f"{p}_ianav": runlen * nsteps + 1 for p in ps})
+    res.update({k: nsteps for k in ['ea_nyear', 'go_nyear', 'gs_nyear']})
     return res
 
 
@@ -169,11 +166,11 @@ def restart_options(restart):
 
     # Set default flags.
     # Set NetCDF restart saving flag.
-    for k in ['ea_netout', 'go_netout', 'gs_netout']: res[k] = 'n'
+    res.update({k: 'n' for k in ['ea_netout', 'go_netout', 'gs_netout']})
     # Set ASCII restart output flag.
-    for k in ['ea_ascout', 'go_ascout', 'gs_ascout']: res[k] = 'y'
+    res.update({k: 'y' for k in ['ea_ascout', 'go_ascout', 'gs_ascout']})
     # Set ASCII restart number (i.e., output file string).
-    for k in ['ea_lout', 'go_lout', 'gs_lout', 'ents_out_name']: res[k] = 'rst'
+    res.update({k: 'rst' for k in ['ea_lout', 'go_lout', 'gs_lout', 'ents_out_name']})
     res['ents_restart_file'] = 'rst.sland'
 
     # Configure use of restart.
@@ -184,38 +181,37 @@ def restart_options(restart):
     # => set restart input number
     # => copy restart files to data directory
     if restart:
-        for p in ['ea', 'go', 'gs', 'ents']:
-            res[p + '_ans'] = 'c'
-            res[p + '_netin'] = 'n'
-        for p in ['ac', 'bg', 'sg', 'rg']:
-            res[p + '_ctrl_continuing'] = '.TRUE.'
-        for k in ['ea_lin', 'go_lin', 'gs_lin']: res[k] = 'rst.1'
-        res['ea_rstdir_name'] = 'restart/embm'
-        res['go_rstdir_name'] = 'restart/goldstein'
-        res['gs_rstdir_name'] = 'restart/goldsteinseaice'
-        res['ents_outdir_name'] = 'output/ents'
-        res['ents_dirnetout'] = 'restart/ents'
-        res['ents_rstdir_name'] = 'restart/ents'
-        res['ac_par_rstdir_name'] = 'restart/atchem'
-        res['bg_par_rstdir_name'] = 'restart/biogem'
-        res['sg_par_rstdir_name'] = 'restart/sedgem'
-        res['rg_par_rstdir_name'] = 'restart/rokgem'
+        res.update({p + '_ans': 'c' for p in ['ea', 'go', 'gs', 'ents']})
+        res.update({p + '_netin': 'n' for p in ['ea', 'go', 'gs', 'ents']})
+        res.update({p + '_ctrl_continuing': '.TRUE.' for p in ['ac', 'bg', 'sg', 'rg']})
+        res.update({k: 'rst.1' for k in ['ea_lin', 'go_lin', 'gs_lin']})
+        res.update({
+            'ea_rstdir_name': 'restart/embm',
+            'go_rstdir_name': 'restart/goldstein',
+            'gs_rstdir_name': 'restart/goldsteinseaice',
+            'ents_outdir_name': 'output/ents',
+            'ents_dirnetout': 'restart/ents',
+            'ents_rstdir_name': 'restart/ents',
+            'ac_par_rstdir_name': 'restart/atchem',
+            'bg_par_rstdir_name': 'restart/biogem',
+            'sg_par_rstdir_name': 'restart/sedgem',
+            'rg_par_rstdir_name': 'restart/rokgem',
+        })
     else:
-        for p in ['ea', 'go', 'gs', 'ents']: res[p + '_ans'] = 'n'
-        for p in ['ac', 'bg', 'sg', 'rg']:
-            res[p + '_ctrl_continuing'] = '.FALSE.'
+        res.update({p + '_ans': 'n' for p in ['ea', 'go', 'gs', 'ents']})
+        res.update({p + '_ctrl_continuing': '.FALSE.' for p in ['ac', 'bg', 'sg', 'rg']})
 
-    # Set NetCDF format biogeochem restart files.
-    for p in ['ac', 'bg', 'sg']: res[p + '_ctrl_ncrst'] = '.TRUE.'
+
+        # Set NetCDF format biogeochem restart files.
+        res.update({p + '_ctrl_ncrst': '.TRUE.' for p in ['ac', 'bg', 'sg']})
 
     # Over-ride defaults.
     res['bg_ctrl_force_oldformat'] = '.FALSE.'
-
     return res
 
 
 def is_bool(x):
-    return str(x).lower() == '.true.' or str(x).lower() == '.false.'
+    return str(x).lower() in ('.true.', '.false.')
 
 
 class Namelist:
@@ -238,16 +234,19 @@ class Namelist:
                     self.entries[kv[0]] = kv[1].strip('"\'')
 
     def formatValue(self, v):
-        if v == '.true.' or v == '.TRUE.': return '.TRUE.'
-        if v == '.false.' or v == '.FALSE.': return '.FALSE.'
-        if re.match('^' + fp_re + '$', v): return v
-        return '"' + v + '"'
+        if v.lower() == '.true.': 
+            return '.TRUE.'
+        if v.lower() == '.false.': 
+            return '.FALSE.'
+        if re.match('^' + fp_re + '$', v): 
+            return v
+        return f'"{v}"'
 
     def write(self, fp):
-        print('&' + self.name, file=fp)
-        for k in sorted(self.entries.keys()):
+        print(f'&{self.name}', file=fp)
+        for k in sorted(self.entries):
             v = self.entries[k]
-            print(' ' + k + '=' + self.formatValue(str(v)) + ',', file=fp)
+            print(f' {k}={self.formatValue(str(v))},', file=fp)
         print('&END', file=fp)
 
     def merge(self, prefix, maps):

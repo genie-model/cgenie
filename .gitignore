@@ -68,3 +68,7 @@ cgenie-msvs/x64/Debug
 cgenie-msvs/x64/Release
 *.out
 *.toc
+
+
+# Exclude the bash script I have created for testing 
+run_sequence.sh

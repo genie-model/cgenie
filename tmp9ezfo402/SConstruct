@@ -1,0 +1,36 @@
+
+import os
+f90 = {'compiler': 'gfortran', 'baseflags': ['-x', 'f95-cpp-input', '-ffree-line-length-none', '-fno-automatic', '-fimplicit-none', '-fdefault-real-8', '-mtune=native', '-Wall'], 'debug': ['-g', '-ffpe-trap=invalid,overflow'], 'ship': ['-O3', '-funroll-loops'], 'profile': ['-O3', '-pg'], 'profile_link': ['-pg'], 'bounds': ['-fbounds-check'], 'coverage': ['-O0', '--coverage'], 'coverage_link': ['--coverage'], 'include': '-I', 'module_dir': '-J', 'define': '-D'}
+netcdf = {'base': ('/usr/include', '/usr/lib/x86_64-linux-gnu'), 'libs': ['netcdf', 'netcdff']}
+
+envcopy = { }
+envcopy['PATH'] = os.environ['PATH']
+if 'TMP' in os.environ: envcopy['TMP'] = os.environ['TMP']
+baselinkflags = []
+if 'baselinkflags' in f90:
+    baselinkflags = f90['baselinkflags']
+extraf90libpaths = []
+if 'libpath' in f90: extraf90libpaths.append(f90['libpath'])
+target_vs_arch = 'linux'
+if 'TARGET_VS_ARCH' in os.environ:
+    target_vs_arch = os.environ['TARGET_VS_ARCH']
+netcdfinc = os.path.join(str(netcdf['base']), 'include')
+if not os.path.exists(netcdfinc): netcdfinc = netcdf['base']
+netcdflib = os.path.join(str(netcdf['base']), 'lib')
+if not os.path.exists(netcdflib): netcdflib = netcdf['base']
+env = Environment(ENV = envcopy,
+                  TOOLS = ['default', f90['compiler']],
+                  HOST_ARCH = target_vs_arch,
+                  F90FLAGS = f90['baseflags'],
+                  LINKFLAGS = baselinkflags,
+                  F90PATH = [netcdfinc],
+                  FORTRANMODDIRPREFIX = f90['module_dir'],
+                  FORTRANMODDIR = '${TARGET.dir}',
+                  LIBPATH = [netcdflib] + extraf90libpaths,
+                  LIBS = netcdf['libs'])
+
+if 'ld_library_path' in f90:
+    env['ENV']['LD_LIBRARY_PATH'] = f90['ld_library_path']
+
+env.Program('f90nctest.exe', ['f90nctest.f90'])
+
